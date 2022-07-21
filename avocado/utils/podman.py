@@ -66,7 +66,8 @@ class Podman:
             raise PodmanException(msg) from ex
 
         if proc.returncode != 0:
-            msg = f"Could not execute the command: {proc.returncode}:{stderr}."
+            command_args = " ".join(args)
+            msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
             LOG.error(msg)
             raise PodmanException(msg)
 
