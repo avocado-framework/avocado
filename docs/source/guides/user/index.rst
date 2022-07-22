@@ -13,7 +13,7 @@ Avocado User's Guide
    chapters/results
    chapters/tags
    chapters/configuring
-   chapters/requirements
+   chapters/dependencies
    chapters/assets
    chapters/datadirs
    chapters/logging
