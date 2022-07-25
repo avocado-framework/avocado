@@ -89,11 +89,6 @@ class BaseIso9660:
         process.has_capability("cap_sys_admin"),
         "Capability to mount is required (cap_sys_admin)",
     )
-    @unittest.skipIf(
-        os.getenv("TRAVIS")
-        and os.getenv("TRAVIS_CPU_ARCH") in ["arm64", "ppc64le", "s390x"],
-        "TRAVIS Environment is unsuitable for these tests",
-    )
     def test_mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
@@ -158,11 +153,6 @@ class IsoMount(BaseIso9660, unittest.TestCase):
     @unittest.skipUnless(
         process.has_capability("cap_sys_admin"),
         "Capability to mount is required (cap_sys_admin)",
-    )
-    @unittest.skipIf(
-        os.getenv("TRAVIS")
-        and os.getenv("TRAVIS_CPU_ARCH") in ["arm64", "ppc64le", "s390x"],
-        "TRAVIS Environment is unsuitable for these tests",
     )
     def setUp(self):
         super().setUp()

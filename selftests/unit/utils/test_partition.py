@@ -48,11 +48,6 @@ class Base(unittest.TestCase):
         process.has_capability("cap_sys_admin"),
         "Capability to mount is required (cap_sys_admin)",
     )
-    @unittest.skipIf(
-        os.getenv("TRAVIS")
-        and os.getenv("TRAVIS_CPU_ARCH") in ["arm64", "ppc64le", "s390x"],
-        "TRAVIS Environment is unsuitable for these tests",
-    )
     def setUp(self):
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
