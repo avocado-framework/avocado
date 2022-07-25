@@ -212,6 +212,10 @@ class Worker:
                 LOG.debug(
                     'Task "%s" has failed dependencies', runtime_task.task.identifier
                 )
+                runtime_task.result = "fail"
+                await self._state_machine.finish_task(
+                    runtime_task, RuntimeTaskStatus.FAIL_TRIAGE
+                )
                 return
         if runtime_task.task.category != "test":
             async with self._state_machine.cache_lock:
