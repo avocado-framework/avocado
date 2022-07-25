@@ -154,17 +154,17 @@ class ExecTestRunner(BaseRunner):
         )
 
     def run(self, runnable):
+        yield self.prepare_status("started")
+
         try:
             process = self._run_proc(runnable)
         except Exception as e:
-            yield self.prepare_status("started")
             yield self.prepare_status(
                 "finished", {"result": "error", "fail_reason": str(e)}
             )
             self._cleanup(runnable)
             return
 
-        yield self.prepare_status("started")
         most_current_execution_state_time = None
         timeout = RUNNER_RUN_CHECK_INTERVAL
         while process.returncode is None:
