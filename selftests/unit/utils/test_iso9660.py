@@ -70,13 +70,6 @@ class BaseIso9660:
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    @unittest.skipIf(
-        os.uname()[4] == "s390x",
-        (
-            "Endianess issues on pycdlib, see "
-            "https://github.com/clalancette/pycdlib/issues/39"
-        ),
-    )
     def test_basic_workflow(self):
         """
         Check the basic Iso9660 workflow
