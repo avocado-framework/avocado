@@ -66,7 +66,7 @@ class RuntimeTask:
             return f'<RuntimeTask Task Identifier: "{self.task.identifier}">'
         else:
             return (
-                f'<RuntimeTask Task Identifier: "{self.task.identifier}"'
+                f'<RuntimeTask Task Identifier: "{self.task.identifier}" '
                 f'Status: "{self.status}">'
             )
 
