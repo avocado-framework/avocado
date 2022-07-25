@@ -270,6 +270,69 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result["returncode"], 1)
         self.assertIn("time", last_result)
 
+    def test_runner_python_unittest_ok(self):
+        runnable = Runnable(
+            "python-unittest", "selftests/.data/unittests.py:First.test_pass"
+        )
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
+        output1 = (
+            b"----------------------------------------------------------------------\n"
+            b"Ran 1 test in "
+        )
+        output2 = b"s\n\nOK\n"
+        output = results[-2]
+        result = results[-1]
+        self.assertEqual(result["status"], "finished")
+        self.assertEqual(result["result"], "pass")
+        self.assertTrue(output["log"].startswith(output1), "Start of output differs")
+        self.assertTrue(output["log"].endswith(output2), "End of output differs")
+
+    def test_runner_python_unittest_fail(self):
+        runnable = Runnable(
+            "python-unittest", "selftests/.data/unittests.py:Second.test_fail"
+        )
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
+        if sys.version_info < (3, 11):
+            output1 = (
+                b"======================================================================\n"
+                b"FAIL: test_fail (unittests.Second)\n"
+            )
+        else:
+            output1 = (
+                b"======================================================================\n"
+                b"FAIL: test_fail (unittests.Second.test_fail)\n"
+            )
+        output2 = b"\n\nFAILED (failures=1)\n"
+        output = results[-2]
+        result = results[-1]
+        self.assertEqual(result["status"], "finished")
+        self.assertEqual(result["result"], "fail")
+        self.assertTrue(output["log"].startswith(output1), "Start of output differs")
+        self.assertTrue(output["log"].endswith(output2), "End of output differs")
+
+    def test_runner_python_unittest_skip(self):
+        runnable = Runnable(
+            "python-unittest", "selftests/.data/unittests.py:Second.test_skip"
+        )
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
+        output1 = (
+            b"----------------------------------------------------------------------\n"
+            b"Ran 1 test in "
+        )
+        output2 = b"s\n\nOK (skipped=1)\n"
+        output = results[-2]
+        result = results[-1]
+        self.assertEqual(result["status"], "finished")
+        self.assertEqual(result["result"], "skip")
+        self.assertTrue(output["log"].startswith(output1), "Start of output differs")
+        self.assertTrue(output["log"].endswith(output2), "End of output differs")
+
     def test_runner_python_unittest_error(self):
         runnable = Runnable("python-unittest", "error")
         runner_klass = runnable.pick_runner_class()
