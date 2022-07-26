@@ -105,4 +105,4 @@ class DpkgBackend(BaseBackend):
             l_cmd = self.lowlevel_base_cmd + " -c " + package
         else:
             l_cmd = self.lowlevel_base_cmd + " -l " + package
-        return process.system_output(l_cmd).split("\n")
+        return process.system_output(l_cmd).decode().split("\n")
