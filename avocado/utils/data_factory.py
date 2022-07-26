@@ -75,7 +75,7 @@ def make_dir_and_populate(basedir="/tmp"):
             str_length = _RAND_POOL.randint(30, 50)
             n_lines = _RAND_POOL.randint(5, 7)
             for _ in range(n_lines):
-                os.write(fd, generate_random_string(str_length))
+                os.write(fd, generate_random_string(str_length).encode())
             os.close(fd)
     except OSError as details:
         log_msg = "Failed to generate dir in '%s' and populate: %s"
