@@ -1,4 +1,4 @@
 #!/bin/sh -e
 echo "** Running black..."
 
-black --check .
+black --check --diff --color .
