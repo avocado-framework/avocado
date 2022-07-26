@@ -60,7 +60,7 @@ class TAPRunner(ExecTestRunner):
         return result
 
     def _process_final_status(
-        self, process, stdout=None, stderr=None
+        self, process, runnable, stdout=None, stderr=None
     ):  # pylint: disable=W0613
         return FinishedMessage.get(
             self._get_tap_result(stdout), returncode=process.returncode
