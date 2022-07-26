@@ -15,8 +15,8 @@ class RuntimeTaskStatus(Enum):
     TIMEOUT = "FINISHED TIMEOUT"
     IN_CACHE = "FINISHED IN CACHE"
     FAILFAST = "FINISHED FAILFAST"
-    FAIL_TRIAGE = "FAILED ON TRIAGE"
-    FAIL_START = "FAILED ON START"
+    FAIL_TRIAGE = "FINISHED WITH FAILURE ON TRIAGE"
+    FAIL_START = "FINISHED FAILING TO START"
     STARTED = "STARTED"
 
     @staticmethod
@@ -66,7 +66,7 @@ class RuntimeTask:
             return f'<RuntimeTask Task Identifier: "{self.task.identifier}">'
         else:
             return (
-                f'<RuntimeTask Task Identifier: "{self.task.identifier}"'
+                f'<RuntimeTask Task Identifier: "{self.task.identifier}" '
                 f'Status: "{self.status}">'
             )
 
