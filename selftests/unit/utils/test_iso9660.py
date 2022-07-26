@@ -70,13 +70,6 @@ class BaseIso9660:
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    @unittest.skipIf(
-        os.uname()[4] == "s390x",
-        (
-            "Endianess issues on pycdlib, see "
-            "https://github.com/clalancette/pycdlib/issues/39"
-        ),
-    )
     def test_basic_workflow(self):
         """
         Check the basic Iso9660 workflow
@@ -95,11 +88,6 @@ class BaseIso9660:
     @unittest.skipUnless(
         process.has_capability("cap_sys_admin"),
         "Capability to mount is required (cap_sys_admin)",
-    )
-    @unittest.skipIf(
-        os.getenv("TRAVIS")
-        and os.getenv("TRAVIS_CPU_ARCH") in ["arm64", "ppc64le", "s390x"],
-        "TRAVIS Environment is unsuitable for these tests",
     )
     def test_mnt_dir_workflow(self):
         """
@@ -165,11 +153,6 @@ class IsoMount(BaseIso9660, unittest.TestCase):
     @unittest.skipUnless(
         process.has_capability("cap_sys_admin"),
         "Capability to mount is required (cap_sys_admin)",
-    )
-    @unittest.skipIf(
-        os.getenv("TRAVIS")
-        and os.getenv("TRAVIS_CPU_ARCH") in ["arm64", "ppc64le", "s390x"],
-        "TRAVIS Environment is unsuitable for these tests",
     )
     def setUp(self):
         super().setUp()
