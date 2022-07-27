@@ -753,3 +753,5 @@ inplace
 hashable
 pathconf
 fedoraproject
+ansible
+ansible-module
