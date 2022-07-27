@@ -652,6 +652,19 @@ def create_suites(args):  # pylint: disable=W0621
             }
         )
 
+    if (
+        python_module_available("avocado-framework-plugin-ansible")
+        and "ansible" not in args.disable_plugin_checks
+    ):
+        config_nrunner_interface["run.dict_variants"].append(
+            {
+                "runner": "avocado-runner-ansible-module",
+                "runnable-run-no-args-exit-code": 0,
+                "runnable-run-uri-only-exit-code": 0,
+                "task-run-id-only-exit-code": 0,
+            }
+        )
+
     if args.dict_tests["nrunner-interface"]:
         suites.append(
             TestSuite.from_config(config_nrunner_interface, "nrunner-interface")

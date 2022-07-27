@@ -280,6 +280,27 @@ def get_pci_id(pci_address):
         return ":".join(pci_id)
 
 
+def get_pci_info(pci_address):
+    """
+    Gets PCI info of given PCI address.
+
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
+
+    :return: Dictionary attribute name as key and attribute value as value.
+    :rtype: Dict
+    """
+    cmd = "lspci -Dnvmm -s {pci_address}"
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
+    pci_info = {}
+    if output:
+        for line in output.splitlines():
+            if(line.strip()):
+                s_line = line.split(":")
+                pci_info[s_line[0].strip()] = (
+                        ":".join(s_line[1:])).strip()
+        return pci_info
+
+
 def get_driver(pci_address):
     """
     Gets the kernel driver in use of given PCI address. (first match only)
@@ -407,4 +428,10 @@ def get_cfg(dom_pci_address):
             cfg_dic["YC"] = line.split(".")[-1]
         if "Location Code" in line:
             cfg_dic["YL"] = line.split("..")[-1].strip(".")
+    if 'Description' in cfg_dic:
+        pcid = re.search(r'[0-9a-e]{4}\:[0-9a-e]{2}\:[0-9a-e]{2}\.[0-9a-e]{1}',
+                         cfg_dic['Description'])
+        cfg_dic['pci_id'] = pcid.group()
+        vendor_subvendor = re.search(r'([0-9a-e]{8})', cfg_dic['Description'])
+        cfg_dic['subvendor_device'] = vendor_subvendor.group()
     return cfg_dic

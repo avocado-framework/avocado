@@ -123,3 +123,21 @@ effect on the spawner.
  * `type`: `podman-image`
  * `uri`: the image reference, in any format supported by ``podman
    pull`` itself.
+
+Ansible Module
+++++++++++++++
+
+If you install the Ansible plugin
+(``avocado-framework-plugin-ansible`` from PIP or
+``python3-avocado-plugins-ansible`` from RPM packages), you will will
+be able to use the ``ansible-module`` dependency.
+
+ * `type`: `ansible-module`
+ * `uri`: the name of the ansible module.
+
+All other arguments will be treated as arguments to the ansible modules.
+
+Following is an example of tests using ansible's ``file`` and ``user``
+modules:
+
+.. literalinclude:: ../../../../../examples/tests/dependency_ansible.py
