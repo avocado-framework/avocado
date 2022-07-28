@@ -66,6 +66,10 @@ class Plugins(CLICmd):
                 "Plugins that run before the execution of each test (test.pre):",
             ),
             (
+                dispatcher.TestPostDispatcher(),
+                "Plugins that run after the execution of each test (test.post):",
+            ),
+            (
                 dispatcher.ResultDispatcher(),
                 "Plugins that generate job result in different formats (result):",
             ),

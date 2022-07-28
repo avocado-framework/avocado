@@ -1,7 +1,7 @@
 from enum import Enum
 from itertools import chain
 
-from avocado.core.dispatcher import TestPreDispatcher
+from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
 from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
 
@@ -264,6 +264,114 @@ class PreRuntimeTask(RuntimeTask):
         return pre_test_tasks
 
 
+class PostRuntimeTask(RuntimeTask):
+    @classmethod
+    def from_runnable(
+        cls,
+        runnable,
+        no_digits,
+        index,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+        possible_dependency_results=None,
+    ):
+        """Creates runtime task for post_test plugin from runnable
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
+        :param status_server_uri: the URIs for the status servers that this
+                                  task should send updates to.
+        :type status_server_uri: list
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will
+                       make into the job's results.
+        :type job_id: str
+        :param possible_dependency_results: Dependencies results which
+        allow running this Task
+        :type possible_dependency_results: list of test results.
+        :returns: RuntimeTask of the test from runnable
+        """
+        # create test ID
+        if test_suite_name:
+            prefix = f"{test_suite_name}-{index}"
+        else:
+            prefix = index
+        name = f'{runnable.kind}-{runnable.kwargs.get("name")}'
+        # the human UI works with TestID objects, so we need to
+        # use it to name Task
+        task_id = TestID(prefix, name)
+        # creates the dependency task
+        task = Task(
+            runnable,
+            identifier=task_id,
+            status_uris=status_server_uri,
+            category="post_test",
+            job_id=job_id,
+        )
+        return cls(task, possible_dependency_results)
+
+    @classmethod
+    def get_post_tasks_from_runnable(
+        cls,
+        runnable,
+        no_digits,
+        index,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+    ):
+        """Creates runtime tasks for postTest task from runnable
+
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
+        :param status_server_uri: the URIs for the status servers that this
+                                  task should send updates to.
+        :type status_server_uri: list
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will
+                       make into the job's results.
+        :type job_id: str
+        :returns: Pre RuntimeTasks of the dependencies from runnable
+        :rtype: list
+        """
+
+        post_runnables = list(
+            chain.from_iterable(
+                TestPostDispatcher().map_method_with_return(
+                    "post_test_runnables", runnable
+                )
+            )
+        )
+        post_test_tasks = []
+        for post_runnable in post_runnables:
+            post_task = cls.from_runnable(
+                post_runnable[0],
+                no_digits,
+                index,
+                test_suite_name,
+                status_server_uri,
+                job_id,
+                post_runnable[1],
+            )
+
+            post_test_tasks.append(post_task)
+        return post_test_tasks
+
+
 class RuntimeTaskGraph:
     """Graph representing dependencies between runtime tasks."""
 
@@ -301,7 +409,7 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                pre_tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
+                tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
                     runnable,
                     no_digits,
                     index,
@@ -309,9 +417,17 @@ class RuntimeTaskGraph:
                     status_server_uri,
                     job_id,
                 )
-                if pre_tasks:
-                    pre_tasks.append(runtime_test)
-                    self._connect_tasks(pre_tasks)
+                tasks.append(runtime_test)
+                tasks = tasks + PostRuntimeTask.get_post_tasks_from_runnable(
+                    runnable,
+                    no_digits,
+                    index,
+                    test_suite_name,
+                    status_server_uri,
+                    job_id,
+                )
+                if tasks:
+                    self._connect_tasks(tasks)
 
     def _connect_tasks(self, tasks):
         for dependency, task in zip(tasks, tasks[1:]):

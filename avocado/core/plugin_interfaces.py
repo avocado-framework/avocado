@@ -178,6 +178,24 @@ class PreTest(Plugin):
         """
 
 
+class PostTest(Plugin):
+    """Base plugin interface for adding tasks after a test run.
+
+    This interface helps to create `avocado.core.nrunner.Task` for running
+    additional actions inside spawner environment after Test.
+    """
+
+    @abc.abstractmethod
+    def post_test_runnables(self, test_runnable):
+        """Entry point for creating runnables, which will be run after test.
+
+        :param test_runnable: Runnable of the Test itself.
+        :return: PostTest task runnables created by plugin.
+        :rtype: list of tuple(:class:`avocado.core.nrunner.Runnable`,
+        `avocado.core.task.runtime.RuntimeTask.possible_dependency_results`)
+        """
+
+
 class ResultEvents(JobPreTests, JobPostTests):
     """Base plugin interface for event based (stream-able) results.
 
