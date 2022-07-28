@@ -5,7 +5,7 @@ import multiprocessing
 import time
 
 from avocado.core.exceptions import TestFailFast
-from avocado.core.task.runtime import RuntimeTaskStatus
+from avocado.core.task.runtime import PostRuntimeTaskPrototype, RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
 
 LOG = logging.getLogger(__name__)
@@ -218,6 +218,15 @@ class Worker:
                 )
                 return
         if runtime_task.task.category != "test":
+            # generate post plugins tasks after the test finish
+            if type(runtime_task) is PostRuntimeTaskPrototype:
+                post_tasks = runtime_task.get_post_plugin_tasks()
+                async with self._state_machine.lock:
+                    self._state_machine._triaging = (
+                        post_tasks + self._state_machine.triaging
+                    )
+                return
+
             async with self._state_machine.cache_lock:
                 is_task_in_cache = await self._spawner.is_requirement_in_cache(
                     runtime_task
