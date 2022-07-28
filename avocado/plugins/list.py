@@ -222,7 +222,6 @@ class List(CLICmd):
         verbose = config.get("core.verbose")
         write_to_json_file = config.get("list.write_to_json_file")
         config["run.ignore_missing_references"] = True
-        config["run.test_runner"] = "nrunner"
         try:
             suite = TestSuite.from_config(config)
             matrix = self._get_resolution_matrix(suite)
