@@ -68,7 +68,9 @@ class RunnerInit(Init):
             help_msg=help_msg,
         )
 
-        help_msg = 'URI for listing the status server. Usually a "HOST:PORT" string'
+        help_msg = (
+            'URI for the status server to listen on. Usually a "HOST:PORT" string'
+        )
         settings.register_option(
             section=section,
             key="status_server_listen",
