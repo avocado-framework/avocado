@@ -348,13 +348,8 @@ Running magic tests
 -------------------
 
 The common way of running Avocado tests is to run them through
-``avocado run``.  In this case, we're discussing tests for the
-"nrunner" architecture, so the common way of running these "magic"
-tests is through a command starting with ``avocado
-run --test-runner=nrunner``.
-
-To run both the ``pass`` and ``fail`` magic tests, you'd run
-``avocado run -- pass fail``::
+``avocado run``.  To run both the ``pass`` and ``fail`` magic tests,
+you'd run ``avocado run -- pass fail``::
 
   $ avocado run -- pass fail
   JOB ID     : 86fd45f8c1f2fe766c252eefbcac2704c2106db9
