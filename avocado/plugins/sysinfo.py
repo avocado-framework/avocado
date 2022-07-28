@@ -16,8 +16,17 @@ System information plugin
 """
 
 from avocado.core import sysinfo
-from avocado.core.plugin_interfaces import CLICmd, Init, JobPostTests, JobPreTests
+from avocado.core.nrunner.runnable import Runnable
+from avocado.core.plugin_interfaces import (
+    CLICmd,
+    Init,
+    JobPostTests,
+    JobPreTests,
+    PostTest,
+    PreTest,
+)
 from avocado.core.settings import settings
+from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.utils.path import prepend_base_path, system_wide_or_base_path
 from avocado.utils import path
 
@@ -36,6 +45,18 @@ class SysinfoInit(Init):
             section="sysinfo.collect",
             key="enabled",
             default=True,
+            key_type=bool,
+            help_msg=help_msg,
+        )
+
+        help_msg = (
+            "Enable or disable sysinfo collection (like hardware "
+            "details, profiles, etc.) for each test"
+        )
+        settings.register_option(
+            section="sysinfo.collect",
+            key="per_test",
+            default=False,
             key_type=bool,
             help_msg=help_msg,
         )
@@ -175,6 +196,56 @@ class SysInfoJob(JobPreTests, JobPostTests):
             return
         self._init_sysinfo(job.logdir)
         self.sysinfo.end()
+
+
+class SysInfoTest(PreTest, PostTest):
+    """Implements the sysinfo pre/post test plugin.
+
+    It will create pre/post-test tasks for collecting system information.
+    """
+
+    name = "sysinfo"
+    description = "Collects system information before/after the test is run."
+
+    def _is_sysinfo_enabled(self, config):
+        if not (
+            config.get("sysinfo.collect.enabled")
+            and config.get("sysinfo.collect.per_test")
+        ):
+            return False
+        return True
+
+    def pre_test_runnables(self, test_runnable, suite_config=None):
+        suite_config = suite_config or {}
+        if not self._is_sysinfo_enabled(suite_config):
+            return []
+        sysinfo_config = sysinfo.gather_collectibles_config(suite_config)
+        return [
+            Runnable.from_avocado_config(
+                "sysinfo",
+                "pre",
+                config=suite_config,
+                name="pre",
+                sysinfo=sysinfo_config,
+            )
+        ]
+
+    def post_test_runnables(self, test_runnable, test_results, suite_config=None):
+        suite_config = suite_config or {}
+        if not self._is_sysinfo_enabled(suite_config):
+            return []
+        sysinfo_config = sysinfo.gather_collectibles_config(suite_config)
+        test_fail = True if test_results in STATUSES_NOT_OK else False
+        return [
+            Runnable.from_avocado_config(
+                "sysinfo",
+                "post",
+                config=suite_config,
+                name="post",
+                sysinfo=sysinfo_config,
+                test_fail=test_fail,
+            )
+        ]
 
 
 class SysInfo(CLICmd):

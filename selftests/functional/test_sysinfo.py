@@ -13,6 +13,11 @@ commands_timeout = %s
 commands = %s
 """
 
+PER_TEST_CONF = """
+[sysinfo.collect]
+per_test = True
+"""
+
 
 class SysInfoTest(TestCaseTmpDir):
     def test_sysinfo_enabled(self):
@@ -48,6 +53,50 @@ class SysInfoTest(TestCaseTmpDir):
             sysinfo_subdir = os.path.join(sysinfo_dir, hook)
             msg = f"The sysinfo/{hook} subdirectory does not exist:\n{result}"
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
+
+    def test_sysinfoi_per_test_enabled(self):
+        config_path = os.path.join(self.tmpdir.name, "config.conf")
+        script.make_script(config_path, PER_TEST_CONF)
+        cmd_line = (
+            f"{AVOCADO} --config {config_path} run --job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        test_results_path = os.path.join(self.tmpdir.name, "latest", "test-results")
+        sysinfo_dirs = [
+            sysinfodir
+            for sysinfodir in os.listdir(test_results_path)
+            if "-sysinfo-" in sysinfodir
+        ]
+        self.assertEqual(
+            len(sysinfo_dirs), 2, "Avocado didn't create sysinfo directories"
+        )
+
+    def test_sysinfoi_per_test_disabled(self):
+        cmd_line = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        test_results_path = os.path.join(self.tmpdir.name, "latest", "test-results")
+        sysinfo_dirs = [
+            sysinfodir
+            for sysinfodir in os.listdir(test_results_path)
+            if "-sysinfo-" in sysinfodir
+        ]
+        self.assertEqual(len(sysinfo_dirs), 0, "Avocado create sysinfo directories")
 
     def test_sysinfo_disabled(self):
         cmd_line = (

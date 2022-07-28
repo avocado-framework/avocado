@@ -4,7 +4,11 @@ from unittest import TestCase
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import Task
 from avocado.core.suite import TestSuite
-from avocado.core.task.runtime import RuntimeTask, RuntimeTaskGraph
+from avocado.core.task.runtime import (
+    PostRuntimeTaskPrototype,
+    RuntimeTask,
+    RuntimeTaskGraph,
+)
 from avocado.utils import script
 from selftests.utils import TestCaseTmpDir
 
@@ -67,7 +71,12 @@ class DependencyGraph(TestCaseTmpDir):
             suite = TestSuite.from_config(config=config)
             tests = suite.get_test_variants()
             graph = RuntimeTaskGraph(tests, suite.name, 1, "")
-            runtime_tests = graph.get_tasks_in_topological_order()
+            runtime_tests = list(
+                filter(
+                    lambda x: type(x) is not PostRuntimeTaskPrototype,
+                    graph.get_tasks_in_topological_order(),
+                )
+            )
             self.assertTrue(runtime_tests[0].task.identifier.name.endswith("test_a"))
             self.assertTrue(runtime_tests[1].task.identifier.name.endswith("hello"))
             self.assertTrue(runtime_tests[2].task.identifier.name.endswith("test_b"))
@@ -83,7 +92,12 @@ class DependencyGraph(TestCaseTmpDir):
             suite = TestSuite.from_config(config=config)
             tests = suite.get_test_variants()
             graph = RuntimeTaskGraph(tests, suite.name, 1, "")
-            runtime_tests = graph.get_tasks_in_topological_order()
+            runtime_tests = list(
+                filter(
+                    lambda x: type(x) is not PostRuntimeTaskPrototype,
+                    graph.get_tasks_in_topological_order(),
+                )
+            )
             self.assertTrue(runtime_tests[0].task.identifier.name.endswith("hello"))
             self.assertTrue(runtime_tests[1].task.identifier.name.endswith("test_a"))
             self.assertTrue(runtime_tests[2].task.identifier.name.endswith("test_b"))

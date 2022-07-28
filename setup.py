@@ -403,6 +403,10 @@ if __name__ == "__main__":
             ],
             "avocado.plugins.test.pre": [
                 "dependency = avocado.plugins.dependency:DependencyResolver",
+                "sysinfo = avocado.plugins.sysinfo:SysInfoTest",
+            ],
+            "avocado.plugins.test.post": [
+                "sysinfo = avocado.plugins.sysinfo:SysInfoTest",
             ],
             "avocado.plugins.result": [
                 "xunit = avocado.plugins.xunit:XUnitResult",
