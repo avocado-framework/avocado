@@ -179,6 +179,7 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
+        suite_config=None,
     ):
         """Creates runtime tasks for preTest task from runnable
 
@@ -197,14 +198,16 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         :returns: Pre/Post RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
 
         runnables = list(
             chain.from_iterable(
-                cls.dispatcher().map_method_with_return(
-                    f"{cls.category}_runnables", runnable
+                TestPreDispatcher().map_method_with_return(
+                    f"{cls.category}_runnables", runnable, suite_config
                 )
             )
         )
@@ -243,7 +246,9 @@ class PostRuntimeTask(PrePostRuntimeTaskMixin):
 class RuntimeTaskGraph:
     """Graph representing dependencies between runtime tasks."""
 
-    def __init__(self, tests, test_suite_name, status_server_uri, job_id):
+    def __init__(
+        self, tests, test_suite_name, status_server_uri, job_id, suite_config=None
+    ):
         """Instantiates a new RuntimeTaskGraph.
 
         From the list of tests, it will create runtime tasks and connects them
@@ -260,6 +265,8 @@ class RuntimeTaskGraph:
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         """
         self.graph = {}
         # create graph
@@ -284,6 +291,7 @@ class RuntimeTaskGraph:
                     test_suite_name,
                     status_server_uri,
                     job_id,
+                    suite_config,
                 )
                 tasks.append(runtime_test)
                 tasks = tasks + PostRuntimeTask.get_tasks_from_runnable(
@@ -293,6 +301,7 @@ class RuntimeTaskGraph:
                     test_suite_name,
                     status_server_uri,
                     job_id,
+                    suite_config,
                 )
                 if tasks:
                     self._connect_tasks(tasks)

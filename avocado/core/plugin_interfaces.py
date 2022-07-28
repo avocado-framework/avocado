@@ -169,10 +169,11 @@ class PreTest(Plugin):
     """
 
     @abc.abstractmethod
-    def pre_test_runnables(self, test_runnable):
+    def pre_test_runnables(self, test_runnable, suite_config=None):
         """Entry point for creating runnables, which will be run before test.
 
         :param test_runnable: Runnable of the Test itself.
+        :param suite_config: Configuration dict relevant for the whole suite.
         :return: PreTest task runnables created by plugin.
         :rtype: list of :class:`avocado.core.nrunner.Runnable`
         """
@@ -186,10 +187,11 @@ class PostTest(Plugin):
     """
 
     @abc.abstractmethod
-    def post_test_runnables(self, test_runnable):
+    def post_test_runnables(self, test_runnable, suite_config=None):
         """Entry point for creating runnables, which will be run after test.
 
         :param test_runnable: Runnable of the Test itself.
+        :param suite_config: Configuration dict relevant for the whole suite.
         :return: PostTest task runnables created by plugin.
         :rtype: list of tuple(:class:`avocado.core.nrunner.Runnable`,
         `avocado.core.task.runtime.RuntimeTask.possible_dependency_results`)

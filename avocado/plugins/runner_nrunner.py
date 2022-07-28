@@ -286,6 +286,7 @@ class Runner(SuiteRunner):
             test_suite.name,
             self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,
+            test_suite.config,
         )
         # pylint: disable=W0201
         self.runtime_tasks = graph.get_tasks_in_topological_order()
