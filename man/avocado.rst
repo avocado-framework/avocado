@@ -182,19 +182,19 @@ Options for subcommand `run` (`avocado run --help`)::
                             Load the Variants from a JSON serialized file
 
     nrunner specific options:
-      --nrunner-shuffle     Shuffle the tasks to be executed
-      --nrunner-status-server-listen HOST_PORT
+      --shuffle             Shuffle the tasks to be executed
+      --status-server-listen HOST_PORT
                             URI for listing the status server. Usually a
                             "HOST:PORT" string
-      --nrunner-status-server-uri HOST_PORT
+      --status-server-uri HOST_PORT
                             URI for connecting to the status server, usually a
                             "HOST:PORT" string. Use this if your status server is
                             in another host, or different port
-      --nrunner-max-parallel-tasks NUMBER_OF_TASKS
+      --max-parallel-tasks NUMBER_OF_TASKS
                             Number of maximum number tasks running in parallel.
                             You can disable parallel execution by setting this to
                             1. Defaults to the amount of CPUs on this machine.
-      --nrunner-spawner SPAWNER
+      --spawner SPAWNER
                             Spawn tasks in a specific spawner. Available spawners:
                             'process' and 'podman'
 

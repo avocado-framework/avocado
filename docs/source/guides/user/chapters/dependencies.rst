@@ -117,7 +117,7 @@ Podman Image
 Support pulling podman images ahead of test execution time.  This
 should only be used explicitly if a test interacts with ``podman``
 directly, say by executing containers on its own.  If you are using
-the ``podman`` spawner (``--nrunner-spawner=podman``) this will have no
+the ``podman`` spawner (``--spawner=podman``) this will have no
 effect on the spawner.
 
  * `type`: `podman-image`

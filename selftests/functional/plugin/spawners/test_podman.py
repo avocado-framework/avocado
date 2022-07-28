@@ -38,7 +38,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
             result = process.run(
                 f"{AVOCADO} run "
                 f"--job-results-dir {self.tmpdir.name} "
-                f"--disable-sysinfo --nrunner-spawner=podman "
+                f"--disable-sysinfo --spawner=podman "
                 f"--spawner-podman-image=fedora:latest -- "
                 f"{test}",
                 ignore_status=True,
@@ -51,7 +51,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
         result = process.run(
             f"{AVOCADO} run "
             f"--job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo --nrunner-spawner=podman "
+            f"--disable-sysinfo --spawner=podman "
             f"--spawner-podman-image=fedora:latest -- "
             f"/bin/true",
             ignore_status=True,

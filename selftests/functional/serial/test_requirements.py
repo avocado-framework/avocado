@@ -116,9 +116,7 @@ class BasicTest(Test):
         spawner = self.params.get("spawner", default="process")
         spawner_command = ""
         if spawner == "podman":
-            spawner_command = (
-                "--nrunner-spawner=podman --spawner-podman-image=fedora:latest"
-            )
+            spawner_command = "--spawner=podman --spawner-podman-image=fedora:latest"
         return f"{AVOCADO} run {spawner_command} {path}"
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)

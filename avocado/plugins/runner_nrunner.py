@@ -43,7 +43,7 @@ class RunnerInit(Init):
     description = "nrunner initialization"
 
     def initialize(self):
-        section = "nrunner"
+        section = "run"
         help_msg = "Shuffle the tasks to be executed"
         settings.register_option(
             section=section,
@@ -150,44 +150,44 @@ class RunnerCLI(CLI):
 
         parser = parser.add_argument_group("nrunner specific options")
         settings.add_argparser_to_option(
-            namespace="nrunner.shuffle",
+            namespace="run.shuffle",
             parser=parser,
-            long_arg="--nrunner-shuffle",
+            long_arg="--shuffle",
             action="store_true",
         )
 
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_auto",
+            namespace="run.status_server_auto",
             parser=parser,
-            long_arg="--nrunner-status-server-disable-auto",
+            long_arg="--status-server-disable-auto",
             action="store_false",
         )
 
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_listen",
+            namespace="run.status_server_listen",
             parser=parser,
-            long_arg="--nrunner-status-server-listen",
+            long_arg="--status-server-listen",
             metavar="HOST_PORT",
         )
 
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_uri",
+            namespace="run.status_server_uri",
             parser=parser,
-            long_arg="--nrunner-status-server-uri",
+            long_arg="--status-server-uri",
             metavar="HOST_PORT",
         )
 
         settings.add_argparser_to_option(
-            namespace="nrunner.max_parallel_tasks",
+            namespace="run.max_parallel_tasks",
             parser=parser,
-            long_arg="--nrunner-max-parallel-tasks",
+            long_arg="--max-parallel-tasks",
             metavar="NUMBER_OF_TASKS",
         )
 
         settings.add_argparser_to_option(
-            namespace="nrunner.spawner",
+            namespace="run.spawner",
             parser=parser,
-            long_arg="--nrunner-spawner",
+            long_arg="--spawner",
             metavar="SPAWNER",
         )
 
@@ -215,12 +215,12 @@ class Runner(SuiteRunner):
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201
         self.status_server_dir = None
-        if test_suite.config.get("nrunner.status_server_auto"):
+        if test_suite.config.get("run.status_server_auto"):
             # no UNIX domain sockets on Windows
             if platform.system() != "Windows":
                 self.status_server_dir = tempfile.TemporaryDirectory(prefix="avocado_")
                 return os.path.join(self.status_server_dir.name, ".status_server.sock")
-        return test_suite.config.get("nrunner.status_server_listen")
+        return test_suite.config.get("run.status_server_listen")
 
     def _create_status_server(self, test_suite, job):
         listen = self._determine_status_server_uri(test_suite)
@@ -292,7 +292,7 @@ class Runner(SuiteRunner):
         # Start the status server
         asyncio.ensure_future(self.status_server.serve_forever())
 
-        if test_suite.config.get("nrunner.shuffle"):
+        if test_suite.config.get("run.shuffle"):
             random.shuffle(self.runtime_tasks)
         test_ids = [
             rt.task.identifier
@@ -300,10 +300,10 @@ class Runner(SuiteRunner):
             if rt.task.category == "test"
         ]
         tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
-        spawner_name = test_suite.config.get("nrunner.spawner")
+        spawner_name = test_suite.config.get("run.spawner")
         spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
         max_running = min(
-            test_suite.config.get("nrunner.max_parallel_tasks"), len(self.runtime_tasks)
+            test_suite.config.get("run.max_parallel_tasks"), len(self.runtime_tasks)
         )
         timeout = test_suite.config.get("task.timeout.running")
         failfast = test_suite.config.get("run.failfast")
