@@ -18,13 +18,13 @@ class RpmBackend(BaseBackend):
     as yum and zypper.
     """
 
-    PACKAGE_TYPE = 'rpm'
+    PACKAGE_TYPE = "rpm"
     SOFTWARE_COMPONENT_QRY = (
-        PACKAGE_TYPE + ' ' +
-        '%{NAME} %{VERSION} %{RELEASE} %{SIGMD5} %{ARCH}')
+        PACKAGE_TYPE + " " + "%{NAME} %{VERSION} %{RELEASE} %{SIGMD5} %{ARCH}"
+    )
 
     def __init__(self):
-        self.lowlevel_base_cmd = utils_path.find_command('rpm')
+        self.lowlevel_base_cmd = utils_path.find_command("rpm")
 
     def _check_installed_version(self, name, version):
         """
@@ -33,10 +33,10 @@ class RpmBackend(BaseBackend):
         :param name: Package name.
         :param version: Package version.
         """
-        cmd = (self.lowlevel_base_cmd + ' -q --qf %{VERSION} ' + name)
+        cmd = self.lowlevel_base_cmd + " -q --qf %{VERSION} " + name
         inst_version = process.run(cmd, ignore_status=True).stdout_text
 
-        if 'not installed' in inst_version:
+        if "not installed" in inst_version:
             return False
 
         return bool(inst_version >= version)
@@ -50,9 +50,9 @@ class RpmBackend(BaseBackend):
         :param arch: Package architecture.
         """
         if arch:
-            cmd = (self.lowlevel_base_cmd + ' -q --qf %{ARCH} ' + name)
+            cmd = self.lowlevel_base_cmd + " -q --qf %{ARCH} " + name
             inst_archs = process.system_output(cmd, ignore_status=True)
-            inst_archs = inst_archs.split('\n')
+            inst_archs = inst_archs.split("\n")
 
             for inst_arch in inst_archs:
                 if inst_arch == arch:
@@ -62,7 +62,7 @@ class RpmBackend(BaseBackend):
         elif version:
             return self._check_installed_version(name, version)
         else:
-            cmd = 'rpm -q ' + name
+            cmd = "rpm -q " + name
             try:
                 process.system(cmd)
                 return True
@@ -84,8 +84,7 @@ class RpmBackend(BaseBackend):
             cmd_format %= query_format
             cmd_result = process.run(cmd_format, verbose=False, shell=True)
         else:
-            cmd_result = process.run('rpm -qa | sort', verbose=False,
-                                     shell=True)
+            cmd_result = process.run("rpm -qa | sort", verbose=False, shell=True)
 
         out = cmd_result.stdout_text.strip()
         installed_packages = out.splitlines()
@@ -100,16 +99,16 @@ class RpmBackend(BaseBackend):
         """
         path = os.path.abspath(name)
         if os.path.isfile(path):
-            option = '-qlp'
+            option = "-qlp"
             name = path
         else:
-            option = '-ql'
+            option = "-ql"
 
-        l_cmd = 'rpm' + ' ' + option + ' ' + name
+        l_cmd = "rpm" + " " + option + " " + name
 
         try:
             result = process.system_output(l_cmd)
-            list_files = result.split('\n')
+            list_files = result.split("\n")
             return list_files
         except process.CmdError:
             return []
@@ -126,7 +125,7 @@ class RpmBackend(BaseBackend):
         :rtype: bool
         """
         if not os.path.isfile(file_path):
-            LOG.warning('Please provide proper rpm path')
+            LOG.warning("Please provide proper rpm path")
             return False
 
         nodeps = "--nodeps " if no_dependencies else ""
@@ -156,7 +155,7 @@ class RpmBackend(BaseBackend):
         # unstable approach but currently works
         # installed_pattern = r"\s" + package_name + r" is installed\s+"
         # match = re.search(installed_pattern, result)
-        match = (result.exit_status == 0)
+        match = result.exit_status == 0
         if match:
             LOG.info("Verification successful.")
             return True
@@ -218,7 +217,9 @@ class RpmBackend(BaseBackend):
             new_filepath = rpm_dir + "/" + subpath
             LOG.debug("Checking path for rpm %s", new_filepath)
             # if path is file validate name and inject
-            if os.path.isfile(new_filepath) and re.search(r"\s*.rpm$", os.path.basename(new_filepath)):
+            if os.path.isfile(new_filepath) and re.search(
+                r"\s*.rpm$", os.path.basename(new_filepath)
+            ):
                 LOG.info("Marking package %s for setup", new_filepath)
                 subpacks.append(new_filepath)
             elif os.path.isdir(new_filepath):
@@ -257,8 +258,7 @@ class RpmBackend(BaseBackend):
         dest = dest_path or os.path.curdir
 
         # If something goes wrong process.run will raise a CmdError exception
-        process.run(f"rpm2cpio {abs_path} | cpio -dium -D {dest}",
-                    shell=True)
+        process.run(f"rpm2cpio {abs_path} | cpio -dium -D {dest}", shell=True)
         return dest
 
     def perform_setup(self, packages, no_dependencies=False):
@@ -276,7 +276,7 @@ class RpmBackend(BaseBackend):
             failed_packages = []
             for package_path in packages:
                 package_file = os.path.basename(package_path)
-                package_name = "-".join(package_file.split('-')[0:-2])
+                package_name = "-".join(package_file.split("-")[0:-2])
                 LOG.debug("%s -> %s", package_file, package_name)
                 installed = self.check_installed(package_name)
                 verified = self.rpm_verify(package_name) if installed else False
@@ -287,8 +287,10 @@ class RpmBackend(BaseBackend):
                     if not success:
                         failed_packages.append(package_path)
             if len(packages) == len(failed_packages) > 0:
-                LOG.warning("Some of the rpm packages could not be "
-                            "installed: %s", ", ".join(failed_packages))
+                LOG.warning(
+                    "Some of the rpm packages could not be " "installed: %s",
+                    ", ".join(failed_packages),
+                )
                 return False
             packages = failed_packages
         return True

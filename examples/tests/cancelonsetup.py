@@ -8,7 +8,7 @@ class CancelOnSetupTest(Test):
     """
 
     def setUp(self):
-        self.cancel('This should end with CANCEL.')
+        self.cancel("This should end with CANCEL.")
 
     def test_wont_be_executed(self):
         """

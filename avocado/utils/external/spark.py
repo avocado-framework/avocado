@@ -19,7 +19,7 @@
 #  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 #  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__version__ = 'SPARK-0.7 (pre-alpha-7)'
+__version__ = "SPARK-0.7 (pre-alpha-7)"
 
 import re
 
@@ -28,7 +28,7 @@ def _namelist(instance):
     namelist, namedict, classlist = [], {}, [instance.__class__]
     for c in classlist:
         for b in c.__bases__:
-            classlist.append(b)
+            classlist.append(b)  # pylint: disable=W4701
         for name in c.__dict__.keys():
             if name not in namedict:
                 namelist.append(name)
@@ -37,28 +37,27 @@ def _namelist(instance):
 
 
 class GenericScanner:
-
     def __init__(self, flags=0):
         pattern = self.reflect()
         self.re = re.compile(pattern, re.VERBOSE | flags)
 
         self.index2func = {}
         for name, number in self.re.groupindex.items():
-            self.index2func[number - 1] = getattr(self, 't_' + name)
+            self.index2func[number - 1] = getattr(self, "t_" + name)
 
     def makeRE(self, name):
         doc = getattr(self, name).__doc__
-        rv = f'(?P<{name[2:]}>{doc})'
+        rv = f"(?P<{name[2:]}>{doc})"
         return rv
 
     def reflect(self):
         rv = []
         for name in _namelist(self):
-            if name[:2] == 't_' and name != 't_default':
+            if name[:2] == "t_" and name != "t_default":
                 rv.append(self.makeRE(name))
 
-        rv.append(self.makeRE('t_default'))
-        return '|'.join(rv)
+        rv.append(self.makeRE("t_default"))
+        return "|".join(rv)
 
     @staticmethod
     def error(s, pos):  # pylint: disable=W0613
@@ -81,9 +80,10 @@ class GenericScanner:
 
     @staticmethod
     def t_default(s):  # pylint: disable=W0613
-        r'( . | \n )+'
+        r"( . | \n )+"
         print("Specification error: unmatched input")
         raise SystemExit
+
 
 #
 #  Extracted from GenericParser and made global so that [un]picking works.
@@ -91,7 +91,6 @@ class GenericScanner:
 
 
 class _State:
-
     def __init__(self, stateno, items):
         self.T, self.complete, self.items = [], [], items
         self.stateno = stateno
@@ -117,9 +116,9 @@ class GenericParser:
         self.augment(start)
         self.ruleschanged = 1
 
-    _NULLABLE = r'\e_'
-    _START = 'START'
-    _BOF = '|-'
+    _NULLABLE = r"\e_"
+    _START = "START"
+    _BOF = "|-"
 
     #
     #  When pickling, take the time to generate the full state machine;
@@ -154,9 +153,9 @@ class GenericParser:
         rv = self.__dict__.copy()
         for s in self.states.values():
             del s.items
-        del rv['rule2func']
-        del rv['nullable']
-        del rv['cores']
+        del rv["rule2func"]
+        del rv["nullable"]
+        del rv["cores"]
         return rv
 
     def __setstate__(self, D):
@@ -164,10 +163,10 @@ class GenericParser:
         self.rule2func = {}
         self.rule2name = {}
         self.collectRules()
-        start = D['rules'][self._START][0][1][1]  # Blech.
+        start = D["rules"][self._START][0][1][1]  # Blech.
         self.augment(start)
-        D['rule2func'] = self.rule2func
-        D['makeSet'] = self.makeSet_fast
+        D["rule2func"] = self.rule2func
+        D["makeSet"] = self.makeSet_fast
         self.__dict__ = D  # pylint: disable=W0201
 
     #
@@ -185,13 +184,13 @@ class GenericParser:
 
         index = []
         for i in range(len(rules)):
-            if rules[i] == '::=':
+            if rules[i] == "::=":
                 index.append(i - 1)
         index.append(len(rules))
 
         for i in range(len(index) - 1):
             lhs = rules[index[i]]
-            rhs = rules[index[i] + 2:index[i + 1]]
+            rhs = rules[index[i] + 2 : index[i + 1]]
             rule = (lhs, tuple(rhs))
 
             if _preprocess:
@@ -207,13 +206,13 @@ class GenericParser:
 
     def collectRules(self):
         for name in _namelist(self):
-            if name[:2] == 'p_':
+            if name[:2] == "p_":
                 func = getattr(self, name)
                 doc = func.__doc__
                 self.addRule(doc, func)
 
     def augment(self, start):
-        rule = f'{self._START} ::= {self._BOF} {start}'
+        rule = f"{self._START} ::= {self._BOF} {start}"
         self.addRule(rule, lambda args: args[1], 0)
 
     def computeNull(self):
@@ -286,8 +285,8 @@ class GenericParser:
                 newrhs = list(rhs)
                 newrhs[i] = self._NULLABLE + sym
                 newrule = (lhs, tuple(newrhs))
-                worklist.append((newrule, i + 1,
-                                 candidate, oldrule))
+                # pylint: disable=W4701
+                worklist.append((newrule, i + 1, candidate, oldrule))
                 candidate = 0
                 i += 1
             else:  # pylint: disable=W0120
@@ -340,15 +339,14 @@ class GenericParser:
             else:
                 self.error(None)
 
-        return self.buildTree(self._START, finalitem,
-                              tokens, len(sets) - 2)
+        return self.buildTree(self._START, finalitem, tokens, len(sets) - 2)
 
     def isnullable(self, sym):
         #
         #  For symbols in G_e only.  If we weren't supporting 1.5,
         #  could just use sym.startswith().
         #
-        return self._NULLABLE == sym[0:len(self._NULLABLE)]
+        return self._NULLABLE == sym[0 : len(self._NULLABLE)]
 
     def skip(self, hs, pos=0):
         n = len(hs[1])
@@ -367,7 +365,7 @@ class GenericParser:
         kitems = []
         for rule, pos in self.states[state].items:
             _, rhs = rule
-            if rhs[pos:pos + 1] == (sym,):
+            if rhs[pos : pos + 1] == (sym,):
                 kitems.append((rule, self.skip(rule, pos + 1)))
         core = kitems
 
@@ -479,7 +477,9 @@ class GenericParser:
     def makeSet(self, token, sets, i):
         cur, next_item = sets[i], sets[i + 1]
 
-        ttype = token is not None and self.typestring(token) or None  # pylint: disable=R1709
+        ttype = (  # pylint: disable=R1709
+            token is not None and self.typestring(token) or None
+        )
         if ttype is not None:
             fn, arg = self.gotoT, ttype
         else:
@@ -507,8 +507,7 @@ class GenericParser:
                     if k is not None:
                         why = (item, i, rule)
                         pptr = (pitem, parent)
-                        self.add(cur, (k, pparent),
-                                 i, pptr, why)
+                        self.add(cur, (k, pparent), i, pptr, why)
                         nk = self.goto(k, None)
                         if nk is not None:
                             self.add(cur, (nk, i))
@@ -521,7 +520,9 @@ class GenericParser:
         #  cost of extreme ugliness.
         #
         cur, next_item = sets[i], sets[i + 1]
-        ttype = token is not None and self.typestring(token) or None  # pylint: disable=R1709
+        ttype = (  # pylint: disable=R1709
+            token is not None and self.typestring(token) or None
+        )
 
         for item in cur:
             ptr = (item, i)
@@ -642,13 +643,12 @@ class GenericParser:
                     key = (item, k)
                     item, k = self.predecessor(key, None)
             # elif self.isnullable(sym):
-            elif self._NULLABLE == sym[0:len(self._NULLABLE)]:
+            elif self._NULLABLE == sym[0 : len(self._NULLABLE)]:
                 attr[i] = self.deriveEpsilon(sym)
             else:
                 key = (item, k)
                 why = self.causal(key)
-                attr[i] = self.buildTree(sym, why[0],
-                                         tokens, why[1])
+                attr[i] = self.buildTree(sym, why[0], tokens, why[1])
                 item, k = self.predecessor(key, why)
         return self.rule2func[self.new2old[rule]](attr)
 
@@ -678,6 +678,7 @@ class GenericParser:
         #
         return input_list[0]
 
+
 #
 #  GenericASTBuilder automagically constructs a concrete/abstract syntax tree
 #  for a given input.  The extra argument is a class (not an instance!)
@@ -688,14 +689,16 @@ class GenericParser:
 
 
 class GenericASTBuilder(GenericParser):
-
     def __init__(self, AST, start):
         GenericParser.__init__(self, start)
         self.AST = AST
 
-    def preprocess(self, rule, func):
-        rebind = (lambda lhs, self=self:
-                  lambda args, lhs=lhs, self=self: self.buildASTNode(args, lhs))
+    def preprocess(self, rule, func):  # pylint: disable=W0221
+        rebind = (
+            lambda lhs, self=self: lambda args, lhs=lhs, self=self: self.buildASTNode(
+                args, lhs
+            )
+        )
         lhs, _ = rule
         return rule, rebind(lhs)
 
@@ -714,8 +717,9 @@ class GenericASTBuilder(GenericParser):
 
     def nonterminal(self, token_type, args):
         rv = self.AST(token_type)
-        rv[:len(args)] = args
+        rv[: len(args)] = args
         return rv
+
 
 #
 #  GenericASTTraversal is a Visitor pattern according to Design Patterns.  For
@@ -733,7 +737,6 @@ class GenericASTTraversalPruningException(Exception):
 
 
 class GenericASTTraversal:
-
     def __init__(self, ast):
         self.ast = ast
 
@@ -750,7 +753,7 @@ class GenericASTTraversal:
             node = self.ast
 
         try:
-            name = 'n_' + self.typestring(node)
+            name = "n_" + self.typestring(node)
             if hasattr(self, name):
                 func = getattr(self, name)
                 func(node)
@@ -762,7 +765,7 @@ class GenericASTTraversal:
         for kid in node:
             self.preorder(kid)
 
-        name = name + '_exit'
+        name = name + "_exit"
         if hasattr(self, name):
             func = getattr(self, name)
             func(node)
@@ -774,7 +777,7 @@ class GenericASTTraversal:
         for kid in node:
             self.postorder(kid)
 
-        name = 'n_' + self.typestring(node)
+        name = "n_" + self.typestring(node)
         if hasattr(self, name):
             func = getattr(self, name)
             func(node)
@@ -783,6 +786,7 @@ class GenericASTTraversal:
 
     def default(self, node):
         pass
+
 
 #
 #  GenericASTMatcher.  AST nodes must have "__getitem__" and "__cmp__"
@@ -793,15 +797,16 @@ class GenericASTTraversal:
 
 
 class GenericASTMatcher(GenericParser):
-
     def __init__(self, start, ast):
         GenericParser.__init__(self, start)
         self.ast = ast
 
-    def preprocess(self, rule, func):
-        rebind = (lambda func, self=self:
-                  lambda args, func=func, self=self:
-                  self.foundMatch(args, func))
+    def preprocess(self, rule, func):  # pylint: disable=W0221
+        rebind = (
+            lambda func, self=self: lambda args, func=func, self=self: self.foundMatch(
+                args, func
+            )
+        )
         lhs, rhs = rule
         rhslist = list(rhs)
         rhslist.reverse()
@@ -819,12 +824,12 @@ class GenericASTMatcher(GenericParser):
 
         for child in node:
             if children == 0:
-                self.input.insert(0, '(')
+                self.input.insert(0, "(")
             children += 1
             self.match_r(child)
 
         if children > 0:
-            self.input.insert(0, ')')
+            self.input.insert(0, ")")
 
     def match(self, ast=None):
         if ast is None:
@@ -834,7 +839,7 @@ class GenericASTMatcher(GenericParser):
         self.match_r(ast)
         self.parse(self.input)
 
-    def resolve(self, input_list):
+    def resolve(self, input_list):  # pylint: disable=W0221
         #
         #  Resolve ambiguity in favor of the longest RHS.
         #

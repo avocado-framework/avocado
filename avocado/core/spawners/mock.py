@@ -17,7 +17,7 @@ class MockSpawner(Spawner):
     def __init__(self):
         self._known_tasks = {}
 
-    def is_task_alive(self, runtime_task):
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         alive = self._known_tasks.get(runtime_task, None)
         # task was never spawned
         if alive is None:
@@ -40,9 +40,24 @@ class MockSpawner(Spawner):
                 return
             await asyncio.sleep(0.1)
 
+    async def terminate_task(self, runtime_task):
+        self._known_tasks[runtime_task] = False
+
     @staticmethod
     async def check_task_requirements(runtime_task):
         return True
+
+    @staticmethod
+    async def is_requirement_in_cache(runtime_task):
+        return False
+
+    @staticmethod
+    async def save_requirement_in_cache(runtime_task):
+        pass
+
+    @staticmethod
+    async def update_requirement_cache(runtime_task, result):
+        pass
 
 
 class MockRandomAliveSpawner(MockSpawner):

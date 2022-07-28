@@ -13,10 +13,19 @@ class PythonModule:
     instrumented tests, but it's supposed to be agnostic enough to
     be used for, say, Python unittests.
     """
-    __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod',
-                 'module', 'klass', 'imported_symbols', 'interesting_klass_found')
 
-    def __init__(self, path, module='avocado', klass='Test'):
+    __slots__ = (
+        "path",
+        "klass_imports",
+        "mod_imports",
+        "mod",
+        "module",
+        "klass",
+        "imported_symbols",
+        "interesting_klass_found",
+    )
+
+    def __init__(self, path, module="avocado", klass="Test"):
         """
         Instantiates a new PythonModule representation
 
@@ -37,7 +46,7 @@ class PythonModule:
         self.module = module
         self.klass = klass
         self.imported_symbols = {}
-        with open(self.path, encoding='utf-8') as source_file:
+        with open(self.path, encoding="utf-8") as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
         self.interesting_klass_found = False
 
@@ -58,8 +67,7 @@ class PythonModule:
         """
         # Is it inherited from Test? 'class FooTest(Test):'
         if self.klass_imports:
-            base_ids = [base.id for base in klass.bases
-                        if isinstance(base, ast.Name)]
+            base_ids = [base.id for base in klass.bases if isinstance(base, ast.Name)]
             # Looking for a 'class FooTest(Test):'
             if not self.klass_imports.isdisjoint(base_ids):
                 return True
@@ -78,7 +86,7 @@ class PythonModule:
 
     @staticmethod
     def _get_adjusted_path_for_level(statement, path):
-        level = getattr(statement, 'level', 0)
+        level = getattr(statement, "level", 0)
         if level is None:
             level = 0
         for _ in range(level - 1):
@@ -88,12 +96,13 @@ class PythonModule:
     def _get_imported_path_from_statement(self, statement):
         """Returns the imported path, from absolute or relative import."""
         abs_path_of_module_dir = os.path.abspath(os.path.dirname(self.path))
-        imported_path = self._get_adjusted_path_for_level(statement,
-                                                          abs_path_of_module_dir)
-        if getattr(statement, 'module', None) is not None:
+        imported_path = self._get_adjusted_path_for_level(
+            statement, abs_path_of_module_dir
+        )
+        if getattr(statement, "module", None) is not None:
             # Module has a name, so its path is absolute, and not relative
             # to the directory structure
-            module_path = statement.module.replace('.', os.path.sep)
+            module_path = statement.module.replace(".", os.path.sep)
             imported_path = os.path.join(imported_path, module_path)
         return imported_path
 
@@ -103,9 +112,9 @@ class PythonModule:
         """
         for index, name in enumerate(statement.names):
             final_name = self._get_name_from_alias_statement(name)
-            imported_symbol = ImportedSymbol.from_statement(statement,
-                                                            os.path.abspath(self.path),
-                                                            index)
+            imported_symbol = ImportedSymbol.from_statement(
+                statement, os.path.abspath(self.path), index
+            )
             self.imported_symbols[final_name] = imported_symbol
 
     @staticmethod

@@ -27,7 +27,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 96.0
+Version: 98.0
 Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
@@ -52,6 +52,7 @@ BuildRequires: python3-setuptools
 BuildRequires: python3-resultsdb_api
 %endif
 BuildRequires: python3-pycdlib
+BuildRequires: ansible-core
 %endif
 
 %if %{with tests}
@@ -65,6 +66,8 @@ BuildRequires: python3-yaml
 BuildRequires: python3-netifaces
 %if ! 0%{?rhel}
 BuildRequires: perl-Test-Harness
+BuildRequires: python3-elementpath
+BuildRequires: python3-xmlschema
 %endif
 %endif
 
@@ -95,7 +98,7 @@ these days a framework) to perform automated testing.
 
 %build
 %if 0%{?rhel}
-sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
+sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.12"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %py3_build
 pushd optional_plugins/html
@@ -114,6 +117,11 @@ popd
 pushd optional_plugins/golang
 %py3_build
 popd
+%if ! 0%{?rhel}
+pushd optional_plugins/ansible
+%py3_build
+popd
+%endif
 pushd optional_plugins/varianter_pict
 %py3_build
 popd
@@ -144,6 +152,11 @@ popd
 pushd optional_plugins/golang
 %py3_install
 popd
+%if ! 0%{?rhel}
+pushd optional_plugins/ansible
+%py3_install
+popd
+%endif
 pushd optional_plugins/varianter_pict
 %py3_install
 popd
@@ -197,6 +210,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-tap
 %{_bindir}/avocado-runner-asset
 %{_bindir}/avocado-runner-package
+%{_bindir}/avocado-runner-podman-image
 %{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
 %{_bindir}/avocado-external-runner
@@ -204,6 +218,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_resultsdb*
 %exclude %{python3_sitelib}/avocado_golang*
+%exclude %{python3_sitelib}/avocado_ansible*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_varianter_pict*
 %exclude %{python3_sitelib}/avocado_varianter_cit*
@@ -214,6 +229,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
+%exclude %{python3_sitelib}/avocado_framework_plugin_ansible*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/tests*
 
@@ -302,6 +318,23 @@ also run them.
 %{python3_sitelib}/avocado_framework_plugin_golang*
 %{_bindir}/avocado-runner-golang
 
+%if ! 0%{?rhel}
+%package -n python3-avocado-plugins-ansible
+Summary: Avocado Ansible Dependency plugin
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
+Requires: ansible-core
+
+%description -n python3-avocado-plugins-ansible
+Adds to Avocado the ability to use ansible modules as dependecies for
+tests.
+
+%files -n python3-avocado-plugins-ansible
+%{python3_sitelib}/avocado_ansible*
+%{python3_sitelib}/avocado_framework_plugin_ansible*
+%{_bindir}/avocado-runner-ansible-module
+%endif
+
 %package -n python3-avocado-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
 License: GPLv2+
@@ -376,6 +409,22 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Jul 25 2022 Cleber Rosa <crosa@redhat.com> - 98.0-3
+- Added new sub package python3-avocado-plugins-ansible
+
+* Thu Jul 21 2022 Cleber Rosa <crosa@redhat.com> - 98.0-2
+- Added new avocado-runner-podman-image script
+
+* Thu Jul 14 2022 Cleber Rosa <crosa@redhat.com> - 98.0-1
+- New release
+
+* Thu Jul  7 2022 Cleber Rosa <crosa@redhat.com> - 97.0-2
+- Add build requirements for python3-elementpath and
+  python3-xmlschema, used on some tests
+
+* Tue May 24 2022 Cleber Rosa <crosa@redhat.com> - 97.0-1
+- New release
+
 * Fri Apr 29 2022 Cleber Rosa <crosa@redhat.com> - 96.0-3
 - Require python3-jsonschema when running tests
 

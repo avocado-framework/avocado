@@ -1,0 +1,86 @@
+=============
+97.0 Dopesick
+=============
+
+The Avocado team is proud to present another release: Avocado 97.0,
+AKA "Dopesick", is now available!
+
+Release documentation: `Avocado 97.0
+<http://avocado-framework.readthedocs.io/en/97.0/>`_
+
+Users/Test Writers
+==================
+
+* Test results files (in a job's result directory) can now be accessed
+  by their result status.  For instance, assuming the latest job
+  results are stored in ``~/avocado/job-results/latest`` (the default
+  location), users can find the results for tests that ended in ``FAIL``
+  at ``~/avocado/job-results/latest/test-results/by-status/FAIL``.
+
+* The legacy runner plugin has been completely removed.  This was in
+  the making since version 92.0 (LTS), with features being removed
+  since then, but now the ``runner`` plugin (and thus the
+  ``--test-runner=runner`` option) can no longer be used.
+
+* Sysinfo collection "per-test" command line options have been
+  removed, given that it was knowingly not behaving properly.  It's
+  expected that it will be restored once GitHub issue 3877 is
+  finalized.
+
+* The ``--failfast`` feature now acts on any "not OK" result
+  (currently ``ERROR``, ``FAIL`` and ``INTERRUPTED``).  Previously, it
+  would only act (that is, abort the job) upon a ``FAIL`` test result.
+
+Bug Fixes
+=========
+
+* A condition that would favor the configuration given to the job,
+  instead of the more specific configuration given to the suite, was
+  fixed.
+
+* A condition in which the ``PYTHONPATH`` with egg-related path
+  information would not be used when spawning tasks was fixed.
+
+* Tests of type ``exec-test`` with a URI pointing to a file on the
+  current working directory (that is, without an absolute directory
+  prefix or a directory component to it) were not properly executed
+  ("No such file or directory" was given).  This is now fixed.
+
+* A condition that could crash Avocado when a suite name wasn't a
+  filesystem safe name has been fixed.
+
+Internal Changes
+================
+
+* A large part of nrunner was, since its inception, implemented as a
+  standalone module (``avocado/core/nrunner.py``) that depended on
+  nothing but Python itself.  The reason behind this characteristic is
+  that deployment was extremely simple on environments such as
+  containers or other minimalist environments, but it also imposed
+  some obvious limitations.  With the deployment strategy recently
+  having switched to Python eggs, this is no longer necessary.  Thus,
+  ``avocado/core/nrunner.py`` has been split into finer grained, and
+  much more Pythonic modules.
+
+* The remaining instances of legacy string formatting have been
+  converted to f-strings.
+
+* A much more comprehensive "interface" tests for runners was added,
+  including the introduction of a JSON Schema based mechanism.
+  Coverage was also introduced for commands such as
+  ``runnable-run-recipe``, ``task-run`` and ``task-run-recipe``.
+
+* Runners will now be called with nothing but the configuration they
+  mean to use.  Before this, all of the Avocado settings (around 170
+  of them) where given to the runners through the ``-c`` command line
+  option.  This resulted in runner's command lines and recipe files
+  that were very hard to type and/or understand.  Runners now have to
+  declare the specific Avocado settings that they intend to use.
+
+* Packit builds on CI now also include EPEL-8 and EPEL-9.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/96.0...97.0>`_.

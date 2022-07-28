@@ -1,0 +1,102 @@
+==============
+98.0 The Thing
+==============
+
+The Avocado team is proud to present another release: Avocado 98.0,
+AKA "The Thing", is now available!
+
+Release documentation: `Avocado 98.0
+<http://avocado-framework.readthedocs.io/en/98.0/>`_
+
+Users/Test Writers
+==================
+
+* Avocado's :ref:`requirement management <managing-requirements>`
+  has been extended in a number of ways detailed bellow.  In short,
+  Avocado is now able to install requirements declared for a test in
+  an isolated container if the ``--nrunner-spawner=podman`` is chosen
+  (with a base image defined by ``--spawner-podman-image``).  That
+  container image with the requirements fulfilled will only be built
+  once, but a fresh environment will be used for every single test
+  execution.
+
+  * All requirements fulfilled will be recorded in a "cache database"
+    so they will only need to be fulfilled once
+
+  * Transparent support for the all spawners.  This means that users
+    of the podman spawner will have their requirements checked and
+    fulfilled on the container image of their choice.  As stated
+    previously, that information will be kept in a requirement cache
+    database.  The container images will be available for super fast
+    reuse after the first execution.
+
+* When using the podman spawner, if the test URI looks like a
+  filesystem path, it will be exposed read only to the container.
+  This makes running Avocado tests inside containers transparent in
+  many cases.
+
+* A new type of plugin
+  (:class:`avocado.core.plugin_interfaces.PreTest`) has been
+  introduced.  It allows additional actions to be executed inside
+  spawner environment before Test.
+
+* :class:`avocado.core.nrunner.Runnable` instances will now, under some
+  circumstances, automatically include the current environment's
+  relevant and required configuration.  This makes standalone
+  executions of ``avocado-runner-*`` commands easier, while previously
+  it would require manually entering all required configuration.
+
+Utility Libraries
+=================
+
+* A new method was added to :mod:`avocado.utils.softwareraid` that
+  checks the existence of a software raid device.
+
+* Four new functions were added to :mod:`avocado.utils.disk`.
+
+* A :func:`function
+  <avocado.utils.network.interfaces.NetworkInterface.are_packets_lost>`
+  to check packet loss was added to
+  :mod:`avocado.utils.network.interfaces`.
+
+* :mod:`avocado.utils.podman` had a new :meth:`get_container_info()
+  method <avocado.utils.podman.Podman.get_container_info>` introduced.
+
+Bug Fixes
+=========
+
+* An issue that could have valid runner messages discarded (because of
+  their timestamps), and thus the result of some tests disregarded,
+  was fixed.
+
+* Avocado test tags are now properly included in the test results.
+
+* Avocado now supports actual file system limitation regarding the
+  maximum file name length, instead of making assumptions about the
+  limits.  This allows Avocado to properly behave in environments such
+  as containers backed by overlayfs.
+
+* Tasks that are "skipped" due to their timeouts being hit now include
+  the appropriate reason.
+
+* Tests that produced warnings would result in ``WARN`` (which should
+  be basically a ``PASS`` with warnings) even if they failed.
+
+Internal Changes
+================
+
+* Disabling of network capabilities while building RPM packages on
+  packit.
+
+* Some tests that were being missed while running the coverage report
+  are now included.
+
+* Major changes to the static checks, dropping ``inspektor``, updating
+  many tools versions, and introducing the use of ``black`` as a code
+  style check.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/97.0...98.0>`_.

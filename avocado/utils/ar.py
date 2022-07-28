@@ -18,10 +18,10 @@ Module to read UNIX ar files
 import struct
 
 #: The first eight bytes of all AR archives
-MAGIC = b'!<arch>\n'
+MAGIC = b"!<arch>\n"
 
 #: The header for each file in the archive
-FILE_HEADER_FMT = '16s12s6s6s8s10s2c'
+FILE_HEADER_FMT = "16s12s6s6s8s10s2c"
 FILE_HEADER_SIZE = struct.calcsize(FILE_HEADER_FMT)
 
 
@@ -34,8 +34,10 @@ class ArMember:
         self.offset = offset
 
     def __repr__(self):
-        return (f'<ArMember "{self.identifier}" size={int(self.size)} '
-                f'offset={int(self.offset)}>')
+        return (
+            f'<ArMember "{self.identifier}" size={int(self.size)} '
+            f"offset={int(self.offset)}>"
+        )
 
 
 class Ar:
@@ -48,7 +50,7 @@ class Ar:
         self._valid = False
 
     def __enter__(self):
-        self._file = open(self._path, 'r+b')
+        self._file = open(self._path, "r+b")
         return self._file
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
@@ -75,15 +77,16 @@ class Ar:
         with self as open_file:
             open_file.seek(self._position)
             try:
-                member = struct.unpack(FILE_HEADER_FMT,
-                                       open_file.read(FILE_HEADER_SIZE))
+                member = struct.unpack(
+                    FILE_HEADER_FMT, open_file.read(FILE_HEADER_SIZE)
+                )
             except struct.error:
                 raise StopIteration
 
             # No support for extended file names
-            identifier = member[0].decode('ascii').strip()
+            identifier = member[0].decode("ascii").strip()
             # from bytes containing a decimal to int
-            size = int(member[5].decode('ascii').strip())
+            size = int(member[5].decode("ascii").strip())
 
             data_position = self._position + FILE_HEADER_SIZE
             # All data sections is aligned at 2 bytes

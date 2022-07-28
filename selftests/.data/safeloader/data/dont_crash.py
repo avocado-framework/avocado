@@ -48,7 +48,7 @@ class DontCrash2(DontCrash2p.Bar):
 
 
 # Class DiscoverMe4p is defined after this one
-class DiscoverMe4(DiscoverMe4p):    # pylint: disable=E0601
+class DiscoverMe4(DiscoverMe4p):  # pylint: disable=E0601
     """:avocado: recursive"""
 
 
@@ -57,4 +57,4 @@ class DiscoverMe4p:
         pass
 
 
-dont_crash3_on_broken_syntax    # pylint: disable=E0602,W0104
+dont_crash3_on_broken_syntax  # pylint: disable=E0602,W0104

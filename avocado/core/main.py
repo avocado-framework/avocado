@@ -22,8 +22,10 @@ try:
     from avocado.core import exit_codes
     from avocado.core.settings import settings
 except ImportError:
-    sys.stderr.write("Unable to import Avocado libraries, please verify "
-                     "your installation, and if necessary reinstall it.\n")
+    sys.stderr.write(
+        "Unable to import Avocado libraries, please verify "
+        "your installation, and if necessary reinstall it.\n"
+    )
     # This exit code is replicated from avocado/core/exit_codes.py and not
     # imported because we are dealing with import failures
     sys.exit(-1)
@@ -31,8 +33,7 @@ except ImportError:
 
 def get_crash_dir():
     config = settings.as_dict()
-    crash_dir_path = os.path.join(config.get('datadir.paths.data_dir'),
-                                  "crashes")
+    crash_dir_path = os.path.join(config.get("datadir.paths.data_dir"), "crashes")
     try:
         os.makedirs(crash_dir_path)
     except OSError:
@@ -45,22 +46,24 @@ def handle_exception(*exc_info):
     msg = "Avocado crashed:\n" + "".join(traceback.format_exception(*exc_info))
     msg += "\n"
     if os.environ.get("AVOCADO_LOG_DEBUG"):
-        os.write(2, msg.encode('utf-8'))
+        os.write(2, msg.encode("utf-8"))
     # Store traceback in data_dir or TMPDIR
     prefix = "avocado-traceback-"
     prefix += time.strftime("%F_%T") + "-"
     tmp, name = tempfile.mkstemp(".log", prefix, get_crash_dir())
-    os.write(tmp, msg.encode('utf-8'))
+    os.write(tmp, msg.encode("utf-8"))
     os.close(tmp)
     if exc_info[0] is KeyboardInterrupt:
         msg = f"{exc_info[0].__doc__}\nYou can find details in {name}\n"
         exit_code = exit_codes.AVOCADO_JOB_INTERRUPTED
     else:
         # Print friendly message in console-like output
-        msg = (f"Avocado crashed unexpectedly: {exc_info[1]}\n"
-               f"You can find details in {name}\n")
+        msg = (
+            f"Avocado crashed unexpectedly: {exc_info[1]}\n"
+            f"You can find details in {name}\n"
+        )
         exit_code = exit_codes.AVOCADO_GENERIC_CRASH
-    os.write(2, msg.encode('utf-8'))
+    os.write(2, msg.encode("utf-8"))
     sys.exit(exit_code)
 
 
@@ -72,7 +75,7 @@ def main():
     for attr in ("TMP", "TEMP", "TMPDIR"):
         if attr in os.environ:
             break
-    else:   # TMP not set by user, use /var/tmp if exists
+    else:  # TMP not set by user, use /var/tmp if exists
         # TMP not set by user in environment. Try to use /var/tmp to avoid
         # possible problems with "/tmp" being mounted as TMPFS without the
         # support for O_DIRECT
@@ -82,5 +85,5 @@ def main():
     return app.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

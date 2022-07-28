@@ -8,14 +8,14 @@ def get_avocado_git_version():
     # 4 levels up
     dn = os.path.dirname
     base_dir = dn(dn(dn(dn(__file__))))
-    git_dir = os.path.join(base_dir, '.git')
+    git_dir = os.path.join(base_dir, ".git")
     if not os.path.isdir(git_dir):
         return
-    if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
+    if not os.path.exists(os.path.join(base_dir, "python-avocado.spec")):
         return
 
     try:
-        git = path.find_command('git')
+        git = path.find_command("git")
     except path.CmdNotFoundError:
         return
 

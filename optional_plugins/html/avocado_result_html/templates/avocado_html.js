@@ -13,7 +13,7 @@
 
   function onDatatablesInitialized() {
     var statusColumn = this.api().column(4);
-    var select = $('<select class="form-control input-sm"><option value=""></option></select>')
+    var select = $('<select class="form-control input-sm"><option value="">ALL</option></select>')
       .on('change', function () {
         var val = $(this).val()
         statusColumn.search(val ? '^' + val + '$' : '', true, false).draw();

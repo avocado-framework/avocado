@@ -36,11 +36,10 @@ class KernelBuild:
     Build the Linux Kernel from official tarballs.
     """
 
-    URL = 'https://www.kernel.org/pub/linux/kernel/v{major}.x/'
-    SOURCE = 'linux-{version}.tar.gz'
+    URL = "https://www.kernel.org/pub/linux/kernel/v{major}.x/"
+    SOURCE = "linux-{version}.tar.gz"
 
-    def __init__(self, version, config_path=None, work_dir=None,
-                 data_dirs=None):
+    def __init__(self, version, config_path=None, work_dir=None, data_dirs=None):
         """
         Creates an instance of :class:`KernelBuild`.
 
@@ -55,17 +54,16 @@ class KernelBuild:
         self.config_path = config_path
         self.distro = distro.detect()
         if work_dir is None:
-            work_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+            work_dir = tempfile.mkdtemp(prefix="avocado_" + __name__)
         self.work_dir = work_dir
         if data_dirs is not None:
             self.data_dirs = data_dirs
         else:
             self.data_dirs = [self.work_dir]
-        self._build_dir = os.path.join(self.work_dir, f'linux-{self.version}')
+        self._build_dir = os.path.join(self.work_dir, f"linux-{self.version}")
 
     def __repr__(self):
-        return (f"KernelBuild('{self.version}, {self.config_path}, "
-                f"{self.work_dir}')")
+        return f"KernelBuild('{self.version}, {self.config_path}, " f"{self.work_dir}')"
 
     @property
     def vmlinux(self):
@@ -74,7 +72,7 @@ class KernelBuild:
         """
         if not self.build_dir:
             return None
-        vmlinux_path = os.path.join(self.build_dir, 'vmlinux')
+        vmlinux_path = os.path.join(self.build_dir, "vmlinux")
         if os.path.isfile(vmlinux_path):
             return vmlinux_path
         return None
@@ -91,7 +89,7 @@ class KernelBuild:
     def _build_kernel_url(self, base_url=None):
         kernel_file = self.SOURCE.format(version=self.version)
         if base_url is None:
-            base_url = self.URL.format(major=self.version.split('.', 1)[0])
+            base_url = self.URL.format(major=self.version.split(".", 1)[0])
         return base_url + kernel_file
 
     def download(self, url=None):
@@ -103,9 +101,13 @@ class KernelBuild:
         :type url: str or None
         """
         full_url = self._build_kernel_url(base_url=url)
-        self.asset_path = asset.Asset(full_url, asset_hash=None,
-                                      algorithm=None, locations=None,
-                                      cache_dirs=self.data_dirs).fetch()
+        self.asset_path = asset.Asset(
+            full_url,
+            asset_hash=None,
+            algorithm=None,
+            locations=None,
+            cache_dirs=self.data_dirs,
+        ).fetch()
 
     def uncompress(self):
         """
@@ -119,7 +121,7 @@ class KernelBuild:
         else:
             raise Exception("Unable to find the tarball")
 
-    def configure(self, targets=('defconfig'), extra_configs=None):
+    def configure(self, targets=("defconfig"), extra_configs=None):
         """
         Configure/prepare kernel source to build.
 
@@ -129,28 +131,31 @@ class KernelBuild:
                               CONFIG_NAME=VALUE.
         :type extra_configs: list of str
         """
-        build.make(self._build_dir,
-                   extra_args=f'-C {self._build_dir} mrproper')
+        build.make(self._build_dir, extra_args=f"-C {self._build_dir} mrproper")
         if self.config_path is not None:
-            dotconfig = os.path.join(self._build_dir, '.config')
+            dotconfig = os.path.join(self._build_dir, ".config")
             shutil.copy(self.config_path, dotconfig)
-            build.make(self._build_dir,
-                       extra_args=f'-C {self._build_dir} olddefconfig')
+            build.make(self._build_dir, extra_args=f"-C {self._build_dir} olddefconfig")
         else:
             if isinstance(targets, list):
                 _targets = " ".join(targets)
             else:
                 _targets = targets
-            build.make(self.build_dir,
-                       extra_args=f'-C {self.build_dir} {_targets}')
+            build.make(self.build_dir, extra_args=f"-C {self.build_dir} {_targets}")
         if extra_configs:
-            with tempfile.NamedTemporaryFile(mode='w+t',
-                                             prefix='avocado_') as config_file:
-                config_file.write('\n'.join(extra_configs))
+            with tempfile.NamedTemporaryFile(
+                mode="w+t", prefix="avocado_"
+            ) as config_file:
+                config_file.write("\n".join(extra_configs))
                 config_file.flush()
-                cmd = ['cd', self._build_dir, '&&',
-                       './scripts/kconfig/merge_config.sh', '.config',
-                       config_file.name]
+                cmd = [
+                    "cd",
+                    self._build_dir,
+                    "&&",
+                    "./scripts/kconfig/merge_config.sh",
+                    ".config",
+                    config_file.name,
+                ]
                 process.run(" ".join(cmd), shell=True)
 
     def build(self, binary_package=False, njobs=multiprocessing.cpu_count()):
@@ -172,10 +177,10 @@ class KernelBuild:
         LOG.info("Starting build the kernel")
 
         if njobs is None:
-            make_args.append('-j')
+            make_args.append("-j")
         elif njobs > 0:
-            make_args.extend(['-j', str(njobs)])
-        make_args.extend(['-C', self._build_dir])
+            make_args.extend(["-j", str(njobs)])
+        make_args.extend(["-C", self._build_dir])
 
         if binary_package is True:
             if self.distro.name == "Ubuntu":
@@ -189,8 +194,7 @@ class KernelBuild:
         """
         LOG.info("Starting kernel install")
         if self.distro.name == "Ubuntu":
-            process.run(f'dpkg -i {self.work_dir}/*.deb',
-                        shell=True, sudo=True)
+            process.run(f"dpkg -i {self.work_dir}/*.deb", shell=True, sudo=True)
         else:
             LOG.info("Skipping kernel install")
 

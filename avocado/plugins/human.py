@@ -24,7 +24,7 @@ from avocado.core.teststatus import STATUSES
 #: STATUSES contains the finished status, but lacks the novel concept
 #: of nrunner having tests STARTED (that is, in progress).  This contains
 #: a more complete list of statuses that includes "STARTED"
-COMPLETE_STATUSES = STATUSES + ['STARTED']
+COMPLETE_STATUSES = STATUSES + ["STARTED"]
 
 
 class HumanInit(Init):
@@ -32,13 +32,17 @@ class HumanInit(Init):
     description = "Initialize human ui plugin settings"
 
     def initialize(self):
-        help_msg = (f"Status that will be omitted from the Human UI. "
-                    f"Valid statuses: {', '.join(COMPLETE_STATUSES)}")
-        settings.register_option(section='human_ui.omit',
-                                 key='statuses',
-                                 key_type=list,
-                                 default=[],
-                                 help_msg=help_msg)
+        help_msg = (
+            f"Status that will be omitted from the Human UI. "
+            f"Valid statuses: {', '.join(COMPLETE_STATUSES)}"
+        )
+        settings.register_option(
+            section="human_ui.omit",
+            key="statuses",
+            key_type=list,
+            default=[],
+            help_msg=help_msg,
+        )
 
 
 class Human(ResultEvents):
@@ -47,13 +51,13 @@ class Human(ResultEvents):
     Human result UI
     """
 
-    name = 'human'
+    name = "human"
     description = "Human Interface UI"
 
     def __init__(self, config):
-        stdout_claimed_by = config.get('stdout_claimed_by', None)
+        stdout_claimed_by = config.get("stdout_claimed_by", None)
         self.owns_stdout = not stdout_claimed_by
-        self.omit_statuses = config.get('human_ui.omit.statuses')
+        self.omit_statuses = config.get("human_ui.omit.statuses")
 
     def pre_tests(self, job):
         if not self.owns_stdout:
@@ -82,20 +86,21 @@ class Human(ResultEvents):
             name = name.name + name.str_variant
         else:
             name = "<unknown>"
-            uid = '?'
-        LOG_UI.debug(' (%s/%s) %s: STARTED', uid, result.tests_total, name)
+            uid = "?"
+        LOG_UI.debug(" (%s/%s) %s: STARTED", uid, result.tests_total, name)
 
     def test_progress(self, progress=False):
         pass
 
     @staticmethod
     def get_colored_status(status, extra=None):
-        out = (output.TERM_SUPPORT.MOVE_BACK + output.TEST_STATUS_MAPPING[status] +
-               status)
+        out = (
+            output.TERM_SUPPORT.MOVE_BACK + output.TEST_STATUS_MAPPING[status] + status
+        )
         if extra:
             if len(extra) > 255:
-                extra = extra[:255] + '...'
-            extra = extra.replace('\n', '\\n')
+                extra = extra[:255] + "..."
+            extra = extra.replace("\n", "\\n")
             out += ": " + extra
         out += output.TERM_SUPPORT.ENDC
         return out
@@ -109,20 +114,25 @@ class Human(ResultEvents):
 
         if status == "TEST_NA":
             status = "SKIP"
-        duration = (f" ({state.get('time_elapsed', -1):.2f} s)"
-                    if status != "SKIP"
-                    else "")
+        duration = (
+            f" ({state.get('time_elapsed', -1):.2f} s)" if status != "SKIP" else ""
+        )
         if "name" in state:
             name = state["name"]
             uid = name.str_uid
             name = name.name + name.str_variant
         else:
             name = "<unknown>"
-            uid = '?'
+            uid = "?"
 
         msg = self.get_colored_status(status, state.get("fail_reason", None))
-        LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
-                     extra={"skip_newline": True})
+        LOG_UI.debug(
+            " (%s/%s) %s:  ",
+            uid,
+            result.tests_total,
+            name,
+            extra={"skip_newline": True},
+        )
         LOG_UI.debug(msg + duration)
 
     def post_tests(self, job):
@@ -132,12 +142,18 @@ class Human(ResultEvents):
         if job.interrupted_reason is not None:
             LOG_UI.info(job.interrupted_reason)
 
-        if job.status == 'PASS':
-            LOG_UI.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                        "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
-                        job.result.errors, job.result.failed, job.result.skipped,
-                        job.result.warned, job.result.interrupted,
-                        job.result.cancelled)
+        if job.status == "PASS":
+            LOG_UI.info(
+                "RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
+                "WARN %d | INTERRUPT %s | CANCEL %s",
+                job.result.passed,
+                job.result.errors,
+                job.result.failed,
+                job.result.skipped,
+                job.result.warned,
+                job.result.interrupted,
+                job.result.cancelled,
+            )
 
 
 class HumanJob(JobPre, JobPost):
@@ -146,13 +162,13 @@ class HumanJob(JobPre, JobPost):
     Human result UI
     """
 
-    name = 'human'
+    name = "human"
     description = "Human Interface UI"
 
     def pre(self, job):
         pass
 
     def post(self, job):
-        if job.status == 'PASS':
-            if not job.config.get('stdout_claimed_by', None):
+        if job.status == "PASS":
+            if not job.config.get("stdout_claimed_by", None):
                 LOG_UI.info("JOB TIME   : %.2f s", job.time_elapsed)

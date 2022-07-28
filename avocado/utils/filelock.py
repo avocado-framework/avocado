@@ -41,8 +41,8 @@ class FileLock:
     """
 
     def __init__(self, filename, timeout=0):
-        self.filename = f'{filename}.lock'
-        self.pid = f'{os.getpid()}'.encode()
+        self.filename = f"{filename}.lock"
+        self.pid = f"{os.getpid()}".encode()
         self.locked = False
         self.timeout = timeout
 
@@ -59,7 +59,7 @@ class FileLock:
             except Exception:  # pylint: disable=W0703
                 try:
                     # Read the file to realize what's happening.
-                    with open(self.filename, 'r', encoding='utf-8') as f:
+                    with open(self.filename, "r", encoding="utf-8") as f:
                         content = f.read()
 
                     existing_lock_pid = int(content)
@@ -81,9 +81,9 @@ class FileLock:
                 # to a running process and we are just waiting for the lock
                 # to be released.
                 if self.timeout <= 0:
-                    raise AlreadyLocked('File is already locked.')
+                    raise AlreadyLocked("File is already locked.")
                 elif time.monotonic() > timelimit:
-                    raise AlreadyLocked('Timeout waiting for the lock.')
+                    raise AlreadyLocked("Timeout waiting for the lock.")
                 else:
                     time.sleep(0.1)
 

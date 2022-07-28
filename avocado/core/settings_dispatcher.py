@@ -34,4 +34,4 @@ class SettingsDispatcher(ExtensionManager):
     """
 
     def __init__(self):
-        super().__init__('avocado.plugins.settings')
+        super().__init__("avocado.plugins.settings")

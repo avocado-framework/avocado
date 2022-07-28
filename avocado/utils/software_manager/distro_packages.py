@@ -4,7 +4,7 @@ import os
 from avocado.utils import distro
 from avocado.utils.software_manager.manager import SoftwareManager
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 def install_distro_packages(distro_pkg_map, interactive=False):
@@ -25,28 +25,28 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     :return: True if any packages were actually installed, False otherwise
     """
     if not interactive:
-        os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
 
     result = False
     pkgs = []
     detected_distro = distro.detect()
 
-    distro_specs = [spec for spec in distro_pkg_map if
-                    isinstance(spec, distro.Spec)]
+    distro_specs = [spec for spec in distro_pkg_map if isinstance(spec, distro.Spec)]
 
     for distro_spec in distro_specs:
         if distro_spec.name != detected_distro.name:
             continue
 
-        if (distro_spec.arch is not None and
-                distro_spec.arch != detected_distro.arch):
+        if distro_spec.arch is not None and distro_spec.arch != detected_distro.arch:
             continue
 
         if int(detected_distro.version) < distro_spec.min_version:
             continue
 
-        if (distro_spec.min_release is not None and
-                int(detected_distro.release) < distro_spec.min_release):
+        if (
+            distro_spec.min_release is not None
+            and int(detected_distro.release) < distro_spec.min_release
+        ):
             continue
 
         pkgs = distro_pkg_map[distro_spec]
@@ -71,11 +71,15 @@ def install_distro_packages(distro_pkg_map, interactive=False):
             if not software_manager.check_installed(pkg):
                 needed_pkgs.append(pkg)
         if needed_pkgs:
-            text = ' '.join(needed_pkgs)
+            text = " ".join(needed_pkgs)
             log.info('Installing packages "%s"', text)
             result = software_manager.install(text)
     else:
-        log.error("No packages found for %s %s %s %s",
-                  detected_distro.name, detected_distro.arch,
-                  detected_distro.version, detected_distro.release)
+        log.error(
+            "No packages found for %s %s %s %s",
+            detected_distro.name,
+            detected_distro.arch,
+            detected_distro.version,
+            detected_distro.release,
+        )
     return result

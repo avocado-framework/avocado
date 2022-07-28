@@ -12,32 +12,35 @@ class GdbTest(Test):
     :avocado: tags=requires_c_compiler
     """
 
-    VALID_CMDS = ["-list-target-features",
-                  "-break-info",
-                  "-break-list",
-                  "-thread-info",
-                  "-stack-info-frame",
-                  "-stack-info-depth"]
+    VALID_CMDS = [
+        "-list-target-features",
+        "-break-info",
+        "-break-list",
+        "-thread-info",
+        "-stack-info-frame",
+        "-stack-info-depth",
+    ]
 
-    INVALID_CMDS = ["-foobar",
-                    "-magic8ball",
-                    "-find-me-the-bug",
-                    "-auto-debug-it"]
+    INVALID_CMDS = ["-foobar", "-magic8ball", "-find-me-the-bug", "-auto-debug-it"]
 
     def setUp(self):
-        self.return99_binary_path = os.path.join(self.teststmpdir, 'return99')
+        self.return99_binary_path = os.path.join(self.teststmpdir, "return99")
         if not os.path.exists(self.return99_binary_path):
-            return99_source_path = self.get_data('return99.c')
+            return99_source_path = self.get_data("return99.c")
             if return99_source_path is None:
                 self.cancel('Test is missing data file "return99.c"')
-            process.system(f'gcc -O0 -g {return99_source_path} -o {self.return99_binary_path}')
+            process.system(
+                f"gcc -O0 -g {return99_source_path} -o {self.return99_binary_path}"
+            )
 
-        self.segfault_binary_path = os.path.join(self.teststmpdir, 'segfault')
+        self.segfault_binary_path = os.path.join(self.teststmpdir, "segfault")
         if not os.path.exists(self.segfault_binary_path):
-            segfault_source_path = self.get_data('segfault.c')
+            segfault_source_path = self.get_data("segfault.c")
             if segfault_source_path is None:
                 self.cancel('Test is missing data file "segfault.c"')
-            process.system(f'gcc -O0 -g {segfault_source_path} -o {self.segfault_binary_path}')
+            process.system(
+                f"gcc -O0 -g {segfault_source_path} -o {self.segfault_binary_path}"
+            )
 
     @staticmethod
     def is_process_alive(process):  # pylint: disable=W0621
@@ -73,26 +76,27 @@ class GdbTest(Test):
         for cmd in self.VALID_CMDS:
             info_cmd = f"-info-gdb-mi-command {cmd[1:]}"
             r = g.cmd(info_cmd)
-            self.assertEqual(r.result.result.command.exists, 'true')
+            self.assertEqual(r.result.result.command.exists, "true")
 
-        self.log.info("Testing non-existing (invalid) GDB commands using raw "
-                      "commands")
+        self.log.info(
+            "Testing non-existing (invalid) GDB commands using raw " "commands"
+        )
         for cmd in self.INVALID_CMDS:
             info_cmd = f"-info-gdb-mi-command {cmd[1:]}"
             r = g.cmd(info_cmd)
-            self.assertEqual(r.result.result.command.exists, 'false')
+            self.assertEqual(r.result.result.command.exists, "false")
 
     def test_existing_commands(self):
         g = gdb.GDB()
 
-        self.log.info("Testing existing (valid) GDB commands using utility "
-                      "methods")
+        self.log.info("Testing existing (valid) GDB commands using utility " "methods")
         for cmd in self.VALID_CMDS:
             self.assertTrue(g.cmd_exists(cmd))
             g.cmd(cmd)
 
-        self.log.info("Testing non-existing (invalid) GDB commands using "
-                      "utility methods")
+        self.log.info(
+            "Testing non-existing (invalid) GDB commands using " "utility methods"
+        )
         for cmd in self.INVALID_CMDS:
             self.assertFalse(g.cmd_exists(cmd))
 
@@ -105,21 +109,21 @@ class GdbTest(Test):
 
         file_cmd = f"-file-exec-and-symbols {self.return99_binary_path}"
         r = g.cmd(file_cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
         break_cmd = "-break-insert 5"
         r = g.cmd(break_cmd)
-        self.assertEqual(r.result.class_, 'done')
-        self.assertEqual(r.result.result.bkpt.number, '1')
-        self.assertEqual(r.result.result.bkpt.enabled, 'y')
+        self.assertEqual(r.result.class_, "done")
+        self.assertEqual(r.result.result.bkpt.number, "1")
+        self.assertEqual(r.result.result.bkpt.enabled, "y")
 
         break_del_cmd = "-break-delete 1"
         r = g.cmd(break_del_cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
         run_cmd = "-exec-run"
         r = g.cmd(run_cmd)
-        self.assertEqual(r.result.class_, 'running')
+        self.assertEqual(r.result.class_, "running")
 
         g.cmd("-gdb-exit")
         self.assertEqual(g.process.wait(), 0)
@@ -145,24 +149,26 @@ class GdbTest(Test):
         g = gdb.GDB()
         file_cmd = f"-file-exec-and-symbols {self.segfault_binary_path}"
         r = g.cmd(file_cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
         run_cmd = "-exec-run"
         r = g.cmd(run_cmd)
-        self.assertEqual(r.result.class_, 'running')
+        self.assertEqual(r.result.class_, "running")
 
         other_messages = g.read_until_break()
         core_path = None
         for msg in other_messages:
             parsed_msg = gdb.parse_mi(msg.decode())
-            if (hasattr(parsed_msg, 'class_') and
-                (parsed_msg.class_ == 'stopped') and
-                    (parsed_msg.result.signal_name == 'SIGSEGV')):
+            if (
+                hasattr(parsed_msg, "class_")
+                and (parsed_msg.class_ == "stopped")
+                and (parsed_msg.result.signal_name == "SIGSEGV")
+            ):
                 core_path = f"{self.segfault_binary_path}.core"
-                gcore_cmd = f'gcore {core_path}'
+                gcore_cmd = f"gcore {core_path}"
                 gcore_cmd = gdb.encode_mi_cli(gcore_cmd)
                 r = g.cmd(gcore_cmd)
-                self.assertEqual(r.result.class_, 'done')
+                self.assertEqual(r.result.class_, "done")
 
         self.assertTrue(os.path.exists(core_path))
         g.exit()
@@ -174,33 +180,34 @@ class GdbTest(Test):
         self.log.info("Testing setting multiple breakpoints")
         g = gdb.GDB()
         g.set_file(self.return99_binary_path)
-        g.set_break('empty')
-        g.set_break('7')
+        g.set_break("empty")
+        g.set_break("7")
         g.exit()
 
     def test_disconnect_raw(self):
         """
         Connect/disconnect repeatedly from a remote debugger using raw commands
         """
-        self.log.info("Testing connecting and disconnecting repeatedly using "
-                      "raw commands")
+        self.log.info(
+            "Testing connecting and disconnecting repeatedly using " "raw commands"
+        )
         s = gdb.GDBServer()
         g = gdb.GDB()
 
         # Do 100 cycle of target (kind of connects) and disconnects
         for _ in range(0, 100):
-            cmd = f'-target-select extended-remote :{s.port}'
+            cmd = f"-target-select extended-remote :{s.port}"
             r = g.cmd(cmd)
-            self.assertEqual(r.result.class_, 'connected')
-            r = g.cmd('-target-disconnect')
-            self.assertEqual(r.result.class_, 'done')
+            self.assertEqual(r.result.class_, "connected")
+            r = g.cmd("-target-disconnect")
+            self.assertEqual(r.result.class_, "done")
 
         # manual server shutdown
-        cmd = f'-target-select extended-remote :{s.port}'
+        cmd = f"-target-select extended-remote :{s.port}"
         r = g.cmd(cmd)
-        self.assertEqual(r.result.class_, 'connected')
-        r = g.cli_cmd('monitor exit')
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "connected")
+        r = g.cli_cmd("monitor exit")
+        self.assertEqual(r.result.class_, "done")
 
         g.exit()
         s.exit()
@@ -215,9 +222,9 @@ class GdbTest(Test):
 
         for _ in range(0, 100):
             r = g.connect(s.port)
-            self.assertEqual(r.result.class_, 'connected')
+            self.assertEqual(r.result.class_, "connected")
             r = g.disconnect()
-            self.assertEqual(r.result.class_, 'done')
+            self.assertEqual(r.result.class_, "done")
 
         g.exit()
         s.exit()
@@ -232,26 +239,28 @@ class GdbTest(Test):
         s = gdb.GDBServer()
         g = gdb.GDB()
 
-        cmd = f'-file-exec-and-symbols {self.return99_binary_path}'
+        cmd = f"-file-exec-and-symbols {self.return99_binary_path}"
         r = g.cmd(cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
-        cmd = f'set remote exec-file {self.return99_binary_path}'
+        cmd = f"set remote exec-file {self.return99_binary_path}"
         r = g.cmd(cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
         cmd = f"-break-insert {'main'}"
         r = g.cmd(cmd)
-        self.assertEqual(r.result.class_, 'done')
+        self.assertEqual(r.result.class_, "done")
 
-        r = g.cmd('-exec-run')
+        r = g.cmd("-exec-run")
 
         other_messages = g.read_until_break()
         for msg in other_messages:
             parsed_msg = gdb.parse_mi(msg.decode())
-            if (hasattr(parsed_msg, 'class_') and
-                parsed_msg.class_ == 'stopped' and
-                    parsed_msg.result.reason == 'breakpoint-hit'):
+            if (
+                hasattr(parsed_msg, "class_")
+                and parsed_msg.class_ == "stopped"
+                and parsed_msg.result.reason == "breakpoint-hit"
+            ):
                 hit_breakpoint = True
 
         self.assertTrue(hit_breakpoint)
@@ -300,7 +309,7 @@ class GdbTest(Test):
             s = gdb.GDBServer()
             c = gdb.GDB()
             c.connect(s.port)
-            c.cmd('show-version')
+            c.cmd("show-version")
             c.disconnect()
             server_instances.append(s)
 
@@ -310,7 +319,7 @@ class GdbTest(Test):
             self.assertFalse(self.is_process_alive(server_instances[i].process))
 
     def test_server_stderr(self):
-        self.log.info('Testing server stderr collection')
+        self.log.info("Testing server stderr collection")
         s = gdb.GDBServer()
         s.exit()
         self.assertTrue(os.path.exists(s.stderr_path))
@@ -320,7 +329,7 @@ class GdbTest(Test):
         self.assertIn(listening_line, stderr_lines)
 
     def test_server_stdout(self):
-        self.log.info('Testing server stdout/stderr collection')
+        self.log.info("Testing server stdout/stderr collection")
         s = gdb.GDBServer()
         c = gdb.GDB()
         c.connect(s.port)
@@ -340,7 +349,7 @@ class GdbTest(Test):
         Tests GDBRemote interaction with a GDBServer
         """
         s = gdb.GDBServer()
-        r = gdb.GDBRemote('127.0.0.1', s.port)
+        r = gdb.GDBRemote("127.0.0.1", s.port)
         r.connect()
         r.cmd(b"qSupported")
         r.cmd(b"qfThreadInfo")

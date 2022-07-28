@@ -22,11 +22,15 @@ class HintTest(TestCaseTmpDir):
     def setUp(self):
         super().setUp()
 
-        self.wrong_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
+        self.wrong_file = tempfile.NamedTemporaryFile(
+            "w", dir=self.tmpdir.name, delete=False
+        )
         self.wrong_file.write(BAD)
         self.wrong_file.close()
 
-        self.good_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
+        self.good_file = tempfile.NamedTemporaryFile(
+            "w", dir=self.tmpdir.name, delete=False
+        )
         self.good_file.write(GOOD)
         self.good_file.close()
 
@@ -35,10 +39,10 @@ class HintTest(TestCaseTmpDir):
 
     def test_wrong_parser(self):
         with self.assertRaises(SettingsError) as context:
-            self.wrong_hint.validate_kind_section('tap')
-        self.assertTrue('Section tap is not defined' in str(context.exception))
+            self.wrong_hint.validate_kind_section("tap")
+        self.assertTrue("Section tap is not defined" in str(context.exception))
 
-    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists("/bin/true")
     def test_types(self):
         res = self.good_hint.get_resolutions()
         self.assertEqual(len(res), 1)
@@ -48,12 +52,12 @@ class HintTest(TestCaseTmpDir):
         self.assertEqual(len(resolutions), 1)
         self.assertIsInstance(resolutions[0], Runnable)
 
-    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists("/bin/true")
     def test_reference_names(self):
         res = self.good_hint.get_resolutions()[0]
-        self.assertEqual(res.reference, '/bin/true')
-        self.assertEqual(res.resolutions[0].uri, '/bin/true')
+        self.assertEqual(res.reference, "/bin/true")
+        self.assertEqual(res.resolutions[0].uri, "/bin/true")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

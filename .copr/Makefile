@@ -1,4 +1,6 @@
 pkg_install := $(shell dnf -y install git rpm-build)
+pwd := $(shell pwd)
+git_config_safe_directory := $(shell git config --global --add safe.directory $(pwd))
 commit := $(shell git log --pretty=format:'%H' -n 1)
 commit_date := $(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 short_commit := $(shell git rev-parse --short=9 HEAD)

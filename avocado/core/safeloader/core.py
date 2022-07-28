@@ -4,8 +4,11 @@ import sys
 from importlib.machinery import PathFinder
 
 from avocado.core.safeloader.docstring import (
-    check_docstring_directive, get_docstring_directives,
-    get_docstring_directives_dependencies, get_docstring_directives_tags)
+    check_docstring_directive,
+    get_docstring_directives,
+    get_docstring_directives_dependencies,
+    get_docstring_directives_tags,
+)
 from avocado.core.safeloader.module import PythonModule
 
 
@@ -24,12 +27,12 @@ def get_methods_info(statement_body, class_tags, class_dependencies):
         if not (isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef))):
             continue
 
-        decorators = getattr(st, 'decorator_list', [])
-        decorator_names = [getattr(_, 'id', None) for _ in decorators]
-        if 'property' in decorator_names:
+        decorators = getattr(st, "decorator_list", [])
+        decorator_names = [getattr(_, "id", None) for _ in decorators]
+        if "property" in decorator_names:
             continue
 
-        if not st.name.startswith('test'):
+        if not st.name.startswith("test"):
             continue
 
         docstring = ast.get_docstring(st)
@@ -54,8 +57,9 @@ def _extend_test_list(current, new):
             current.append(test)
 
 
-def _examine_same_module(parents, info, disabled, match, module,
-                         target_module, target_class, determine_match):
+def _examine_same_module(
+    parents, info, disabled, match, module, target_module, target_class, determine_match
+):
     # Searching the parents in the same module
     for parent in parents[:]:
         # Looking for a 'class FooTest(Parent)'
@@ -68,12 +72,14 @@ def _examine_same_module(parents, info, disabled, match, module,
         # From this point we use `_$variable` to name temporary returns
         # from method calls that are to-be-assigned/combined with the
         # existing `$variable`.
-        _info, _disable, _match = _examine_class(target_module,
-                                                 target_class,
-                                                 determine_match,
-                                                 module.path,
-                                                 parent_class,
-                                                 match)
+        _info, _disable, _match = _examine_class(
+            target_module,
+            target_class,
+            determine_match,
+            module.path,
+            parent_class,
+            match,
+        )
         if _info:
             parents.remove(parent)
             _extend_test_list(info, _info)
@@ -114,7 +120,7 @@ def _get_attributes_for_further_examination(parent, module):
             :class:`avocado.core.safeloader.imported.ImportedSymbol`,
             bool)
     """
-    if hasattr(parent, 'value'):
+    if hasattr(parent, "value"):
         # A "value" in an "attribute" in this context means that
         # there's a "module.class" notation.  It may be called that
         # way, because it resembles "class" being an attribute of the
@@ -126,7 +132,7 @@ def _get_attributes_for_further_examination(parent, module):
         #   currently no support for the "module.module.parent_class"
         #   notation.  See issue #4706.
         klass = parent.value
-        if not hasattr(klass, 'id'):
+        if not hasattr(klass, "id"):
             # We don't support multi-level 'parent.parent.Class'
             raise ClassNotSuitable
         else:
@@ -150,7 +156,7 @@ def _get_attributes_for_further_examination(parent, module):
             # *only* about the imports, and not about the class definitions,
             # can not tell if an import is a "from module import other_module"
             # or a "from module import class"
-            symbol_is_module = (klass.id == imported_symbol.symbol_name)
+            symbol_is_module = klass.id == imported_symbol.symbol_name
 
     else:
         # We only know 'Class' or 'AsClass' and need to get
@@ -176,8 +182,9 @@ def _find_import_match(parent_path, parent_module):
     return found_spec
 
 
-def _examine_class(target_module, target_class, determine_match, path,
-                   class_name, match):
+def _examine_class(
+    target_module, target_class, determine_match, path, class_name, match
+):
     """
     Examine a class from a given path
 
@@ -222,25 +229,35 @@ def _examine_class(target_module, target_class, determine_match, path,
         if match is False:
             match = module.is_matching_klass(klass)
 
-        info = get_methods_info(klass.body,
-                                get_docstring_directives_tags(docstring),
-                                get_docstring_directives_dependencies(
-                                    docstring))
+        info = get_methods_info(
+            klass.body,
+            get_docstring_directives_tags(docstring),
+            get_docstring_directives_dependencies(docstring),
+        )
 
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        match = _examine_same_module(parents, info, disabled, match, module,
-                                     target_module, target_class, determine_match)
+        match = _examine_same_module(
+            parents,
+            info,
+            disabled,
+            match,
+            module,
+            target_module,
+            target_class,
+            determine_match,
+        )
 
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
             try:
-                (parent_class,
-                 imported_symbol,
-                 symbol_is_module) = _get_attributes_for_further_examination(parent,
-                                                                             module)
+                (
+                    parent_class,
+                    imported_symbol,
+                    symbol_is_module,
+                ) = _get_attributes_for_further_examination(parent, module)
 
                 found_spec = imported_symbol.get_importable_spec(symbol_is_module)
                 if found_spec is None:
@@ -249,12 +266,14 @@ def _examine_class(target_module, target_class, determine_match, path,
             except ClassNotSuitable:
                 continue
 
-            _info, _disabled, _match = _examine_class(target_module,
-                                                      target_class,
-                                                      determine_match,
-                                                      found_spec.origin,
-                                                      parent_class,
-                                                      match)
+            _info, _disabled, _match = _examine_class(
+                target_module,
+                target_class,
+                determine_match,
+                found_spec.origin,
+                parent_class,
+                match,
+            )
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
@@ -266,12 +285,14 @@ def _examine_class(target_module, target_class, determine_match, path,
         if imported_symbol:
             found_spec = imported_symbol.get_importable_spec()
             if found_spec:
-                _info, _disabled, _match = _examine_class(target_module,
-                                                          target_class,
-                                                          determine_match,
-                                                          found_spec.origin,
-                                                          class_name,
-                                                          match)
+                _info, _disabled, _match = _examine_class(
+                    target_module,
+                    target_class,
+                    determine_match,
+                    found_spec.origin,
+                    class_name,
+                    match,
+                )
                 if _info:
                     _extend_test_list(info, _info)
                     disabled.update(_disabled)
@@ -321,15 +342,16 @@ def find_python_tests(target_module, target_class, determine_match, path):
         docstring = ast.get_docstring(klass)
         # Looking for a class that has in the docstring either
         # ":avocado: enable" or ":avocado: disable
-        if check_docstring_directive(docstring, 'disable'):
+        if check_docstring_directive(docstring, "disable"):
             disabled.add(klass.name)
             continue
 
-        if check_docstring_directive(docstring, 'enable'):
-            info = get_methods_info(klass.body,
-                                    get_docstring_directives_tags(docstring),
-                                    get_docstring_directives_dependencies(
-                                        docstring))
+        if check_docstring_directive(docstring, "enable"):
+            info = get_methods_info(
+                klass.body,
+                get_docstring_directives_tags(docstring),
+                get_docstring_directives_dependencies(docstring),
+            )
             result[klass.name] = info
             continue
 
@@ -338,28 +360,38 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # (Ifs are optimized for readability, not speed)
 
         # If "recursive" tag is specified, it is forced as test
-        if check_docstring_directive(docstring, 'recursive'):
+        if check_docstring_directive(docstring, "recursive"):
             match = True
         else:
             match = module.is_matching_klass(klass)
-        info = get_methods_info(klass.body,
-                                get_docstring_directives_tags(docstring),
-                                get_docstring_directives_dependencies(
-                                    docstring))
+        info = get_methods_info(
+            klass.body,
+            get_docstring_directives_tags(docstring),
+            get_docstring_directives_dependencies(docstring),
+        )
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        match = _examine_same_module(parents, info, disabled, match, module,
-                                     target_module, target_class, determine_match)
+        match = _examine_same_module(
+            parents,
+            info,
+            disabled,
+            match,
+            module,
+            target_module,
+            target_class,
+            determine_match,
+        )
 
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
             try:
-                (parent_class,
-                 imported_symbol,
-                 symbol_is_module) = _get_attributes_for_further_examination(parent,
-                                                                             module)
+                (
+                    parent_class,
+                    imported_symbol,
+                    symbol_is_module,
+                ) = _get_attributes_for_further_examination(parent, module)
 
                 found_spec = imported_symbol.get_importable_spec(symbol_is_module)
                 if found_spec is None:
@@ -368,12 +400,14 @@ def find_python_tests(target_module, target_class, determine_match, path):
             except ClassNotSuitable:
                 continue
 
-            _info, _dis, _match = _examine_class(target_module,
-                                                 target_class,
-                                                 determine_match,
-                                                 found_spec.origin,
-                                                 parent_class,
-                                                 match)
+            _info, _dis, _match = _examine_class(
+                target_module,
+                target_class,
+                determine_match,
+                found_spec.origin,
+                parent_class,
+                match,
+            )
             if _info:
                 info.extend(_info)
                 disabled.update(_dis)
@@ -395,21 +429,20 @@ def _determine_match_python(module, klass, docstring):
     Avocado Instrumented Tests and Python unittests.
     """
     directives = get_docstring_directives(docstring)
-    if 'disable' in directives:
+    if "disable" in directives:
         return False
-    if 'enable' in directives:
+    if "enable" in directives:
         return True
-    if 'recursive' in directives:
+    if "recursive" in directives:
         return True
     # Still not decided, try inheritance
     return module.is_matching_klass(klass)
 
 
 def find_avocado_tests(path):
-    return find_python_tests('avocado', 'Test', _determine_match_python, path)
+    return find_python_tests("avocado", "Test", _determine_match_python, path)
 
 
 def find_python_unittests(path):
-    found, _ = find_python_tests('unittest', 'TestCase',
-                                 _determine_match_python, path)
+    found, _ = find_python_tests("unittest", "TestCase", _determine_match_python, path)
     return found

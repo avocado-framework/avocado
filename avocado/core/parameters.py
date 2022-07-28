@@ -50,19 +50,18 @@ class AvocadoParams:
         leaves = list(leaves)
         for i, path in enumerate(paths):
             path_leaves = self._get_matching_leaves(path, leaves)
-            self._rel_paths.append(AvocadoParam(path_leaves,
-                                                f'{int(i)}: {path}'))
+            self._rel_paths.append(AvocadoParam(path_leaves, f"{int(i)}: {path}"))
         # Don't use non-mux-path params for relative paths
-        path_leaves = self._get_matching_leaves('/*', leaves)
-        self._abs_path = AvocadoParam(path_leaves, '*: *')
-        self._cache = {}     # TODO: Implement something more efficient
+        path_leaves = self._get_matching_leaves("/*", leaves)
+        self._abs_path = AvocadoParam(path_leaves, "*: *")
+        self._cache = {}  # TODO: Implement something more efficient
         self._logger_name = logger_name
 
     def __eq__(self, other):
         if set(self.__dict__) != set(other.__dict__):
             return False
         for attr in self.__dict__:
-            if (getattr(self, attr) != getattr(other, attr)):
+            if getattr(self, attr) != getattr(other, attr):
                 return False
         return True
 
@@ -78,7 +77,7 @@ class AvocadoParams:
     def _str(self):
         out = ",".join(_.str_leaves_variant for _ in self._rel_paths)
         if out:
-            return self._abs_path.str_leaves_variant + ',' + out
+            return self._abs_path.str_leaves_variant + "," + out
         else:
             return self._abs_path.str_leaves_variant
 
@@ -89,7 +88,7 @@ class AvocadoParams:
         :param leaves: list of TreeNode leaves
         """
         path_re = self._greedy_path_to_re(path)
-        path_leaves = [leaf for leaf in leaves if path_re.search(leaf.path + '/')]
+        path_leaves = [leaf for leaf in leaves if path_re.search(leaf.path + "/")]
         for leaf in path_leaves:
             leaves.remove(leaf)
         return path_leaves
@@ -105,18 +104,18 @@ class AvocadoParams:
         :returns: a compiled regex
         """
         if not path:
-            return re.compile('^$')
-        if path[-1] == '*':
-            suffix = ''
+            return re.compile("^$")
+        if path[-1] == "*":
+            suffix = ""
             path = path[:-1]
         else:
-            suffix = '$'
-        return re.compile(path.replace('*', '[^/]*') + suffix)
+            suffix = "$"
+        return re.compile(path.replace("*", "[^/]*") + suffix)
 
     @staticmethod
     def _is_abspath(path):
-        """ Is this an absolute or relative path? """
-        if path.pattern and path.pattern[0] == '/':
+        """Is this an absolute or relative path?"""
+        if path.pattern and path.pattern[0] == "/":
             return True
         else:
             return False
@@ -129,8 +128,8 @@ class AvocadoParams:
         :param default: default value when not found
         :raise KeyError: In case of multiple different values (params clash)
         """
-        if path is None:    # default path is any relative path
-            path = '*'
+        if path is None:  # default path is any relative path
+            path = "*"
         try:
             return self._cache[(key, path, default)]
         except (KeyError, TypeError):
@@ -139,8 +138,13 @@ class AvocadoParams:
             value = self._get(key, path, default)
             if self._logger_name is not None:
                 logger = logging.getLogger(self._logger_name)
-                logger.debug("PARAMS (key=%s, path=%s, default=%s) => %r",
-                             key, path, default, value)
+                logger.debug(
+                    "PARAMS (key=%s, path=%s, default=%s) => %r",
+                    key,
+                    path,
+                    default,
+                    value,
+                )
             try:
                 self._cache[(key, path, default)] = value
             except TypeError:
@@ -209,7 +213,7 @@ class AvocadoParam:
         # Basic initialization
         self._leaves = leaves
         # names cache (leaf.path is quite expensive)
-        self._leaf_names = [leaf.path + '/' for leaf in leaves]
+        self._leaf_names = [leaf.path + "/" for leaf in leaves]
         self.name = name
 
     def __eq__(self, other):
@@ -223,16 +227,18 @@ class AvocadoParam:
 
     @property
     def str_leaves_variant(self):
-        """ String with identifier and all params """
+        """String with identifier and all params"""
         return f"{self.name} ({self._leaf_names})"
 
     def _get_leaves(self, path):
         """
         Get all leaves matching the path
         """
-        return [self._leaves[i]
-                for i in range(len(self._leaf_names))
-                if path.search(self._leaf_names[i])]
+        return [
+            self._leaves[i]
+            for i in range(len(self._leaf_names))
+            if path.search(self._leaf_names[i])
+        ]
 
     def get_or_die(self, path, key):
         """
@@ -241,20 +247,31 @@ class AvocadoParam:
         :raise KeyError: When value is not certain (multiple matches)
         """
         leaves = self._get_leaves(path)
-        ret = [(leaf.environment[key], leaf.environment.origin[key])
-               for leaf in leaves
-               if key in leaf.environment]
+        ret = [
+            (leaf.environment[key], leaf.environment.origin[key])
+            for leaf in leaves
+            if key in leaf.environment
+        ]
         if not ret:
-            raise NoMatchError(f"No matches to {path.pattern} => "
-                               f" {key} in {self.str_leaves_variant}")
+            raise NoMatchError(
+                f"No matches to {path.pattern} => "
+                f" {key} in {self.str_leaves_variant}"
+            )
         # make sure all params come from the same origin
         if len(set([_[1].path for _ in ret])) == 1:
             return ret[0][0]
         else:
-            raise ValueError("Multiple %s leaves contain the key '%s'; %s"  # pylint: disable=C0209
-                             % (path.pattern, key,
-                                ["%s=>%s" % (_[1].path, _[0])  # pylint: disable=C0209
-                                 for _ in ret]))
+            raise ValueError(
+                "Multiple %s leaves contain the key '%s'; %s"  # pylint: disable=C0209
+                % (
+                    path.pattern,
+                    key,
+                    [
+                        "%s=>%s" % (_[1].path, _[0])  # pylint: disable=C0209
+                        for _ in ret
+                    ],
+                )
+            )
 
     def iteritems(self):
         """

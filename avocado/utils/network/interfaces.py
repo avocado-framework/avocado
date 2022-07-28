@@ -42,7 +42,7 @@ class NetworkInterface:
     Here you will find a few methods to perform basic operations on a NIC.
     """
 
-    def __init__(self, if_name, host, if_type='Ethernet'):
+    def __init__(self, if_name, host, if_type="Ethernet"):
         self.name = if_name
         self.if_type = if_type
         self.host = host
@@ -50,32 +50,34 @@ class NetworkInterface:
     @property
     def config_filename(self):
         current_distro = distro_detect()
-        if current_distro.name in ['rhel', 'fedora']:
+        if current_distro.name in ["rhel", "fedora"]:
             path = "/etc/sysconfig/network-scripts"
-        elif current_distro.name == 'SuSE':
+        elif current_distro.name == "SuSE":
             path = "/etc/sysconfig/network"
         else:
-            msg = 'Distro not supported by API. Could not get interface filename.'
+            msg = "Distro not supported by API. Could not get interface filename."
             raise NWException(msg)
         return f"{path}/ifcfg-{self.name}"
 
     @property
     def config_file_path(self):
         current_distro = distro_detect()
-        if current_distro.name in ['rhel', 'fedora']:
+        if current_distro.name in ["rhel", "fedora"]:
             return "/etc/sysconfig/network-scripts"
-        elif current_distro.name == 'SuSE':
+        elif current_distro.name == "SuSE":
             return "/etc/sysconfig/network"
         else:
-            msg = 'Distro not supported by API. Could not get interface filename.'
+            msg = "Distro not supported by API. Could not get interface filename."
             LOG.error(msg)
 
     @property
     def slave_config_filename(self):
         try:
             slave_dict = self._get_bondinterface_details()
-            return [f"{self.config_file_path}/ifcfg-{slave}"
-                    for slave in slave_dict['slaves']]
+            return [
+                f"{self.config_file_path}/ifcfg-{slave}"
+                for slave in slave_dict["slaves"]
+            ]
         except Exception:
             msg = "Slave config filename not available"
             LOG.debug(msg)
@@ -89,7 +91,7 @@ class NetworkInterface:
         try:
             result = json.loads(output)
             for item in result:
-                if item.get('ifname') == self.name:
+                if item.get("ifname") == self.name:
                     return item
             raise NWException("Interface not found")
         except (NWException, json.JSONDecodeError):
@@ -98,15 +100,15 @@ class NetworkInterface:
             raise NWException(msg)
 
     def _get_bondinterface_details(self):
-        cmd = (f"cat /sys/class/net/{self.name}/bonding/mode "
-               f"/sys/class/net/{self.name}/bonding/slaves")
+        cmd = (
+            f"cat /sys/class/net/{self.name}/bonding/mode "
+            f"/sys/class/net/{self.name}/bonding/slaves"
+        )
         try:
             mode, slaves = run_command(cmd, self.host).splitlines()
-            return {'mode': mode.split(),
-                    'slaves': slaves.split()}
+            return {"mode": mode.split(), "slaves": slaves.split()}
         except Exception:
-            raise NWException(f"Slave interface not found for "
-                              f"the bond {self.name}")
+            raise NWException(f"Slave interface not found for " f"the bond {self.name}")
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = f"{filename}.backup"
@@ -119,7 +121,7 @@ class NetworkInterface:
     def _write_to_file(self, filename, values):
         self._move_file_to_backup(filename)
 
-        with open(filename, 'w+') as fp:  # pylint: disable=W1514
+        with open(filename, "w+") as fp:  # pylint: disable=W1514
             for key, value in values.items():
                 fp.write(f"{key}={value}\n")
 
@@ -152,7 +154,7 @@ class NetworkInterface:
         """
 
         ip = ip_interface(f"{ipaddr}/{netmask}")
-        cmd = f'ip addr add {ip.compressed} dev {self.name}'
+        cmd = f"ip addr add {ip.compressed} dev {self.name}"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
@@ -168,14 +170,14 @@ class NetworkInterface:
         rtype: dict
         """
         vlans = {}
-        if not os.path.exists('/proc/net/vlan/config'):
+        if not os.path.exists("/proc/net/vlan/config"):
             return vlans
-        with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
+        with open("/proc/net/vlan/config", encoding="utf-8") as vlan_config_file:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
                 line = "".join(line.split())
                 if line.endswith(self.name):
-                    line = line.split('|')
+                    line = line.split("|")
                     vlans[line[1]] = line[0]
         return vlans
 
@@ -191,8 +193,9 @@ class NetworkInterface:
         """
 
         vlan_name = vlan_name or f"{self.name}.{vlan_num}"
-        cmd = (f"ip link add link {self.name} name {vlan_name} "
-               f"type vlan id {vlan_num}")
+        cmd = (
+            f"ip link add link {self.name} name {vlan_name} " f"type vlan id {vlan_num}"
+        )
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
@@ -249,7 +252,7 @@ class NetworkInterface:
             raise NWException(f"Failed to bring down: {ex}")
 
     def bring_up(self):
-        """"Wake-up the interface.
+        """ "Wake-up the interface.
 
         This will wake-up the interface link.
 
@@ -268,7 +271,7 @@ class NetworkInterface:
                  otherwise will return False.
         """
         try:
-            if 'UP' in self._get_interface_details().get('flags'):
+            if "UP" in self._get_interface_details().get("flags"):
                 return True
         except (NWException, IndexError):
             raise NWException("Could not get Administrative link state.")
@@ -281,7 +284,7 @@ class NetworkInterface:
                  otherwise will return False.
         """
         try:
-            if 'LOWER_UP' in self._get_interface_details().get('flags'):
+            if "LOWER_UP" in self._get_interface_details().get("flags"):
                 return True
         except (NWException, IndexError):
             raise NWException("Could not get operational link state.")
@@ -310,9 +313,9 @@ class NetworkInterface:
 
         try:
             details = self._get_interface_details(version)
-            addr_info = details.get('addr_info')
+            addr_info = details.get("addr_info")
             if addr_info:
-                return [x.get('local') for x in addr_info]
+                return [x.get("local") for x in addr_info]
         except (NWException, IndexError):
             msg = f"Could not get ip addresses for {self.name}"
             LOG.debug(msg)
@@ -337,7 +340,7 @@ class NetworkInterface:
         raise a NWException.
         """
         try:
-            return self._get_interface_details().get('mtu')
+            return self._get_interface_details().get("mtu")
         except (NWException, IndexError):
             raise NWException("Could not get MUT value.")
 
@@ -376,60 +379,58 @@ class NetworkInterface:
         :param netmask: Network mask which is associated to the provided IP
         """
         if ipaddr not in self.get_ipaddrs():
-            msg = ('ipaddr not configured on interface. To avoid '
-                   'inconsistency, please add the ipaddr first.')
+            msg = (
+                "ipaddr not configured on interface. To avoid "
+                "inconsistency, please add the ipaddr first."
+            )
             raise NWException(msg)
 
         current_distro = distro_detect()
 
         filename = f"ifcfg-{self.name}"
-        if current_distro.name in ['rhel', 'fedora']:
+        if current_distro.name in ["rhel", "fedora"]:
             path = "/etc/sysconfig/network-scripts"
-        elif current_distro.name == 'SuSE':
+        elif current_distro.name == "SuSE":
             path = "/etc/sysconfig/network"
         else:
-            msg = 'Distro not supported by API. Could not save ipaddr.'
+            msg = "Distro not supported by API. Could not save ipaddr."
             raise NWException(msg)
 
-        ifcfg_dict = {'TYPE': self.if_type,
-                      'BOOTPROTO': 'static',
-                      'NAME': self.name,
-                      'DEVICE': self.name,
-                      'ONBOOT': 'yes',
-                      'IPADDR': ipaddr,
-                      'NETMASK': netmask,
-                      'IPV6INIT': 'yes',
-                      'IPV6_AUTOCONF': 'yes',
-                      'IPV6_DEFROUTE': 'yes'}
-        if current_distro.name == 'SuSE':
-            ifcfg_dict.pop('BOOTPROTO')
+        ifcfg_dict = {
+            "TYPE": self.if_type,
+            "BOOTPROTO": "static",
+            "NAME": self.name,
+            "DEVICE": self.name,
+            "ONBOOT": "yes",
+            "IPADDR": ipaddr,
+            "NETMASK": netmask,
+            "IPV6INIT": "yes",
+            "IPV6_AUTOCONF": "yes",
+            "IPV6_DEFROUTE": "yes",
+        }
+        if current_distro.name == "SuSE":
+            ifcfg_dict.pop("BOOTPROTO")
 
-        if self.if_type == 'Bond':
-            ifcfg_dict['BONDING_MASTER'] = 'yes'
+        if self.if_type == "Bond":
+            ifcfg_dict["BONDING_MASTER"] = "yes"
             bond_dict = self._get_bondinterface_details()
-            ifcfg_slave_dict = {'SLAVE': 'yes',
-                                'ONBOOT': 'yes',
-                                'MASTER': self.name}
-            if current_distro.name == 'SuSE':
-                ifcfg_dict['BONDING_MODULE_OPTS'] = 'mode=' \
-                           + bond_dict['mode'][0]
-                for index, slave in enumerate(bond_dict['slaves']):
-                    bonding_slave = f'BONDING_SLAVE{index}'
+            ifcfg_slave_dict = {"SLAVE": "yes", "ONBOOT": "yes", "MASTER": self.name}
+            if current_distro.name == "SuSE":
+                ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
+                for index, slave in enumerate(bond_dict["slaves"]):
+                    bonding_slave = f"BONDING_SLAVE{index}"
                     ifcfg_dict[bonding_slave] = slave
-                    ifcfg_slave_dict.update({'NAME': slave,
-                                             'DEVICE': slave})
-                    self._write_to_file(f"{path}/ifcfg-{slave}",
-                                        ifcfg_slave_dict)
-            elif current_distro.name in ['rhel', 'fedora']:
-                ifcfg_dict['BONDING_OPTS'] = 'mode='+bond_dict['mode'][0]
-                for index, slave in enumerate(bond_dict['slaves']):
-                    ifcfg_slave_dict.update({'NAME': slave,
-                                             'DEVICE': slave,
-                                             'TYPE': 'Ethernet'})
-                    self._write_to_file(f"{path}/ifcfg-{slave}",
-                                        ifcfg_slave_dict)
+                    ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
+                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+            elif current_distro.name in ["rhel", "fedora"]:
+                ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
+                for index, slave in enumerate(bond_dict["slaves"]):
+                    ifcfg_slave_dict.update(
+                        {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
+                    )
+                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
             else:
-                msg = 'Distro not supported by API. Could not save ipaddr.'
+                msg = "Distro not supported by API. Could not save ipaddr."
                 raise NWException(msg)
 
         self._write_to_file(f"{path}/{filename}", ifcfg_dict)
@@ -464,11 +465,11 @@ class NetworkInterface:
         You must have sudo permissions to run this method on a host.
         """
         ip = ip_interface(f"{ipaddr}/{netmask}")
-        cmd = f'ip addr del {ip.compressed} dev {self.name}'
+        cmd = f"ip addr del {ip.compressed} dev {self.name}"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            msg = f'Failed to remove ipaddr. {ex}'
+            msg = f"Failed to remove ipaddr. {ex}"
             raise NWException(msg)
 
     def flush_ipaddr(self):
@@ -480,11 +481,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = f'ip addr flush dev {self.name}'
+        cmd = f"ip addr flush dev {self.name}"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            msg = f'Failed to flush ipaddr. {ex}'
+            msg = f"Failed to flush ipaddr. {ex}"
             raise NWException(msg)
 
     def remove_link(self):
@@ -496,11 +497,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = f'ip link del dev {self.name}'
+        cmd = f"ip link del dev {self.name}"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            msg = f'Failed to delete link. {ex}'
+            msg = f"Failed to delete link. {ex}"
             raise NWException(msg)
 
     def restore_from_backup(self):
@@ -514,8 +515,7 @@ class NetworkInterface:
         if os.path.exists(backup_file):
             shutil.move(backup_file, self.config_filename)
         else:
-            raise NWException(
-                "Backup file not available, could not restore file.")
+            raise NWException("Backup file not available, could not restore file.")
 
     def is_available(self):
         """Check if interface is available.
@@ -524,7 +524,7 @@ class NetworkInterface:
 
         rtype: bool
         """
-        cmd = f'ip link show dev {self.name}'
+        cmd = f"ip link show dev {self.name}"
         try:
             run_command(cmd, self.host)
             return True
@@ -540,7 +540,7 @@ class NetworkInterface:
 
         rtype: bool
         """
-        cmd = f'cat /proc/net/bonding/{self.name}'
+        cmd = f"cat /proc/net/bonding/{self.name}"
         try:
             run_command(cmd, self.host)
             return True
@@ -560,7 +560,7 @@ class NetworkInterface:
         """
         Restore or delete slave config files.
         """
-        if self.if_type != 'Bond':
+        if self.if_type != "Bond":
             return
         for slave_config in self.slave_config_filename:
             backup_slave_config = f"{slave_config}.backup"
@@ -571,3 +571,27 @@ class NetworkInterface:
                     os.remove(slave_config)
             except Exception as ex:
                 raise NWException(f"Could not restore the config file {ex}")
+
+    def are_packets_lost(self, peer_ip, options=None, sudo=False):
+        """Check packet loss that occurs during ping.
+
+        Function returns True for 0% packet loss and False
+        if packet loss occurs.
+
+        :param peer_ip: Peer IP address (IPv4 or IPv6)
+        :param options: Type is List. Options such as -c, -f. Default is None
+        :param sudo: If sudo permissions are needed. Default is False
+        """
+        cmd = f"ping -I {self.name} {peer_ip}"
+        cmd = f"{cmd} "
+        if options is not None:
+            for elem in options:
+                cmd += f"{elem} "
+        try:
+            output = run_command(cmd, self.host, sudo=sudo)
+            if "0% packet loss" not in output:
+                return False
+            return True
+        except Exception as ex:
+            msg = f"Failed to ping. {ex}"
+            raise NWException(msg)

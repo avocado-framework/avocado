@@ -14,13 +14,15 @@ Valid test statuses and whether they signal success (or failure).
 """
 
 #: Maps the different status strings in avocado to booleans.
-STATUSES_MAPPING = {"SKIP": True,
-                    "ERROR": False,
-                    "FAIL": False,
-                    "WARN": True,
-                    "PASS": True,
-                    "INTERRUPTED": False,
-                    "CANCEL": True}
+STATUSES_MAPPING = {
+    "SKIP": True,
+    "ERROR": False,
+    "FAIL": False,
+    "WARN": True,
+    "PASS": True,
+    "INTERRUPTED": False,
+    "CANCEL": True,
+}
 
 #: Valid test statuses, if a returned status is not listed here, it
 #: should be handled as error condition.

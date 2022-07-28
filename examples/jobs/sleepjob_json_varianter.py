@@ -5,8 +5,10 @@ import sys
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 
-config = {'resolver.references': ['examples/tests/sleeptest.py:SleepTest.test'],
-          'json.variants.load': 'examples/tests/sleeptest.py.data/sleeptest.json'}
+config = {
+    "resolver.references": ["examples/tests/sleeptest.py:SleepTest.test"],
+    "json.variants.load": "examples/tests/sleeptest.py.data/sleeptest.json",
+}
 
 suite = TestSuite.from_config(config)
 with Job(config, [suite]) as j:

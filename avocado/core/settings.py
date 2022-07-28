@@ -69,8 +69,10 @@ class ConfigFileNotFound(SettingsError):
         self.path_list = path_list
 
     def __str__(self):
-        return (f"Could not find the avocado config file after looking in: "
-                f"{self.path_list}")
+        return (
+            f"Could not find the avocado config file after looking in: "
+            f"{self.path_list}"
+        )
 
 
 class DuplicatedNamespace(SettingsError):
@@ -86,11 +88,24 @@ class NamespaceNotRegistered(SettingsError):
 
 
 class ConfigOption:
-    def __init__(self, namespace, help_msg, key_type=str, default=None,
-                 parser=None, short_arg=None, long_arg=None,
-                 positional_arg=False, choices=None, nargs=None,
-                 metavar=None, required=None, action=None, argparse_type=None,
-                 argparse_help_msg=None):
+    def __init__(
+        self,
+        namespace,
+        help_msg,
+        key_type=str,
+        default=None,
+        parser=None,
+        short_arg=None,
+        long_arg=None,
+        positional_arg=False,
+        choices=None,
+        nargs=None,
+        metavar=None,
+        required=None,
+        action=None,
+        argparse_type=None,
+        argparse_help_msg=None,
+    ):
         self.namespace = namespace
         self.help_msg = help_msg
         self.key_type = key_type
@@ -115,18 +130,18 @@ class ConfigOption:
         if self.key_type is bool:
             # action is automatic when using bool types
             if self.default is False:
-                return 'store_true'
+                return "store_true"
             else:
-                return 'store_false'
+                return "store_false"
         return self._action
 
     @property
     def section(self):
-        return '.'.join(self.namespace.split('.')[:-1])
+        return ".".join(self.namespace.split(".")[:-1])
 
     @property
     def key(self):
-        return self.namespace.split('.')[-1]
+        return self.namespace.split(".")[-1]
 
     @property
     def value(self):
@@ -181,31 +196,30 @@ class ConfigOption:
 
     @property
     def arg_parse_args(self):
-        args = {'help': self.argparse_help_msg,
-                'default': None}
+        args = {"help": self.argparse_help_msg, "default": None}
 
         if self.nargs:
-            args['nargs'] = self.nargs
+            args["nargs"] = self.nargs
         if self.metavar:
-            args['metavar'] = self.metavar
+            args["metavar"] = self.metavar
         if self.choices:
-            args['choices'] = self.choices
+            args["choices"] = self.choices
         if self.action:
-            args['action'] = self.action
+            args["action"] = self.action
 
         if self.key_type is not bool:
             # We don't specify type for bool
-            args['type'] = self.argparse_type
+            args["type"] = self.argparse_type
 
         if not self.positional_arg:
-            args['required'] = self.required
-            args['dest'] = self.namespace  # most of the magic is here
+            args["required"] = self.required
+            args["dest"] = self.namespace  # most of the magic is here
 
         return args
 
     @staticmethod
     def _as_list(value):
-        if value == '':
+        if value == "":
             return []
 
         if isinstance(value, str):
@@ -225,10 +239,20 @@ class ConfigOption:
         else:
             self.parser.add_argument(*self.name_or_tags, **self.arg_parse_args)
 
-    def add_argparser(self, parser, long_arg, short_arg=None,
-                      positional_arg=False, choices=None, nargs=None,
-                      metavar=None, required=None, action=None,
-                      argparse_type=None, argparse_help_msg=None):
+    def add_argparser(
+        self,
+        parser,
+        long_arg,
+        short_arg=None,
+        positional_arg=False,
+        choices=None,
+        nargs=None,
+        metavar=None,
+        required=None,
+        action=None,
+        argparse_type=None,
+        argparse_help_msg=None,
+    ):
         """Add an command-line argparser to this option."""
 
         self.parser = parser
@@ -254,7 +278,7 @@ class ConfigOption:
             if dst_type is list:
                 self._value = self._as_list(value)
             elif dst_type is bool:
-                self._value = value.lower() in ['true', 'on', 'y', 'yes', '1']
+                self._value = value.lower() in ["true", "on", "y", "yes", "1"]
             else:
                 self._value = dst_type(value)
 
@@ -309,8 +333,7 @@ class Settings:
         # Allow plugins to modify/extend the list of configs
         dispatcher = SettingsDispatcher()
         if dispatcher.extensions:
-            dispatcher.map_method('adjust_settings_paths',
-                                  self.all_config_paths)
+            dispatcher.map_method("adjust_settings_paths", self.all_config_paths)
 
         # Override with the user's local config
         self._append_user_config()
@@ -319,8 +342,7 @@ class Settings:
         if self._config_path_pkg is not None:
             self.all_config_paths.append(self._config_path_pkg)
         self.all_config_paths.append(self._config_path_system)
-        configs = glob.glob(os.path.join(self._config_dir_system_extra,
-                                         '*.conf'))
+        configs = glob.glob(os.path.join(self._config_dir_system_extra, "*.conf"))
         for extra_file in configs:
             self.all_config_paths.append(extra_file)
 
@@ -329,35 +351,43 @@ class Settings:
             self.all_config_paths.append(self._config_path_local)
 
     def _prepare_base_dirs(self):
-        cfg_dir = '/etc'
+        cfg_dir = "/etc"
         user_dir = os.path.expanduser("~")
 
-        if 'VIRTUAL_ENV' in os.environ:
-            cfg_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
-            user_dir = os.environ['VIRTUAL_ENV']
+        if "VIRTUAL_ENV" in os.environ:
+            cfg_dir = os.path.join(os.environ["VIRTUAL_ENV"], "etc")
+            user_dir = os.environ["VIRTUAL_ENV"]
 
-        config_file_name = 'avocado.conf'
-        config_pkg_base = os.path.join('etc', 'avocado', config_file_name)
-        if resource_exists('avocado', config_pkg_base):
-            self._config_path_pkg = resource_filename('avocado', config_pkg_base)
+        config_file_name = "avocado.conf"
+        config_pkg_base = os.path.join("etc", "avocado", config_file_name)
+        if resource_exists("avocado", config_pkg_base):
+            self._config_path_pkg = resource_filename("avocado", config_pkg_base)
         else:
             self._config_path_pkg = None
-        self._config_dir_system = os.path.join(cfg_dir, 'avocado')
-        self._config_dir_system_extra = os.path.join(cfg_dir,
-                                                     'avocado',
-                                                     'conf.d')
-        self._config_dir_local = os.path.join(user_dir, '.config', 'avocado')
-        self._config_path_system = os.path.join(self._config_dir_system,
-                                                config_file_name)
-        self._config_path_local = os.path.join(self._config_dir_local,
-                                               config_file_name)
+        self._config_dir_system = os.path.join(cfg_dir, "avocado")
+        self._config_dir_system_extra = os.path.join(cfg_dir, "avocado", "conf.d")
+        self._config_dir_local = os.path.join(user_dir, ".config", "avocado")
+        self._config_path_system = os.path.join(
+            self._config_dir_system, config_file_name
+        )
+        self._config_path_local = os.path.join(self._config_dir_local, config_file_name)
 
-    def add_argparser_to_option(self, namespace, parser, long_arg=None,
-                                short_arg=None, positional_arg=False,
-                                choices=None, nargs=None, metavar=None,
-                                required=None, action=None,
-                                allow_multiple=False, argparse_type=None,
-                                help_msg=None):
+    def add_argparser_to_option(
+        self,
+        namespace,
+        parser,
+        long_arg=None,
+        short_arg=None,
+        positional_arg=False,
+        choices=None,
+        nargs=None,
+        metavar=None,
+        required=None,
+        action=None,
+        allow_multiple=False,
+        argparse_type=None,
+        help_msg=None,
+    ):
         """Add a command-line argument parser to an existing option.
 
         This method is useful to add a parser when the option is registered
@@ -429,9 +459,11 @@ class Settings:
             sense together.
         """
         if not any([long_arg, short_arg, positional_arg]):
-            raise SettingsError("To add an argument parser to an option, it "
-                                "needs to have a long argument, a short "
-                                "argument or be a positional argument")
+            raise SettingsError(
+                "To add an argument parser to an option, it "
+                "needs to have a long argument, a short "
+                "argument or be a positional argument"
+            )
 
         option = None
         try:
@@ -444,9 +476,19 @@ class Settings:
             msg = "Parser already registered for this namespace"
             raise SettingsError(msg)
 
-        option.add_argparser(parser, long_arg, short_arg, positional_arg,
-                             choices, nargs, metavar, required, action,
-                             argparse_type, help_msg)
+        option.add_argparser(
+            parser,
+            long_arg,
+            short_arg,
+            positional_arg,
+            choices,
+            nargs,
+            metavar,
+            required,
+            action,
+            argparse_type,
+            help_msg,
+        )
 
     def as_dict(self, regex=None):
         """Return an dictionary with the current active settings.
@@ -466,11 +508,13 @@ class Settings:
     def as_full_dict(self):
         result = {}
         for namespace, option in sorted_dict(self._namespaces):
-            result[namespace] = {'help': option.help_msg,
-                                 'type': option.key_type,
-                                 'default': option.default,
-                                 'section': option.section,
-                                 'key': option.key}
+            result[namespace] = {
+                "help": option.help_msg,
+                "type": option.key_type,
+                "default": option.default,
+                "section": option.section,
+                "key": option.key,
+            }
         return result
 
     def as_json(self, regex=None):
@@ -512,8 +556,8 @@ class Settings:
             # which will be an empty list.  We need to update only the
             # options that the user has specified.
             config_option = self._namespaces.get(namespace, None)
-            positional = getattr(config_option, 'positional_arg', False)
-            if (positional and value == []):
+            positional = getattr(config_option, "positional_arg", False)
+            if positional and value == []:
                 continue
             if value is not None:
                 if namespace in self._namespaces:
@@ -536,10 +580,24 @@ class Settings:
         self.all_config_paths.append(path)
         self.config_paths.extend(self.config.read(path))
 
-    def register_option(self, section, key, default, help_msg, key_type=str,
-                        parser=None, positional_arg=False, short_arg=None,
-                        long_arg=None, choices=None, nargs=None, metavar=None,
-                        required=False, action=None, allow_multiple=False):
+    def register_option(
+        self,
+        section,
+        key,
+        default,
+        help_msg,
+        key_type=str,
+        parser=None,
+        positional_arg=False,
+        short_arg=None,
+        long_arg=None,
+        choices=None,
+        nargs=None,
+        metavar=None,
+        required=False,
+        action=None,
+        allow_multiple=False,
+    ):
         """Method used to register a configuration option inside Avocado.
 
         This should be used to register a settings option (either config file
@@ -645,19 +703,38 @@ class Settings:
         # Check if namespace is already registered
         if namespace in self._namespaces:
             if not allow_multiple:
-                msg = (f'Key "{key}" already registered under '
-                       f'section "{section}"')
+                msg = f'Key "{key}" already registered under ' f'section "{section}"'
                 raise DuplicatedNamespace(msg)
             else:
-                self.add_argparser_to_option(namespace, parser, long_arg,
-                                             short_arg, positional_arg,
-                                             choices, nargs, metavar,
-                                             required, action,
-                                             allow_multiple)
+                self.add_argparser_to_option(
+                    namespace,
+                    parser,
+                    long_arg,
+                    short_arg,
+                    positional_arg,
+                    choices,
+                    nargs,
+                    metavar,
+                    required,
+                    action,
+                    allow_multiple,
+                )
         else:
-            option = ConfigOption(namespace, help_msg, key_type, default,
-                                  parser, short_arg, long_arg, positional_arg,
-                                  choices, nargs, metavar, required, action)
+            option = ConfigOption(
+                namespace,
+                help_msg,
+                key_type,
+                default,
+                parser,
+                short_arg,
+                long_arg,
+                positional_arg,
+                choices,
+                nargs,
+                metavar,
+                required,
+                action,
+            )
 
             # Register the option to a dynamic in-memory namespaces
             self._namespaces[namespace] = option

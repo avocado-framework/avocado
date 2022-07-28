@@ -51,12 +51,14 @@ def url_open(url, data=None, timeout=5):
         log.error(msg)
         return None
 
-    msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
-           'last-modified: "%s"')
-    log.debug(msg, url,
-              result.headers.get('Content-Length', 'UNKNOWN'),
-              result.headers.get('Date', 'UNKNOWN'),
-              result.headers.get('Last-Modified', 'UNKNOWN'))
+    msg = 'Retrieved URL "%s": content-length %s, date: "%s", last-modified: "%s"'
+    log.debug(
+        msg,
+        url,
+        result.headers.get("Content-Length", "UNKNOWN"),
+        result.headers.get("Date", "UNKNOWN"),
+        result.headers.get("Last-Modified", "UNKNOWN"),
+    )
     return result
 
 
@@ -70,22 +72,25 @@ def url_download(url, filename, data=None, timeout=300):
     :param timeout: (optional) default timeout in seconds.
     :return: `None`.
     """
+
     def download():
         src_file = url_open(url, data=data)
         if not src_file:
-            msg = ("Failed to get file. Probably timeout was reached when "
-                   "connecting to the server.\n")
+            msg = (
+                "Failed to get file. Probably timeout was reached when "
+                "connecting to the server.\n"
+            )
             sys.stderr.write(msg)
             sys.exit(1)
 
         try:
-            with open(filename, 'wb') as dest_file:
+            with open(filename, "wb") as dest_file:
                 shutil.copyfileobj(src_file, dest_file)
         finally:
             src_file.close()
 
     process = Process(target=download)
-    log.info('Fetching %s -> %s', url, filename)
+    log.info("Fetching %s -> %s", url, filename)
     process.start()
     process.join(timeout)
     if process.is_alive():
@@ -94,7 +99,7 @@ def url_download(url, filename, data=None, timeout=300):
         raise OSError("Aborting downloading. Timeout was reached.")
 
 
-def url_download_interactive(url, output_file, title='', chunk_size=102400):
+def url_download_interactive(url, output_file, title="", chunk_size=102400):
     """
     Interactively downloads a given file url to a given output file.
 
@@ -108,16 +113,20 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
     :param chunk_size: amount of data to read at a time
     """
     output_dir = os.path.dirname(output_file)
-    with open(output_file, 'w+b') as open_output_file:
+    with open(output_file, "w+b") as open_output_file:
         input_file = urlopen(url)
 
         try:
-            file_size = int(input_file.headers['Content-Length'])
+            file_size = int(input_file.headers["Content-Length"])
         except KeyError:
-            raise ValueError('Could not find file size in HTTP headers')
+            raise ValueError("Could not find file size in HTTP headers")
 
-        log.info('Downloading %s, %s to %s', os.path.basename(url),
-                 output.display_data_size(file_size), output_dir)
+        log.info(
+            "Downloading %s, %s to %s",
+            os.path.basename(url),
+            output.display_data_size(file_size),
+            output_dir,
+        )
 
         progress_bar = output.ProgressBar(maximum=file_size, title=title)
 
@@ -147,8 +156,14 @@ def _get_file(src, dst, permissions=None):
     return dst
 
 
-def get_file(src, dst, permissions=None, hash_expected=None,
-             hash_algorithm="md5", download_retries=1):
+def get_file(
+    src,
+    dst,
+    permissions=None,
+    hash_expected=None,
+    hash_algorithm="md5",
+    download_retries=1,
+):
     """
     Gets a file from a source location, optionally using caching.
 
@@ -171,6 +186,7 @@ def get_file(src, dst, permissions=None, hash_expected=None,
     :raise: EnvironmentError.
     :return: destination path.
     """
+
     def _verify_hash(filename):
         if os.path.isfile(filename):
             return crypto.hash_file(filename, algorithm=hash_algorithm)
@@ -188,10 +204,12 @@ def get_file(src, dst, permissions=None, hash_expected=None,
             log.error("It seems that dst %s is corrupted", dst)
             download_failures += 1
         if download_failures > download_retries:
-            raise EnvironmentError(f"Failed to retrieve {src}. "
-                                   f"Possible reasons - Network connectivity "
-                                   f"problems or incorrect hash_expected "
-                                   f"provided -> '{hash_expected}'")
+            raise EnvironmentError(
+                f"Failed to retrieve {src}. "
+                f"Possible reasons - Network connectivity "
+                f"problems or incorrect hash_expected "
+                f"provided -> '{hash_expected}'"
+            )
         else:
             log.error("Retrying download of src %s", src)
 

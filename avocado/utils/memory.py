@@ -58,9 +58,10 @@ def _check_memory_state(block):
     :return: 'True' if online or 'False' if offline
     :rtype: bool
     """
+
     def _is_online():
-        path = f'/sys/devices/system/memory/{get_blk_string(block)}/state'
-        if genio.read_file(path) == 'online\n':
+        path = f"/sys/devices/system/memory/{get_blk_string(block)}/state"
+        if genio.read_file(path) == "online\n":
             return True
         return False
 
@@ -74,7 +75,7 @@ def check_hotplug():
     :return: True if hotplug supported,  else False
     :rtype: 'bool'
     """
-    if glob.glob('/sys/devices/system/memory/memory*'):
+    if glob.glob("/sys/devices/system/memory/memory*"):
         return True
     return False
 
@@ -88,7 +89,7 @@ def is_hot_pluggable(block):
     :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    path = f'/sys/devices/system/memory/{get_blk_string(block)}/removable'
+    path = f"/sys/devices/system/memory/{get_blk_string(block)}/removable"
     return bool(int(genio.read_file(path)))
 
 
@@ -100,11 +101,11 @@ def hotplug(block):
     :type string: like 198
     """
     block = get_blk_string(block)
-    with open(f'/sys/devices/system/memory/{block}/state', 'w') as state_file:  # pylint: disable=W1514
-        state_file.write('online')
+    # pylint: disable=W1514
+    with open(f"/sys/devices/system/memory/{block}/state", "w") as state_file:
+        state_file.write("online")
     if not _check_memory_state(block):
-        raise MemError(
-            f"unable to hot-plug {block} block, not supported ?")
+        raise MemError(f"unable to hot-plug {block} block, not supported ?")
 
 
 def hotunplug(block):
@@ -115,11 +116,11 @@ def hotunplug(block):
     :type string: like 198 or memory198
     """
     block = get_blk_string(block)
-    with open(f'/sys/devices/system/memory/{block}/state', 'w') as state_file:  # pylint: disable=W1514
-        state_file.write('offline')
+    # pylint: disable=W1514
+    with open(f"/sys/devices/system/memory/{block}/state", "w") as state_file:
+        state_file.write("offline")
     if _check_memory_state(block):
-        raise MemError(
-            f"unable to hot-unplug {block} block. Device busy?")
+        raise MemError(f"unable to hot-unplug {block} block. Device busy?")
 
 
 def read_from_meminfo(key):
@@ -137,7 +138,7 @@ def memtotal():
     """
     Read ``Memtotal`` from meminfo.
     """
-    return read_from_meminfo('MemTotal')
+    return read_from_meminfo("MemTotal")
 
 
 def memtotal_sys():
@@ -147,14 +148,14 @@ def memtotal_sys():
 
     :return: system memory in Kb as float
     """
-    sys_mempath = '/sys/devices/system/memory'
+    sys_mempath = "/sys/devices/system/memory"
     no_memblocks = 0
     for directory in os.listdir(sys_mempath):
-        if directory.startswith('memory'):
-            path = os.path.join(sys_mempath, directory, 'online')
-            if genio.read_file(path).strip() == '1':
+        if directory.startswith("memory"):
+            path = os.path.join(sys_mempath, directory, "online")
+            if genio.read_file(path).strip() == "1":
                 no_memblocks += 1
-    path = os.path.join(sys_mempath, 'block_size_bytes')
+    path = os.path.join(sys_mempath, "block_size_bytes")
     block_size = int(genio.read_file(path).strip(), 16)
     return (no_memblocks * block_size) / 1024.0
 
@@ -163,7 +164,7 @@ def freememtotal():
     """
     Read ``MemFree`` from meminfo.
     """
-    return read_from_meminfo('MemFree')
+    return read_from_meminfo("MemFree")
 
 
 def rounded_memtotal():
@@ -198,7 +199,7 @@ def rounded_memtotal():
     # have round_kbytes <= mod2n < round_kbytes*2
     # round min_kbytes up to next multiple of mod2n
     phys_kbytes = min_kbytes + mod2n - 1
-    phys_kbytes -= (phys_kbytes % mod2n)  # clear low bits
+    phys_kbytes -= phys_kbytes % mod2n  # clear low bits
     return phys_kbytes
 
 
@@ -208,9 +209,9 @@ def numa_nodes():
 
     :return: List with nodes.
     """
-    node_paths = glob.glob('/sys/devices/system/node/node*')
-    nodes = [int(re.sub(r'.*node(\d+)', r'\1', x)) for x in node_paths]
-    return (sorted(nodes))
+    node_paths = glob.glob("/sys/devices/system/node/node*")
+    nodes = [int(re.sub(r".*node(\d+)", r"\1", x)) for x in node_paths]
+    return sorted(nodes)
 
 
 def numa_nodes_with_memory():
@@ -219,13 +220,13 @@ def numa_nodes_with_memory():
 
     :return: List with nodes which has memory.
     """
-    mem_path = '/sys/devices/system/node/has_normal_memory'
+    mem_path = "/sys/devices/system/node/has_normal_memory"
     if not os.path.exists(mem_path):
-        mem_path = '/sys/devices/system/node/has_memory'
+        mem_path = "/sys/devices/system/node/has_memory"
         if not os.path.exists(mem_path):
             raise MemError("No NUMA nodes have memory")
 
-    node_list = str(genio.read_file(mem_path).rstrip('\n'))
+    node_list = str(genio.read_file(mem_path).rstrip("\n"))
     return data_structures.comma_separated_ranges_to_list(node_list)
 
 
@@ -236,7 +237,7 @@ def node_size():
     :return: Node size.
     """
     nodes = max(len(numa_nodes()), 1)
-    return ((memtotal() * 1024) / nodes)
+    return (memtotal() * 1024) / nodes
 
 
 def get_page_size():
@@ -245,7 +246,7 @@ def get_page_size():
 
     :return Kernel page size (Bytes).
     """
-    output = process.system_output('getconf PAGESIZE')
+    output = process.system_output("getconf PAGESIZE")
     return int(output)
 
 
@@ -255,13 +256,15 @@ def get_supported_huge_pages_size():
 
     :return: list of Huge pages size (kB).
     """
-    output = os.listdir('/sys/kernel/mm/hugepages/')
+    output = os.listdir("/sys/kernel/mm/hugepages/")
     # Given the items in this directory are in the format hugepages-<size>kB,
     # the <size> will always start from index 10.
-    output = [int(each[10:].rstrip('kB')) for each in output]
-    if os.uname()[4] in ['ppc64', 'ppc64le'] and b'PowerVM'\
-            in process.system_output("pseries_platform", ignore_status=True)\
-            and 'MMU\t\t: Hash' in genio.read_file('/proc/cpuinfo').rstrip('\t\r\n\0'):
+    output = [int(each[10:].rstrip("kB")) for each in output]
+    if (
+        os.uname()[4] in ["ppc64", "ppc64le"]
+        and b"PowerVM" in process.system_output("pseries_platform", ignore_status=True)
+        and "MMU\t\t: Hash" in genio.read_file("/proc/cpuinfo").rstrip("\t\r\n\0")
+    ):
         output.remove(16777216)
     return output
 
@@ -272,7 +275,7 @@ def get_huge_page_size():
 
     :return: Huge pages size (KB).
     """
-    output = process.system_output('grep Hugepagesize /proc/meminfo')
+    output = process.system_output("grep Hugepagesize /proc/meminfo")
     return int(output.split()[1])  # Assumes units always in kB. :(
 
 
@@ -282,7 +285,7 @@ def get_num_huge_pages():
 
     :return: Number of huge pages.
     """
-    raw_hugepages = process.system_output('/sbin/sysctl vm.nr_hugepages')
+    raw_hugepages = process.system_output("/sbin/sysctl vm.nr_hugepages")
     return int(raw_hugepages.split()[2])
 
 
@@ -292,7 +295,7 @@ def set_num_huge_pages(num):
 
     :param num: Target number of huge pages.
     """
-    process.system(f'/sbin/sysctl vm.nr_hugepages={int(num)}')
+    process.system(f"/sbin/sysctl vm.nr_hugepages={int(num)}")
 
 
 def drop_caches():
@@ -301,8 +304,12 @@ def drop_caches():
     """
     process.run("sync", verbose=False)
     # We ignore failures here as this will fail on 2.6.11 kernels.
-    process.run("/bin/sh -c 'echo 3 > /proc/sys/vm/drop_caches'",
-                ignore_status=True, verbose=False, sudo=True)
+    process.run(
+        "/bin/sh -c 'echo 3 > /proc/sys/vm/drop_caches'",
+        ignore_status=True,
+        verbose=False,
+        sudo=True,
+    )
 
 
 def read_from_vmstat(key):
@@ -316,7 +323,7 @@ def read_from_vmstat(key):
     """
     with open("/proc/vmstat") as vmstat:  # pylint: disable=W1514
         vmstat_info = vmstat.read()
-        return int(re.findall(fr"{key}\s+(\d+)", vmstat_info)[0])
+        return int(re.findall(rf"{key}\s+(\d+)", vmstat_info)[0])
 
 
 def read_from_smaps(pid, key):
@@ -334,7 +341,7 @@ def read_from_smaps(pid, key):
         smaps_info = smaps.read()
 
         memory_size = 0
-        for each_number in re.findall(fr"{key}:\s+(\d+)", smaps_info):
+        for each_number in re.findall(rf"{key}:\s+(\d+)", smaps_info):
             memory_size += int(each_number)
 
         return memory_size
@@ -356,7 +363,7 @@ def read_from_numa_maps(pid, key):
         numa_map_info = numa_maps.read()
 
         numa_maps_dict = {}
-        numa_pattern = fr"(^[\dabcdfe]+)\s+.*{key}[=:](\d+)"
+        numa_pattern = rf"(^[\dabcdfe]+)\s+.*{key}[=:](\d+)"
         for address, number in re.findall(numa_pattern, numa_map_info, re.M):
             numa_maps_dict[address] = number
 
@@ -364,7 +371,7 @@ def read_from_numa_maps(pid, key):
 
 
 def _get_buddy_info_content():
-    buddy_info_content = ''
+    buddy_info_content = ""
     with open("/proc/buddyinfo") as buddy_info:  # pylint: disable=W1514
         buddy_info_content = buddy_info.read()
     return buddy_info_content
@@ -423,10 +430,14 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
 
     if re.findall("[<>=]", chunk_sizes) and buddy_list:
         size_list = len(buddy_list[-1][-1].strip().split())
-        chunk_sizes = [str(_) for _ in range(size_list)
-                       if eval(f"{_} {chunk_sizes}")]  # pylint: disable=W0123
+        chunk_sizes = [
+            # pylint: disable=W0123
+            str(_)
+            for _ in range(size_list)
+            if eval(f"{_} {chunk_sizes}")
+        ]
 
-        chunk_sizes = ' '.join(chunk_sizes)
+        chunk_sizes = " ".join(chunk_sizes)
 
     buddyinfo_dict = {}
     for chunk_size in chunk_sizes.split():
@@ -447,7 +458,7 @@ def set_thp_value(feature, value):
     :param value: Value to be set to feature
     :type value: str
     """
-    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_path = "/sys/kernel/mm/transparent_hugepage/"
     thp_feature_to_set = os.path.join(thp_path, feature)
     genio.write_file_or_fail(thp_feature_to_set, value)
 
@@ -459,7 +470,7 @@ def get_thp_value(feature):
     :Param feature: Thp feature to get value
     :type feature: str
     """
-    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_path = "/sys/kernel/mm/transparent_hugepage/"
     thp_feature_to_get = os.path.join(thp_path, feature)
     value = genio.read_file(thp_feature_to_get)
     if feature in ("enabled", "defrag", "shmem_enabled"):
@@ -477,7 +488,7 @@ class _MemInfoItem:
         self.name = name
 
     def __getattr__(self, attr):
-        datasize = DataSize(f'{read_from_meminfo(self.name)}k')
+        datasize = DataSize(f"{read_from_meminfo(self.name)}k")
         return getattr(datasize, attr)
 
 
@@ -487,10 +498,10 @@ class MemInfo:
     """
 
     def __init__(self):
-        with open('/proc/meminfo', 'r') as meminfo_file:  # pylint: disable=W1514
+        with open("/proc/meminfo", "r") as meminfo_file:  # pylint: disable=W1514
             for line in meminfo_file.readlines():
-                name = line.strip().split()[0].strip(':')
-                safe_name = name.replace('(', '_').replace(')', '_')
+                name = line.strip().split()[0].strip(":")
+                safe_name = name.replace("(", "_").replace(")", "_")
                 setattr(self, safe_name, _MemInfoItem(name))
 
     def __iter__(self):

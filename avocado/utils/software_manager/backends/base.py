@@ -21,7 +21,7 @@
 
 import logging
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 class BaseBackend:
@@ -40,5 +40,5 @@ class BaseBackend:
         if provides is not None:
             return self.install(provides)
         else:
-            log.warning('No package seems to provide %s', path)
+            log.warning("No package seems to provide %s", path)
             return False

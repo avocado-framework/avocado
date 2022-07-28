@@ -36,8 +36,10 @@ def add_runner_failure(test_state, new_status, message):
     :param message: The error message
     """
     # Try to propagate the message everywhere
-    message = (f"Runner error occurred: {message}\n"
-               f"Original status: {test_state.get('status')}\n{test_state}")
+    message = (
+        f"Runner error occurred: {message}\n"
+        f"Original status: {test_state.get('status')}\n{test_state}"
+    )
     TEST_LOG.error(message)
     test_log = test_state.get("logfile")
     if test_state.get("text_output"):
@@ -45,8 +47,8 @@ def add_runner_failure(test_state, new_status, message):
     else:
         test_state["text_output"] = message + "\n"
     if test_log:
-        with open(test_log, "a", encoding='utf-8') as log_file:
-            log_file.write('\n' + message + '\n')
+        with open(test_log, "a", encoding="utf-8") as log_file:
+            log_file.write("\n" + message + "\n")
     # Update the results
     if test_state.get("fail_reason"):
         test_state["fail_reason"] = f"{test_state['fail_reason']}\n{message}"
@@ -109,10 +111,10 @@ class TestStatus:
                     break
                 if "early_status" in msg:
                     self._early_status = msg
-                    for _ in queue:     # Return all unprocessed messages back
+                    for _ in queue:  # Return all unprocessed messages back
                         self.queue.put(_)
                     return msg
-                else:   # Not an early_status message
+                else:  # Not an early_status message
                     queue.append(msg)
 
     def __getattribute__(self, name):
@@ -133,15 +135,18 @@ class TestStatus:
         while not self.early_status:
             if not proc.is_alive():
                 if not self.early_status:
-                    raise exceptions.TestError("Process died before it pushed "
-                                               "early test_status.")
+                    raise exceptions.TestError(
+                        "Process died before it pushed " "early test_status."
+                    )
             if time.monotonic() > end and not self.early_status:
                 os.kill(proc.pid, signal.SIGTERM)
                 if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
                     os.kill(proc.pid, signal.SIGKILL)
-                msg = (f"Unable to receive test's early-status in {timeout}, "
-                       f"something wrong happened probably in the "
-                       f"avocado framework.")
+                msg = (
+                    f"Unable to receive test's early-status in {timeout}, "
+                    f"something wrong happened probably in the "
+                    f"avocado framework."
+                )
                 raise exceptions.TestError(msg)
             time.sleep(step)
 
@@ -154,20 +159,22 @@ class TestStatus:
             if msg is None:
                 break
             if "func_at_exit" in msg:
-                self.job.funcatexit.register(msg["func_at_exit"],
-                                             msg.get("args", tuple()),
-                                             msg.get("kwargs", {}),
-                                             msg.get("once", False))
+                self.job.funcatexit.register(
+                    msg["func_at_exit"],
+                    msg.get("args", tuple()),
+                    msg.get("kwargs", {}),
+                    msg.get("once", False),
+                )
             elif not msg.get("running", True):
                 self.status = msg
                 self.interrupt = True
             elif "paused" in msg:
                 self.status = msg
-                self.job.result_events_dispatcher.map_method('test_progress', False)
-                paused_msg = msg['paused']
+                self.job.result_events_dispatcher.map_method("test_progress", False)
+                paused_msg = msg["paused"]
                 if paused_msg:
                     self.job.log.warning(paused_msg)
-            else:       # test_status
+            else:  # test_status
                 self.status = msg
 
     def _add_status_failures(self, test_state):
@@ -175,8 +182,11 @@ class TestStatus:
         Append TestStatus error to test_state in case there were any.
         """
         if self._failed:
-            return add_runner_failure(test_state, "ERROR", "TestStatus failed,"
-                                      " see overall job.log for details.")
+            return add_runner_failure(
+                test_state,
+                "ERROR",
+                "TestStatus failed," " see overall job.log for details.",
+            )
         return test_state
 
     def finish(self, proc, started, step, deadline, result_dispatcher):
@@ -195,19 +205,19 @@ class TestStatus:
         # Wait for either process termination or test status
         wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0, step)
         config = settings.as_dict()
-        if self.status:     # status exists, wait for process to finish
-            timeout_process_alive = config.get('runner.timeout.process_alive')
+        if self.status:  # status exists, wait for process to finish
+            timeout_process_alive = config.get("runner.timeout.process_alive")
             deadline = min(deadline, time.monotonic() + timeout_process_alive)
             while time.monotonic() < deadline:
-                result_dispatcher.map_method('test_progress', False)
+                result_dispatcher.map_method("test_progress", False)
                 if wait.wait_for(lambda: not proc.is_alive(), 1, 0, step):
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
-        else:   # proc finished, wait for late status delivery
-            timeout_process_died = config.get('runner.timeout.process_died')
+        else:  # proc finished, wait for late status delivery
+            timeout_process_died = config.get("runner.timeout.process_died")
             deadline = min(deadline, time.monotonic() + timeout_process_died)
             while time.monotonic() < deadline:
-                result_dispatcher.map_method('test_progress', False)
+                result_dispatcher.map_method("test_progress", False)
                 if wait.wait_for(lambda: self.status, 1, 0, step):
                     # Status delivered after the test process finished, pass
                     return self._add_status_failures(self.status)
@@ -215,20 +225,18 @@ class TestStatus:
         # At this point there were failures, fill the new test status
         TEST_LOG.debug("Original status: %s", str(self.status))
         test_state = self.early_status
-        test_state['time_start'] = started
-        test_state['time_elapsed'] = time.monotonic() - started
-        test_state['fail_reason'] = err
-        test_state['status'] = exceptions.TestAbortError.status
-        test_state['fail_class'] = (exceptions.TestAbortError.__class__.
-                                    __name__)
-        test_state['traceback'] = 'Traceback not available'
+        test_state["time_start"] = started
+        test_state["time_elapsed"] = time.monotonic() - started
+        test_state["fail_reason"] = err
+        test_state["status"] = exceptions.TestAbortError.status
+        test_state["fail_class"] = exceptions.TestAbortError.__class__.__name__
+        test_state["traceback"] = "Traceback not available"
         try:
-            with open(test_state['logfile'], 'r', encoding='utf-8') as log_file_obj:
-                test_state['text_output'] = log_file_obj.read()
+            with open(test_state["logfile"], "r", encoding="utf-8") as log_file_obj:
+                test_state["text_output"] = log_file_obj.read()
         except IOError:
             test_state["text_output"] = "Not available, file not created yet"
-        TEST_LOG.error('ERROR %s -> TestAbortError: %s.', err,
-                       test_state['name'])
+        TEST_LOG.error("ERROR %s -> TestAbortError: %s.", err, test_state["name"])
         if proc.is_alive():
             TEST_LOG.warning("Killing hanged test process %s", proc.pid)
             os.kill(proc.pid, signal.SIGTERM)
@@ -240,6 +248,7 @@ class TestStatus:
                         break
                     time.sleep(0.1)
                 else:
-                    raise exceptions.TestError(f"Unable to destroy test's "
-                                               f"process ({proc.pid})")
+                    raise exceptions.TestError(
+                        f"Unable to destroy test's " f"process ({proc.pid})"
+                    )
         return self._add_status_failures(test_state)

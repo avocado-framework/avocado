@@ -27,57 +27,59 @@ from avocado.core.settings import settings
 from avocado.core.test_id import TestID
 from avocado.utils import astring
 
-UNKNOWN = '<unknown>'
+UNKNOWN = "<unknown>"
 
 
 class JSONResult(Result):
 
-    name = 'json'
-    description = 'JSON result support'
+    name = "json"
+    description = "JSON result support"
 
     @staticmethod
     def _render(result):
         tests = []
         for test in result.tests:
-            fail_reason = test.get('fail_reason', UNKNOWN)
+            fail_reason = test.get("fail_reason", UNKNOWN)
             if fail_reason is not None:
                 fail_reason = astring.to_text(fail_reason)
-            tags = test.get('tags') or {}
             # Actually we are saving the TestID() there.
-            test_id = test.get('name', UNKNOWN)
+            test_id = test.get("name", UNKNOWN)
             if isinstance(test_id, TestID):
                 name = test_id.name
-            tests.append({'id': str(test_id),
-                          'name': str(name),
-                          'start': test.get('time_start', -1),
-                          'end': test.get('time_end', -1),
-                          'time': test.get('time_elapsed', -1),
-                          'status': test.get('status', {}),
-                          'tags': {k: list(v or {}) for k, v in tags.items()},
-                          'whiteboard': test.get('whiteboard', UNKNOWN),
-                          'logdir': test.get('logdir', UNKNOWN),
-                          'logfile': test.get('logfile', UNKNOWN),
-                          'fail_reason': fail_reason})
-        content = {'job_id': result.job_unique_id,
-                   'debuglog': result.logfile,
-                   'tests': tests,
-                   'total': result.tests_total,
-                   'pass': result.passed,
-                   'errors': result.errors,
-                   'failures': result.failed,
-                   'skip': result.skipped,
-                   'cancel': result.cancelled,
-                   'warn': result.warned,
-                   'interrupt': result.interrupted,
-                   'time': result.tests_total_time}
-        return json.dumps(content,
-                          sort_keys=True,
-                          indent=4,
-                          separators=(',', ': '))
+            tests.append(
+                {
+                    "id": str(test_id),
+                    "name": str(name),
+                    "start": test.get("time_start", -1),
+                    "end": test.get("time_end", -1),
+                    "time": test.get("time_elapsed", -1),
+                    "status": test.get("status", {}),
+                    "tags": test.get("tags") or {},
+                    "whiteboard": test.get("whiteboard", UNKNOWN),
+                    "logdir": test.get("logdir", UNKNOWN),
+                    "logfile": test.get("logfile", UNKNOWN),
+                    "fail_reason": fail_reason,
+                }
+            )
+        content = {
+            "job_id": result.job_unique_id,
+            "debuglog": result.logfile,
+            "tests": tests,
+            "total": result.tests_total,
+            "pass": result.passed,
+            "errors": result.errors,
+            "failures": result.failed,
+            "skip": result.skipped,
+            "cancel": result.cancelled,
+            "warn": result.warned,
+            "interrupt": result.interrupted,
+            "time": result.tests_total_time,
+        }
+        return json.dumps(content, sort_keys=True, indent=4, separators=(",", ": "))
 
     def render(self, result, job):
-        json_output = job.config.get('job.run.result.json.output')
-        json_enabled = job.config.get('job.run.result.json.enabled')
+        json_output = job.config.get("job.run.result.json.output")
+        json_enabled = job.config.get("job.run.result.json.enabled")
 
         if not (json_enabled or json_output):
             return
@@ -87,39 +89,44 @@ class JSONResult(Result):
 
         content = self._render(result)
         if json_enabled:
-            json_path = os.path.join(job.logdir, 'results.json')
-            with open(json_path, 'w', encoding='utf-8') as json_file:
+            json_path = os.path.join(job.logdir, "results.json")
+            with open(json_path, "w", encoding="utf-8") as json_file:
                 json_file.write(content)
 
         json_path = json_output
         if json_path is not None:
-            if json_path == '-':
+            if json_path == "-":
                 LOG_UI.debug(content)
             else:
-                with open(json_path, 'w', encoding='utf-8') as json_file:
+                with open(json_path, "w", encoding="utf-8") as json_file:
                     json_file.write(content)
 
 
 class JSONInit(Init):
 
-    name = 'json'
+    name = "json"
     description = "JSON job result plugin initialization"
 
     def initialize(self):
-        help_msg = ('Enable JSON result format and write it to FILE. '
-                    'Use "-" to redirect to the standard output.')
-        settings.register_option(section='job.run.result.json',
-                                 key='output',
-                                 default=None,
-                                 help_msg=help_msg)
+        help_msg = (
+            "Enable JSON result format and write it to FILE. "
+            'Use "-" to redirect to the standard output.'
+        )
+        settings.register_option(
+            section="job.run.result.json", key="output", default=None, help_msg=help_msg
+        )
 
-        help_msg = ('Enables default JSON result in the job results '
-                    'directory. File will be named "results.json".')
-        settings.register_option(section='job.run.result.json',
-                                 key='enabled',
-                                 key_type=bool,
-                                 default=True,
-                                 help_msg=help_msg)
+        help_msg = (
+            "Enables default JSON result in the job results "
+            'directory. File will be named "results.json".'
+        )
+        settings.register_option(
+            section="job.run.result.json",
+            key="enabled",
+            key_type=bool,
+            default=True,
+            help_msg=help_msg,
+        )
 
 
 class JSONCLI(CLI):
@@ -128,25 +135,27 @@ class JSONCLI(CLI):
     JSON output
     """
 
-    name = 'json'
+    name = "json"
     description = "JSON output options for 'run' command"
 
     def configure(self, parser):
-        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        run_subcommand_parser = parser.subcommands.choices.get("run", None)
         if run_subcommand_parser is None:
             return
 
         settings.add_argparser_to_option(
-            namespace='job.run.result.json.output',
+            namespace="job.run.result.json.output",
             action=FileOrStdoutAction,
-            metavar='FILE',
+            metavar="FILE",
             parser=run_subcommand_parser,
-            long_arg='--json')
+            long_arg="--json",
+        )
 
         settings.add_argparser_to_option(
-            namespace='job.run.result.json.enabled',
+            namespace="job.run.result.json.enabled",
             parser=run_subcommand_parser,
-            long_arg='--disable-json-job-result')
+            long_arg="--disable-json-job-result",
+        )
 
     def run(self, config):
         pass

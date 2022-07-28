@@ -19,31 +19,28 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_robot']
+    packages = ["avocado_robot"]
 else:
-    packages = find_namespace_packages(include=['avocado_robot'])
+    packages = find_namespace_packages(include=["avocado_robot"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-robot',
-      description='Avocado Plugin for Execution of Robot Framework tests',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}',
-                        'robotframework>=4.1'],
-      test_suite='tests',
-      entry_points={
-          'console_scripts': [
-              'avocado-runner-robot = avocado_robot.runner:main',
-          ],
-          'avocado.plugins.runnable.runner': [
-              'robot = avocado_robot.runner:RobotRunner'
-          ],
-          'avocado.plugins.resolver': [
-              'robot = avocado_robot.robot:RobotResolver'
-          ]}
-      )
+setup(
+    name="avocado-framework-plugin-robot",
+    description="Avocado Plugin for Execution of Robot Framework tests",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}", "robotframework>=4.1"],
+    test_suite="tests",
+    entry_points={
+        "console_scripts": [
+            "avocado-runner-robot = avocado_robot.runner:main",
+        ],
+        "avocado.plugins.runnable.runner": ["robot = avocado_robot.runner:RobotRunner"],
+        "avocado.plugins.resolver": ["robot = avocado_robot.robot:RobotResolver"],
+    },
+)

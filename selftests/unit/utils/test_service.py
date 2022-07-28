@@ -25,119 +25,131 @@ setup_avocado_loggers()
 
 
 class TestMultipleInstances(unittest.TestCase):
-
     def test_different_runners(self):
         # Call 'set_target' on first runner
         runner1 = unittest.mock.Mock()
-        runner1.return_value.stdout = 'systemd'
+        runner1.return_value.stdout = "systemd"
         service1 = service.service_manager(run=runner1)
-        service1.set_target('foo_target')
-        self.assertEqual(runner1.call_args[0][0],  # pylint: disable=E1136
-                         'systemctl isolate foo_target')
+        service1.set_target("foo_target")
+        self.assertEqual(
+            runner1.call_args[0][0],  # pylint: disable=E1136
+            "systemctl isolate foo_target",
+        )
         # Call 'start' on second runner
         runner2 = unittest.mock.Mock()
-        runner2.return_value.stdout = 'init'
+        runner2.return_value.stdout = "init"
         service2 = service.service_manager(run=runner2)
-        service2.start('foo_service')
-        self.assertEqual(runner2.call_args[0][0],  # pylint: disable=E1136
-                         'service foo_service start')
+        service2.start("foo_service")
+        self.assertEqual(
+            runner2.call_args[0][0],  # pylint: disable=E1136
+            "service foo_service start",
+        )
 
 
 class TestSystemd(unittest.TestCase):
-
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "systemd"
         command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
-            command_generator)
+            command_generator
+        )
 
     def test_all_commands(self):
         # Test all commands except "set_target" which is tested elsewhere
-        for cmd, _ in ((c, r) for (c, r) in
-                       self.service_command_generator.commands if
-                       c != "set_target"):
-            ret = getattr(
-                self.service_command_generator, cmd)(self.service_name)
+        for cmd, _ in (
+            (c, r)
+            for (c, r) in self.service_command_generator.commands
+            if c != "set_target"
+        ):
+            ret = getattr(self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
                 cmd = "is-enabled"
             if cmd == "reset_failed":
                 cmd = "reset-failed"
             if cmd == "list":
-                self.assertEqual(ret, ['systemctl', 'list-unit-files',
-                                       '--type=service', '--no-pager',
-                                       '--full'])
+                self.assertEqual(
+                    ret,
+                    [
+                        "systemctl",
+                        "list-unit-files",
+                        "--type=service",
+                        "--no-pager",
+                        "--full",
+                    ],
+                )
             else:
-                self.assertEqual(ret, ["systemctl", cmd,
-                                       f"{self.service_name}.service"])
+                self.assertEqual(
+                    ret, ["systemctl", cmd, f"{self.service_name}.service"]
+                )
 
     def test_set_target(self):
-        ret = getattr(
-            self.service_command_generator, "set_target")("multi-user.target")
+        ret = getattr(self.service_command_generator, "set_target")("multi-user.target")
         self.assertEqual(ret, ["systemctl", "isolate", "multi-user.target"])
 
 
 class TestSysVInit(unittest.TestCase):
-
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "init"
         command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
-            command_generator)
+            command_generator
+        )
 
     def test_all_commands(self):
         command_name = "service"
         # Test all commands except "set_target" which is tested elsewhere
-        for cmd, _ in ((c, r) for (c, r) in
-                       self.service_command_generator.commands
-                       if c != 'set_target'):
-            ret = getattr(
-                self.service_command_generator, cmd)(self.service_name)
-            if cmd in ['set_target', 'reset_failed', 'mask', 'unmask']:
-                exp = ['true']
-            elif cmd == 'list':
-                exp = ['chkconfig', '--list']
+        for cmd, _ in (
+            (c, r)
+            for (c, r) in self.service_command_generator.commands
+            if c != "set_target"
+        ):
+            ret = getattr(self.service_command_generator, cmd)(self.service_name)
+            if cmd in ["set_target", "reset_failed", "mask", "unmask"]:
+                exp = ["true"]
+            elif cmd == "list":
+                exp = ["chkconfig", "--list"]
             else:
                 if cmd == "is_enabled":
                     command_name = "chkconfig"
                     cmd = ""
-                elif cmd == 'enable':
+                elif cmd == "enable":
                     command_name = "chkconfig"
                     cmd = "on"
-                elif cmd == 'disable':
+                elif cmd == "disable":
                     command_name = "chkconfig"
                     cmd = "off"
                 exp = [command_name, self.service_name, cmd]
             self.assertEqual(ret, exp)
 
     def test_set_target(self):
-        ret = getattr(
-            self.service_command_generator, "set_target")("multi-user.target")
+        ret = getattr(self.service_command_generator, "set_target")("multi-user.target")
         self.assertEqual(ret, ["telinit", "3"])
 
 
 class TestSpecificServiceManager(unittest.TestCase):
-
     def setUp(self):
         self.run_mock = unittest.mock.Mock()
         self.init_name = "init"
         get_name_of_init_mock = unittest.mock.Mock(return_value="init")
 
-        @unittest.mock.patch.object(service, "get_name_of_init",
-                                    get_name_of_init_mock)
+        @unittest.mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
         def patch_service_command_generator():
             return service._auto_create_specific_service_command_generator()
 
-        @unittest.mock.patch.object(service, "get_name_of_init",
-                                    get_name_of_init_mock)
+        @unittest.mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
         def patch_service_result_parser():
             return service._auto_create_specific_service_result_parser()
+
         service_command_generator = patch_service_command_generator()
         service_result_parser = patch_service_result_parser()
         self.service_manager = service._SpecificServiceManager(
-            "boot.lldpad", service_command_generator,
-            service_result_parser, self.run_mock)
+            "boot.lldpad",
+            service_command_generator,
+            service_result_parser,
+            self.run_mock,
+        )
 
     def test_start(self):
         srv = "lldpad"
@@ -162,21 +174,18 @@ def get_service_manager_from_init_and_run(init_name, run_mock):
     command_generator = service._COMMAND_GENERATORS[init_name]
     result_parser = service._RESULT_PARSERS[init_name]
     service_manager = service._SERVICE_MANAGERS[init_name]
-    service_command_generator = service._ServiceCommandGenerator(
-        command_generator)
+    service_command_generator = service._ServiceCommandGenerator(command_generator)
     service_result_parser = service._ServiceResultParser(result_parser)
-    return service_manager(service_command_generator, service_result_parser,
-                           run_mock)
+    return service_manager(service_command_generator, service_result_parser, run_mock)
 
 
 class TestSystemdServiceManager(unittest.TestCase):
-
     def setUp(self):
         self.run_mock = unittest.mock.Mock()
         self.init_name = "systemd"
         self.service_manager = get_service_manager_from_init_and_run(
-            self.init_name,
-            self.run_mock)
+            self.init_name, self.run_mock
+        )
 
     def test_start(self):
         srv = "lldpad"
@@ -189,17 +198,21 @@ class TestSystemdServiceManager(unittest.TestCase):
             exit_status=0,
             stdout_text="sshd.service enabled\n"
             "vsftpd.service disabled\n"
-            "systemd-sysctl.service static\n")
+            "systemd-sysctl.service static\n",
+        )
         run_mock = unittest.mock.Mock(return_value=list_result_mock)
-        service_manager = get_service_manager_from_init_and_run(self.init_name,
-                                                                run_mock)
+        service_manager = get_service_manager_from_init_and_run(
+            self.init_name, run_mock
+        )
         list_result = service_manager.list(ignore_status=False)
-        self.assertEqual(run_mock.call_args[0][0],  # pylint: disable=E1136
-                         "systemctl list-unit-files --type=service "
-                         "--no-pager --full")
-        self.assertEqual(list_result, {'sshd': "enabled",
-                                       'vsftpd': "disabled",
-                                       'systemd-sysctl': "static"})
+        self.assertEqual(
+            run_mock.call_args[0][0],  # pylint: disable=E1136
+            "systemctl list-unit-files --type=service " "--no-pager --full",
+        )
+        self.assertEqual(
+            list_result,
+            {"sshd": "enabled", "vsftpd": "disabled", "systemd-sysctl": "static"},
+        )
 
     def test_set_default_runlevel(self):
         runlevel = service.convert_sysv_runlevel(3)
@@ -213,15 +226,21 @@ class TestSystemdServiceManager(unittest.TestCase):
         def _():
             self.service_manager.change_default_runlevel(runlevel)
             self.assertTrue(mktemp_mock.called)
-            self.assertEqual(symlink_mock.call_args[0][0],  # pylint: disable=E1136
-                             "/usr/lib/systemd/system/multi-user.target")
-            self.assertEqual(rename_mock.call_args[0][1],  # pylint: disable=E1136
-                             "/etc/systemd/system/default.target")
+            self.assertEqual(
+                symlink_mock.call_args[0][0],  # pylint: disable=E1136
+                "/usr/lib/systemd/system/multi-user.target",
+            )
+            self.assertEqual(
+                rename_mock.call_args[0][1],  # pylint: disable=E1136
+                "/etc/systemd/system/default.target",
+            )
+
         _()
 
     def test_unknown_runlevel(self):
-        self.assertRaises(ValueError,
-                          service.convert_systemd_target_to_runlevel, "unknown")
+        self.assertRaises(
+            ValueError, service.convert_systemd_target_to_runlevel, "unknown"
+        )
 
     def test_runlevels(self):
         self.assertEqual(service.convert_sysv_runlevel(0), "poweroff.target")
@@ -232,13 +251,12 @@ class TestSystemdServiceManager(unittest.TestCase):
 
 
 class TestSysVInitServiceManager(unittest.TestCase):
-
     def setUp(self):
         self.run_mock = unittest.mock.Mock()
         self.init_name = "init"
         self.service_manager = get_service_manager_from_init_and_run(
-            self.init_name,
-            self.run_mock)
+            self.init_name, self.run_mock
+        )
 
     def test_start(self):
         srv = "lldpad"
@@ -255,19 +273,41 @@ class TestSysVInitServiceManager(unittest.TestCase):
             "  3:off   4:off   5:on   6:off\n"
             "xinetd based services:\n"
             "        amanda:         off\n"
-            "        chargen-dgram:  on\n")
+            "        chargen-dgram:  on\n",
+        )
 
         run_mock = unittest.mock.Mock(return_value=list_result_mock)
-        service_manager = get_service_manager_from_init_and_run(self.init_name,
-                                                                run_mock)
+        service_manager = get_service_manager_from_init_and_run(
+            self.init_name, run_mock
+        )
         list_result = service_manager.list(ignore_status=False)
-        self.assertEqual(run_mock.call_args[0][0], "chkconfig --list")  # pylint: disable=E1136
-        self.assertEqual(list_result,
-                         {'sshd': {0: "off", 1: "off", 2: "off", 3: "off",
-                                   4: "off", 5: "off", 6: "off"},
-                          'vsftpd': {0: "off", 1: "off", 2: "off", 3: "off",
-                                     4: "off", 5: "on", 6: "off"},
-                          'xinetd': {'amanda': "off", 'chargen-dgram': "on"}})
+        self.assertEqual(
+            run_mock.call_args[0][0], "chkconfig --list"
+        )  # pylint: disable=E1136
+        self.assertEqual(
+            list_result,
+            {
+                "sshd": {
+                    0: "off",
+                    1: "off",
+                    2: "off",
+                    3: "off",
+                    4: "off",
+                    5: "off",
+                    6: "off",
+                },
+                "vsftpd": {
+                    0: "off",
+                    1: "off",
+                    2: "off",
+                    3: "off",
+                    4: "off",
+                    5: "on",
+                    6: "off",
+                },
+                "xinetd": {"amanda": "off", "chargen-dgram": "on"},
+            },
+        )
 
     def test_enable(self):
         srv = "lldpad"
@@ -276,21 +316,25 @@ class TestSysVInitServiceManager(unittest.TestCase):
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_unknown_runlevel(self):
-        self.assertRaises(ValueError,
-                          service.convert_sysv_runlevel, "unknown")
+        self.assertRaises(ValueError, service.convert_sysv_runlevel, "unknown")
 
     def test_runlevels(self):
-        self.assertEqual(service.convert_systemd_target_to_runlevel(
-            "poweroff.target"), '0')
-        self.assertEqual(service.convert_systemd_target_to_runlevel(
-            "rescue.target"), 's')
-        self.assertEqual(service.convert_systemd_target_to_runlevel(
-            "multi-user.target"), '3')
-        self.assertEqual(service.convert_systemd_target_to_runlevel(
-            "graphical.target"), '5')
-        self.assertEqual(service.convert_systemd_target_to_runlevel(
-            "reboot.target"), '6')
+        self.assertEqual(
+            service.convert_systemd_target_to_runlevel("poweroff.target"), "0"
+        )
+        self.assertEqual(
+            service.convert_systemd_target_to_runlevel("rescue.target"), "s"
+        )
+        self.assertEqual(
+            service.convert_systemd_target_to_runlevel("multi-user.target"), "3"
+        )
+        self.assertEqual(
+            service.convert_systemd_target_to_runlevel("graphical.target"), "5"
+        )
+        self.assertEqual(
+            service.convert_systemd_target_to_runlevel("reboot.target"), "6"
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -16,8 +16,14 @@ class ImportedSymbol:
     importer_fs_path: str or None
     """
 
-    def __init__(self, module_path, symbol='', importer_fs_path=None,
-                 module_alias='', symbol_alias=''):
+    def __init__(
+        self,
+        module_path,
+        symbol="",
+        importer_fs_path=None,
+        module_alias="",
+        symbol_alias="",
+    ):
         #: Path from where the symbol was imported.  On a statement such as
         #: "import os", module_path is "os" and there's no symbol.
         #: On a statement such as from unittest.mock import mock_open",
@@ -70,7 +76,7 @@ class ImportedSymbol:
             if index > 0:
                 previous = components[index - 1]
             else:
-                previous = ''
+                previous = ""
             yield (component, previous)
 
     def get_importable_spec(self, symbol_is_module=False):
@@ -90,8 +96,9 @@ class ImportedSymbol:
         spec = None
         for component, previous in self._walk_importable_components(symbol_is_module):
             if previous:
-                modules_paths = [os.path.join(mod, previous) for
-                                 mod in modules_paths[:]]
+                modules_paths = [
+                    os.path.join(mod, previous) for mod in modules_paths[:]
+                ]
             spec = PathFinder.find_spec(component, modules_paths)
             if spec is None:
                 break
@@ -123,12 +130,12 @@ class ImportedSymbol:
         :returns: the lower and topmost components
         :rtype: tuple
         """
-        non_relative = module_path.strip('.')
-        if '.' in non_relative:
-            module_components = non_relative.rsplit('.', 1)
+        non_relative = module_path.strip(".")
+        if "." in non_relative:
+            module_components = non_relative.rsplit(".", 1)
             if len(module_components) == 2:
                 return (module_components[0], module_components[1])
-        return ('', non_relative)
+        return ("", non_relative)
 
     @staticmethod
     def _get_relative_prefix(statement):
@@ -139,8 +146,8 @@ class ImportedSymbol:
         :returns: the string that represents the relative import level.
         :rtype: str
         """
-        relative_level = getattr(statement, 'level', 0) or 0
-        return ''.join(['.' for _ in range(relative_level)])
+        relative_level = getattr(statement, "level", 0) or 0
+        return "".join(["." for _ in range(relative_level)])
 
     @staticmethod
     def get_symbol_from_statement(statement):
@@ -152,10 +159,10 @@ class ImportedSymbol:
 
     @staticmethod
     def get_symbol_module_path_from_statement(statement, name_index=0):
-        symbol = ''
-        module_path = ''
-        module_alias = ''
-        symbol_alias = ''
+        symbol = ""
+        module_path = ""
+        module_alias = ""
+        symbol_alias = ""
         import_as = get_statement_import_as(statement)
         names = list(import_as.keys())
         as_names = list(import_as.values())
@@ -169,7 +176,7 @@ class ImportedSymbol:
         elif isinstance(statement, ast.ImportFrom):
             symbol = names[name_index]
             relative = ImportedSymbol._get_relative_prefix(statement)
-            module_name = statement.module or ''
+            module_name = statement.module or ""
             module_path = relative + module_name
             symbol_alias = as_names[name_index]
 
@@ -199,10 +206,12 @@ class ImportedSymbol:
 
     @classmethod
     def from_statement(cls, statement, importer_fs_path=None, index=0):
-        (symbol,
-         module_path,
-         module_alias,
-         symbol_alias) = cls.get_symbol_module_path_from_statement(statement, index)
+        (
+            symbol,
+            module_path,
+            module_alias,
+            symbol_alias,
+        ) = cls.get_symbol_module_path_from_statement(statement, index)
         return cls(module_path, symbol, importer_fs_path, module_alias, symbol_alias)
 
     def to_str(self):
@@ -245,11 +254,15 @@ class ImportedSymbol:
         return parent_path
 
     def __repr__(self):
-        return (f'<ImportedSymbol module_path="{self.module_path}"'
-                f'symbol="{self.symbol}"'
-                f'importer_fs_path="{self.importer_fs_path}">')
+        return (
+            f'<ImportedSymbol module_path="{self.module_path}"'
+            f'symbol="{self.symbol}"'
+            f'importer_fs_path="{self.importer_fs_path}">'
+        )
 
     def __eq__(self, other):
-        return ((self.module_path == other.module_path) and
-                (self.symbol == other.symbol) and
-                (self.importer_fs_path == other.importer_fs_path))
+        return (
+            (self.module_path == other.module_path)
+            and (self.symbol == other.symbol)
+            and (self.importer_fs_path == other.importer_fs_path)
+        )

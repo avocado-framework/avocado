@@ -30,9 +30,12 @@ import warnings
 
 #: Map vendor's name with expected string in /proc/cpuinfo.
 VENDORS_MAP = {
-    'intel': (b"GenuineIntel", ),
-    'amd': (b"AMD", ),
-    'ibm': (rb"POWER\d", rb"IBM/S390", ),
+    "intel": (b"GenuineIntel",),
+    "amd": (b"AMD",),
+    "ibm": (
+        rb"POWER\d",
+        rb"IBM/S390",
+    ),
 }
 
 LOG = logging.getLogger(__name__)
@@ -68,9 +71,9 @@ def _get_info():
     :rtype: list
     """
     cpuinfo = []
-    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:  # pylint: disable=W1514
+    with open("/proc/cpuinfo", "rb") as proc_cpuinfo:  # pylint: disable=W1514
         for line in proc_cpuinfo:
-            if line == b'\n':
+            if line == b"\n":
                 break
             cpuinfo.append(line)
     return cpuinfo
@@ -85,8 +88,10 @@ def _get_status(cpu):
     :return: `bool` True if online or False if not
     :rtype: bool
     """
-    with open(f'/sys/devices/system/cpu/cpu{cpu}/online', 'rb') as cpu_online:  # pylint: disable=W1514
-        if b'1' in cpu_online.read():
+    with open(
+        f"/sys/devices/system/cpu/cpu{cpu}/online", "rb"
+    ) as cpu_online:  # pylint: disable=W1514
+        if b"1" in cpu_online.read():
             return True
     return False
 
@@ -120,11 +125,12 @@ def get_version():
              case of unknown/unsupported machines, return an empty string.
     :rtype: str
     """
-    version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
-                       'i386': rb'\s([\S,\d]+)\sCPU',
-                       'powerpc': rb'revision\s+:\s+(\S+)',
-                       's390': rb'.*machine\s=\s(\d+)'
-                       }
+    version_pattern = {
+        "x86_64": rb"\s([\S,\d]+)\sCPU",
+        "i386": rb"\s([\S,\d]+)\sCPU",
+        "powerpc": rb"revision\s+:\s+(\S+)",
+        "s390": rb".*machine\s=\s(\d+)",
+    }
     cpu_info = _get_info()
     arch = get_arch()
     try:
@@ -135,8 +141,8 @@ def get_version():
     for line in cpu_info:
         version_out = re.findall(version_pattern[arch], line)
         if version_out:
-            return version_out[0].decode('utf-8')
-    return ''
+            return version_out[0].decode("utf-8")
+    return ""
 
 
 def get_vendor():
@@ -158,31 +164,39 @@ def get_vendor():
 
 def get_arch():
     """Work out which CPU architecture we're running on."""
-    cpu_table = [(b'^cpu.*(RS64|Broadband Engine)', 'powerpc'),
-                 (rb'^cpu.*POWER\d+', 'powerpc'),
-                 (b'^cpu.*PPC970', 'powerpc'),
-                 (b'(ARM|^CPU implementer|^CPU part|^CPU variant'
-                  b'|^Features|^BogoMIPS|^CPU revision)', 'arm'),
-                 (b'(^cpu MHz dynamic|^cpu MHz static|^features'
-                  b'|^bogomips per cpu|^max thread id)', 's390'),
-                 (b'^type', 'sparc64'),
-                 (b'^flags.*:.* lm .*', 'x86_64'),
-                 (b'^flags', 'i386'),
-                 (b'^hart\\s*: 1$', 'riscv')]
+    cpu_table = [
+        (b"^cpu.*(RS64|Broadband Engine)", "powerpc"),
+        (rb"^cpu.*POWER\d+", "powerpc"),
+        (b"^cpu.*PPC970", "powerpc"),
+        (
+            b"(ARM|^CPU implementer|^CPU part|^CPU variant"
+            b"|^Features|^BogoMIPS|^CPU revision)",
+            "arm",
+        ),
+        (
+            b"(^cpu MHz dynamic|^cpu MHz static|^features"
+            b"|^bogomips per cpu|^max thread id)",
+            "s390",
+        ),
+        (b"^type", "sparc64"),
+        (b"^flags.*:.* lm .*", "x86_64"),
+        (b"^flags", "i386"),
+        (b"^hart\\s*: 1$", "riscv"),
+    ]
     cpuinfo = _get_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
-            if arch == 'arm':
+            if arch == "arm":
                 # ARM is a special situation, which matches both 32 bits
                 # (v7) and 64 bits (v8).
                 for line in cpuinfo:
                     if line.startswith(b"CPU architecture"):
-                        version = int(line.split(b':', 1)[1])
+                        version = int(line.split(b":", 1)[1])
                         if version >= 8:
-                            return 'aarch64'
+                            return "aarch64"
                         else:
                             # For historical reasons return arm
-                            return 'arm'
+                            return "arm"
             return arch
     return platform.machine()
 
@@ -191,36 +205,35 @@ def get_family():
     """Get family name of the cpu like Broadwell, Haswell, power8, power9."""
     family = None
     arch = get_arch()
-    if arch == 'x86_64' or arch == 'i386':
-        if get_vendor() == 'amd':
+    if arch == "x86_64" or arch == "i386":
+        if get_vendor() == "amd":
             raise NotImplementedError
         try:
             # refer below links for microarchitectures names
             # https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
             # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/events/intel/core.c#n4613
-            with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:  # pylint: disable=W1514
-                family = mico_arch.read().decode('utf-8').strip('\n').lower()
+            with open(
+                "/sys/devices/cpu/caps/pmu_name", "rb"
+            ) as mico_arch:  # pylint: disable=W1514
+                family = mico_arch.read().decode("utf-8").strip("\n").lower()
         except FileNotFoundError as err:
             msg = f"Could not find micro-architecture/family, Error: {err}"
             LOG.warning(msg)
             raise FamilyException(msg)
-    elif arch == 'powerpc':
+    elif arch == "powerpc":
         res = []
         try:
             for line in _get_info():
-                res = re.findall(rb'cpu\s+:\s+(POWER\d+)', line)
+                res = re.findall(rb"cpu\s+:\s+(POWER\d+)", line)
                 if res:
                     break
-            family = res[0].decode('utf-8').lower()
+            family = res[0].decode("utf-8").lower()
         except IndexError as err:
             msg = f"Unable to parse cpu family {err}"
             LOG.warning(msg)
             raise FamilyException(msg)
-    elif arch == 's390':
-        zfamily_map = {'2964': 'z13',
-                       '3906': 'z14',
-                       '8561': 'z15'
-                       }
+    elif arch == "s390":
+        zfamily_map = {"2964": "z13", "3906": "z14", "8561": "z15"}
         try:
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
@@ -235,12 +248,12 @@ def get_family():
 def online_list():
     """Reports a list of indexes of the online cpus."""
     cpus = []
-    search_str = b'processor'
+    search_str = b"processor"
     index = 2
-    if platform.machine() == 's390x':
-        search_str = b'cpu number'
+    if platform.machine() == "s390x":
+        search_str = b"cpu number"
         index = 3
-    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:  # pylint: disable=W1514
+    with open("/proc/cpuinfo", "rb") as proc_cpuinfo:  # pylint: disable=W1514
         for line in proc_cpuinfo:
             if line.startswith(search_str):
                 cpus.append(int(line.split()[index]))  # grab cpu number
@@ -249,19 +262,21 @@ def online_list():
 
 def total_count():
     """Return Number of Total cpus in the system including offline cpus."""
-    return os.sysconf('SC_NPROCESSORS_CONF')
+    return os.sysconf("SC_NPROCESSORS_CONF")
 
 
 def online_count():
     """Return Number of Online cpus in the system."""
-    return os.sysconf('SC_NPROCESSORS_ONLN')
+    return os.sysconf("SC_NPROCESSORS_ONLN")
 
 
 def online(cpu):
     """Online given CPU."""
     if _get_status(cpu) is False:
-        with open(f"/sys/devices/system/cpu/cpu{cpu}/online", "wb") as fd:  # pylint: disable=W1514
-            fd.write(b'1')
+        with open(
+            f"/sys/devices/system/cpu/cpu{cpu}/online", "wb"
+        ) as fd:  # pylint: disable=W1514
+            fd.write(b"1")
         if _get_status(cpu) is False:
             return 0
     return 1
@@ -270,8 +285,10 @@ def online(cpu):
 def offline(cpu):
     """Offline given CPU."""
     if _get_status(cpu):
-        with open(f"/sys/devices/system/cpu/cpu{cpu}/online", "wb") as fd:  # pylint: disable=W1514
-            fd.write(b'0')
+        with open(
+            f"/sys/devices/system/cpu/cpu{cpu}/online", "wb"
+        ) as fd:  # pylint: disable=W1514
+            fd.write(b"0")
         if _get_status(cpu):
             return 1
     return 0
@@ -290,12 +307,20 @@ def get_idle_state():
     for cpu in cpus_list:
         cpu_idlestate[cpu] = {}
         for state_no in range(states):
-            state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+            state_file = (
+                f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+            )
             try:
-                cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))  # pylint: disable=W1514
+                cpu_idlestate[cpu][state_no] = bool(
+                    int(open(state_file, "rb").read())
+                )  # pylint: disable=W1514
             except IOError as err:
-                LOG.warning("Failed to read idle state on cpu %s "
-                            "for state %s:\n%s", cpu, state_no, err)
+                LOG.warning(
+                    "Failed to read idle state on cpu %s " "for state %s:\n%s",
+                    cpu,
+                    state_no,
+                    err,
+                )
     return cpu_idlestate
 
 
@@ -306,9 +331,9 @@ def _bool_to_binary(value):
     This function is suitable for writing to /proc/* and /sys/* files.
     """
     if value is True:
-        return b'1'
+        return b"1"
     if value is False:
-        return b'0'
+        return b"0"
     raise TypeError(f"Value is not a boolean: {value}")
 
 
@@ -327,29 +352,43 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
     cpus_list = online_list()
     if not setstate:
         states = []
-        if state_number == 'all':
-            states = list(range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))))
+        if state_number == "all":
+            states = list(
+                range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+            )
         else:
             states.append(state_number)
         disable = _bool_to_binary(disable)
         for cpu in cpus_list:
             for state_no in states:
-                state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+                state_file = (
+                    f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+                )
                 try:
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
-                    LOG.warning("Failed to set idle state on cpu %s "
-                                "for state %s:\n%s", cpu, state_no, err)
+                    LOG.warning(
+                        "Failed to set idle state on cpu %s " "for state %s:\n%s",
+                        cpu,
+                        state_no,
+                        err,
+                    )
     else:
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
-                state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+                state_file = (
+                    f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+                )
                 disable = _bool_to_binary(value)
                 try:
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
-                    LOG.warning("Failed to set idle state on cpu %s "
-                                "for state %s:\n%s", cpu, state_no, err)
+                    LOG.warning(
+                        "Failed to set idle state on cpu %s " "for state %s:\n%s",
+                        cpu,
+                        state_no,
+                        err,
+                    )
 
 
 def set_freq_governor(governor="random"):
@@ -366,12 +405,14 @@ def set_freq_governor(governor="random"):
     if not cur_gov:
         return False
     if not (os.access(avl_gov_file, os.R_OK) and os.access(cur_gov_file, os.W_OK)):
-        LOG.error("Could not locate frequency governor sysfs entries or\n"
-                  " No proper permissions to read/write sysfs entries")
+        LOG.error(
+            "Could not locate frequency governor sysfs entries or\n"
+            " No proper permissions to read/write sysfs entries"
+        )
         return False
     cpus_list = total_count()
-    with open(avl_gov_file, 'r') as fl:  # pylint: disable=W1514
-        avl_govs = fl.read().strip().split(' ')
+    with open(avl_gov_file, "r") as fl:  # pylint: disable=W1514
+        avl_govs = fl.read().strip().split(" ")
     if governor == "random":
         avl_govs.remove(cur_gov)
         if not avl_govs:
@@ -379,17 +420,21 @@ def set_freq_governor(governor="random"):
             return False
         governor = random.choice(avl_govs)
     if governor not in avl_govs:
-        LOG.warning("Trying to change unknown frequency "
-                    "governor: %s", governor)
+        LOG.warning("Trying to change unknown frequency " "governor: %s", governor)
     for cpu in range(cpus_list):
         cur_gov_file = f"/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor"
         try:
-            with open(cur_gov_file, 'w') as fl:  # pylint: disable=W1514
+            with open(cur_gov_file, "w") as fl:  # pylint: disable=W1514
                 fl.write(governor)
         except IOError as err:
-            LOG.warning("Unable to write a given frequency "
-                        "governor %s profile for cpu "
-                        "%s\n %s", governor, cpu, err)
+            LOG.warning(
+                "Unable to write a given frequency "
+                "governor %s profile for cpu "
+                "%s\n %s",
+                governor,
+                cpu,
+                err,
+            )
     return True
 
 
@@ -397,7 +442,7 @@ def get_freq_governor():
     """Get current cpu frequency governor."""
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
     try:
-        with open(cur_gov_file, 'r') as fl:  # pylint: disable=W1514
+        with open(cur_gov_file, "r") as fl:  # pylint: disable=W1514
             return fl.read().strip()
     except IOError as err:
         LOG.error("Unable to get the current governor\n %s", err)
@@ -418,14 +463,12 @@ def get_pid_cpus(pid):
     # access has no misleading whitespaces
     processor_id_index = -14
     cpus = set()
-    proc_stat_files = glob.glob(f'/proc/{pid}/task/[123456789]*/stat')
+    proc_stat_files = glob.glob(f"/proc/{pid}/task/[123456789]*/stat")
 
     for proc_stat_file in proc_stat_files:
         try:
             with open(proc_stat_file) as proc_stat:  # pylint: disable=W1514
-                cpus.add(
-                    proc_stat.read().split(' ')[processor_id_index]
-                )
+                cpus.add(proc_stat.read().split(" ")[processor_id_index])
         except IOError:
             continue
     return list(cpus)
@@ -439,11 +482,13 @@ def _deprecated(newfunc, oldfuncname):
     :param oldfunctionname: Old function name string
     :rtype: `function`
     """
+
     def wrap(*args, **kwargs):
         fmt_str = f"avocado.utils.cpu.{oldfuncname}() it is getting deprecat"
         fmt_str += f"ed, Use avocado.utils.cpu.{newfunc.__name__}() instead"
         warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
         return newfunc(*args, **kwargs)
+
     return wrap
 
 

@@ -40,27 +40,27 @@ from avocado.core.settings import settings
 from avocado.utils import path as utils_path
 from avocado.utils.data_structures import Borg
 
-if 'VIRTUAL_ENV' in os.environ:
-    SYSTEM_BASE_DIR = os.environ['VIRTUAL_ENV']
+if "VIRTUAL_ENV" in os.environ:
+    SYSTEM_BASE_DIR = os.environ["VIRTUAL_ENV"]
     USER_BASE_DIR = SYSTEM_BASE_DIR
 else:
-    SYSTEM_BASE_DIR = '/var/lib/avocado'
-    USER_BASE_DIR = os.path.expanduser('~/avocado')
+    SYSTEM_BASE_DIR = "/var/lib/avocado"
+    USER_BASE_DIR = os.path.expanduser("~/avocado")
 
-SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
-SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
-SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')
+SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, "tests")
+SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, "data")
+SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, "job-results")
 
-USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
-USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
-USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
+USER_TEST_DIR = os.path.join(USER_BASE_DIR, "tests")
+USER_DATA_DIR = os.path.join(USER_BASE_DIR, "data")
+USER_LOG_DIR = os.path.join(USER_BASE_DIR, "job-results")
 
 
 def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    namespace = f'datadir.paths.{dir_name}'
+    namespace = f"datadir.paths.{dir_name}"
     path = settings.as_dict().get(namespace)
     return os.path.abspath(path)
 
@@ -89,9 +89,14 @@ def get_base_dir():
         * Data directory
         * Tests directory
     """
-    warnings.warn(("get_base_dir() is deprecated, get values from "
-                   "settings.as_dict() or self.config"), DeprecationWarning)
-    return settings.as_dict().get('datadir.paths.base_dir')
+    warnings.warn(
+        (
+            "get_base_dir() is deprecated, get values from "
+            "settings.as_dict() or self.config"
+        ),
+        DeprecationWarning,
+    )
+    return settings.as_dict().get("datadir.paths.base_dir")
 
 
 def get_test_dir():
@@ -108,14 +113,13 @@ def get_test_dir():
     3) System wide test dir is used.
     4) User default test dir (~/avocado/tests) is used.
     """
-    configured = _get_settings_dir('test_dir')
+    configured = _get_settings_dir("test_dir")
     if utils_path.usable_ro_dir(configured):
         return configured
 
-    source_tree_root = os.path.dirname(os.path.dirname(
-        os.path.dirname(__file__)))
-    if os.path.exists(os.path.join(source_tree_root, 'examples')):
-        return os.path.join(source_tree_root, 'examples', 'tests')
+    source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    if os.path.exists(os.path.join(source_tree_root, "examples")):
+        return os.path.join(source_tree_root, "examples", "tests")
 
     if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
         return SYSTEM_TEST_DIR
@@ -140,9 +144,14 @@ def get_data_dir():
     .. warning:: This method is deprecated, get values from
                  settings.as_dict() or self.config
     """
-    warnings.warn(("get_data_dir() is deprecated, get values from "
-                   "settings.as_dict() or self.config"), DeprecationWarning)
-    return settings.as_dict().get('datadir.paths.data_dir')
+    warnings.warn(
+        (
+            "get_data_dir() is deprecated, get values from "
+            "settings.as_dict() or self.config"
+        ),
+        DeprecationWarning,
+    )
+    return settings.as_dict().get("datadir.paths.data_dir")
 
 
 def get_datafile_path(*args):
@@ -152,7 +161,7 @@ def get_datafile_path(*args):
     :param args: Arguments passed to os.path.join. Ex ('images', 'jeos.qcow2')
     """
     config = settings.as_dict()
-    new_args = tuple([config.get('datadir.paths.data_dir')] + list(args))
+    new_args = tuple([config.get("datadir.paths.data_dir")] + list(args))
     return os.path.join(*new_args)
 
 
@@ -165,9 +174,14 @@ def get_logs_dir():
     .. warning:: This method is deprecated, get values from
                  settings.as_dict() or self.config
     """
-    warnings.warn(("get_logs_dir() is deprecated, get values from "
-                   "settings.as_dict() or self.config"), DeprecationWarning)
-    return settings.as_dict().get('datadir.paths.logs_dir')
+    warnings.warn(
+        (
+            "get_logs_dir() is deprecated, get values from "
+            "settings.as_dict() or self.config"
+        ),
+        DeprecationWarning,
+    )
+    return settings.as_dict().get("datadir.paths.logs_dir")
 
 
 def create_job_logs_dir(base_dir=None, unique_id=None):
@@ -178,13 +192,15 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
     :param unique_id: The unique identification. If `None`, create one.
     :rtype: str
     """
-    start_time = time.strftime('%Y-%m-%dT%H.%M')
+    start_time = time.strftime("%Y-%m-%dT%H.%M")
     if base_dir is None:
         base_dir = get_logs_dir()
         if not base_dir:
-            LOG_UI.error("No writable location for logs found, use "
-                         "'avocado config --datadir' to get the "
-                         "locations and check system permissions.")
+            LOG_UI.error(
+                "No writable location for logs found, use "
+                "'avocado config --datadir' to get the "
+                "locations and check system permissions."
+            )
             sys.exit(exit_codes.AVOCADO_FAIL)
     if not os.path.exists(base_dir):
         utils_path.init_dir(base_dir)
@@ -192,7 +208,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
     if unique_id is None:
         unique_id = job_id.create_unique_job_id()
 
-    logdir = os.path.join(base_dir, f'job-{start_time}-{unique_id[:7]}')
+    logdir = os.path.join(base_dir, f"job-{start_time}-{unique_id[:7]}")
     for i in range(7, len(unique_id)):
         try:
             os.mkdir(logdir)
@@ -207,8 +223,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
         except OSError:
             continue
         return logdir + str(i)
-    raise IOError(f"Unable to create unique logdir"
-                  f" in 1000 iterations: {logdir}")
+    raise IOError(f"Unable to create unique logdir" f" in 1000 iterations: {logdir}")
 
 
 def get_cache_dirs():
@@ -220,26 +235,33 @@ def get_cache_dirs():
     .. warning:: This method is deprecated, get values from
                  settings.as_dict() or self.config
     """
-    warnings.warn(("get_cache_dirs() is deprecated, get values from "
-                   "settings.as_dict() or self.config"), DeprecationWarning)
-    return settings.as_dict().get('datadir.paths.cache_dirs')
+    warnings.warn(
+        (
+            "get_cache_dirs() is deprecated, get values from "
+            "settings.as_dict() or self.config"
+        ),
+        DeprecationWarning,
+    )
+    return settings.as_dict().get("datadir.paths.cache_dirs")
 
 
 class _TmpDirTracker(Borg):
-
     def __init__(self):
         Borg.__init__(self)
         self.basedir = None
 
     def get(self, basedir):
-        if not hasattr(self, 'tmp_dir'):
+        if not hasattr(self, "tmp_dir"):
             if basedir is not None:
                 self.basedir = basedir
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',  # pylint: disable=W0201
-                                            dir=self.basedir)
+            self.tmp_dir = tempfile.mkdtemp(  # pylint: disable=W0201
+                prefix="avocado_", dir=self.basedir
+            )
         elif basedir is not None and basedir != self.basedir:
-            LOG_JOB.error("The tmp_dir was already created. The new basedir "
-                          "you're trying to provide will have no effect.")
+            LOG_JOB.error(
+                "The tmp_dir was already created. The new basedir "
+                "you're trying to provide will have no effect."
+            )
         return self.tmp_dir
 
     def unittest_refresh_dir_tracker(self):
@@ -251,7 +273,7 @@ class _TmpDirTracker(Borg):
         shutil.rmtree(self.__dict__.pop("tmp_dir"))
 
     def __del__(self):
-        tmp_dir = getattr(self, 'tmp_dir', None)
+        tmp_dir = getattr(self, "tmp_dir", None)
 
         if tmp_dir is not None and self.basedir is None:
             try:
@@ -278,8 +300,10 @@ def get_tmp_dir(basedir=None):
     tmp_dir = _tmp_tracker.get(basedir)
     # This assert is a security mechanism for avoiding re-creating
     # the temporary directory, since that's a security breach.
-    msg = (f'Temporary dir {tmp_dir} no longer exists. This likely means the '
-           f'directory was incorrectly deleted before the end of the job')
+    msg = (
+        f"Temporary dir {tmp_dir} no longer exists. This likely means the "
+        f"directory was incorrectly deleted before the end of the job"
+    )
     assert os.path.isdir(tmp_dir), msg
     return tmp_dir
 
@@ -320,11 +344,11 @@ def get_job_results_dir(job_ref, logs_dir=None):
     if os.path.isdir(path_ref):
         # The id file should exists otherwise it is not the expected
         # directory.
-        if os.path.isfile(os.path.join(path_ref, 'id')):
+        if os.path.isfile(os.path.join(path_ref, "id")):
             return os.path.abspath(path_ref)
         return None
     elif os.path.isfile(path_ref):
-        if os.path.basename(path_ref) == 'id':
+        if os.path.basename(path_ref) == "id":
             return os.path.abspath(os.path.dirname(path_ref))
         return None
 
@@ -337,9 +361,9 @@ def get_job_results_dir(job_ref, logs_dir=None):
     else:
         logs_dir = os.path.expanduser(logs_dir)
 
-    if job_ref == 'latest':
+    if job_ref == "latest":
         try:
-            actual_dir = os.readlink(os.path.join(logs_dir, 'latest'))
+            actual_dir = os.readlink(os.path.join(logs_dir, "latest"))
             return os.path.join(logs_dir, actual_dir)
         except IOError:
             return None
@@ -347,11 +371,11 @@ def get_job_results_dir(job_ref, logs_dir=None):
     matches = 0
     short_jobid = job_ref[:7]
     if len(short_jobid) < 7:
-        short_jobid += '*'
-    idfile_pattern = os.path.join(logs_dir, f'job-*-{short_jobid}', 'id')
+        short_jobid += "*"
+    idfile_pattern = os.path.join(logs_dir, f"job-*-{short_jobid}", "id")
     for id_file in glob.glob(idfile_pattern):
-        with open(id_file, 'r', encoding='utf-8') as fid:
-            line = fid.read().strip('\n')
+        with open(id_file, "r", encoding="utf-8") as fid:
+            line = fid.read().strip("\n")
             if line.startswith(job_ref):
                 match_file = id_file
                 matches += 1

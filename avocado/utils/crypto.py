@@ -44,11 +44,12 @@ def hash_file(filename, size=None, algorithm="md5"):
     try:
         hash_obj = hashlib.new(algorithm)
     except ValueError as detail:
-        LOG.error('Returning "None" due to inability to create hash '
-                  'object: "%s"', detail)
+        LOG.error(
+            'Returning "None" due to inability to create hash ' 'object: "%s"', detail
+        )
         return None
 
-    with open(filename, 'rb') as file_to_hash:
+    with open(filename, "rb") as file_to_hash:
         while size > 0:
             if chunksize > size:
                 chunksize = size

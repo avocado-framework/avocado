@@ -21,7 +21,7 @@ import os
 
 
 def reference_split(reference):
-    '''
+    """
     Splits a test reference into a path and additional info
 
     This should be used dependent on the specific type of resolver.  If
@@ -30,8 +30,8 @@ def reference_split(reference):
 
     :returns: (path, additional_info)
     :type: (str, str or None)
-    '''
+    """
     if not os.path.exists(reference):
-        if ':' in reference:
-            return reference.rsplit(':', 1)
+        if ":" in reference:
+            return reference.rsplit(":", 1)
     return (reference, None)

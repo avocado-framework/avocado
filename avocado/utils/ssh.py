@@ -23,7 +23,7 @@ from avocado.utils import process
 
 try:
     #: The SSH client binary to use, if one is found in the system
-    SSH_CLIENT_BINARY = path_utils.find_command('ssh')
+    SSH_CLIENT_BINARY = path_utils.find_command("ssh")
 except path_utils.CmdNotFoundError:
     SSH_CLIENT_BINARY = None
 
@@ -44,12 +44,13 @@ class Session:
     connection is closed.
     """
 
-    DEFAULT_OPTIONS = (('StrictHostKeyChecking', 'no'),
-                       ('UpdateHostKeys', 'no'),
-                       ('ControlPath', '~/.ssh/avocado-master-%r@%h:%p'))
+    DEFAULT_OPTIONS = (
+        ("StrictHostKeyChecking", "no"),
+        ("UpdateHostKeys", "no"),
+        ("ControlPath", "~/.ssh/avocado-master-%r@%h:%p"),
+    )
 
-    MASTER_OPTIONS = (('ControlMaster', 'yes'),
-                      ('ControlPersist', 'yes'))
+    MASTER_OPTIONS = (("ControlMaster", "yes"), ("ControlPersist", "yes"))
 
     def __init__(self, host, port=None, user=None, key=None, password=None):
         """
@@ -85,7 +86,7 @@ class Session:
         """
         return " ".join([f"-o '{_[0]}={_[1]}'" for _ in opts])
 
-    def _ssh_cmd(self, dash_o_opts=(), opts=(), command=''):
+    def _ssh_cmd(self, dash_o_opts=(), opts=(), command=""):
         cmd = self._dash_o_opts_to_str(dash_o_opts)
         if self.user is not None:
             cmd += f" -l {self.user}"
@@ -93,19 +94,20 @@ class Session:
                 cmd += f" -i {self.key}"
         if self.port is not None:
             cmd += f" -p {self.port}"
-        cmd = (f"{SSH_CLIENT_BINARY} {cmd} {' '.join(opts)} "
-               f"{self.host} '{command}'")
+        cmd = f"{SSH_CLIENT_BINARY} {cmd} {' '.join(opts)} " f"{self.host} '{command}'"
         return cmd
 
     def _master_connection(self):
         options = self.DEFAULT_OPTIONS + self.MASTER_OPTIONS
-        options += (('PubkeyAuthentication', 'yes' if self.key else 'no'),)
+        options += (("PubkeyAuthentication", "yes" if self.key else "no"),)
         if self.password is None:
-            options += (('PasswordAuthentication', 'no'),)
+            options += (("PasswordAuthentication", "no"),)
         else:
-            options += (('PasswordAuthentication', 'yes'),
-                        ('NumberOfPasswordPrompts', '1'),)
-        return self._ssh_cmd(options, ('-T', '-n'))
+            options += (
+                ("PasswordAuthentication", "yes"),
+                ("NumberOfPasswordPrompts", "1"),
+            )
+        return self._ssh_cmd(options, ("-T", "-n"))
 
     def _create_ssh_askpass(self):
         """
@@ -121,12 +123,12 @@ class Session:
         return path
 
     def _master_command(self, command):
-        cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ('-O', command))
+        cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ("-O", command))
         result = process.run(cmd, ignore_status=True)
         return result.exit_status == 0
 
     def _check(self):
-        return self._master_command('check')
+        return self._master_command("check")
 
     def cleanup_master(self):
         """Removes master file if exists."""
@@ -151,20 +153,26 @@ class Session:
             cmd = shlex.split(self._master_connection())
             if self.password is not None:
                 ssh_askpass_path = self._create_ssh_askpass()
-                env = {'DISPLAY': 'FAKE_VALUE_TO_SATISFY_SSH',
-                       'SSH_ASKPASS': ssh_askpass_path}
+                env = {
+                    "DISPLAY": "FAKE_VALUE_TO_SATISFY_SSH",
+                    "SSH_ASKPASS": ssh_askpass_path,
+                }
                 # pylint: disable=W1509
-                master = subprocess.Popen(cmd,
-                                          stdin=subprocess.DEVNULL,
-                                          stdout=subprocess.DEVNULL,
-                                          stderr=subprocess.DEVNULL,
-                                          env=env,
-                                          preexec_fn=os.setsid)
+                master = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    env=env,
+                    preexec_fn=os.setsid,
+                )
             else:
-                master = subprocess.Popen(cmd,
-                                          stdin=subprocess.DEVNULL,
-                                          stdout=subprocess.DEVNULL,
-                                          stderr=subprocess.DEVNULL)
+                master = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
 
             master.wait()
             if self.password is not None:
@@ -195,7 +203,7 @@ class Session:
                   the execution of a remote command.
         :rtype: str
         """
-        return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
+        return self._ssh_cmd(self.DEFAULT_OPTIONS, ("-q",), command)
 
     def cmd(self, command, ignore_status=True):
         """
@@ -213,11 +221,12 @@ class Session:
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
         try:
-            return process.run(self.get_raw_ssh_command(command),
-                               ignore_status=ignore_status)
+            return process.run(
+                self.get_raw_ssh_command(command), ignore_status=ignore_status
+            )
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
-                exc.additional_text = 'SSH connection failed'
+                exc.additional_text = "SSH connection failed"
             else:
                 exc.additional_text = f"Command '{command}' failed"
                 exc.stderr = exc.result.stderr
@@ -231,7 +240,7 @@ class Session:
         :returns: if closing the session was successful or not
         :rtype: bool
         """
-        return self._master_command('exit')
+        return self._master_command("exit")
 
     def copy_files(self, source, destination, recursive=False):
         """
@@ -248,7 +257,7 @@ class Session:
         :rtype: bool
         """
         try:
-            cmd = path_utils.find_command('scp')
+            cmd = path_utils.find_command("scp")
         except path_utils.CmdNotFoundError as exc:
             raise exc
         options = list(self.DEFAULT_OPTIONS)
@@ -256,11 +265,10 @@ class Session:
             options.append(("User", self.user))
         options = self._dash_o_opts_to_str(options)
         if recursive:
-            options += ' -r'
+            options += " -r"
         options += f" {source} {destination}"
         try:
-            result = process.run(f"{cmd} {options}",
-                                 ignore_status=True)
+            result = process.run(f"{cmd} {options}", ignore_status=True)
             return result.exit_status == 0
         except process.CmdError as exc:
             raise NWException(f"failed to copy file {exc}")

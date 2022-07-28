@@ -1,7 +1,6 @@
 import time
 
-from avocado.core.nrunner.runnable import \
-    RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+from avocado.core.nrunner.runnable import RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
 
 #: The amount of time (in seconds) between each internal status check
@@ -33,7 +32,7 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
     missing = []
 
     for runnable in runnables:
-        runner = runnable.pick_runner_command(runners_registry)
+        runner = runnable.pick_runner_command(runnable.kind, runners_registry)
         if runner:
             ok.append(runnable)
         else:
@@ -64,6 +63,26 @@ class BaseRunner(RunnableRunner):
         status = {}
         if isinstance(additional_info, dict):
             status = additional_info
-        status.update({'status': status_type,
-                       'time': time.monotonic()})
+        status.update({"status": status_type, "time": time.monotonic()})
         return status
+
+    def running_loop(self, condition):
+        """Produces timely running messages until end condition is found.
+
+        :param condition: a callable that will be evaluated as a
+                          condition for continuing the loop
+        """
+        most_current_execution_state_time = None
+        while not condition():
+            now = time.monotonic()
+            if most_current_execution_state_time is not None:
+                next_execution_state_mark = (
+                    most_current_execution_state_time + RUNNER_RUN_STATUS_INTERVAL
+                )
+            if (
+                most_current_execution_state_time is None
+                or now > next_execution_state_mark
+            ):
+                most_current_execution_state_time = now
+                yield self.prepare_status("running")
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)

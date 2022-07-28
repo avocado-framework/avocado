@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class Params(Test):
-
     def test(self):
         """Test that simply lists all parameters."""
         self.log.info("Test params:")

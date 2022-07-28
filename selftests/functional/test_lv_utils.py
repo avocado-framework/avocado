@@ -10,7 +10,7 @@ import sys
 import time
 import unittest
 
-from avocado.utils import linux_modules, lv_utils, process
+from avocado.utils import linux_modules, lv_utils, path, process
 from selftests.utils import TestCaseTmpDir
 
 
@@ -20,12 +20,15 @@ class LVUtilsTest(TestCaseTmpDir):
     Check the LVM related utilities
     """
 
-    @unittest.skipIf(sys.platform.startswith('darwin'),
-                     'macOS does not support LVM')
-    @unittest.skipIf(process.system("which vgs", ignore_status=True),
-                     "LVM utils not installed (command vgs is missing)")
-    @unittest.skipIf(not process.can_sudo(), "This test requires root or "
-                     "passwordless sudo configured.")
+    @unittest.skipIf(sys.platform.startswith("darwin"), "macOS does not support LVM")
+    @unittest.skipIf(
+        path.find_command("vgs", default=False),
+        "LVM utils not installed (command vgs is missing)",
+    )
+    @unittest.skipIf(
+        not process.can_sudo(),
+        "This test requires root or " "passwordless sudo configured.",
+    )
     def setUp(self):
         super().setUp()
         self.vgs = []
@@ -35,12 +38,16 @@ class LVUtilsTest(TestCaseTmpDir):
         for vg_name in self.vgs:
             lv_utils.vg_remove(vg_name)
 
-    @unittest.skipIf(sys.platform.startswith('darwin'),
-                     'macOS does not support LVM')
-    @unittest.skipIf(process.system("vgs --all | grep -q avocado_testing_vg_"
-                                    "e5kj3erv11a; [ $? -ne 0 ]", sudo=True,
-                                    shell=True, ignore_status=True),
-                     "Unittest volume group already exists.")
+    @unittest.skipIf(sys.platform.startswith("darwin"), "macOS does not support LVM")
+    @unittest.skipIf(
+        process.system(
+            "vgs --all | grep -q avocado_testing_vg_" "e5kj3erv11a; [ $? -ne 0 ]",
+            sudo=True,
+            shell=True,
+            ignore_status=True,
+        ),
+        "Unittest volume group already exists.",
+    )
     def test_basic_workflow(self):
         """
         Check the basic workflow works using ramdisk
@@ -55,8 +62,9 @@ class LVUtilsTest(TestCaseTmpDir):
             # Create ramdisk vg
             self.assertFalse(os.path.exists(ramdisk_basedir))
             self.assertFalse(lv_utils.vg_check(vg_name))
-            spec = lv_utils.vg_ramdisk(False, vg_name, 10, ramdisk_basedir,
-                                       "sparse_file")
+            spec = lv_utils.vg_ramdisk(
+                False, vg_name, 10, ramdisk_basedir, "sparse_file"
+            )
             ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device = spec
             # Check it was created properly
             self.assertTrue(ramdisk_filename)
@@ -69,53 +77,65 @@ class LVUtilsTest(TestCaseTmpDir):
             vgs = lv_utils.vg_list()
             self.assertIn(vg_name, vgs)
             # Can't create existing vg
-            self.assertRaises(lv_utils.LVException, lv_utils.vg_create,
-                              vg_name, loop_device)
+            self.assertRaises(
+                lv_utils.LVException, lv_utils.vg_create, vg_name, loop_device
+            )
             # Create and check LV
             lv_utils.lv_create(vg_name, lv_name, 1)
             lv_utils.lv_check(vg_name, lv_name)
-            self.assertIn(vg_name, process.run("lvs --all",
-                                               sudo=True).stdout_text)
+            self.assertIn(vg_name, process.run("lvs --all", sudo=True).stdout_text)
             self.assertIn(lv_name, lv_utils.lv_list())
             lv_utils.lv_mount(vg_name, lv_name, mount_loc, "ext2")
             lv_utils.lv_umount(vg_name, lv_name)
             lv_utils.lv_remove(vg_name, lv_name)
             self.assertNotIn(lv_name, lv_utils.lv_list())
             # Cleanup ramdisk vgs
-            lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                                        vg_name, loop_device)
+            lv_utils.vg_ramdisk_cleanup(
+                ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
+            )
             self.assertTrue(os.path.exists(ramdisk_basedir))
             self.assertFalse(glob.glob(os.path.join(ramdisk_basedir, "*")))
-        except BaseException as details:
+        except BaseException:
             try:
-                process.run(f"mountpoint {mount_loc} && umount {mount_loc}",
-                            shell=True, sudo=True)
-            except BaseException as details:
-                print(f"Fail to unmount LV: {details}")
+                process.run(
+                    f"mountpoint {mount_loc} && umount {mount_loc}",
+                    shell=True,
+                    sudo=True,
+                )
+            except BaseException as mountpoint_details:
+                print(f"Fail to unmount LV: {mountpoint_details}")
             try:
                 lv_utils.lv_remove(vg_name, lv_name)
-            except BaseException as details:
-                print(f"Fail to cleanup LV: {details}")
+            except BaseException as lv_remove_details:
+                print(f"Fail to cleanup LV: {lv_remove_details}")
             try:
-                lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                                            vg_name, loop_device)
-            except BaseException as details:
-                print(f"Fail to cleanup vg_ramdisk: {details}")
+                lv_utils.vg_ramdisk_cleanup(
+                    ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
+                )
+            except BaseException as vg_cleanup_details:
+                print(f"Fail to cleanup vg_ramdisk: {vg_cleanup_details}")
 
 
 class DiskSpace(unittest.TestCase):
-
-    @unittest.skipIf(process.system("modinfo scsi_debug", shell=True,
-                                    ignore_status=True),
-                     "Kernel mod 'scsi_debug' not available.")
-    @unittest.skipIf(linux_modules.module_is_loaded("scsi_debug"),
-                     "Kernel mod 'scsi_debug' is already loaded.")
-    @unittest.skipIf(sys.platform.startswith('darwin'),
-                     'macOS does not support scsi_debug module')
-    @unittest.skipIf(not process.can_sudo(), "This test requires root or "
-                     "passwordless sudo configured.")
-    @unittest.skipIf(process.system("which modprobe", ignore_status=True),
-                     "kmod not installed (command modprobe is missing)")
+    @unittest.skipIf(
+        process.system("modinfo scsi_debug", shell=True, ignore_status=True),
+        "Kernel mod 'scsi_debug' not available.",
+    )
+    @unittest.skipIf(
+        linux_modules.module_is_loaded("scsi_debug"),
+        "Kernel mod 'scsi_debug' is already loaded.",
+    )
+    @unittest.skipIf(
+        sys.platform.startswith("darwin"), "macOS does not support scsi_debug module"
+    )
+    @unittest.skipIf(
+        not process.can_sudo(),
+        "This test requires root or " "passwordless sudo configured.",
+    )
+    @unittest.skipIf(
+        path.find_command("modprobe", default=False),
+        "kmod not installed (command modprobe is missing)",
+    )
     def test_get_diskspace(self):
         """
         Use scsi_debug device to check disk size
@@ -123,20 +143,22 @@ class DiskSpace(unittest.TestCase):
         pre = glob.glob("/dev/sd*")
         process.system("modprobe scsi_debug", sudo=True)
         disks = set(glob.glob("/dev/sd*")).difference(pre)
-        self.assertEqual(len(disks), 1,
-                         f"pre: {disks}\npost: {glob.glob('/dev/sd*')}")
+        self.assertEqual(len(disks), 1, f"pre: {disks}\npost: {glob.glob('/dev/sd*')}")
         disk = disks.pop()
         self.assertEqual(lv_utils.get_diskspace(disk), "8388608")
 
     def tearDown(self):
         for _ in range(10):
-            if process.run("modprobe -r scsi_debug",
-                           ignore_status=True,
-                           sudo=True).exit_status == 0:
+            if (
+                process.run(
+                    "modprobe -r scsi_debug", ignore_status=True, sudo=True
+                ).exit_status
+                == 0
+            ):
                 return
             time.sleep(0.05)
         raise RuntimeError("Failed to remove scsi_debug after testing")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

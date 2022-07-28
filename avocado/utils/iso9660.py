@@ -21,8 +21,13 @@ either in userspace tools or on the Linux kernel itself (via mount).
 """
 
 
-__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount',
-           'ISO9660PyCDLib']
+__all__ = [
+    "iso9660",
+    "Iso9660IsoInfo",
+    "Iso9660IsoRead",
+    "Iso9660Mount",
+    "ISO9660PyCDLib",
+]
 
 import io
 import logging
@@ -54,7 +59,7 @@ def has_userland_tool(executable):
     if os.path.isabs(executable):
         return os.path.exists(executable)
     else:
-        for path in os.environ['PATH'].split(':'):
+        for path in os.environ["PATH"].split(":"):
             if os.path.exists(os.path.join(path, executable)):
                 return True
     return False
@@ -69,7 +74,7 @@ def has_isoinfo():
 
     :rtype: bool
     """
-    return has_userland_tool('isoinfo')
+    return has_userland_tool("isoinfo")
 
 
 def has_isoread():
@@ -81,7 +86,7 @@ def has_isoread():
 
     :rtype: bool
     """
-    return has_userland_tool('iso-read')
+    return has_userland_tool("iso-read")
 
 
 def has_pycdlib():
@@ -102,20 +107,22 @@ def can_mount():
     :rtype: bool
     """
     if not process.can_sudo():
-        LOG.debug('Can not use mount: current user is not "root" and '
-                  'sudo is not configured.')
+        LOG.debug(
+            'Can not use mount: current user is not "root" and '
+            "sudo is not configured."
+        )
         return False
 
-    if not has_userland_tool('mount'):
+    if not has_userland_tool("mount"):
         LOG.debug('Can not use mount: missing "mount" tool')
         return False
 
-    with open('/proc/filesystems') as proc_filesystems:  # pylint: disable=W1514
-        if 'iso9660' not in proc_filesystems.read():
+    with open("/proc/filesystems") as proc_filesystems:  # pylint: disable=W1514
+        if "iso9660" not in proc_filesystems.read():
             process.system("modprobe iso9660", ignore_status=True, sudo=True)
-    with open('/proc/filesystems') as proc_filesystems:  # pylint: disable=W1514
-        if 'iso9660' not in proc_filesystems.read():
-            LOG.debug('Can not use mount: lack of iso9660 kernel support')
+    with open("/proc/filesystems") as proc_filesystems:  # pylint: disable=W1514
+        if "iso9660" not in proc_filesystems.read():
+            LOG.debug("Can not use mount: lack of iso9660 kernel support")
             return False
 
     return True
@@ -153,7 +160,7 @@ class BaseIso9660:
         :rtype: None
         """
         content = self.read(src)
-        with open(dst, 'w+b') as output:
+        with open(dst, "w+b") as output:
             output.write(content)
 
     @property
@@ -177,6 +184,7 @@ class MixInMntDirMount:
     Iso9660Mount class to provide one. It requires `self.path` to store
     path to the target iso file.
     """
+
     _mount_instance = None
     path = None
 
@@ -187,8 +195,7 @@ class MixInMntDirMount:
         """
         if self._mount_instance is None:
             if not self.path:
-                raise RuntimeError(f"Path to iso image not available: "
-                                   f"{self.path}")
+                raise RuntimeError(f"Path to iso image not available: " f"{self.path}")
             self._mount_instance = Iso9660Mount(self.path)
         return self._mount_instance.mnt_dir
 
@@ -221,7 +228,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         """
         Get and store the image's extensions
         """
-        cmd = f'isoinfo -i {path} -d'
+        cmd = f"isoinfo -i {path} -d"
         output = process.system_output(cmd)
         if b"\nJoliet" in output:
             self.joliet = True
@@ -236,14 +243,14 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         Normalize the path to match isoinfo notation
         """
         if not os.path.isabs(path):
-            path = os.path.join('/', path)
+            path = os.path.join("/", path)
         return path
 
     def _get_filename_in_iso(self, path):
         """
         Locate the path in the list of files inside the iso image
         """
-        cmd = f'isoinfo -i {self.path} -f'
+        cmd = f"isoinfo -i {self.path} -f"
         flist = process.system_output(cmd)
 
         fname = re.findall(f"({self._normalize_path(path)}.*)", flist, re.I)
@@ -252,7 +259,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         return None
 
     def read(self, path):
-        cmd = ['isoinfo', f'-i {self.path}']
+        cmd = ["isoinfo", f"-i {self.path}"]
 
         fname = self._normalize_path(path)
         if self.joliet:
@@ -262,8 +269,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         else:
             fname = self._get_filename_in_iso(path)
             if not fname:
-                LOG.warning(
-                    "Could not find '%s' in iso '%s'", path, self.path)
+                LOG.warning("Could not find '%s' in iso '%s'", path, self.path)
                 return ""
 
         cmd.append(f"-x {fname}")
@@ -281,17 +287,17 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
 
     def __init__(self, path):
         super().__init__(path)
-        self.temp_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.temp_dir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
     def read(self, path):
         temp_path = os.path.join(self.temp_dir, path)
-        cmd = f'iso-read -i {self.path} -e {path} -o {temp_path}'
+        cmd = f"iso-read -i {self.path} -e {path} -o {temp_path}"
         process.run(cmd)
-        with open(temp_path, 'rb') as temp_file:
+        with open(temp_path, "rb") as temp_file:
             return bytes(temp_file.read())
 
     def copy(self, src, dst):
-        cmd = f'iso-read -i {self.path} -e {src} -o {dst}'
+        cmd = f"iso-read -i {self.path} -e {src} -o {dst}"
         process.run(cmd)
 
     def close(self):
@@ -313,13 +319,14 @@ class Iso9660Mount(BaseIso9660):
         :type path: str
         """
         super().__init__(path)
-        self._mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        if sys.platform.startswith('darwin'):
-            fs_type = 'cd9660'
+        self._mnt_dir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        if sys.platform.startswith("darwin"):
+            fs_type = "cd9660"
         else:
-            fs_type = 'iso9660'
-        process.run(f'mount -t {fs_type} -v -o loop,ro {path} {self.mnt_dir}',
-                    sudo=True)
+            fs_type = "iso9660"
+        process.run(
+            f"mount -t {fs_type} -v -o loop,ro {path} {self.mnt_dir}", sudo=True
+        )
 
     def read(self, path):
         """
@@ -331,7 +338,7 @@ class Iso9660Mount(BaseIso9660):
         :rtype: str
         """
         full_path = os.path.join(self.mnt_dir, path)
-        with open(full_path, 'rb') as file_to_read:
+        with open(full_path, "rb") as file_to_read:
             return bytes(file_to_read.read())
 
     def copy(self, src, dst):
@@ -353,17 +360,17 @@ class Iso9660Mount(BaseIso9660):
         """
         if self._mnt_dir:
             if os.path.ismount(self._mnt_dir):
-                process.run(f'fuser -k {self.mnt_dir}', ignore_status=True,
-                            sudo=True)
-                process.run(f'umount {self.mnt_dir}', sudo=True)
+                process.run(f"fuser -k {self.mnt_dir}", ignore_status=True, sudo=True)
+                process.run(f"umount {self.mnt_dir}", sudo=True)
             shutil.rmtree(self._mnt_dir)
             self._mnt_dir = None
 
     @property
     def mnt_dir(self):
         if not self._mnt_dir:
-            raise RuntimeError(f"Trying to get mnt_dir of already closed "
-                               f"iso {self.path}")
+            raise RuntimeError(
+                f"Trying to get mnt_dir of already closed " f"iso {self.path}"
+            )
         return self._mnt_dir
 
 
@@ -376,12 +383,11 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
     """
 
     #: Default flags used when creating a new ISO image
-    DEFAULT_CREATE_FLAGS = {"interchange_level": 3,
-                            "joliet": 3}
+    DEFAULT_CREATE_FLAGS = {"interchange_level": 3, "joliet": 3}
 
     def __init__(self, path):
         if not has_pycdlib():
-            raise RuntimeError('This class requires the pycdlib library')
+            raise RuntimeError("This class requires the pycdlib library")
         super().__init__(path)
         self._iso = None
         self._iso_opened_for_create = False
@@ -407,17 +413,18 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
 
     @staticmethod
     def _get_iso_path(path):
-        iso_path = "".join([c for c in path
-                            if c in (string.ascii_letters + string.digits)])
+        iso_path = "".join(
+            [c for c in path if c in (string.ascii_letters + string.digits)]
+        )
         iso_path = iso_path[:7].upper() + ";"
         if not os.path.isabs(iso_path):
-            iso_path = '/' + iso_path[:6] + ";"
+            iso_path = "/" + iso_path[:6] + ";"
         return iso_path
 
     @staticmethod
     def _get_abs_path(path):
         if not os.path.isabs(path):
-            path = '/' + path
+            path = "/" + path
         return path
 
     def write(self, path, content):
@@ -430,14 +437,17 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
         :type path: bytes
         """
         self.create()
-        self._iso.add_fp(io.BytesIO(content), len(content),
-                         iso_path=self._get_iso_path(path),
-                         joliet_path=self._get_abs_path(path))
+        self._iso.add_fp(
+            io.BytesIO(content),
+            len(content),
+            iso_path=self._get_iso_path(path),
+            joliet_path=self._get_abs_path(path),
+        )
 
     def read(self, path):
         self._open_for_read()
         if not os.path.isabs(path):
-            path = '/' + path
+            path = "/" + path
         data = io.BytesIO()
         self._iso.get_file_from_iso_fp(data, joliet_path=path)
         return data.getvalue()
@@ -445,7 +455,7 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
     def copy(self, src, dst):
         self._open_for_read()
         if not os.path.isabs(src):
-            src = '/' + src
+            src = "/" + src
         self._iso.get_file_from_iso(dst, joliet_path=src)
 
     def close(self):
@@ -477,23 +487,23 @@ def iso9660(path, capabilities=None):
     # all implementations so far have these base capabilities
     common_capabilities = ["read", "copy", "mnt_dir"]
 
-    implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
-                        common_capabilities + ["create", "write"]),
-
-                       ('isoinfo', has_isoinfo, Iso9660IsoInfo,
-                        common_capabilities),
-
-                       ('iso-read', has_isoread, Iso9660IsoRead,
-                        common_capabilities),
-
-                       ('mount', can_mount, Iso9660Mount,
-                        common_capabilities)]
+    implementations = [
+        (
+            "pycdlib",
+            has_pycdlib,
+            ISO9660PyCDLib,
+            common_capabilities + ["create", "write"],
+        ),
+        ("isoinfo", has_isoinfo, Iso9660IsoInfo, common_capabilities),
+        ("iso-read", has_isoread, Iso9660IsoRead, common_capabilities),
+        ("mount", can_mount, Iso9660Mount, common_capabilities),
+    ]
 
     for (name, check, klass, cap) in implementations:
         if capabilities is not None and not set(capabilities).issubset(cap):
             continue
         if check():
-            LOG.debug('Automatically chosen class for iso9660: %s', name)
+            LOG.debug("Automatically chosen class for iso9660: %s", name)
             return klass(path)
 
     return None

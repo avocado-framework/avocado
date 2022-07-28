@@ -2,14 +2,18 @@ import json
 import re
 import sys
 
-import jsonschema
-
-from avocado import Test, fail_on
+from avocado import Test, fail_on, skipUnless
 from avocado.utils import process
+
+try:
+    import jsonschema
+
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
 
 
 class Interface(Test):
-
     def get_runner(self):
         default_runner = f"{sys.executable} -m avocado.core.nrunner"
         return self.params.get("runner", default=default_runner)
@@ -17,9 +21,9 @@ class Interface(Test):
     @staticmethod
     def guess_recipe_from_runner(runner, recipe_type):
         recipe_file_name = f"recipe_{recipe_type}"
-        match = re.match(r'^avocado-runner-(.*)$', runner)
+        match = re.match(r"^avocado-runner-(.*)$", runner)
         if match:
-            underlined = match.group(1).replace('-', '_')
+            underlined = match.group(1).replace("-", "_")
             recipe_file_name += f"_{underlined}.json"
         else:
             recipe_file_name += ".json"
@@ -33,11 +37,12 @@ class Interface(Test):
         """
         cmd = f"{self.get_runner()} --help"
         result = process.run(cmd)
-        self.assertIn(b"capabilities", result.stdout,
-                      "Mention to capabilities command not found")
+        self.assertIn(
+            b"capabilities", result.stdout, "Mention to capabilities command not found"
+        )
 
+    @skipUnless(JSONSCHEMA_AVAILABLE, "jsonschema module not available")
     @fail_on(process.CmdError)
-    @fail_on(jsonschema.exceptions.ValidationError)
     def test_schema_capabilities(self):
         cmd = f"{self.get_runner()} capabilities"
         result = process.run(cmd)
@@ -45,21 +50,22 @@ class Interface(Test):
         schema_path = self.get_data("capabilities.schema.json")
         if not schema_path:
             self.error('Schema file not found for "capabilities"')
-        with open(schema_path, 'r', encoding='utf-8') as schema:
-            jsonschema.validate(capabilities, json.load(schema))
+        with open(schema_path, "r", encoding="utf-8") as schema:
+            try:
+                jsonschema.validate(capabilities, json.load(schema))
+            except jsonschema.exceptions.ValidationError as details:
+                self.fail(details)
 
     def test_runnable_run_no_args(self):
         cmd = f"{self.get_runner()} runnable-run"
         result = process.run(cmd, ignore_status=True)
-        expected = int(self.params.get('runnable-run-no-args-exit-code',
-                                       default=2))
+        expected = int(self.params.get("runnable-run-no-args-exit-code", default=2))
         self.assertEqual(result.exit_status, expected)
 
     def test_runnable_run_uri_only(self):
         cmd = f"{self.get_runner()} runnable-run -u some_uri"
         result = process.run(cmd, ignore_status=True)
-        expected = int(self.params.get('runnable-run-uri-only-exit-code',
-                                       default=2))
+        expected = int(self.params.get("runnable-run-uri-only-exit-code", default=2))
         self.assertEqual(result.exit_status, expected)
 
     def test_runnable_run_recipe_no_args(self):
@@ -88,8 +94,7 @@ class Interface(Test):
     def test_task_run_identifier_only(self):
         cmd = f"{self.get_runner()} task-run -i some_identifier"
         result = process.run(cmd, ignore_status=True)
-        expected = int(self.params.get('task-run-id-only-exit-code',
-                                       default=2))
+        expected = int(self.params.get("task-run-id-only-exit-code", default=2))
         self.assertEqual(result.exit_status, expected)
 
     def test_task_run_recipe_no_args(self):

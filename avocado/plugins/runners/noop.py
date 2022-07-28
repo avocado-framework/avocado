@@ -13,18 +13,20 @@ class NoOpRunner(BaseRunner):
      * args: not used
     """
 
-    name = 'noop'
-    description = 'Sample runner that performs no action before reporting FINISHED status'
+    name = "noop"
+    description = (
+        "Sample runner that performs no action before reporting FINISHED status"
+    )
 
     def run(self, runnable):
-        yield self.prepare_status('started')
-        yield self.prepare_status('finished', {'result': 'pass'})
+        yield self.prepare_status("started")
+        yield self.prepare_status("finished", {"result": "pass"})
 
 
 class RunnerApp(BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-noop'
-    PROG_DESCRIPTION = 'nrunner application for noop tests'
-    RUNNABLE_KINDS_CAPABLE = ['noop']
+    PROG_NAME = "avocado-runner-noop"
+    PROG_DESCRIPTION = "nrunner application for noop tests"
+    RUNNABLE_KINDS_CAPABLE = ["noop"]
 
 
 def main():
@@ -32,5 +34,5 @@ def main():
     app.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

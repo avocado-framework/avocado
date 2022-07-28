@@ -50,19 +50,19 @@ def check_owner(owner, group, file_name_pattern, check_recursive=False):
         actual_id = os.stat(file_name).st_uid
         if actual_id != getpwnam(owner).pw_uid:
             raise RuntimeError(
-                f'file {file_name} has wrong owner '
-                f'{getpwuid(actual_id).pw_name} (should be {owner})')
+                f"file {file_name} has wrong owner "
+                f"{getpwuid(actual_id).pw_name} (should be {owner})"
+            )
         actual_id = os.stat(file_name).st_gid
         if actual_id != getgrnam(group).gr_gid:
             raise RuntimeError(
-                f'file {file_name} has wrong group '
-                f'{getgrgid(actual_id).gr_name} (should be {group})')
-        LOG.debug('checked owner %s:%s of file %s',
-                  owner, group, file_name)
+                f"file {file_name} has wrong group "
+                f"{getgrgid(actual_id).gr_name} (should be {group})"
+            )
+        LOG.debug("checked owner %s:%s of file %s", owner, group, file_name)
 
         if check_recursive and os.path.isdir(file_name):
-            new_pattern = os.path.join(file_name,
-                                       os.path.basename(file_name_pattern))
+            new_pattern = os.path.join(file_name, os.path.basename(file_name_pattern))
             check_owner(owner, group, new_pattern, True)
 
 
@@ -78,7 +78,7 @@ def check_permissions(perms, file_name_pattern):
         actual_perms = S_IMODE(os.stat(file_name).st_mode)
         if perms != actual_perms:
             raise RuntimeError(
-                f'file {file_name} has permissions {oct(actual_perms)} '
-                f'(should be {oct(perms)})!')
-        LOG.debug('checked permissions %s of file %s',
-                  oct(perms), file_name)
+                f"file {file_name} has permissions {oct(actual_perms)} "
+                f"(should be {oct(perms)})!"
+            )
+        LOG.debug("checked permissions %s of file %s", oct(perms), file_name)

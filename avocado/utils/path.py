@@ -22,7 +22,7 @@ import tempfile
 
 from avocado.utils import aurl
 
-SHEBANG = '#!'
+SHEBANG = "#!"
 
 
 class CmdNotFoundError(Exception):
@@ -40,8 +40,10 @@ class CmdNotFoundError(Exception):
         self.paths = paths
 
     def __str__(self):
-        return (f"Command '{self.cmd}' could not be found in any "
-                f"of the PATH dirs: {self.paths}")
+        return (
+            f"Command '{self.cmd}' could not be found in any "
+            f"of the PATH dirs: {self.paths}"
+        )
 
 
 def get_path(base_path, user_path):
@@ -90,10 +92,17 @@ def find_command(cmd, default=None, check_exec=True):
             value if the command is not found
     :rtype: str
     """
-    common_bin_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
-                        "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
+    common_bin_paths = [
+        "/usr/libexec",
+        "/usr/local/sbin",
+        "/usr/local/bin",
+        "/usr/sbin",
+        "/usr/bin",
+        "/sbin",
+        "/bin",
+    ]
     try:
-        path_paths = os.environ['PATH'].split(":")
+        path_paths = os.environ["PATH"].split(":")
     except IndexError:
         path_paths = []
     path_paths = list(set(common_bin_paths + path_paths))
@@ -114,14 +123,13 @@ def find_command(cmd, default=None, check_exec=True):
 
 
 class PathInspector:
-
     def __init__(self, path):
         self.path = path
 
     def get_first_line(self):
         first_line = ""
         if os.path.isfile(self.path):
-            with open(self.path, 'r', encoding='utf-8') as open_file:
+            with open(self.path, "r", encoding="utf-8") as open_file:
                 first_line = open_file.readline()
         return first_line
 
@@ -144,9 +152,9 @@ class PathInspector:
         return False
 
     def is_python(self):
-        if self.path.endswith('.py'):
+        if self.path.endswith(".py"):
             return True
-        return self.is_script(language='python')
+        return self.is_script(language="python")
 
 
 def usable_rw_dir(directory, create=True):
@@ -217,3 +225,40 @@ def check_readable(path):
         raise OSError(f'File "{path}" does not exist')
     if not os.access(path, os.R_OK):
         raise OSError(f'File "{path}" can not be read')
+
+
+def get_path_mount_point(path):
+    """Returns the mount point for a given file path
+
+    :param path: the complete filename path. if a non-absolute path is
+                 given, it's transformed into an absolute path first.
+    :type path: str
+    :returns: the mount point for a given file path
+    :rtype: str
+    """
+    path = os.path.abspath(path)
+    while not os.path.ismount(path):
+        path = os.path.dirname(path)
+    return path
+
+
+def get_max_file_name_length(path):
+    """Returns the maximum length of a file name in the underlying file system
+
+    :param path: the complete filename path. if a non-absolute path is
+                 given, it's transformed into an absolute path first.
+    :type path: str
+    :returns: the maximum length of a file name
+    :rtype: int
+    """
+    if hasattr(os, "pathconf"):
+        mount_point = get_path_mount_point(path)
+        return os.pathconf(mount_point, "PC_NAME_MAX")
+    else:
+        # Given the unavailability of os.pathconf(), always available
+        # under Unix, it should be safe to assume this is Windows.
+        # About Windows, versions and configurations can yield different
+        # file name length limits.  The value hardcoded here (248) is
+        # calculated from the 260 MAX_PATH limit, plus the provision
+        # for directories names allowing a 8.3 filename inside it.
+        return 248

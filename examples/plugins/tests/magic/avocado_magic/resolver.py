@@ -18,37 +18,37 @@ Test resolver for magic test words
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import Discoverer, Resolver
-from avocado.core.resolver import (ReferenceResolution,
-                                   ReferenceResolutionResult)
+from avocado.core.resolver import ReferenceResolution, ReferenceResolutionResult
 
-VALID_MAGIC_WORDS = ['pass', 'fail']
+VALID_MAGIC_WORDS = ["pass", "fail"]
 
 
 class MagicResolver(Resolver):
 
-    name = 'magic'
-    description = 'Test resolver for magic words'
+    name = "magic"
+    description = "Test resolver for magic words"
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference):  # pylint: disable=W0221
         if reference not in VALID_MAGIC_WORDS:
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info=f'Word "{reference}" is not a valid magic word')
+                info=f'Word "{reference}" is not a valid magic word',
+            )
 
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('magic', reference)])
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, [Runnable("magic", reference)]
+        )
 
 
 class MagicDiscoverer(Discoverer):
 
-    name = 'magic-discoverer'
-    description = 'Test discoverer for magic words'
+    name = "magic-discoverer"
+    description = "Test discoverer for magic words"
 
     @staticmethod
-    def discover():
+    def discover():  # pylint: disable=W0221
         resolutions = []
         for reference in VALID_MAGIC_WORDS:
             resolutions.append(MagicResolver.resolve(reference))

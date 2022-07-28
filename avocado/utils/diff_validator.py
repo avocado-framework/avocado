@@ -57,7 +57,7 @@ def get_temp_file_path(file_path):
     :returns: appended file path
     :rtype: str
     """
-    return file_path + '.tmp'
+    return file_path + ".tmp"
 
 
 def make_temp_file_copies(file_paths):
@@ -97,8 +97,7 @@ def parse_unified_diff_output(lines):
     removes = []
     for line in lines:
         # ignore filepaths in the output
-        if (len(line) > 2 and (line[:3] == "+++" or
-                               line[:3] == "---")):
+        if len(line) > 2 and (line[:3] == "+++" or line[:3] == "---"):
             continue
         # ignore line range information in the output
         elif len(line) > 1 and line[:2] == "@@":
@@ -140,12 +139,11 @@ def extract_changes(file_paths, compared_file_paths=None):
             file1, file2 = compared_file_paths[i], file_paths[i]
         else:
             file1, file2 = temp_file_path, file_paths[i]
-        with open(file1, encoding='utf-8') as f1:
+        with open(file1, encoding="utf-8") as f1:
             lines1 = f1.readlines()
-        with open(file2, encoding='utf-8') as f2:
+        with open(file2, encoding="utf-8") as f2:
             lines2 = f2.readlines()
-        lines = difflib.unified_diff(lines1, lines2,
-                                     fromfile=file1, tofile=file2, n=0)
+        lines = difflib.unified_diff(lines1, lines2, fromfile=file1, tofile=file2, n=0)
 
         changes[file_paths[i]] = parse_unified_diff_output(lines)
     return changes
@@ -179,11 +177,14 @@ def assert_change_dict(actual_result, expected_result):
         # Additional unexpected removes - they should have been not removed
         unexpected_removes = sorted(set(actual_removes) - set(expected_removes))
         # Not present expected removes - they should have been removed
-        not_present_removes = sorted(set(expected_removes) -
-                                     set(actual_removes))
+        not_present_removes = sorted(set(expected_removes) - set(actual_removes))
 
-        change_diffs[file_path] = (unexpected_adds, not_present_adds,
-                                   unexpected_removes, not_present_removes)
+        change_diffs[file_path] = (
+            unexpected_adds,
+            not_present_adds,
+            unexpected_removes,
+            not_present_removes,
+        )
 
     return change_diffs
 
@@ -220,8 +221,7 @@ def create_diff_report(change_diffs):
     """
     diff_strings = []
     for file_path, change_diff in change_diffs.items():
-        if not (change_diff[0] or change_diff[1] or
-                change_diff[2] or change_diff[3]):
+        if not (change_diff[0] or change_diff[1] or change_diff[2] or change_diff[3]):
             continue
         diff_strings.append(f"--- {get_temp_file_path(file_path)}")
         diff_strings.append(f"+++ {file_path}")
@@ -236,11 +236,11 @@ def create_diff_report(change_diffs):
             elif iter_category == 3 and change_category:
                 diff_strings.append("/-- Not present expected removes")
             for line_change in change_category:
-                diff_strings.append(str(line_change).encode('unicode_escape').decode())
+                diff_strings.append(str(line_change).encode("unicode_escape").decode())
     return "\n".join(diff_strings)
 
 
-class Change():
+class Change:
     """Class for tracking and validating file changes"""
 
     def __init__(self):

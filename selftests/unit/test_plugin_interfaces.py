@@ -4,7 +4,6 @@ from avocado.core import plugin_interfaces
 
 
 class Plugin(unittest.TestCase):
-
     def test_instantiate_settings(self):
         with self.assertRaises(TypeError):
             # pylint: disable=E0110

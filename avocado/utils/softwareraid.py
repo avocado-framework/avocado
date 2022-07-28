@@ -47,7 +47,7 @@ class SoftwareRaid:
         self.level = level
         self.metadata = metadata
         self.disks = disks
-        self.remadd = ''
+        self.remadd = ""
         if not spare_disks:
             self.spare_disks = []
         else:
@@ -114,8 +114,10 @@ class SoftwareRaid:
         cmd += f" --raid-devices={len(self.disks)} {' '.join(self.disks)}"
         cmd += f" --metadata={self.metadata}"
         if self.spare_disks:
-            cmd += (f" --spare-devices={len(self.spare_disks)} "
-                    f"{' '.join(self.spare_disks)}")
+            cmd += (
+                f" --spare-devices={len(self.spare_disks)} "
+                f"{' '.join(self.spare_disks)}"
+            )
         cmd += " --verbose --force"
         return self._run_command(cmd)
 
@@ -139,7 +141,7 @@ class SoftwareRaid:
         """
         LOG.debug("RECOVERY")
         for line in self.get_detail().splitlines():
-            if 'State' in line and 'recovering' in line:
+            if "State" in line and "recovering" in line:
                 return True
         return False
 
@@ -165,3 +167,18 @@ class SoftwareRaid:
         """
         cmd = f"mdadm --manage {self.name} --stop"
         return self._run_command(cmd, log_details=False)
+
+    def exists(self):
+        """
+        checks if softwareraid exists or not
+
+        :mdadm: must be super-user(root) to perform this action
+
+        :return: True if exists, False otherwise.
+        :rtype: bool
+        """
+        cmd = f"mdadm --detail --test {self.name}"
+        result = process.run(cmd, shell=True, sudo=True, ignore_status=True)
+        if result.exit_status == 4:
+            return False
+        return True

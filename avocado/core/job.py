@@ -29,8 +29,16 @@ import traceback
 import warnings
 from copy import deepcopy
 
-from avocado.core import (data_dir, dispatcher, exceptions, exit_codes,
-                          jobdata, output, result, version)
+from avocado.core import (
+    data_dir,
+    dispatcher,
+    exceptions,
+    exit_codes,
+    jobdata,
+    output,
+    result,
+    version,
+)
 from avocado.core.job_id import create_unique_job_id
 from avocado.core.output import LOG_JOB, LOG_UI, STD_OUTPUT
 from avocado.core.settings import settings
@@ -39,7 +47,7 @@ from avocado.core.utils.version import get_avocado_git_version
 from avocado.utils import astring
 from avocado.utils.data_structures import CallbackRegister, time_to_seconds
 
-_NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
+_NEW_ISSUE_LINK = "https://github.com/avocado-framework/avocado/issues/new"
 
 
 def register_job_options():
@@ -50,31 +58,35 @@ def register_job_options():
         "Any of the Python logging levels names are allowed here. Examples:"
         " DEBUG, INFO, WARNING, ERROR, CRITICAL. For more information refer"
         " to: https://docs.python.org/3/library/logging.html#levels"
-        )
-    settings.register_option(section='job.output',
-                             key='loglevel',
-                             default='DEBUG',
-                             help_msg=msg)
+    )
+    settings.register_option(
+        section="job.output", key="loglevel", default="DEBUG", help_msg=msg
+    )
 
-    help_msg = ('Set the maximum amount of time (in SECONDS) that tests are '
-                'allowed to execute. Values <= zero means "no timeout". You '
-                'can also use suffixes, like: s (seconds), m (minutes), h '
-                '(hours). ')
-    settings.register_option(section='job.run',
-                             key='timeout',
-                             default=0,
-                             key_type=time_to_seconds,
-                             help_msg=help_msg)
+    help_msg = (
+        "Set the maximum amount of time (in SECONDS) that tests are "
+        'allowed to execute. Values <= zero means "no timeout". You '
+        "can also use suffixes, like: s (seconds), m (minutes), h "
+        "(hours). "
+    )
+    settings.register_option(
+        section="job.run",
+        key="timeout",
+        default=0,
+        key_type=time_to_seconds,
+        help_msg=help_msg,
+    )
 
-    help_msg = ('Store given logging STREAMs in '
-                '"$JOB_RESULTS_DIR/$STREAM.$LEVEL."')
-    settings.register_option(section='job.run',
-                             key='store_logging_stream',
-                             nargs='+',
-                             help_msg=help_msg,
-                             default=['avocado.core:DEBUG'],
-                             metavar='STREAM[:LEVEL]',
-                             key_type=list)
+    help_msg = 'Store given logging STREAMs in "$JOB_RESULTS_DIR/$STREAM.$LEVEL".'
+    settings.register_option(
+        section="job.run",
+        key="store_logging_stream",
+        nargs="+",
+        help_msg=help_msg,
+        default=["avocado.core:DEBUG"],
+        metavar="STREAM[:LEVEL]",
+        key_type=list,
+    )
 
 
 register_job_options()
@@ -128,13 +140,13 @@ class Job:
         if config:
             self.config.update(config)
         self.log = LOG_UI
-        self.loglevel = self.config.get('job.output.loglevel')
+        self.loglevel = self.config.get("job.output.loglevel")
         self.__logging_handlers = {}
-        if self.config.get('run.dry_run.enabled'):  # Modify config for dry-run
-            unique_id = self.config.get('run.unique_job_id')
+        if self.config.get("run.dry_run.enabled"):  # Modify config for dry-run
+            unique_id = self.config.get("run.unique_job_id")
             if unique_id is None:
-                self.config['run.unique_job_id'] = '0' * 40
-            self.config['sysinfo.collect.enabled'] = 'off'
+                self.config["run.unique_job_id"] = "0" * 40
+            self.config["sysinfo.collect.enabled"] = "off"
 
         self.test_suites = test_suites or []
         self._check_test_suite_name_uniqueness()
@@ -163,10 +175,9 @@ class Job:
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.funcatexit = CallbackRegister(f"JobExit {self.unique_id}",
-                                           LOG_JOB)
+        self.funcatexit = CallbackRegister(f"JobExit {self.unique_id}", LOG_JOB)
         self._stdout_stderr = None
-        self.replay_sourcejob = self.config.get('replay_sourcejob')
+        self.replay_sourcejob = self.config.get("replay_sourcejob")
         self.exitcode = exit_codes.AVOCADO_ALL_OK
 
         self._result_events_dispatcher = None
@@ -179,14 +190,14 @@ class Job:
         # A future optimization may load it on demand.
         if self._result_events_dispatcher is None:
             self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(
-                self.config)
-            output.log_plugin_failures(self._result_events_dispatcher
-                                       .load_failures)
+                self.config
+            )
+            output.log_plugin_failures(self._result_events_dispatcher.load_failures)
         return self._result_events_dispatcher
 
     @property
     def test_results_path(self):
-        return os.path.join(self.logdir, 'test-results')
+        return os.path.join(self.logdir, "test-results")
 
     def __enter__(self):
         self.setup()
@@ -197,28 +208,29 @@ class Job:
 
     def __start_job_logging(self):
         # Enable test logger
-        fmt = ('%(asctime)s %(name)s %(levelname)-5.5s| %(message)s')
-        test_handler = output.add_log_handler(LOG_JOB,
-                                              logging.FileHandler,
-                                              self.logfile, self.loglevel, fmt)
-        main_logger = logging.getLogger('avocado')
+        fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
+        test_handler = output.add_log_handler(
+            LOG_JOB, logging.FileHandler, self.logfile, self.loglevel, fmt
+        )
+        main_logger = logging.getLogger("avocado")
         main_logger.addHandler(test_handler)
         main_logger.setLevel(self.loglevel)
         self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
 
         # Enable console loggers
         enabled_logs = self.config.get("core.show")
-        if ('test' in enabled_logs and
-                'early' not in enabled_logs):
+        if "test" in enabled_logs and "early" not in enabled_logs:
             self._stdout_stderr = sys.stdout, sys.stderr
             # Enable std{out,err} but redirect both to stdout
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
-            test_handler = output.add_log_handler(LOG_JOB,
-                                                  logging.StreamHandler,
-                                                  STD_OUTPUT.stdout,
-                                                  logging.DEBUG,
-                                                  fmt="%(message)s")
+            test_handler = output.add_log_handler(
+                LOG_JOB,
+                logging.StreamHandler,
+                STD_OUTPUT.stdout,
+                logging.DEBUG,
+                fmt="%(message)s",
+            )
             main_logger.addHandler(test_handler)
             self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
 
@@ -230,20 +242,20 @@ class Job:
                 logging.getLogger(logger).removeHandler(handler)
 
     def _log_avocado_config(self):
-        LOG_JOB.info('Avocado config:')
-        LOG_JOB.info('')
+        LOG_JOB.info("Avocado config:")
+        LOG_JOB.info("")
         for line in pprint.pformat(self.config).splitlines():
             LOG_JOB.info(line)
-        LOG_JOB.info('')
+        LOG_JOB.info("")
 
     def _log_avocado_datadir(self):
-        LOG_JOB.info('Avocado Data Directories:')
-        LOG_JOB.info('')
-        LOG_JOB.info('base     %s', self.config.get('datadir.paths.base_dir'))
-        LOG_JOB.info('tests    %s', data_dir.get_test_dir())
-        LOG_JOB.info('data     %s', self.config.get('datadir.paths.data_dir'))
-        LOG_JOB.info('logs     %s', self.logdir)
-        LOG_JOB.info('')
+        LOG_JOB.info("Avocado Data Directories:")
+        LOG_JOB.info("")
+        LOG_JOB.info("base     %s", self.config.get("datadir.paths.base_dir"))
+        LOG_JOB.info("tests    %s", data_dir.get_test_dir())
+        LOG_JOB.info("data     %s", self.config.get("datadir.paths.data_dir"))
+        LOG_JOB.info("logs     %s", self.logdir)
+        LOG_JOB.info("")
 
     @staticmethod
     def _log_avocado_version():
@@ -251,14 +263,14 @@ class Job:
         git_version = get_avocado_git_version()
         if git_version is not None:
             version_log += git_version
-        LOG_JOB.info('Avocado version: %s', version_log)
-        LOG_JOB.info('')
+        LOG_JOB.info("Avocado version: %s", version_log)
+        LOG_JOB.info("")
 
     @staticmethod
     def _log_cmdline():
         cmdline = " ".join(sys.argv)
         LOG_JOB.info("Command line: %s", cmdline)
-        LOG_JOB.info('')
+        LOG_JOB.info("")
 
     def _log_job_debug_info(self):
         """
@@ -274,14 +286,14 @@ class Job:
         self._log_job_id()
 
     def _log_job_id(self):
-        LOG_JOB.info('Job ID: %s', self.unique_id)
+        LOG_JOB.info("Job ID: %s", self.unique_id)
         if self.replay_sourcejob is not None:
-            LOG_JOB.info('Replay of Job ID: %s', self.replay_sourcejob)
-        LOG_JOB.info('')
+            LOG_JOB.info("Replay of Job ID: %s", self.replay_sourcejob)
+        LOG_JOB.info("")
 
     def _log_tmp_dir(self):
-        LOG_JOB.info('Temporary dir: %s', self.tmpdir)
-        LOG_JOB.info('')
+        LOG_JOB.info("Temporary dir: %s", self.tmpdir)
+        LOG_JOB.info("")
 
     @staticmethod
     def _log_variants(variants):
@@ -300,13 +312,15 @@ class Job:
         This should allow a user to look at a single directory for all
         jobs of a given category.
         """
-        category = self.config.get('run.job_category')
+        category = self.config.get("run.job_category")
         if category is None:
             return
 
         if category != astring.string_to_safe_path(category):
-            msg = (f"Unable to set category in job results: name is not "
-                   f"filesystem safe: {category}")
+            msg = (
+                f"Unable to set category in job results: name is not "
+                f"filesystem safe: {category}"
+            )
             LOG_UI.warning(msg)
             LOG_JOB.warning(msg)
             return
@@ -314,16 +328,17 @@ class Job:
         # we could also get "base_logdir" from config, but I believe this is
         # the best choice because it reduces the dependency surface (depends
         # only on self.logdir)
-        category_path = os.path.join(os.path.dirname(self.logdir),
-                                     category)
+        category_path = os.path.join(os.path.dirname(self.logdir), category)
         try:
             os.mkdir(category_path)
         except FileExistsError:
             pass
 
         try:
-            os.symlink(os.path.relpath(self.logdir, category_path),
-                       os.path.join(category_path, os.path.basename(self.logdir)))
+            os.symlink(
+                os.path.relpath(self.logdir, category_path),
+                os.path.join(category_path, os.path.basename(self.logdir)),
+            )
         except NotImplementedError:
             msg = f"Unable to link this job to category {category}"
             LOG_UI.warning(msg)
@@ -337,18 +352,19 @@ class Job:
         """
         Prepares a job result directory, also known as logdir, for this job
         """
-        base_logdir = self.config.get('run.results_dir')
+        base_logdir = self.config.get("run.results_dir")
         if base_logdir is None:
             self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
         else:
             base_logdir = os.path.abspath(base_logdir)
-            self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
-                                                       unique_id=self.unique_id)
-        if not self.config.get('run.dry_run.enabled'):
+            self.logdir = data_dir.create_job_logs_dir(
+                base_dir=base_logdir, unique_id=self.unique_id
+            )
+        if not self.config.get("run.dry_run.enabled"):
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
-        with open(idfile, 'w', encoding='utf-8') as id_file_obj:
+        with open(idfile, "w", encoding="utf-8") as id_file_obj:
             id_file_obj.write(f"{self.unique_id}\n")
             id_file_obj.flush()
             os.fsync(id_file_obj)
@@ -357,9 +373,11 @@ class Job:
         """
         Update the latest job result symbolic link [avocado-logs-dir]/latest.
         """
+
         def soft_abort(msg):
-            """ Only log the problem """
+            """Only log the problem"""
             LOG_JOB.warning("Unable to update the latest link: %s", msg)
+
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
         proc_latest = os.path.join(basedir, f"latest.{os.getpid()}")
@@ -413,9 +431,9 @@ class Job:
         suites_configs = suites_configs or [deepcopy(job_config)]
         suites = []
         for index, config in enumerate(suites_configs, start=1):
-            suites.append(TestSuite.from_config(config,
-                                                name=index,
-                                                job_config=job_config))
+            suites.append(
+                TestSuite.from_config(config, name=index, job_config=job_config)
+            )
         return cls(job_config, suites)
 
     @property
@@ -443,14 +461,15 @@ class Job:
     @property
     def timeout(self):
         if self._timeout is None:
-            self._timeout = self.config.get('job.run.timeout')
+            self._timeout = self.config.get("job.run.timeout")
         return self._timeout
 
     @property
     def unique_id(self):
         if self._unique_id is None:
-            self._unique_id = self.config.get('run.unique_job_id') \
-                or create_unique_job_id()
+            self._unique_id = (
+                self.config.get("run.unique_job_id") or create_unique_job_id()
+            )
         return self._unique_id
 
     def cleanup(self):
@@ -463,32 +482,32 @@ class Job:
             shutil.rmtree(self.tmpdir)
             shutil.rmtree(self._base_tmpdir)
         cleanup_conditionals = (
-            self.config.get('run.dry_run.enabled'),
-            not self.config.get('run.dry_run.no_cleanup')
+            self.config.get("run.dry_run.enabled"),
+            not self.config.get("run.dry_run.no_cleanup"),
         )
         if all(cleanup_conditionals):
             # Also clean up temp base directory created because of the dry-run
-            base_logdir = self.config.get('run.results_dir')
+            base_logdir = self.config.get("run.results_dir")
             if base_logdir is not None:
-                try:
-                    FileNotFoundError
-                except NameError:
-                    FileNotFoundError = OSError   # pylint: disable=W0622
                 try:
                     shutil.rmtree(base_logdir)
                 except FileNotFoundError:
                     pass
 
     def create_test_suite(self):
-        msg = ("create_test_suite() is deprecated. You can also create your "
-               "own suites with TestSuite() or TestSuite.from_config().")
+        msg = (
+            "create_test_suite() is deprecated. You can also create your "
+            "own suites with TestSuite() or TestSuite.from_config()."
+        )
         warnings.warn(msg, DeprecationWarning)
         try:
             self.test_suite = TestSuite.from_config(self.config)
             if self.test_suite and self.test_suite.size == 0:
                 refs = self.test_suite.references
-                msg = (f"No tests found for given test references, try "
-                       f"'avocado -V list {' '.join(refs)}' for details")
+                msg = (
+                    f"No tests found for given test references, try "
+                    f"'avocado -V list {' '.join(refs)}' for details"
+                )
                 raise exceptions.JobTestSuiteEmptyError(msg)
         except TestSuiteError as details:
             raise exceptions.JobBaseException(details)
@@ -502,7 +521,7 @@ class Job:
         By default this runs the plugins that implement the
         :class:`avocado.core.plugin_interfaces.JobPostTests` interface.
         """
-        self.result_events_dispatcher.map_method('post_tests', self)
+        self.result_events_dispatcher.map_method("post_tests", self)
 
     def pre_tests(self):
         """
@@ -511,7 +530,7 @@ class Job:
         By default this runs the plugins that implement the
         :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
         """
-        self.result_events_dispatcher.map_method('pre_tests', self)
+        self.result_events_dispatcher.map_method("pre_tests", self)
 
     def render_results(self):
         """Render test results that depend on all tests having finished.
@@ -521,7 +540,7 @@ class Job:
         """
         result_dispatcher = dispatcher.ResultDispatcher()
         if result_dispatcher.extensions:
-            result_dispatcher.map_method('render', self.result, self)
+            result_dispatcher.map_method("render", self.result, self)
 
     def get_failed_tests(self):
         """Gets the tests with status 'FAIL' and 'ERROR' after the Job ended.
@@ -531,7 +550,7 @@ class Job:
         tests = []
         if self.result:
             for test in self.result.tests:
-                if test.get('status') in ['FAIL', 'ERROR']:
+                if test.get("status") in ["FAIL", "ERROR"]:
                     tests.append(test)
         return tests
 
@@ -552,32 +571,35 @@ class Job:
             self.result.tests_total = self.size
             pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
             output.log_plugin_failures(pre_post_dispatcher.load_failures)
-            pre_post_dispatcher.map_method('pre', self)
+            pre_post_dispatcher.map_method("pre", self)
             self.pre_tests()
             return self.run_tests()
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.log.error('\nAvocado job failed: %s: %s', fail_class, details)
+            self.log.error("\nAvocado job failed: %s: %s", fail_class, details)
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
         except exceptions.OptionValidationError as details:
-            self.log.error('\n%s', str(details))
+            self.log.error("\n%s", str(details))
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
 
         except Exception as details:  # pylint: disable=W0703
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            tb_info = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback.tb_next)
+            tb_info = traceback.format_exception(
+                exc_type, exc_value, exc_traceback.tb_next
+            )
             fail_class = details.__class__.__name__
-            self.log.error('\nAvocado crashed: %s: %s', fail_class, details)
+            self.log.error("\nAvocado crashed: %s: %s", fail_class, details)
             for line in tb_info:
                 self.log.debug(line)
-            self.log.error("Please include the traceback info and command line"
-                           " used on your bug report")
-            self.log.error('Report bugs visiting %s', _NEW_ISSUE_LINK)
+            self.log.error(
+                "Please include the traceback info and command line"
+                " used on your bug report"
+            )
+            self.log.error("Report bugs visiting %s", _NEW_ISSUE_LINK)
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
@@ -586,7 +608,7 @@ class Job:
                 self.time_end = time.monotonic()
                 self.time_elapsed = self.time_end - self.time_start
             self.render_results()
-            pre_post_dispatcher.map_method('post', self)
+            pre_post_dispatcher.map_method("post", self)
 
     def run_tests(self):
         """
@@ -596,8 +618,7 @@ class Job:
         jobdata.record(self, sys.argv)
 
         if self.size == 0:
-            msg = ('Unable to resolve any reference or "resolver.references"'
-                   "is empty.")
+            msg = 'Unable to resolve any reference or "resolver.references" is empty.'
             LOG_UI.error(msg)
 
         if not self.test_suites:
@@ -609,26 +630,27 @@ class Job:
             summary |= suite.run(self)
 
         # If it's all good so far, set job status to 'PASS'
-        if self.status == 'RUNNING':
-            self.status = 'PASS'
-        LOG_JOB.info('Test results available in %s', self.logdir)
+        if self.status == "RUNNING":
+            self.status = "PASS"
+        LOG_JOB.info("Test results available in %s", self.logdir)
 
-        if 'INTERRUPTED' in summary:
+        if "INTERRUPTED" in summary:
             self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
-        if 'FAIL' in summary or 'ERROR' in summary:
+        if "FAIL" in summary or "ERROR" in summary:
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
 
     def _check_test_suite_name_uniqueness(self):
         all_names = [suite.name for suite in self.test_suites]
-        duplicate_names = set([name for name in all_names
-                               if all_names.count(name) > 1])
+        duplicate_names = set([name for name in all_names if all_names.count(name) > 1])
         if duplicate_names:
             duplicate_names = ", ".join(duplicate_names)
-            msg = (f'Job contains suites with the following duplicate '
-                   f'name(s) {duplicate_names}. Test suite names must be '
-                   f'unique to guarantee that results will not be overwritten')
+            msg = (
+                f"Job contains suites with the following duplicate "
+                f"name(s) {duplicate_names}. Test suite names must be "
+                f"unique to guarantee that results will not be overwritten"
+            )
             raise exceptions.JobTestSuiteDuplicateNameError(msg)
 
     def setup(self):
@@ -637,19 +659,18 @@ class Job:
         """
         output.reconfigure(self.config)
         assert self.tmpdir is None, "Job.setup() already called"
-        if self.config.get('run.dry_run.enabled'):  # Create the dry-run dirs
-            if self.config.get('run.results_dir') is None:
+        if self.config.get("run.dry_run.enabled"):  # Create the dry-run dirs
+            if self.config.get("run.results_dir") is None:
                 tmp_dir = tempfile.mkdtemp(prefix="avocado-dry-run-")
-                self.config['run.results_dir'] = tmp_dir
+                self.config["run.results_dir"] = tmp_dir
         self._setup_job_results()
         self.result = result.Result(self.unique_id, self.logfile)
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
-        if self.config.get('run.keep_tmp'):
+        if self.config.get("run.keep_tmp"):
             self._base_tmpdir = self.logdir
         else:
             self._base_tmpdir = tempfile.mkdtemp(prefix="avocado_tmp_")
             self.__keep_tmpdir = False
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
-                                       dir=self._base_tmpdir)
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_", dir=self._base_tmpdir)

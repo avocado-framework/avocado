@@ -18,12 +18,12 @@ def get_content_by_encoding(url):
     http_response = download.url_open(url)
     content_type = None
     encoding = None
-    if hasattr(http_response, 'headers'):
-        content_type = http_response.headers['Content-Type']
-    elif hasattr(http_response, 'getheader'):
-        content_type = http_response.getheader('Content-Type')
+    if hasattr(http_response, "headers"):
+        content_type = http_response.headers["Content-Type"]
+    elif hasattr(http_response, "getheader"):
+        content_type = http_response.getheader("Content-Type")
     if content_type is not None:
-        match = re.match(r'^[az\\].*\; charset\=(.*)$', content_type)
+        match = re.match(r"^[az\\].*\; charset\=(.*)$", content_type)
         if match is not None:
             encoding = match.group(1)
     content = http_response.read()
@@ -42,16 +42,22 @@ class TestThirdPartyBugs(unittest.TestCase):
         # with content from /proc/cpuinfo.  Right now the indent check is disabled
         # on that file
         try:
-            issue_url = 'https://api.github.com/repos/avocado-framework/inspektor/issues/31'
+            issue_url = (
+                "https://api.github.com/repos/avocado-framework/inspektor/issues/31"
+            )
             content = get_content_by_encoding(issue_url)
         except URLError as details:
             raise unittest.SkipTest(details)
         issue = json.loads(content)
-        self.assertEqual(issue['state'], 'open', 'The issue {issue_url} is not open '
-                         'anymore. Please double check and, if already fixed, '
-                         'remove the selftests/unit/test_utils_cpu.py from '
-                         'the exclusion list in selftests/inspekt-indent.sh ')
+        self.assertEqual(
+            issue["state"],
+            "open",
+            "The issue {issue_url} is not open "
+            "anymore. Please double check and, if already fixed, "
+            "remove the selftests/unit/test_utils_cpu.py from "
+            "the exclusion list in selftests/inspekt-indent.sh ",
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

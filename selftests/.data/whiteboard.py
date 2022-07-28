@@ -17,25 +17,25 @@ class WhiteBoard(Test):
     """
 
     def test(self):
-        data_file = self.params.get('whiteboard_data_file', default='')
-        data_size = self.params.get('whiteboard_data_size', default='10')
+        data_file = self.params.get("whiteboard_data_file", default="")
+        data_size = self.params.get("whiteboard_data_size", default="10")
         if data_file:
-            self.log.info('Writing data to whiteboard from file: %s',
-                          data_file)
-            with open(data_file, 'r', encoding='utf-8') as whiteboard_file:
+            self.log.info("Writing data to whiteboard from file: %s", data_file)
+            with open(data_file, "r", encoding="utf-8") as whiteboard_file:
                 size = int(data_size)
                 data = whiteboard_file.read(size)
         else:
             offset = int(data_size) - 1
-            data = self.params.get('whiteboard_data_text',
-                                   default='default whiteboard text')[0:offset]
+            data = self.params.get(
+                "whiteboard_data_text", default="default whiteboard text"
+            )[0:offset]
 
-        iterations = int(self.params.get('whiteboard_writes', default=1))
+        iterations = int(self.params.get("whiteboard_writes", default=1))
 
-        result = ''
+        result = ""
         for _ in range(0, iterations):
             result += data
-        self.whiteboard = base64.encodebytes(result.encode()).decode('ascii')
+        self.whiteboard = base64.encodebytes(result.encode()).decode("ascii")
 
 
 if __name__ == "__main__":

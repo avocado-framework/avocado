@@ -33,7 +33,7 @@ class CLIDispatcher(EnabledExtensionManager):
     """
 
     def __init__(self):
-        super().__init__('avocado.plugins.cli')
+        super().__init__("avocado.plugins.cli")
 
 
 class CLICmdDispatcher(EnabledExtensionManager):
@@ -46,7 +46,7 @@ class CLICmdDispatcher(EnabledExtensionManager):
     """
 
     def __init__(self):
-        super().__init__('avocado.plugins.cli.cmd')
+        super().__init__("avocado.plugins.cli.cmd")
 
 
 class JobPrePostDispatcher(EnabledExtensionManager):
@@ -59,27 +59,37 @@ class JobPrePostDispatcher(EnabledExtensionManager):
     """
 
     def __init__(self):
-        super().__init__('avocado.plugins.job.prepost')
+        super().__init__("avocado.plugins.job.prepost")
+
+
+class TestPreDispatcher(EnabledExtensionManager):
+
+    """
+    Calls extensions before Test execution
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.test.pre'
+    """
+
+    def __init__(self):
+        super().__init__("avocado.plugins.test.pre")
 
 
 class ResultDispatcher(EnabledExtensionManager):
-
     def __init__(self):
-        super().__init__('avocado.plugins.result')
+        super().__init__("avocado.plugins.result")
 
 
 class ResultEventsDispatcher(EnabledExtensionManager):
-
     def __init__(self, config):
         super().__init__(
-            'avocado.plugins.result_events',
-            invoke_kwds={'config': config})
+            "avocado.plugins.result_events", invoke_kwds={"config": config}
+        )
 
 
 class VarianterDispatcher(EnabledExtensionManager):
-
     def __init__(self):
-        super().__init__('avocado.plugins.varianter')
+        super().__init__("avocado.plugins.varianter")
 
     def __getstate__(self):
         """
@@ -102,37 +112,35 @@ class VarianterDispatcher(EnabledExtensionManager):
 
     def map_method_with_return(self, method_name, *args, **kwargs):
         return super().map_method_with_return(
-            method_name, deepcopy=False, *args, **kwargs)
+            method_name, deepcopy=False, *args, **kwargs
+        )
 
     def map_method_with_return_copy(self, method_name, *args, **kwargs):
         """
         The same as map_method_with_return, but use copy.deepcopy on each passed arg
         """
         return super().map_method_with_return(
-            method_name, deepcopy=True, *args, **kwargs)
+            method_name, deepcopy=True, *args, **kwargs
+        )
 
 
 class RunnerDispatcher(EnabledExtensionManager):
-
     def __init__(self):
-        super().__init__('avocado.plugins.runner')
+        super().__init__("avocado.plugins.runner")
 
 
 class InitDispatcher(EnabledExtensionManager):
-
     def __init__(self):
-        super().__init__('avocado.plugins.init')
+        super().__init__("avocado.plugins.init")
 
 
 class SpawnerDispatcher(EnabledExtensionManager):
-
     def __init__(self, config=None, job=None):
-        super().__init__('avocado.plugins.spawner',
-                         invoke_kwds={'job': job,
-                                      'config': config})
+        super().__init__(
+            "avocado.plugins.spawner", invoke_kwds={"job": job, "config": config}
+        )
 
 
 class RunnableRunnerDispatcher(EnabledExtensionManager):
-
     def __init__(self):
-        super().__init__('avocado.plugins.runnable.runner')
+        super().__init__("avocado.plugins.runnable.runner")

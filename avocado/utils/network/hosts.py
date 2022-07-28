@@ -53,7 +53,7 @@ class Host:
 
     @property
     def interfaces(self):
-        cmd = 'ls /sys/class/net'
+        cmd = "ls /sys/class/net"
         try:
             names = run_command(cmd, self).split()
         except Exception as ex:
@@ -79,10 +79,9 @@ class Host:
         output = run_command(cmd, self)
         try:
             result = json.loads(output)
-            return [str(item['dev']) for item in result]
+            return [str(item["dev"]) for item in result]
         except Exception as ex:
-            raise NWException(f"could not get default route interface name:"
-                              f" {ex}")
+            raise NWException(f"could not get default route interface name:" f" {ex}")
 
 
 class LocalHost(Host):
@@ -97,7 +96,7 @@ class LocalHost(Host):
         local = LocalHost()
     """
 
-    def __init__(self, host='localhost'):
+    def __init__(self, host="localhost"):
         super().__init__(host)
 
 
@@ -135,11 +134,13 @@ class RemoteHost(Host):
             self.remote_session.quit()
 
     def _connect(self):
-        session = Session(host=self.host,
-                          port=self.port,
-                          user=self.username,
-                          key=self.key,
-                          password=self.password)
+        session = Session(
+            host=self.host,
+            port=self.port,
+            user=self.username,
+            key=self.key,
+            password=self.password,
+        )
         if session.connect():
             return session
         msg = f"Failed connecting {self.host}:{self.port}"

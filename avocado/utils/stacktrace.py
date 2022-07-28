@@ -37,14 +37,17 @@ def log_exc_info(exc_info, logger=None):
     logger = logger or __name__
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
-    logger.error('')
+    logger.error("")
     called_from = inspect.currentframe().f_back
-    logger.error("Reproduced traceback from: %s:%s",
-                 called_from.f_code.co_filename, called_from.f_lineno)
+    logger.error(
+        "Reproduced traceback from: %s:%s",
+        called_from.f_code.co_filename,
+        called_from.f_lineno,
+    )
     for trace in tb_info(exc_info):
         for line in trace.splitlines():
             logger.error(line)
-    logger.error('')
+    logger.error("")
 
 
 def log_message(message, logger=None):
@@ -114,6 +117,8 @@ def str_unpickable_object(obj):
     else:
         raise ValueError(f"This object is pickable:\n{pformat(obj)}")
     unpickables = analyze_unpickable_item("this", obj)
-    return ("Unpickable object in:\n  %s\nItems causing troubles:\n  "
-            % "\n  ".join(pformat(obj).splitlines()) +
-            "\n  ".join("%s => %s" % obj for obj in unpickables))  # pylint: disable=C0209
+    return "Unpickable object in:\n  %s\nItems causing troubles:\n  " % "\n  ".join(
+        pformat(obj).splitlines()
+    ) + "\n  ".join(
+        "%s => %s" % obj for obj in unpickables  # pylint: disable=C0209
+    )

@@ -28,8 +28,9 @@ FAMILIES = (socket.AF_INET, socket.AF_INET6)
 PROTOCOLS = (socket.SOCK_STREAM, socket.SOCK_DGRAM)
 
 
-def is_port_available(port, address, family=socket.AF_INET,
-                      protocol=socket.SOCK_STREAM):
+def is_port_available(
+    port, address, family=socket.AF_INET, protocol=socket.SOCK_STREAM
+):
     """Return True if the given port is available for use.
 
     :param port: Port value to check.
@@ -60,14 +61,18 @@ def is_port_free(port, address):
     """
     This method is deprecated. Please use is_port_available().
     """
-    warnings.warn("deprecated, use is_port_available() instead.",
-                  DeprecationWarning)
+    warnings.warn("deprecated, use is_port_available() instead.", DeprecationWarning)
     return is_port_available(port, address)
 
 
-def find_free_port(start_port=1024, end_port=65535, address="localhost",
-                   sequent=False, family=socket.AF_INET,
-                   protocol=socket.SOCK_STREAM):
+def find_free_port(
+    start_port=1024,
+    end_port=65535,
+    address="localhost",
+    sequent=False,
+    family=socket.AF_INET,
+    protocol=socket.SOCK_STREAM,
+):
     """
     Return a host free port in the range [start_port, end_port].
 
@@ -84,16 +89,21 @@ def find_free_port(start_port=1024, end_port=65535, address="localhost",
     :type protocol: socket.AddressFamily.SOCK_*
     :rtype: int or None if no free port found
     """
-    ports = find_free_ports(start_port, end_port, 1, address, sequent,
-                            family, protocol)
+    ports = find_free_ports(start_port, end_port, 1, address, sequent, family, protocol)
     if ports:
         return ports[0]
     return None
 
 
-def find_free_ports(start_port, end_port, count, address="localhost",
-                    sequent=False, family=socket.AF_INET,
-                    protocol=socket.SOCK_STREAM):
+def find_free_ports(
+    start_port,
+    end_port,
+    count,
+    address="localhost",
+    sequent=False,
+    family=socket.AF_INET,
+    protocol=socket.SOCK_STREAM,
+):
     """
     Return count of host free ports in the range [start_port, end_port].
 
@@ -132,13 +142,13 @@ class PortTracker(Borg):
 
     def __init__(self):
         Borg.__init__(self)
-        self.address = 'localhost'
+        self.address = "localhost"
         self.start_port = 5000
-        if not hasattr(self, 'retained_ports'):
+        if not hasattr(self, "retained_ports"):
             self._reset_retained_ports()
 
     def __str__(self):
-        return f'Ports tracked: {self.retained_ports!r}'
+        return f"Ports tracked: {self.retained_ports!r}"
 
     def _reset_retained_ports(self):
         self.retained_ports = []
@@ -147,15 +157,14 @@ class PortTracker(Borg):
         if (port not in self.retained_ports) and is_port_free(port, self.address):
             self.retained_ports.append(port)
         else:
-            raise ValueError(f'Port {int(port)} in use')
+            raise ValueError(f"Port {int(port)} in use")
         return port
 
     def find_free_port(self, start_port=None):
         if start_port is None:
             start_port = self.start_port
         port = start_port
-        while ((port in self.retained_ports) or
-               (not is_port_free(port, self.address))):
+        while (port in self.retained_ports) or (not is_port_free(port, self.address)):
             port += 1
         self.retained_ports.append(port)
         return port

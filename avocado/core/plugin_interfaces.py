@@ -69,6 +69,7 @@ class CLICmd(Plugin):
     Plugins that want to add extensions to the run command should use the
     'avocado.plugins.cli.cmd' namespace.
     """
+
     name = None
     description = None
 
@@ -80,10 +81,9 @@ class CLICmd(Plugin):
         """
         help_msg = self.description
         if help_msg is None:
-            help_msg = f'Runs the {self.name} command'
+            help_msg = f"Runs the {self.name} command"
 
-        parser = parser.subcommands.add_parser(self.name,
-                                               help=help_msg)
+        parser = parser.subcommands.add_parser(self.name, help=help_msg)
         return parser
 
     @abc.abstractmethod
@@ -118,7 +118,6 @@ class JobPost(Plugin):
 
 
 class Result(Plugin):
-
     @abc.abstractmethod
     def render(self, result, job):
         """Entry point with method that renders the result.
@@ -160,6 +159,23 @@ class JobPostTests(Plugin):
     @abc.abstractmethod
     def post_tests(self, job):
         """Entry point for job running actions after the tests execution."""
+
+
+class PreTest(Plugin):
+    """Base plugin interface for adding tasks before a test run.
+
+    This interface helps to create `avocado.core.nrunner.Task` for running
+    additional actions inside spawner environment before Test.
+    """
+
+    @abc.abstractmethod
+    def pre_test_runnables(self, test_runnable):
+        """Entry point for creating runnables, which will be run before test.
+
+        :param test_runnable: Runnable of the Test itself.
+        :return: PreTest task runnables created by plugin.
+        :rtype: list of :class:`avocado.core.nrunner.Runnable`
+        """
 
 
 class ResultEvents(JobPreTests, JobPostTests):
@@ -221,6 +237,7 @@ class ResolverMixin:
 
     def __init__(self, config=None):
         from avocado.core.settings import settings
+
         self.config = config or settings.as_dict()
 
 
@@ -328,6 +345,15 @@ class Spawner(Plugin):
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
+    @abc.abstractmethod
+    async def terminate_task(self, runtime_task):
+        """Terminates a task before finish.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
     @staticmethod
     @abc.abstractmethod
     async def check_task_requirements(runtime_task):
@@ -336,6 +362,46 @@ class Spawner(Plugin):
         :param runtime_task: wrapper for a Task with additional runtime
                              information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def is_requirement_in_cache(runtime_task):
+        """Checks if it's necessary to run the requirement.
+
+        There are occasions when the similar requirement has been run and its
+        results are already saved in cache. In such occasion, it is not
+        necessary to run the task again. For example, this might be useful for
+        tasks which would install the same package to the same environment.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :return: If the results are already in cache.
+        :rtype: True if task is in cache
+                False if task is not in cache
+                None if task is running in different process and should be in
+                cache soon.
+        """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def save_requirement_in_cache(runtime_task):
+        """Saves the information about requirement in cache before
+        the runtime_task is run.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def update_requirement_cache(runtime_task, result):
+        """Updates the information about requirement in cache based on result.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :param result: result of runtime_task
+        :type result: `avocado.core.teststatus.STATUSES`
         """
 
 

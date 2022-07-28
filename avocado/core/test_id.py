@@ -72,18 +72,21 @@ class TestID:
         """
         test_id = str(self)
         test_id_fs = astring.string_to_safe_path(test_id)
-        if len(test_id) == len(test_id_fs):    # everything fits in
+        if len(test_id) == len(test_id_fs):  # everything fits in
             return test_id_fs
         idx_fit_variant = len(test_id_fs) - len(self.str_variant)
-        if idx_fit_variant > len(self.str_uid):     # full uid+variant
-            return (test_id_fs[:idx_fit_variant] +
-                    astring.string_to_safe_path(self.str_variant))
-        elif len(self.str_uid) <= len(test_id_fs):   # full uid
+        if idx_fit_variant > len(self.str_uid):  # full uid+variant
+            return test_id_fs[:idx_fit_variant] + astring.string_to_safe_path(
+                self.str_variant
+            )
+        elif len(self.str_uid) <= len(test_id_fs):  # full uid
             return astring.string_to_safe_path(self.str_uid + self.str_variant)
-        else:       # not even uid could be stored in fs
-            raise RuntimeError(f'Test ID is too long to be stored on the '
-                               f'filesystem: "{self.str_uid}"\n'
-                               f'Full Test ID: "{str(self)}"')
+        else:  # not even uid could be stored in fs
+            raise RuntimeError(
+                f"Test ID is too long to be stored on the "
+                f'filesystem: "{self.str_uid}"\n'
+                f'Full Test ID: "{str(self)}"'
+            )
 
     @classmethod
     def from_identifier(cls, identifier):

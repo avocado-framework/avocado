@@ -20,17 +20,17 @@ from avocado.core.settings import settings
 from avocado.core.version import VERSION
 from avocado.utils.asset import Asset
 
-CACHE_DIRS = settings.as_dict().get('datadir.paths.cache_dirs')
+CACHE_DIRS = settings.as_dict().get("datadir.paths.cache_dirs")
 
 # Avocado asset lib already has its logger. Let's use it.
-LOG = logging.getLogger('avocado.utils.asset')
+LOG = logging.getLogger("avocado.utils.asset")
 
 
 def configure_logging_settings():
     LOG.setLevel(logging.INFO)
     logger_handler = logging.StreamHandler()
     LOG.addHandler(logger_handler)
-    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
     logger_handler.setFormatter(formatter)
 
 
@@ -47,7 +47,7 @@ def get_egg_url(avocado_version=None, python_version=None):
 
 def main():
     configure_logging_settings()
-    for version in ['3.6', '3.7', '3.8', '3.9', '3.10']:
+    for version in ["3.6", "3.7", "3.8", "3.9", "3.10"]:
         url = get_egg_url(python_version=version)
         asset = Asset(url, cache_dirs=CACHE_DIRS)
         asset.fetch()

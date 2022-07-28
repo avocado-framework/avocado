@@ -21,7 +21,6 @@ from avocado.core.settings import settings
 
 
 class EnabledExtensionManager(ExtensionManager):
-
     def __init__(self, namespace, invoke_kwds=None):
         super().__init__(namespace, invoke_kwds)
         namespace = f"{self.settings_section()}.order"
@@ -44,5 +43,5 @@ class EnabledExtensionManager(ExtensionManager):
         If configuration section or key doesn't exist, it means no plugin
         is disabled.
         """
-        disabled = settings.as_dict().get('plugins.disable')
+        disabled = settings.as_dict().get("plugins.disable")
         return self.fully_qualified_name(extension) not in disabled

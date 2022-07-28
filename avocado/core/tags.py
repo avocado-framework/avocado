@@ -31,11 +31,11 @@ def _parse_filter_by_tags(filter_by_tags):
     """
     result = []
     for raw_tags in filter_by_tags:
-        required_tags = raw_tags.split(',')
+        required_tags = raw_tags.split(",")
         must = set()
         must_not = set()
         for tag in required_tags:
-            if tag.startswith('-'):
+            if tag.startswith("-"):
                 must_not.add(tag[1:])
             else:
                 must.add(tag)
@@ -53,8 +53,8 @@ def _must_split_flat_key_val(must):
     key_val = {}
     flat = set()
     for i in must:
-        if ':' in i:
-            k, v = i.split(':', 1)
+        if ":" in i:
+            k, v = i.split(":", 1)
             key_val[k] = v
         else:
             flat.add(i)
@@ -79,7 +79,7 @@ def _must_key_val_matches(must_key_vals, test_tags, include_empty_key):
                 continue
             else:
                 return False
-        if v.startswith('-'):
+        if v.startswith("-"):
             abs_v = v[1:]
             if abs_v in key_val_test_tags.get(k, set()):
                 return False
@@ -88,8 +88,9 @@ def _must_key_val_matches(must_key_vals, test_tags, include_empty_key):
     return True
 
 
-def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
-                     include_empty_key=False):
+def filter_test_tags(
+    test_suite, filter_by_tags, include_empty=False, include_empty_key=False
+):
     """
     Filter the existing (unfiltered) test suite based on tags
 
@@ -112,7 +113,7 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
     must_must_nots = _parse_filter_by_tags(filter_by_tags)
 
     for klass, info in test_suite:
-        test_tags = info.get('tags', {})
+        test_tags = info.get("tags", {})
         if not test_tags:
             if include_empty:
                 filtered.append((klass, info))
@@ -124,9 +125,9 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
 
             must_flat, must_key_val = _must_split_flat_key_val(must)
             if must_key_val:
-                if not _must_key_val_matches(must_key_val,
-                                             test_tags,
-                                             include_empty_key):
+                if not _must_key_val_matches(
+                    must_key_val, test_tags, include_empty_key
+                ):
                     continue
 
             if must_flat:
@@ -139,8 +140,9 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
     return filtered
 
 
-def filter_test_tags_runnable(runnable, filter_by_tags, include_empty=False,
-                              include_empty_key=False):
+def filter_test_tags_runnable(
+    runnable, filter_by_tags, include_empty=False, include_empty_key=False
+):
     """
     Filter the existing (unfiltered) test suite based on tags
 
@@ -172,9 +174,9 @@ def filter_test_tags_runnable(runnable, filter_by_tags, include_empty=False,
 
         must_flat, must_key_val = _must_split_flat_key_val(must)
         if must_key_val:
-            if not _must_key_val_matches(must_key_val,
-                                         runnable_tags,
-                                         include_empty_key):
+            if not _must_key_val_matches(
+                must_key_val, runnable_tags, include_empty_key
+            ):
                 continue
 
         if must_flat:

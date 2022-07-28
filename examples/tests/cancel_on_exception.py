@@ -17,7 +17,9 @@ class CancelOnException(avocado.Test):
         to override this behavior, and turn your generic exceptions into
         test CANCEL.
         """
+
         @avocado.cancel_on(RuntimeError)
         def foo():
             raise RuntimeError
+
         foo()

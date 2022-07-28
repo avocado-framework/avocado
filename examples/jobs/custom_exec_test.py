@@ -14,10 +14,9 @@ from avocado.core.suite import TestSuite
 # arguments are converted to environment variable.
 
 # here, SLEEP_LENGTH become an environment variable
-sleeptest = Runnable('exec-test', 'examples/tests/sleeptest.sh',
-                     SLEEP_LENGTH='2')
+sleeptest = Runnable("exec-test", "examples/tests/sleeptest.sh", SLEEP_LENGTH="2")
 # here, 'Hello World!' is appended to the uri (/usr/bin/echo)
-echo = Runnable('exec-test', '/usr/bin/echo', 'Hello World!')
+echo = Runnable("exec-test", "/usr/bin/echo", "Hello World!")
 
 # the execution of examples/tests/sleeptest.sh takes around 2 seconds
 # and the output of the /usr/bin/echo test is available at the

@@ -4,30 +4,35 @@ import unittest
 
 from avocado.core.job import Job
 from avocado.utils import process
-from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
-                             skipUnlessPathExists)
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
 
 RUNNER = f"{sys.executable} -m avocado.core.nrunner"
 
 
 class NRunnerFeatures(unittest.TestCase):
-    @skipUnlessPathExists('/bin/false')
+    @skipUnlessPathExists("/bin/false")
     def test_custom_exit_codes(self):
-        config = {'resolver.references': ['/bin/false'],
-                  'runner.exectest.exitcodes.skip': [1]}
+        config = {
+            "resolver.references": ["/bin/false"],
+            "runner.exectest.exitcodes.skip": [1],
+        }
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
 
-    @skipUnlessPathExists('/bin/false')
-    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists("/bin/false")
+    @skipUnlessPathExists("/bin/true")
     def test_failfast(self):
-        config = {'resolver.references': ['/bin/true',
-                                          '/bin/false',
-                                          '/bin/true',
-                                          '/bin/true'],
-                  'run.failfast': True,
-                  'nrunner.shuffle': False,
-                  'nrunner.max_parallel_tasks': 1}
+        config = {
+            "resolver.references": [
+                "/bin/true",
+                "/bin/false",
+                "/bin/true",
+                "/bin/true",
+            ],
+            "run.failfast": True,
+            "nrunner.shuffle": False,
+            "nrunner.max_parallel_tasks": 1,
+        }
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 9)
             self.assertEqual(job.result.passed, 1)
@@ -37,41 +42,63 @@ class NRunnerFeatures(unittest.TestCase):
 
 
 class RunnableRun(unittest.TestCase):
-
     def test_noop(self):
-        res = process.run(f"{RUNNER} runnable-run -k noop",
-                          ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k noop", ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'time': ", res.stdout)
+        self.assertEqual(res.exit_status, 0)
+
+    def test_instrumented(self):
+        test_uri = os.path.join(
+            BASEDIR, "examples", "tests", "passtest.py:PassTest.test"
+        )
+        res = process.run(
+            f"{RUNNER} runnable-run -k avocado-instrumented -u " f"{test_uri}",
+            ignore_status=True,
+        )
+        self.assertIn(b"'status': 'started'", res.stdout)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'result': 'pass'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
     def test_exec_test(self):
         # 'base64:LWM=' becomes '-c' and makes Python execute the
         # commands on the subsequent argument
-        cmd = (f"{RUNNER} runnable-run -k exec-test -u {sys.executable} "
-               f"-a 'base64:LWM=' -a 'import sys; sys.exit(99)'")
+        cmd = (
+            f"{RUNNER} runnable-run -k exec-test -u {sys.executable} "
+            f"-a 'base64:LWM=' -a 'import sys; sys.exit(99)'"
+        )
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'returncode': 99", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @skipUnlessPathExists('/bin/sh')
+    @skipUnlessPathExists("/bin/sh")
     def test_exec_test_echo(self):
         # 'base64:LW4=' becomes '-n' and prevents echo from printing a newline
-        cmd = (f"{RUNNER} runnable-run -k exec-test -u /bin/echo "
-               f"-a 'base64:LW4=' -a _Avocado_Runner_")
+        cmd = (
+            f"{RUNNER} runnable-run -k exec-test -u /bin/echo "
+            f"-a 'base64:LW4=' -a _Avocado_Runner_"
+        )
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'log': b'_Avocado_Runner_'", res.stdout)
         self.assertIn(b"'returncode': 0", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @skipUnlessPathExists('/bin/sh')
-    @skipUnlessPathExists('/bin/echo')
+    @skipUnlessPathExists("/bin/sh")
+    @skipUnlessPathExists("/bin/echo")
     def test_exec_recipe(self):
-        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "runnables", "exec_test_sh_echo_env_var.json")
+        recipe = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "runnables",
+            "exec_test_sh_echo_env_var.json",
+        )
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -89,17 +116,15 @@ class RunnableRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     def test_noop_valid_kwargs(self):
-        res = process.run(f"{RUNNER} runnable-run -k noop foo=bar",
-                          ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k noop foo=bar", ignore_status=True)
         self.assertEqual(res.exit_status, 0)
 
     def test_noop_invalid_kwargs(self):
-        res = process.run(f"{RUNNER} runnable-run -k noop foo",
-                          ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k noop foo", ignore_status=True)
         self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
         self.assertEqual(res.exit_status, 2)
 
-    @skipUnlessPathExists('/bin/env')
+    @skipUnlessPathExists("/bin/env")
     def test_exec_test_kwargs(self):
         cmd = f"{RUNNER} runnable-run -k exec-test -u /bin/env X=Y"
         res = process.run(cmd, ignore_status=True)
@@ -109,18 +134,25 @@ class RunnableRun(unittest.TestCase):
 
 
 class TaskRun(unittest.TestCase):
-
     def test_noop(self):
-        res = process.run(f"{RUNNER} task-run -i XXXno-opXXX -k noop",
-                          ignore_status=True)
+        res = process.run(
+            f"{RUNNER} task-run -i XXXno-opXXX -k noop", ignore_status=True
+        )
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'id': 'XXXno-opXXX'", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @skipUnlessPathExists('/bin/uname')
+    @skipUnlessPathExists("/bin/uname")
     def test_recipe_exec_test_1(self):
-        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec-test", "1-uname.json")
+        recipe = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "tasks",
+            "exec-test",
+            "1-uname.json",
+        )
         cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -135,10 +167,17 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'status': 'finished'", final_status)
         self.assertEqual(res.exit_status, 0)
 
-    @skipUnlessPathExists('/bin/echo')
+    @skipUnlessPathExists("/bin/echo")
     def test_recipe_exec_test_2(self):
-        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec-test", "2-echo.json")
+        recipe = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "tasks",
+            "exec-test",
+            "2-echo.json",
+        )
         cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -155,10 +194,17 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'log': b'avocado'", stdout_status)
         self.assertEqual(res.exit_status, 0)
 
-    @skipUnlessPathExists('/bin/sleep')
+    @skipUnlessPathExists("/bin/sleep")
     def test_recipe_exec_test_3(self):
-        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec-test", "3-sleep.json")
+        recipe = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "tasks",
+            "exec-test",
+            "3-sleep.json",
+        )
         cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -175,13 +221,13 @@ class TaskRun(unittest.TestCase):
 
 
 class ResolveSerializeRun(TestCaseTmpDir):
-    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists("/bin/true")
     def test(self):
         cmd = "%s list --write-recipes-to-directory=%s -- /bin/true"
         cmd %= (AVOCADO, self.tmpdir.name)
         res = process.run(cmd)
-        self.assertEqual(b'exec-test /bin/true\n', res.stdout)
+        self.assertEqual(b"exec-test /bin/true\n", res.stdout)
         cmd = "%s runnable-run-recipe %s"
-        cmd %= (RUNNER, os.path.join(self.tmpdir.name, '1.json'))
+        cmd %= (RUNNER, os.path.join(self.tmpdir.name, "1.json"))
         res = process.run(cmd)
         self.assertIn(b"'status': 'finished'", res.stdout)

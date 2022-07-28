@@ -53,7 +53,7 @@ class Extension:
         self.entry_point = entry_point
         self.plugin = plugin
         self.obj = obj
-        self.priority = getattr(self.obj, 'priority', PluginPriority.NORMAL)
+        self.priority = getattr(self.obj, "priority", PluginPriority.NORMAL)
 
     def __lt__(self, other):
         if self.priority == other.priority:
@@ -79,7 +79,7 @@ class Extension:
 class ExtensionManager:
 
     #: Default namespace prefix for Avocado extensions
-    NAMESPACE_PREFIX = 'avocado.plugins.'
+    NAMESPACE_PREFIX = "avocado.plugins."
 
     def __init__(self, namespace, invoke_kwds=None):
         self.namespace = namespace
@@ -119,7 +119,7 @@ class ExtensionManager:
         returned unchanged.
         """
         if self.namespace.startswith(self.NAMESPACE_PREFIX):
-            return self.namespace[len(self.NAMESPACE_PREFIX):]
+            return self.namespace[len(self.NAMESPACE_PREFIX) :]
         else:
             return self.namespace
 
@@ -188,11 +188,14 @@ class ExtensionManager:
                 raise
             except KeyboardInterrupt:
                 raise
-            except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(),
-                                        logger='avocado.app.debug')
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
+            except:  # catch any exception pylint: disable=W0702
+                stacktrace.log_exc_info(sys.exc_info(), logger="avocado.app.debug")
+                LOG_UI.error(
+                    'Error running method "%s" of plugin "%s": %s',
+                    method_name,
+                    ext.name,
+                    sys.exc_info()[1],
+                )
         return ret
 
     def map_method(self, method_name, *args):
@@ -211,11 +214,14 @@ class ExtensionManager:
                 raise
             except KeyboardInterrupt:
                 raise
-            except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(),
-                                        logger='avocado.app.debug')
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
+            except:  # catch any exception pylint: disable=W0702
+                stacktrace.log_exc_info(sys.exc_info(), logger="avocado.app.debug")
+                LOG_UI.error(
+                    'Error running method "%s" of plugin "%s": %s',
+                    method_name,
+                    ext.name,
+                    sys.exc_info()[1],
+                )
 
     def __getitem__(self, name):
         for ext in self.extensions:

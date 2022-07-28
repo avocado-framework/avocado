@@ -32,4 +32,4 @@ def is_url(path):
     :rtype: Boolean.
     """
     url_parts = urlparse.urlparse(path)
-    return (url_parts[0] in ('http', 'https', 'ftp', 'git'))
+    return url_parts[0] in ("http", "https", "ftp", "git")

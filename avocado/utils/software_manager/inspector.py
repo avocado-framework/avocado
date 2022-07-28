@@ -29,11 +29,11 @@ from avocado.utils.software_manager.backends.zypper import ZypperBackend
 
 #: Mapping of package manager name to implementation class.
 SUPPORTED_PACKAGE_MANAGERS = {
-        'apt-get': AptBackend,
-        'yum': YumBackend,
-        'dnf': DnfBackend,
-        'zypper': ZypperBackend,
-        }
+    "apt-get": AptBackend,
+    "yum": YumBackend,
+    "dnf": DnfBackend,
+    "zypper": ZypperBackend,
+}
 
 
 class SystemInspector:
@@ -71,18 +71,14 @@ class SystemInspector:
         if len(list_supported) == 1:
             pm_supported = list_supported[0]
         elif len(list_supported) > 1:
-            if ('apt-get' in list_supported and
-                    self.distro in ('debian', 'ubuntu')):
-                pm_supported = 'apt-get'
-            elif ('dnf' in list_supported and
-                  self.distro in ('rhel', 'fedora')):
-                pm_supported = 'dnf'
-            elif ('yum' in list_supported and
-                  self.distro in ('rhel', 'fedora')):
-                pm_supported = 'yum'
-            elif ('zypper' in list_supported and
-                  self.distro == 'SuSE'):
-                pm_supported = 'zypper'
+            if "apt-get" in list_supported and self.distro in ("debian", "ubuntu"):
+                pm_supported = "apt-get"
+            elif "dnf" in list_supported and self.distro in ("rhel", "fedora"):
+                pm_supported = "dnf"
+            elif "yum" in list_supported and self.distro in ("rhel", "fedora"):
+                pm_supported = "yum"
+            elif "zypper" in list_supported and self.distro == "SuSE":
+                pm_supported = "zypper"
             else:
                 pm_supported = list_supported[0]
 

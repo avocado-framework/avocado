@@ -22,17 +22,15 @@ class SyncTest(Test):
         Build the synctest suite.
         """
         self.cwd = os.getcwd()
-        sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
+        sync_tarball = self.params.get("sync_tarball", "*", "synctest.tar.bz2")
         tarball_path = self.get_data(sync_tarball)
         if tarball_path is None:
-            self.cancel(f'Test is missing data file {tarball_path}')
+            self.cancel(f"Test is missing data file {tarball_path}")
         archive.extract(tarball_path, self.workdir)
-        srcdir = os.path.join(self.workdir, 'synctest')
+        srcdir = os.path.join(self.workdir, "synctest")
         os.chdir(srcdir)
-        if self.params.get('debug_symbols', default=True):
-            build.make(srcdir,
-                       env={'CFLAGS': '-g -O0'},
-                       extra_args='synctest')
+        if self.params.get("debug_symbols", default=True):
+            build.make(srcdir, env={"CFLAGS": "-g -O0"}, extra_args="synctest")
         else:
             build.make(srcdir)
 
@@ -40,7 +38,7 @@ class SyncTest(Test):
         """
         Execute synctest with the appropriate params.
         """
-        path = os.path.join(os.getcwd(), 'synctest')
+        path = os.path.join(os.getcwd(), "synctest")
         cmd = f"{path} {self.params.get('sync_length', default=100)} {self.params.get('sync_loop', default=10)}"
         process.system(cmd)
         os.chdir(self.cwd)

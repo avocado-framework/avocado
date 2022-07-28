@@ -8,18 +8,16 @@ from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 
 status_server_dir = tempfile.TemporaryDirectory()
-status_server = os.path.join(status_server_dir.name, 'status_server.socket')
+status_server = os.path.join(status_server_dir.name, "status_server.socket")
 
 config = {
-    'nrunner.status_server_auto': False,
-    'nrunner.status_server_listen': status_server,
-    'nrunner.status_server_uri': status_server,
-    'resolver.references': [
-        'examples/tests/passtest.py'
-    ],
-    }
+    "nrunner.status_server_auto": False,
+    "nrunner.status_server_listen": status_server,
+    "nrunner.status_server_uri": status_server,
+    "resolver.references": ["examples/tests/passtest.py"],
+}
 
-suite = TestSuite.from_config(config, name='1')
+suite = TestSuite.from_config(config, name="1")
 with Job(config, [suite]) as j:
     result = j.run()
 

@@ -10,8 +10,8 @@ class CitParameters(Test):
     """
 
     def test(self):
-        self.params.get('color')
-        self.params.get('shape')
-        self.params.get('state')
-        self.params.get('material')
-        self.params.get('coating')
+        self.params.get("color")
+        self.params.get("shape")
+        self.params.get("state")
+        self.params.get("material")
+        self.params.get("coating")
