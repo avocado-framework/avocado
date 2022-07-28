@@ -280,6 +280,7 @@ class Runner(RunnerInterface):
             test_suite.name,
             self.status_server.uri,
             job.unique_id,
+            test_suite.config,
         )
         # pylint: disable=W0201
         self.runtime_tasks = graph.get_tasks_in_topological_order()

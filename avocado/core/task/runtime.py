@@ -183,7 +183,9 @@ class PreRuntimeTask(RuntimeTask):
         return cls(task)
 
     @classmethod
-    def get_pre_tasks_from_runnable(cls, runnable, status_server_uri=None, job_id=None):
+    def get_pre_tasks_from_runnable(
+        cls, runnable, status_server_uri=None, job_id=None, suite_config=None
+    ):
         """Creates runtime tasks for preTest task from runnable
 
         :param runnable: the "description" of what the task should run.
@@ -195,6 +197,8 @@ class PreRuntimeTask(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
@@ -202,7 +206,7 @@ class PreRuntimeTask(RuntimeTask):
         pre_runnables = list(
             chain.from_iterable(
                 TestPreDispatcher().map_method_with_return(
-                    "pre_test_runnables", runnable
+                    "pre_test_runnables", runnable, suite_config
                 )
             )
         )
@@ -214,15 +218,23 @@ class PreRuntimeTask(RuntimeTask):
 
 
 class PostRuntimeTaskPrototype(RuntimeTask):
-    def __init__(self, task, parent_task, status_server_uri=None, job_id=None):
+    def __init__(
+        self, task, parent_task, status_server_uri=None, job_id=None, suite_config=None
+    ):
         super().__init__(task)
         self._parent_task = parent_task
         self._status_server_uri = status_server_uri
         self._job_id = job_id
+        self.suite_config = suite_config
 
     @classmethod
     def from_runnable(  # pylint: disable=W0221
-        cls, post_runnable, parent_task, status_server_uri=None, job_id=None
+        cls,
+        post_runnable,
+        parent_task,
+        status_server_uri=None,
+        job_id=None,
+        suite_config=None,
     ):
         """Creates runtime task for post_test plugin from runnable
 
@@ -237,6 +249,8 @@ class PostRuntimeTaskPrototype(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         :returns: RuntimeTask of the test from runnable
         """
         name = f'{post_runnable.kind}-{post_runnable.kwargs.get("name")}'
@@ -252,11 +266,11 @@ class PostRuntimeTaskPrototype(RuntimeTask):
             category="post_test",
             job_id=job_id,
         )
-        return cls(task, parent_task, status_server_uri, job_id)
+        return cls(task, parent_task, status_server_uri, job_id, suite_config)
 
     @classmethod
     def get_post_tasks_from_runnable(
-        cls, runnable, test_task, status_server_uri=None, job_id=None
+        cls, runnable, test_task, status_server_uri=None, job_id=None, suite_config=None
     ):
         """Creates runtime tasks for postTest task from runnable
 
@@ -271,6 +285,8 @@ class PostRuntimeTaskPrototype(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
@@ -282,7 +298,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
                 post_plugin.name, None, config=test_task.task.runnable.config
             )
             post_task = cls.from_runnable(
-                runnable, test_task, status_server_uri, job_id
+                runnable, test_task, status_server_uri, job_id, suite_config
             )
             post_test_tasks.append(post_task)
         return post_test_tasks
@@ -302,6 +318,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
             self._parent_task,
             self._status_server_uri,
             self._job_id,
+            self.suite_config,
         )
         for post_task in post_tasks:
             post_task.dependencies = self.dependencies
@@ -312,7 +329,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
 class PostRuntimeTask(PostRuntimeTaskPrototype):
     @classmethod
     def get_post_tasks_from_runnable(
-        cls, runnable, test_task, status_server_uri=None, job_id=None
+        cls, runnable, test_task, status_server_uri=None, job_id=None, suite_config=None
     ):
         """Creates runtime tasks for postTest task from runnable
 
@@ -327,6 +344,8 @@ class PostRuntimeTask(PostRuntimeTaskPrototype):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
@@ -334,12 +353,12 @@ class PostRuntimeTask(PostRuntimeTaskPrototype):
         test_result = test_task.result
         post_plugin = TestPreDispatcher()[runnable.kind]
         post_runnables = post_plugin.obj.post_test_runnables(
-            test_task.task.runnable, test_result
+            test_task.task.runnable, test_result, suite_config
         )
         post_tasks = []
         for post_runnable in post_runnables:
             post_task = PostRuntimeTask.from_runnable(
-                post_runnable, test_task, status_server_uri, job_id
+                post_runnable, test_task, status_server_uri, job_id, suite_config
             )
             post_tasks.append(post_task)
         return post_tasks
@@ -348,7 +367,9 @@ class PostRuntimeTask(PostRuntimeTaskPrototype):
 class RuntimeTaskGraph:
     """Graph representing dependencies between runtime tasks."""
 
-    def __init__(self, tests, test_suite_name, status_server_uri, job_id):
+    def __init__(
+        self, tests, test_suite_name, status_server_uri, job_id, suite_config=None
+    ):
         """Instantiates a new RuntimeTaskGraph.
 
         From the list of tests, it will create runtime tasks and connects them
@@ -365,6 +386,8 @@ class RuntimeTaskGraph:
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param suite_config: Configuration dict relevant for the whole suite.
+        :type suite_config: dict
         """
         self.graph = {}
         # create graph
@@ -385,11 +408,11 @@ class RuntimeTaskGraph:
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
                 tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
-                    runnable, status_server_uri, job_id
+                    runnable, status_server_uri, job_id, suite_config
                 )
                 tasks.append(runtime_test)
                 tasks = tasks + PostRuntimeTaskPrototype.get_post_tasks_from_runnable(
-                    runnable, runtime_test, status_server_uri, job_id
+                    runnable, runtime_test, status_server_uri, job_id, suite_config
                 )
                 if tasks:
                     self._connect_tasks(tasks)
