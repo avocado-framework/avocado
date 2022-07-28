@@ -101,10 +101,10 @@ class Run(CLICmd):
         )
 
         settings.add_argparser_to_option(
-            namespace="run.test_runner",
+            namespace="run.suite_runner",
             parser=parser,
-            long_arg="--test-runner",
-            metavar="TEST_RUNNER",
+            long_arg="--suite-runner",
+            metavar="SUITE_RUNNER",
         )
 
         help_msg = "Instead of running the test only list them and log their params."

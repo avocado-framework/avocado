@@ -429,7 +429,7 @@ if __name__ == "__main__":
                 "avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver",
                 "tap = avocado.plugins.resolvers:TapResolver",
             ],
-            "avocado.plugins.runner": [
+            "avocado.plugins.suite.runner": [
                 "nrunner = avocado.plugins.runner_nrunner:Runner",
             ],
             "avocado.plugins.runnable.runner": [

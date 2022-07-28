@@ -82,8 +82,8 @@ class Plugins(CLICmd):
             ),
             (Resolver(), "Plugins that resolve test references (resolver): "),
             (
-                dispatcher.RunnerDispatcher(),
-                "Plugins that run test suites on a job (runners): ",
+                dispatcher.SuiteRunnerDispatcher(),
+                "Plugins that run test suites on a job (suite.runner): ",
             ),
             (
                 dispatcher.SpawnerDispatcher(),

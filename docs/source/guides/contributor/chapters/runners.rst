@@ -160,7 +160,7 @@ interfaces such scripts must implement are the ``runnable-run`` and
 
 Once all the ``Runnable(s)`` (within the ``ReferenceResolution(s)``)
 are created by :mod:`avocado.core.resolver`, the ``avocado
-run --test-runner=nrunner`` implementation follows roughly the
+run --suite-runner=nrunner`` implementation follows roughly the
 following steps:
 
 1. Creates a status server that binds to a TCP port and waits for

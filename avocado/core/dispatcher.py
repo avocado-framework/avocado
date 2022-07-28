@@ -124,9 +124,9 @@ class VarianterDispatcher(EnabledExtensionManager):
         )
 
 
-class RunnerDispatcher(EnabledExtensionManager):
+class SuiteRunnerDispatcher(EnabledExtensionManager):
     def __init__(self):
-        super().__init__("avocado.plugins.runner")
+        super().__init__("avocado.plugins.suite.runner")
 
 
 class InitDispatcher(EnabledExtensionManager):

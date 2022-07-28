@@ -278,11 +278,11 @@ class Discoverer(Plugin, ResolverMixin):
         """
 
 
-class Runner(Plugin):
-    """Base plugin interface for test runners.
+class SuiteRunner(Plugin):
+    """Base plugin interface for runners for suites.
 
-    This is the interface a job uses to drive the tests execution via
-    compliant test runners.
+    This is the interface a job uses to drive the tests execution in a
+    suite.
 
     NOTE: This interface is not to be confused with the internal
     interface or idiosyncrasies of the :ref:`nrunner`.

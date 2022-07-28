@@ -274,7 +274,7 @@ def register_core_options():
         "the new runner and only runner supported at this moment."
     )
     stgs.register_option(
-        section="run", key="test_runner", default="nrunner", help_msg=help_msg
+        section="run", key="suite_runner", default="nrunner", help_msg=help_msg
     )
 
 

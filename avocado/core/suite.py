@@ -16,7 +16,7 @@ import os
 from enum import Enum
 from uuid import uuid4
 
-from avocado.core.dispatcher import RunnerDispatcher
+from avocado.core.dispatcher import SuiteRunnerDispatcher
 from avocado.core.exceptions import (
     JobTestSuiteReferenceResolutionError,
     OptionValidationError,
@@ -144,7 +144,7 @@ class TestSuite:
         return self.size
 
     def _convert_to_dry_run(self):
-        if self.config.get("run.test_runner") == "nrunner":
+        if self.config.get("run.suite_runner") == "nrunner":
             for runnable in self.tests:
                 runnable.kind = "dry-run"
 
@@ -201,9 +201,9 @@ class TestSuite:
     @property
     def runner(self):
         if self._runner is None:
-            runner_name = self.config.get("run.test_runner")
+            runner_name = self.config.get("run.suite_runner")
             try:
-                runner_extension = RunnerDispatcher()[runner_name]
+                runner_extension = SuiteRunnerDispatcher()[runner_name]
                 self._runner = runner_extension.obj
             except KeyError:
                 raise TestSuiteError("Runner not implemented.")
@@ -219,7 +219,7 @@ class TestSuite:
     @property
     def stats(self):
         """Return a statistics dict with the current tests."""
-        runner_name = self.config.get("run.test_runner")
+        runner_name = self.config.get("run.suite_runner")
         if runner_name == "nrunner":
             return self._get_stats_from_nrunner()
         return {}
@@ -238,7 +238,7 @@ class TestSuite:
     @property
     def tags_stats(self):
         """Return a statistics dict with the current tests tags."""
-        runner_name = self.config.get("run.test_runner")
+        runner_name = self.config.get("run.suite_runner")
         if runner_name == "nrunner":
             return self._get_tags_stats_from_nrunner()
         return {}
@@ -334,7 +334,7 @@ class TestSuite:
         if job_config:
             config.update(job_config)
         config.update(suite_config)
-        runner = config.get("run.test_runner")
+        runner = config.get("run.suite_runner")
         if runner == "nrunner":
             suite = cls._from_config_with_resolver(config, name)
         else:
