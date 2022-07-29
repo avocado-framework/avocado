@@ -240,25 +240,27 @@ class Worker:
                     await self._state_machine.add_new_task(post_task)
                 return
 
-            async with self._state_machine.cache_lock:
-                is_task_in_cache = await self._spawner.is_requirement_in_cache(
-                    runtime_task
-                )
-                if is_task_in_cache is None:
-                    async with self._state_machine.lock:
-                        self._state_machine.triaging.append(runtime_task)
-                        runtime_task.status = RuntimeTaskStatus.WAIT
-                        await asyncio.sleep(0.1)
-                    return
-
-                if is_task_in_cache:
-                    await self._state_machine.finish_task(
-                        runtime_task, RuntimeTaskStatus.IN_CACHE
+            # save or retrieve task from cache
+            if runtime_task.is_cacheable:
+                async with self._state_machine.cache_lock:
+                    is_task_in_cache = await self._spawner.is_requirement_in_cache(
+                        runtime_task
                     )
-                    runtime_task.result = "pass"
-                    return
+                    if is_task_in_cache is None:
+                        async with self._state_machine.lock:
+                            self._state_machine.triaging.append(runtime_task)
+                            runtime_task.status = RuntimeTaskStatus.WAIT
+                            await asyncio.sleep(0.1)
+                        return
 
-                await self._spawner.save_requirement_in_cache(runtime_task)
+                    if is_task_in_cache:
+                        await self._state_machine.finish_task(
+                            runtime_task, RuntimeTaskStatus.IN_CACHE
+                        )
+                        runtime_task.result = "pass"
+                        return
+
+                    await self._spawner.save_requirement_in_cache(runtime_task)
 
         # the task is ready to run
         async with self._state_machine.lock:

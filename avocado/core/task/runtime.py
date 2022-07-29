@@ -1,6 +1,5 @@
 from copy import deepcopy
 from enum import Enum
-from itertools import chain
 
 from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
 from avocado.core.nrunner.runnable import Runnable
@@ -61,6 +60,8 @@ class RuntimeTask:
         #: The result of the spawning of a Task
         self.spawning_result = None
         self.dependencies = []
+        #: Flag to detect if the task should be save to cache
+        self.is_cacheable = False
 
     def __repr__(self):
         if self.status is None:
@@ -202,18 +203,16 @@ class PreRuntimeTask(RuntimeTask):
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
-
-        pre_runnables = list(
-            chain.from_iterable(
-                TestPreDispatcher().map_method_with_return(
-                    "pre_test_runnables", runnable, suite_config
-                )
-            )
-        )
         pre_test_tasks = []
-        for pre_runnable in pre_runnables:
-            pre_task = cls.from_runnable(pre_runnable, status_server_uri, job_id)
-            pre_test_tasks.append(pre_task)
+        pre_plugins = TestPreDispatcher().get_extentions_by_priority()
+        for pre_plugin in pre_plugins:
+            pre_plugin = pre_plugin.obj
+            is_cacheable = getattr(pre_plugin, "is_cacheable", False)
+            pre_runnables = pre_plugin.pre_test_runnables(runnable, suite_config)
+            for pre_runnable in pre_runnables:
+                pre_task = cls.from_runnable(pre_runnable, status_server_uri, job_id)
+                pre_task.is_cacheable = is_cacheable
+                pre_test_tasks.append(pre_task)
         return pre_test_tasks
 
 
@@ -349,17 +348,18 @@ class PostRuntimeTask(PostRuntimeTaskPrototype):
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
-
         test_result = test_task.result
         post_plugin = TestPreDispatcher()[runnable.kind]
         post_runnables = post_plugin.obj.post_test_runnables(
             test_task.task.runnable, test_result, suite_config
         )
+        is_cacheable = getattr(post_plugin.obj, "is_cacheable", False)
         post_tasks = []
         for post_runnable in post_runnables:
             post_task = PostRuntimeTask.from_runnable(
                 post_runnable, test_task, status_server_uri, job_id, suite_config
             )
+            post_task.is_cacheable = is_cacheable
             post_tasks.append(post_task)
         return post_tasks
 
