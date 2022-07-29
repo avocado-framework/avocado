@@ -26,6 +26,7 @@ class DependencyResolver(PreTest):
 
     name = "dependency"
     description = "Dependency resolver for tests with dependencies"
+    is_cacheable = True
 
     @staticmethod
     def pre_test_runnables(test_runnable, suite_config=None):  # pylint: disable=W0221

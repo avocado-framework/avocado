@@ -1,5 +1,4 @@
 from enum import Enum
-from itertools import chain
 
 from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
@@ -28,6 +27,7 @@ class RuntimeTaskStatus(Enum):
 
 class RuntimeTaskMixin:
     """Common utilities for RuntimeTask implementations."""
+
     @classmethod
     def from_runnable(
         cls,
@@ -126,6 +126,8 @@ class RuntimeTask(RuntimeTaskMixin):
         self.satisfiable_deps_execution_statuses = (
             satisfiable_deps_execution_statuses or ["pass"]
         )
+        #: Flag to detect if the task should be save to cache
+        self.is_cacheable = False
 
     def __repr__(self):
         if self.status is None:
@@ -170,6 +172,7 @@ class RuntimeTask(RuntimeTaskMixin):
 
 class PrePostRuntimeTaskMixin(RuntimeTask):
     """Common utilities for PrePostRuntimeTask implementations."""
+
     @classmethod
     def get_tasks_from_runnable(
         cls,
@@ -203,29 +206,28 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
         :returns: Pre/Post RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
-
-        runnables = list(
-            chain.from_iterable(
-                TestPreDispatcher().map_method_with_return(
-                    f"{cls.category}_runnables", runnable, suite_config
-                )
-            )
-        )
         tasks = []
-        for runnable in runnables:
-            satisfiable_deps_execution_statuses = None
-            if isinstance(runnable, tuple):
-                runnable, satisfiable_deps_execution_statuses = runnable
-            task = cls.from_runnable(
-                runnable,
-                no_digits,
-                index,
-                test_suite_name,
-                status_server_uri,
-                job_id,
-                satisfiable_deps_execution_statuses,
-            )
-            tasks.append(task)
+        plugins = cls.dispatcher().get_extentions_by_priority()
+        for plugin in plugins:
+            plugin = plugin.obj
+            is_cacheable = getattr(plugin, "is_cacheable", False)
+            test_runnables_method = getattr(plugin, f"{cls.category}_runnables")
+            runnables = test_runnables_method(runnable, suite_config)
+            for runnable in runnables:
+                satisfiable_deps_execution_statuses = None
+                if isinstance(runnable, tuple):
+                    runnable, satisfiable_deps_execution_statuses = runnable
+                task = cls.from_runnable(
+                    runnable,
+                    no_digits,
+                    index,
+                    test_suite_name,
+                    status_server_uri,
+                    job_id,
+                    satisfiable_deps_execution_statuses,
+                )
+                task.is_cacheable = is_cacheable
+                tasks.append(task)
         return tasks
 
 

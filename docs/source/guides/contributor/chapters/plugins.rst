@@ -215,6 +215,19 @@ the ``plugins.$type.order`` is [plugin2, plugin4] then the real order will be
 
 .. _new-test-type-plugin-example:
 
+Cacheable plugins
+=================
+The results of Pre-test and Post-test plugins defined in :class:`avocado.core.plugin_interfaces.PreTest`
+and :class:`avocado.core.plugin_interfaces.PostTest` can be saved in cache. This is 
+very useful If the results can be used by other tests or even other avocado executions. 
+As an example of such plugin is `Dependency resolver` in :ref:`managing-requirements` 
+which installs dependencies for test into the test environment.
+
+As a default, all pre- / post-plugins are noncacheable. To make plugin cacheable you 
+have to set plugin variable `is_cacheable` to `True`, like this:
+
+.. literalinclude:: ../../../../../examples/plugins/test-pre-post/hello/hello.py
+
 New test type plugin example
 ============================
 
