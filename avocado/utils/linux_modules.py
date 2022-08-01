@@ -207,34 +207,123 @@ def get_loaded_modules():
         return [astring.to_text(_.split(b" ", 1)[0]) for _ in proc_modules]
 
 
-def check_kernel_config(config_name):
+def check_kernel_config(config_name, session=None):
     """
     Reports the configuration of $config_name of the current kernel
 
     :param config_name: Name of kernel config to search
+                        E.g. CONFIG_VIRTIO_IOMMU
     :type config_name: str
+    :param session: guest session, command is run on host if None
+    :type session: avocado.utils.ssh.Session
     :return: Config status in running kernel (NOT_SET, BUILTIN, MODULE)
     :rtype: :class:`ModuleConfig`
     """
 
-    kernel_version = platform.uname()[2]
+    def check_local_kernel_config(config_name):
+        """
+        Reports the configuration of $config_name of the current kernel
 
-    config_file = "/boot/config-" + kernel_version
-    with open(config_file, "r") as kernel_config:  # pylint: disable=W1514
-        for line in kernel_config:
-            line = line.split("=")
+        :param config_name: Name of kernel config to search
+                            E.g. CONFIG_VIRTIO_IOMMU
+        :type config_name: str
+        :return: Config status in running kernel (NOT_SET, BUILTIN, MODULE)
+        :rtype: :class:`ModuleConfig`
+        """
+        config_file = "/boot/config-" + platform.uname()[2]
+        with open(config_file, "r") as kernel_config:  # pylint: disable=W1514
+            for line in kernel_config:
+                line = line.split("=")
 
-            if len(line) != 2:
-                continue
+                if len(line) != 2:
+                    continue
+                if line[0].strip() == config_name:
+                    if line[1].strip() == "m":
+                        return ModuleConfig.MODULE
+                    else:
+                        return ModuleConfig.BUILTIN
+        return ModuleConfig.NOT_SET
 
-            config = line[0].strip()
-            if config == config_name:
-                option = line[1].strip()
-                if option == "m":
-                    return ModuleConfig.MODULE
-                else:
-                    return ModuleConfig.BUILTIN
-    return ModuleConfig.NOT_SET
+    def check_session_kernel_config(config_name, session):
+        """
+        Reports the configuration of $config_name of session's kernel
+
+        :param config_name: Name of kernel config to search
+                            E.g. CONFIG_VIRTIO_IOMMU
+        :type config_name: str
+        :param session: remote session
+        :type session: avocado.utils.ssh.Session
+        :return: Config status in running kernel (NOT_SET, BUILTIN, MODULE)
+        :rtype: :class:`ModuleConfig`
+        """
+        config_file = "/boot/config-" + session.cmd("uname -r").stdout_text.strip()
+        config_info = session.cmd(
+            f'grep ^"{config_name}"= {config_file}'
+        ).stdout_text.strip()
+
+        LOG.debug("Get config info %s", config_info)
+        line = config_info.split("=")
+        if len(line) != 2:
+            return ModuleConfig.NOT_SET
+
+        LOG.debug("Get config %s, target is %s", line[0].strip(), config_name)
+        if line[0].strip() == config_name:
+            if line[1].strip() == "m":
+                return ModuleConfig.MODULE
+            else:
+                return ModuleConfig.BUILTIN
+        return ModuleConfig.NOT_SET
+
+    return (
+        check_local_kernel_config(config_name)
+        if session is None
+        else check_session_kernel_config(config_name, session)
+    )
+
+
+def kconfig_is_builtin(config_name, session=None):
+    """
+    Check if the kernel config is BUILTIN
+
+    :param config_name: Name of kernel config to check
+                        E.g. CONFIG_VIRTIO_IOMMU
+    :type config_name: str
+    :param session: Guest session, command is run on host if None
+    :type session: avocado.utils.ssh.Session
+    :return: Return True if kernel config is BUILTIN, otherwise False.
+    :rtype: Bool
+    """
+    return check_kernel_config(config_name, session) is ModuleConfig.BUILTIN
+
+
+def kconfig_is_module(config_name, session=None):
+    """
+    Check if the kernel config is MODULE
+
+    :param config_name: Name of kernel config to check
+                        E.g. CONFIG_VIRTIO_IOMMU
+    :type config_name: str
+    :param session: Guest session, command is run on host if None
+    :type session: avocado.utils.ssh.Session
+    :return: Return True if kernel config is MODULE, otherwise False.
+    :rtype: Bool
+    """
+    return check_kernel_config(config_name, session) is ModuleConfig.MODULE
+
+
+def kconfig_is_not_set(config_name, session=None):
+    """
+    Check if the kernel config is NOT_SET
+
+    :param config_name: Name of kernel config to check
+                        E.g. CONFIG_VIRTIO_IOMMU
+    :type config_name: str
+    :param session: Guest session, command is run on host if None
+    :type session: avocado.utils.ssh.Session
+    :return: Return True if kernel config is NOT_SET, otherwise False.
+    :rtype: Bool
+    """
+    return check_kernel_config(config_name, session) is ModuleConfig.NOT_SET
 
 
 def get_modules_dir():
