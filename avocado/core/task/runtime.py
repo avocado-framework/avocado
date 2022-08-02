@@ -174,24 +174,21 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
     """Common utilities for PrePostRuntimeTask implementations."""
 
     @classmethod
-    def get_tasks_from_runnable(
+    def get_tasks_from_test_task(
         cls,
-        runnable,
+        test_task,
         no_digits,
-        index,
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
         suite_config=None,
     ):
-        """Creates runtime tasks for preTest task from runnable
+        """Creates runtime tasks for preTest task from test task.
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param test_task: Runtime test task.
+        :type test_task: :class:`avocado.core.task.runtime.RuntimeTask`
         :param no_digits: number of digits of the test uid
         :type no_digits: int
-        :param index: index of tests inside test suite
-        :type index: int
         :param test_suite_name: test suite name which this test is related to
         :type test_suite_name: str
         :param status_server_uri: the URIs for the status servers that this
@@ -208,6 +205,8 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
         """
         tasks = []
         plugins = cls.dispatcher().get_extentions_by_priority()
+        runnable = test_task.task.runnable
+        prefix = f"{test_task.task.identifier.str_filesystem}"
         for plugin in plugins:
             plugin = plugin.obj
             is_cacheable = getattr(plugin, "is_cacheable", False)
@@ -220,7 +219,7 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
                 task = cls.from_runnable(
                     runnable,
                     no_digits,
-                    index,
+                    prefix,
                     test_suite_name,
                     status_server_uri,
                     job_id,
@@ -286,20 +285,18 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                tasks = PreRuntimeTask.get_tasks_from_runnable(
-                    runnable,
+                tasks = PreRuntimeTask.get_tasks_from_test_task(
+                    runtime_test,
                     no_digits,
-                    index,
                     test_suite_name,
                     status_server_uri,
                     job_id,
                     suite_config,
                 )
                 tasks.append(runtime_test)
-                tasks = tasks + PostRuntimeTask.get_tasks_from_runnable(
-                    runnable,
+                tasks = tasks + PostRuntimeTask.get_tasks_from_test_task(
+                    runtime_test,
                     no_digits,
-                    index,
                     test_suite_name,
                     status_server_uri,
                     job_id,
