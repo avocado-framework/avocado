@@ -24,6 +24,11 @@ class TaskStateMachine:
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
 
+        self._tasks_by_id = {
+            str(runtime_task.task.identifier): runtime_task.task
+            for runtime_task in tasks
+        }
+
     @property
     def requested(self):
         return self._requested
@@ -57,6 +62,16 @@ class TaskStateMachine:
         async with self._lock:
             pending = any([self._requested, self._triaging, self._ready, self._started])
         return not pending
+
+    @property
+    def tasks_by_id(self):
+        return self._tasks_by_id
+
+    async def add_new_task(self, runtime_task):
+        async with self.lock:
+            self._requested.appendleft(runtime_task)
+            self._tasks_by_id[str(runtime_task.task.identifier)] = runtime_task.task
+        return
 
     async def abort(self, status_reason=None):
         """Abort all non-started tasks.
@@ -221,10 +236,8 @@ class Worker:
             # generate post plugins tasks after the test finish
             if type(runtime_task) is PostRuntimeTaskPrototype:
                 post_tasks = runtime_task.get_post_plugin_tasks()
-                async with self._state_machine.lock:
-                    self._state_machine._triaging = (
-                        post_tasks + self._state_machine.triaging
-                    )
+                for post_task in post_tasks:
+                    await self._state_machine.add_new_task(post_task)
                 return
 
             async with self._state_machine.cache_lock:
