@@ -153,7 +153,7 @@ class RuntimeTask:
 class PreRuntimeTask(RuntimeTask):
     @classmethod
     def from_runnable(
-        cls, pre_runnable, status_server_uri=None, job_id=None
+        cls, pre_runnable, status_server_uri=None, job_id=None, prefix=None
     ):  # pylint: disable=W0221
         """Creates runtime task for pre_test plugin from runnable
 
@@ -169,7 +169,7 @@ class PreRuntimeTask(RuntimeTask):
         :returns: RuntimeTask of the test from runnable
         """
         name = f'{pre_runnable.kind}-{pre_runnable.kwargs.get("name")}'
-        prefix = 0
+        prefix = prefix or 0
         # the human UI works with TestID objects, so we need to
         # use it to name Task
         task_id = TestID(prefix, name)
@@ -184,13 +184,13 @@ class PreRuntimeTask(RuntimeTask):
         return cls(task)
 
     @classmethod
-    def get_pre_tasks_from_runnable(
-        cls, runnable, status_server_uri=None, job_id=None, suite_config=None
+    def get_pre_tasks_from_test_task(
+        cls, test_task, status_server_uri=None, job_id=None, suite_config=None
     ):
-        """Creates runtime tasks for preTest task from runnable
+        """Creates runtime tasks for preTest task from test task.
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param test_task: Runtime test task.
+        :type test_task: :class:`avocado.core.task.runtime.RuntimeTask`
         :param status_server_uri: the URIs for the status servers that this
                                   task should send updates to.
         :type status_server_uri: list
@@ -200,17 +200,21 @@ class PreRuntimeTask(RuntimeTask):
         :type job_id: str
         :param suite_config: Configuration dict relevant for the whole suite.
         :type suite_config: dict
-        :returns: Pre RuntimeTasks of the dependencies from runnable
+        :returns: Pre RuntimeTasks of the dependencies from test task.
         :rtype: list
         """
         pre_test_tasks = []
         pre_plugins = TestPreDispatcher().get_extentions_by_priority()
+        runnable = test_task.task.runnable
+        prefix = test_task.task.identifier.str_filesystem
         for pre_plugin in pre_plugins:
             pre_plugin = pre_plugin.obj
             is_cacheable = getattr(pre_plugin, "is_cacheable", False)
             pre_runnables = pre_plugin.pre_test_runnables(runnable, suite_config)
             for pre_runnable in pre_runnables:
-                pre_task = cls.from_runnable(pre_runnable, status_server_uri, job_id)
+                pre_task = cls.from_runnable(
+                    pre_runnable, status_server_uri, job_id, prefix
+                )
                 pre_task.is_cacheable = is_cacheable
                 pre_test_tasks.append(pre_task)
         return pre_test_tasks
@@ -253,7 +257,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
         :returns: RuntimeTask of the test from runnable
         """
         name = f'{post_runnable.kind}-{post_runnable.kwargs.get("name")}'
-        prefix = 0
+        prefix = parent_task.task.identifier.str_filesystem
         # the human UI works with TestID objects, so we need to
         # use it to name Task
         task_id = TestID(prefix, name)
@@ -268,13 +272,11 @@ class PostRuntimeTaskPrototype(RuntimeTask):
         return cls(task, parent_task, status_server_uri, job_id, suite_config)
 
     @classmethod
-    def get_post_tasks_from_runnable(
-        cls, runnable, test_task, status_server_uri=None, job_id=None, suite_config=None
+    def get_post_tasks_from_test_task(
+        cls, test_task, status_server_uri=None, job_id=None, suite_config=None
     ):
-        """Creates runtime tasks for postTest task from runnable
+        """Creates runtime tasks for postTest task from test task.
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
         :param test_task: PostRuntimeTask will be run after this Test task
         :type test_task: :class:`avocado.core.task.runtime.RuntimeTask`
         :param status_server_uri: the URIs for the status servers that this
@@ -286,7 +288,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
         :type job_id: str
         :param suite_config: Configuration dict relevant for the whole suite.
         :type suite_config: dict
-        :returns: Pre RuntimeTasks of the dependencies from runnable
+        :returns: Pre RuntimeTasks of the dependencies from test task
         :rtype: list
         """
 
@@ -312,13 +314,7 @@ class PostRuntimeTaskPrototype(RuntimeTask):
         return False
 
     def get_post_plugin_tasks(self):
-        post_tasks = PostRuntimeTask.get_post_tasks_from_runnable(
-            self.task.runnable,
-            self._parent_task,
-            self._status_server_uri,
-            self._job_id,
-            self.suite_config,
-        )
+        post_tasks = PostRuntimeTask.get_post_tasks_from_prototype(self)
         for post_task in post_tasks:
             post_task.dependencies = self.dependencies
 
@@ -327,37 +323,28 @@ class PostRuntimeTaskPrototype(RuntimeTask):
 
 class PostRuntimeTask(PostRuntimeTaskPrototype):
     @classmethod
-    def get_post_tasks_from_runnable(
-        cls, runnable, test_task, status_server_uri=None, job_id=None, suite_config=None
-    ):
-        """Creates runtime tasks for postTest task from runnable
+    def get_post_tasks_from_prototype(cls, prototype):
+        """Creates runtime tasks for postTest task from prototype.
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
-        :param test_task: PostRuntimeTask will be run after this Test task
-        :type test_task: :class:`avocado.core.task.runtime.RuntimeTask`
-        :param status_server_uri: the URIs for the status servers that this
-                                  task should send updates to.
-        :type status_server_uri: list
-        :param job_id: the ID of the job, for authenticating messages that get
-                       sent to the destination job's status server and will
-                       make into the job's results.
-        :type job_id: str
-        :param suite_config: Configuration dict relevant for the whole suite.
-        :type suite_config: dict
-        :returns: Pre RuntimeTasks of the dependencies from runnable
+        :param prototype: Prototype with date for creating PostRuntimeTask
+        :type prototype: :class:`avocado.core.task.runtime.PostRuntimeTaskPrototype`
+        :returns: Pre RuntimeTasks from prototype.
         :rtype: list
         """
-        test_result = test_task.result
-        post_plugin = TestPreDispatcher()[runnable.kind]
+        test_result = prototype._parent_task.result
+        post_plugin = TestPreDispatcher()[prototype.task.runnable.kind]
         post_runnables = post_plugin.obj.post_test_runnables(
-            test_task.task.runnable, test_result, suite_config
+            prototype._parent_task.task.runnable, test_result, prototype.suite_config
         )
         is_cacheable = getattr(post_plugin.obj, "is_cacheable", False)
         post_tasks = []
         for post_runnable in post_runnables:
             post_task = PostRuntimeTask.from_runnable(
-                post_runnable, test_task, status_server_uri, job_id, suite_config
+                post_runnable,
+                prototype._parent_task,
+                prototype._status_server_uri,
+                prototype._job_id,
+                prototype.suite_config,
             )
             post_task.is_cacheable = is_cacheable
             post_tasks.append(post_task)
@@ -407,12 +394,12 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
-                    runnable, status_server_uri, job_id, suite_config
+                tasks = PreRuntimeTask.get_pre_tasks_from_test_task(
+                    runtime_test, status_server_uri, job_id, suite_config
                 )
                 tasks.append(runtime_test)
-                tasks = tasks + PostRuntimeTaskPrototype.get_post_tasks_from_runnable(
-                    runnable, runtime_test, status_server_uri, job_id, suite_config
+                tasks = tasks + PostRuntimeTaskPrototype.get_post_tasks_from_test_task(
+                    runtime_test, status_server_uri, job_id, suite_config
                 )
                 if tasks:
                     self._connect_tasks(tasks)
