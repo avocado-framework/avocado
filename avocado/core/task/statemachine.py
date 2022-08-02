@@ -26,6 +26,11 @@ class TaskStateMachine:
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
 
+        self._tasks_by_id = {
+            str(runtime_task.task.identifier): runtime_task.task
+            for runtime_task in tasks
+        }
+
     @property
     def requested(self):
         return self._requested
@@ -63,6 +68,16 @@ class TaskStateMachine:
         async with self._lock:
             pending = any([self._requested, self._triaging, self._ready, self._started])
         return not pending
+
+    @property
+    def tasks_by_id(self):
+        return self._tasks_by_id
+
+    async def add_new_task(self, runtime_task):
+        async with self.lock:
+            self._requested.appendleft(runtime_task)
+            self._tasks_by_id[str(runtime_task.task.identifier)] = runtime_task.task
+        return
 
     async def abort(self, status_reason=None):
         """Abort all non-started tasks.
