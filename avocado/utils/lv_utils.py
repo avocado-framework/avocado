@@ -332,9 +332,10 @@ def vg_create(vg_name, pv_list, force=False):
         pv_list = " ".join(pv_list)
     else:
         pv_list = str(pv_list)
-    cmd += " %s %s" % (vg_name, pv_list)
     if force:
-        cmd += "%s -f -y" % cmd
+        cmd += " %s %s -f -y" % (vg_name, pv_list)
+    else:
+        cmd += " %s %s " % (vg_name, pv_list)
     process.run(cmd, sudo=True)
 
 
