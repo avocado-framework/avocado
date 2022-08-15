@@ -426,12 +426,37 @@ can (to the best of its knowledge) run.  Example::
       ]
   }
 
+Or for a specific runner::
+
+  python3 -m avocado.plugins.runners.exec_test capabilities | python -m json.tool
+  {
+      "runnables": [
+          "exec-test"
+      ],
+      "commands": [
+          "capabilities",
+          "runnable-run",
+          "runnable-run-recipe",
+          "task-run",
+          "task-run-recipe"
+      ],
+      "configuration_used": [
+          "run.keep_tmp",
+          "runner.exectest.exitcodes.skip"
+      ]
+  }
+
 Runner scripts
 --------------
 
 The primary runner implementation is a Python module that can be run,
 as shown before, with the ``avocado.core.nrunner`` module name.
 Additionally it's also available as the ``avocado-runner`` script.
+
+Specific runners are also available as ``avocado-runner-$kind``.  For
+instance, the runner for ``exec-test`` is available as
+``avocado-runner-exec-test``.  When using specific runners, the
+``-k|--kind`` parameter can be omitted.
 
 Runner Execution
 ----------------
