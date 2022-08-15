@@ -213,6 +213,7 @@ priority. For example the default order is [plugin1, plugin2, plugin3, plugin4]
 the ``plugins.$type.order`` is [plugin2, plugin4] then the real order will be
 [plugin2, plugin4, plugin1, plugin3]
 
+.. _new-test-type-plugin-example:
 
 New test type plugin example
 ============================

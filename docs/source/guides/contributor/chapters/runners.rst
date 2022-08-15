@@ -521,13 +521,15 @@ writing a new runner script in Python, you can benefit from the
 :class:`avocado.core.nrunner.runner.BaseRunner` class.
 
 The following is a complete example of a script that could be named
-``avocado-runner-foo`` that could act as a nrunner compatible runner
-for runnables with kind ``foo``.
+``avocado-runner-magic`` that could act as a nrunner compatible runner
+for runnables with kind ``magic``.
 
-.. literalinclude:: ../../../../../examples/nrunner/runners/avocado-runner-foo
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/runner.py
    :language: python
    :linenos:
 
+For a more complete explanation on the runner scripts and how they
+relate to plugins, please refer to :ref:`new-test-type-plugin-example`.
 
 Runners messages
 ----------------
