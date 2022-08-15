@@ -549,9 +549,11 @@ during runner run-time like logs, warnings, errors .etc and that
 information will be processed by the avocado core.
 
 The messages are standard Python dictionaries with a specific structure.
-You can create it by yourself based on the table :ref:`Supported message types`,
+You can create it by yourself based on the table :ref:`supported-message-types`,
 or you can use helper methods in :class:`avocado.core.utils.messages`
 which will generate them for you.
+
+.. _supported-message-types:
 
 Supported message types
 ~~~~~~~~~~~~~~~~~~~~~~~
