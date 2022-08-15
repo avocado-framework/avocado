@@ -487,7 +487,7 @@ You can run a "noop" runner with::
 
 You can run an "exec" runner with::
 
-  avocado-runner runnable-run -k exec -u /bin/sleep -a 3.0
+  avocado-runner runnable-run -k exec-test -u /bin/sleep -a 3.0
 
 You can run an "exec-test" runner with::
 
@@ -495,7 +495,7 @@ You can run an "exec-test" runner with::
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run -k python-unittest -u unittest.TestCase
+  avocado-runner runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
 
 Runnables from recipes
 ~~~~~~~~~~~~~~~~~~~~~~
