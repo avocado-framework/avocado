@@ -392,10 +392,39 @@ runnables.  A runner should implement a ``capabilities`` command
 that returns, among other info, a list of runnable kinds that it
 can (to the best of its knowledge) run.  Example::
 
-  python3 -m avocado.core.nrunner capabilities
-  {"runnables": ["noop", "exec", "exec-test", "python-unittest"],
-   "commands": ["capabilities", "runnable-run", "runnable-run-recipe",
-   "task-run", "task-run-recipe"]}
+  python3 -m avocado.core.nrunner capabilities | python3 -m json.tool
+  {
+      "runnables": [
+          "avocado-instrumented",
+          "dry-run",
+          "exec-test",
+          "noop",
+          "python-unittest",
+          "asset",
+          "package",
+          "sysinfo",
+          "tap"
+      ],
+      "commands": [
+          "capabilities",
+          "runnable-run",
+          "runnable-run-recipe",
+          "task-run",
+          "task-run-recipe"
+      ],
+      "configuration_used": [
+          "sysinfo.collect.locale",
+          "run.test_parameters",
+          "job.run.store_logging_stream",
+          "runner.exectest.exitcodes.skip",
+          "sysinfo.collect.installed_packages",
+          "sysinfo.collect.commands_timeout",
+          "run.keep_tmp",
+          "job.output.loglevel",
+          "datadir.paths.cache_dirs",
+          "core.show"
+      ]
+  }
 
 Runner scripts
 --------------
