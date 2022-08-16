@@ -103,6 +103,8 @@ these days a framework) to perform automated testing.
 %if (0%{?fedora} && 0%{?fedora} < 29) || 0%{?rhel}
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
+sed -e "s/'markupsafe<2.0.0'/'markupsafe'/" -i optional_plugins/html/setup.py
+sed -e "s/'jinja2<3.0.0'/'jinja2'/" -i optional_plugins/html/setup.py
 %py3_build
 pushd optional_plugins/html
 %py3_build
@@ -431,6 +433,8 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Tue Aug 16 2022 Cleber Rosa <crosa@redhat.com> - 82.1-2
 - Removed empty conditional block
+- Allow for any version of markupsafe and jinja2 to fulfill
+  requirement
 
 * Fri Oct  8 2021 Cleber Rosa <cleber@redhat.com> - 82.1-1
 - New release
