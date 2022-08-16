@@ -1,3 +1,4 @@
+import os
 import socket
 import unittest.mock
 
@@ -53,6 +54,8 @@ def get_all_local_addrs():
 
 class FreePort(unittest.TestCase):
 
+    @unittest.skipIf(os.getenv('TRAVIS'),
+                     'TRAVIS Environment is unsuitable for this test')
     @unittest.skipUnless(HAS_NETIFACES,
                          "netifaces library not available")
     def test_is_port_free(self):
