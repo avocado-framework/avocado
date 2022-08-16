@@ -297,8 +297,8 @@ def get_pci_info(pci_address):
     for line in output.splitlines():
         if line.strip():
             pci_info[line.split(":")[0].strip()] = (
-                    (":".join(line.split(":")[1:])).strip()
-                    )
+                ":".join(line.split(":")[1:])
+            ).strip()
     return pci_info
 
 
