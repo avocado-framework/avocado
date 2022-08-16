@@ -131,7 +131,7 @@ ifndef AVOCADO_OPTIONAL_PLUGINS_TESTS
 AVOCADO_OPTIONAL_PLUGINS_TESTS=$(patsubst %,%/tests/, $(AVOCADO_OPTIONAL_PLUGINS))
 endif
 
-ifeq ($(TRAVIS_CI_ARCH), arm64)
+ifdef TRAVIS
 PARALLEL_ARG=--nrunner-max-parallel-tasks=1
 else
 PARALLEL_ARG=
