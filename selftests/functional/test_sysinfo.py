@@ -4,7 +4,8 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, TestCaseTmpDir, skipOnLevelsInferiorThan
+from .. import (AVOCADO, TestCaseTmpDir, python_module_available,
+                skipOnLevelsInferiorThan)
 
 COMMANDS_TIMEOUT_CONF = """
 [sysinfo.collect]
@@ -66,6 +67,8 @@ class SysInfoTest(TestCaseTmpDir):
                                                              result)
         self.assertFalse(os.path.isdir(sysinfo_dir), msg)
 
+    @unittest.skipUnless(python_module_available('avocado-framework-plugin-result-html'),
+                         'HTML plugin not available')
     def test_sysinfo_html_output(self):
         html_output = "{}/output.html".format(self.tmpdir.name)
         cmd_line = ('{} run --html {} --job-results-dir {} '
