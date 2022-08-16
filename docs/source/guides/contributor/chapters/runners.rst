@@ -392,10 +392,59 @@ runnables.  A runner should implement a ``capabilities`` command
 that returns, among other info, a list of runnable kinds that it
 can (to the best of its knowledge) run.  Example::
 
-  python3 -m avocado.core.nrunner capabilities
-  {"runnables": ["noop", "exec", "exec-test", "python-unittest"],
-   "commands": ["capabilities", "runnable-run", "runnable-run-recipe",
-   "task-run", "task-run-recipe"]}
+  python3 -m avocado.core.nrunner capabilities | python3 -m json.tool
+  {
+      "runnables": [
+          "avocado-instrumented",
+          "dry-run",
+          "exec-test",
+          "noop",
+          "python-unittest",
+          "asset",
+          "package",
+          "sysinfo",
+          "tap"
+      ],
+      "commands": [
+          "capabilities",
+          "runnable-run",
+          "runnable-run-recipe",
+          "task-run",
+          "task-run-recipe"
+      ],
+      "configuration_used": [
+          "sysinfo.collect.locale",
+          "run.test_parameters",
+          "job.run.store_logging_stream",
+          "runner.exectest.exitcodes.skip",
+          "sysinfo.collect.installed_packages",
+          "sysinfo.collect.commands_timeout",
+          "run.keep_tmp",
+          "job.output.loglevel",
+          "datadir.paths.cache_dirs",
+          "core.show"
+      ]
+  }
+
+Or for a specific runner::
+
+  python3 -m avocado.plugins.runners.exec_test capabilities | python -m json.tool
+  {
+      "runnables": [
+          "exec-test"
+      ],
+      "commands": [
+          "capabilities",
+          "runnable-run",
+          "runnable-run-recipe",
+          "task-run",
+          "task-run-recipe"
+      ],
+      "configuration_used": [
+          "run.keep_tmp",
+          "runner.exectest.exitcodes.skip"
+      ]
+  }
 
 Runner scripts
 --------------
@@ -403,6 +452,11 @@ Runner scripts
 The primary runner implementation is a Python module that can be run,
 as shown before, with the ``avocado.core.nrunner`` module name.
 Additionally it's also available as the ``avocado-runner`` script.
+
+Specific runners are also available as ``avocado-runner-$kind``.  For
+instance, the runner for ``exec-test`` is available as
+``avocado-runner-exec-test``.  When using specific runners, the
+``-k|--kind`` parameter can be omitted.
 
 Runner Execution
 ----------------
@@ -433,7 +487,7 @@ You can run a "noop" runner with::
 
 You can run an "exec" runner with::
 
-  avocado-runner runnable-run -k exec -u /bin/sleep -a 3.0
+  avocado-runner runnable-run -k exec-test -u /bin/sleep -a 3.0
 
 You can run an "exec-test" runner with::
 
@@ -441,7 +495,7 @@ You can run an "exec-test" runner with::
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run -k python-unittest -u unittest.TestCase
+  avocado-runner runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
 
 Runnables from recipes
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -463,17 +517,19 @@ Writing new runner scripts
 
 Even though you can write runner scripts in any language, if you're
 writing a new runner script in Python, you can benefit from the
-:class:`avocado.core.nrunner.BaseRunnerApp` class and from the
-:class:`avocado.core.nrunner.BaseRunner` class.
+:class:`avocado.core.nrunner.app.BaseRunnerApp` class and from the
+:class:`avocado.core.nrunner.runner.BaseRunner` class.
 
 The following is a complete example of a script that could be named
-``avocado-runner-foo`` that could act as a nrunner compatible runner
-for runnables with kind ``foo``.
+``avocado-runner-magic`` that could act as a nrunner compatible runner
+for runnables with kind ``magic``.
 
-.. literalinclude:: ../../../../../examples/nrunner/runners/avocado-runner-foo
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/runner.py
    :language: python
    :linenos:
 
+For a more complete explanation on the runner scripts and how they
+relate to plugins, please refer to :ref:`new-test-type-plugin-example`.
 
 Runners messages
 ----------------
@@ -495,9 +551,11 @@ during runner run-time like logs, warnings, errors .etc and that
 information will be processed by the avocado core.
 
 The messages are standard Python dictionaries with a specific structure.
-You can create it by yourself based on the table :ref:`Supported message types`,
+You can create it by yourself based on the table :ref:`supported-message-types`,
 or you can use helper methods in :class:`avocado.core.utils.messages`
 which will generate them for you.
+
+.. _supported-message-types:
 
 Supported message types
 ~~~~~~~~~~~~~~~~~~~~~~~
