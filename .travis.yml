@@ -24,6 +24,7 @@ addons:
 
 install:
     - pip install -r requirements-selftests.txt
+    - python3 setup.py develop
 
 script:
     - make check
