@@ -47,7 +47,7 @@ class TaskStatusService:
             host, port = self.uri.split(":")
             port = int(port)
             if self.connection is None:
-                for _ in range(30):
+                for _ in range(600):
                     try:
                         self.connection = socket.create_connection((host, port))
                         break
@@ -55,7 +55,7 @@ class TaskStatusService:
                         LOG.warning(error)
                         time.sleep(1)
                 else:
-                    raise error
+                    self.connection = socket.create_connection((host, port))
         else:
             if self.connection is None:
                 self.connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
