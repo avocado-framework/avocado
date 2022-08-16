@@ -5,11 +5,7 @@ cache: pip
 arch: amd64
 
 python:
-    - "3.5"
-    - "3.6"
-    - "3.7"
     - "3.8"
-    - "nightly"
 
 env:
       AVOCADO_LOG_DEBUG=yes
@@ -22,75 +18,20 @@ addons:
     - hunspell-en-us
     - golang
 
-install:
-    - pip install -r requirements-selftests.txt
-    - python3 setup.py develop
-
 script:
-    - make check
+    - python3 -m avocado --show=all run selftests/functional/test_sysinfo.py:SysInfoTest.test_sysinfo_html_output
+    - cat ~/avocado/job-results/latest/test-results/1*/*
 
 jobs:
   include:
-    - name: "Code Coverage"
-      python: "3.8"
-      arch: amd64
-      env:
-        - SELF_CHECK_CONTINUOUS=yes
-        - CC_TEST_REPORTER_ID=387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6
-      install:
-        - pip install -r requirements-selftests.txt
-        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-        - chmod +x ./cc-test-reporter
-        - ./cc-test-reporter before-build
-      script:
-        - make develop && ./selftests/run_coverage
-      after_script:
-        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-    - python: "3.8"
-      arch: s390x
-      env:
-        - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis s390x builders currently shows:
-      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
-      # Disable pip cache dir temporarily
-      install:
-       - pip install --no-cache-dir -r requirements-selftests.txt
-    - python: "3.8"
-      arch: ppc64le
-      env:
-        - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis ppc64 builders currently shows:
-      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
-      # Disable pip cache dir temporarily
-      install:
-       - pip install --no-cache-dir -r requirements-selftests.txt
     - python: "3.8"
       arch: arm64
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis amd64 builders currently shows:
+      # Travis arm64 builders currently shows:
       # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-    - name: "Ad hoc checks on OS X"
-      os: osx
-      language: c
-      osx_image: xcode10.3
-      compiler: clang
-      addons:
-        homebrew:
-          packages:
-            - python
-          update: false
-      install:
-        - python3 -m pip install -r requirements-selftests.txt
-        - python3 setup.py develop --user
-      script:
-        - python3 -m avocado --help
-        - python3 -m avocado nlist --verbose selftests/unit/* selftests/functional/* selftests/*sh
-        - python3 -m unittest discover -v selftests.unit
-
-  allow_failures:
-    - python: "nightly"
-    - os: osx
+       - python3 setup.py develop
+       - python3 optional_plugins/html/setup.py develop
