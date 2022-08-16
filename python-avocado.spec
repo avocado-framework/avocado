@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 82.1
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -102,8 +102,6 @@ these days a framework) to perform automated testing.
 %build
 %if (0%{?fedora} && 0%{?fedora} < 29) || 0%{?rhel}
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
-%endif
-%if 0%{?rhel}
 %endif
 %py3_build
 pushd optional_plugins/html
@@ -431,6 +429,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Aug 16 2022 Cleber Rosa <crosa@redhat.com> - 82.1-2
+- Removed empty conditional block
+
 * Fri Oct  8 2021 Cleber Rosa <cleber@redhat.com> - 82.1-1
 - New release
 
