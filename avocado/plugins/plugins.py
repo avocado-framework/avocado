@@ -93,6 +93,10 @@ class Plugins(CLICmd):
                 dispatcher.RunnableRunnerDispatcher(),
                 "Plugins that run runnables (under a task and spawner) (runnable.runner): ",
             ),
+            (
+                dispatcher.CacheDispatcher(),
+                "Plugins that manipulates with avocado cache: ",
+            ),
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
