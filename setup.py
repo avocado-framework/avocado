@@ -452,6 +452,9 @@ if __name__ == "__main__":
                 "process = avocado.plugins.spawners.process:ProcessSpawner",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawner",
             ],
+            "avocado.plugins.cache": [
+                "vmimage = avocado.plugins.vmimage:VMimageCache",
+            ],
         },
         zip_safe=False,
         test_suite="selftests",
