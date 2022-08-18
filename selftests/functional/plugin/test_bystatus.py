@@ -21,5 +21,8 @@ class ByStatusTest(TestCaseTmpDir):
             status = test["status"]
             where = os.path.dirname(logdir)
             basename = os.path.basename(logdir)
-            link = os.path.join(where, "by-status", status, basename)
-            self.assertTrue(os.path.exists(os.readlink(link)))
+            status_dir = os.path.join(where, "by-status", status)
+            link = os.path.join(status_dir, basename)
+            sym_link = os.readlink(link)
+            self.assertTrue(os.path.exists(os.path.join(status_dir, sym_link)))
+            self.assertTrue(os.path.samefile(logdir, link))

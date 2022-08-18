@@ -39,4 +39,6 @@ class ByStatusLink(ResultEvents):
         link = state.get("logdir")
         where = os.path.join(os.path.dirname(link), "by-status", state.get("status"))
         os.makedirs(where, exist_ok=True)
-        os.symlink(link, os.path.join(where, os.path.basename(link)))
+        os.symlink(
+            os.path.relpath(link, where), os.path.join(where, os.path.basename(link))
+        )
