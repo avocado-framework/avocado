@@ -333,3 +333,35 @@ def get_all_environments_with_requirement(
             else:
                 requirements[row[0]] = [(row[1], row[2])]
     return requirements
+
+
+def get_all_requirements():
+    """Fetches all requirements from database.
+
+    :return: Dict with all environments which has requirements.
+
+    """
+    requirements = {}
+    if not os.path.exists(CACHE_DATABASE_PATH):
+        return requirements
+
+    sql = "SELECT * FROM requirement"
+
+    with sqlite3.connect(
+        CACHE_DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES
+    ) as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(sql)
+
+        for row in result.fetchall():
+            environment_type = row[0]
+            if environment_type not in requirements:
+                requirements[environment_type] = []
+            requirements[environment_type].append(
+                {
+                    "environment": row[1],
+                    "requirement_type": row[2],
+                    "requirement": row[3],
+                }
+            )
+    return requirements

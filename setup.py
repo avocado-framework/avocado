@@ -454,6 +454,7 @@ if __name__ == "__main__":
             ],
             "avocado.plugins.cache": [
                 "vmimage = avocado.plugins.vmimage:VMimageCache",
+                "requirement = avocado.plugins.requirement_cache:RequirementCache",
             ],
         },
         zip_safe=False,
