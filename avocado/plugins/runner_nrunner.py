@@ -65,7 +65,8 @@ class RunnerInit(Init):
                                  help_msg=help_msg)
 
         help_msg = ('URI for listing the status server. Usually '
-                    'a "HOST:PORT" string')
+                    'a "HOST:PORT" string. This is only effective '
+                    'if "status_server_auto" is disabled')
         settings.register_option(section=section,
                                  key='status_server_listen',
                                  default='127.0.0.1:8888',
@@ -74,7 +75,8 @@ class RunnerInit(Init):
 
         help_msg = ('URI for connecting to the status server, usually '
                     'a "HOST:PORT" string. Use this if your status server '
-                    'is in another host, or different port')
+                    'is in another host, or different port. This is only '
+                    'effective if "status_server_auto" is disabled')
         settings.register_option(section=section,
                                  key='status_server_uri',
                                  default='127.0.0.1:8888',
