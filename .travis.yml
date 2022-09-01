@@ -24,6 +24,8 @@ install:
 
 script:
     - make check
+    - pip freeze
+    - cat ~/avocado/job-results/latest/test-results/*/*
 
 jobs:
   include:
