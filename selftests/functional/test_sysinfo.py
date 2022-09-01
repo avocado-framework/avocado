@@ -81,8 +81,9 @@ class SysInfoTest(TestCaseTmpDir):
 
         # Try to find some strings on HTML
         self.assertNotEqual(output.find('Filesystem'), -1)
-        self.assertNotEqual(output.find('root='), -1)
         self.assertNotEqual(output.find('MemAvailable'), -1)
+        if not (os.getenv('TRAVIS') and os.getenv('TRAVIS_CPU_ARCH') == 'arm64'):
+            self.assertNotEqual(output.find('root='), -1)
 
     def run_sysinfo_interrupted(self, sleep, timeout, exp_duration):
         commands_path = os.path.join(self.tmpdir.name, "commands")
