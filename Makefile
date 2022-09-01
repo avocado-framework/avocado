@@ -140,9 +140,7 @@ endif
 
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado run --test-runner=nrunner $(PARALLEL_ARG) --ignore-missing-references -- selftests/*.sh selftests/jobs/* selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
-	PYTHON=$(PYTHON) $(PYTHON) selftests/job_api/test_features.py
-	selftests/check_tmp_dirs
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado run --test-runner=nrunner $(PARALLEL_ARG) --ignore-missing-references -- selftests/functional/test_sysinfo.py:SysInfoTest.test_sysinfo_html_output
 
 ifndef PYTHON_DEVELOP_CMD_ARGS
 PYTHON_DEVELOP_CMD_ARGS=setup.py develop $(PYTHON_DEVELOP_ARGS)
