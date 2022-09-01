@@ -140,7 +140,9 @@ endif
 
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado.core.nrunner runnable-run -k python-unittest -u selftests/functional/test_sysinfo.py:SysInfoTest.test_sysinfo_html_output
 	PYTHON=$(PYTHON) $(PYTHON) -m avocado run --test-runner=nrunner $(PARALLEL_ARG) --ignore-missing-references -- selftests/functional/test_sysinfo.py:SysInfoTest.test_sysinfo_html_output
+
 
 ifndef PYTHON_DEVELOP_CMD_ARGS
 PYTHON_DEVELOP_CMD_ARGS=setup.py develop $(PYTHON_DEVELOP_ARGS)
