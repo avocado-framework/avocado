@@ -1,0 +1,45 @@
+========
+82.2 LTS
+========
+
+The Avocado team is proud to present a minor release in the 82.0 LTS
+(Long Term Stability) series, version 81.2 LTS, is now available!
+
+This is the last minor release for the 82.x LTS series.  The 82lts
+branch will be frozen after this release.
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 82.x to 82.2
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==82.2
+
+To use the latest 82.x release, you can also always do::
+
+  $ pip install avocado-framework<83.0
+
+Changes from 82.1
+=================
+
+* Supports running (and has all selftests passing) under Python 3.11.
+
+* RPM package dependencies adjustments, such as markupsafe and jinja2.
+
+* Multiple Travis-CI adjustments and fixes, including bumping of distro
+  version used, arm64 (aarch64) workarounds, among others.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (82.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/82.1...82.2>`_.

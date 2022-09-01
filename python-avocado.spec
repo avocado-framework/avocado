@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      ee4335bb7e8a5aa70323f6685b5017f0df6f43a3
+        %global commit      c0778bd4e4cc0da76be4e26dc6802fd8f0444847
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20211011
+        %global commit_date 20220901
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 82.1
-Release: 2%{?gitrel}%{?dist}
+Version: 82.2
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -431,6 +431,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Sep  1 2022 Cleber Rosa <crosa@redhat.com> - 82.2-1
+- New release
+
 * Tue Aug 16 2022 Cleber Rosa <crosa@redhat.com> - 82.1-2
 - Removed empty conditional block
 - Allow for any version of markupsafe and jinja2 to fulfill
