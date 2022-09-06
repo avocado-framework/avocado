@@ -21,6 +21,7 @@ import multiprocessing
 import os
 import platform
 import random
+import tempfile
 from copy import deepcopy
 
 from avocado.core import nrunner
@@ -174,7 +175,11 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
-    def _get_requirements_runtime_tasks(self, runnable, prefix, job_id):
+    def __init__(self):
+        super().__init__()
+        self.status_server_dir = None
+
+    def _get_requirements_runtime_tasks(self, runnable, prefix, job_id, status_server_uri):
         if runnable.requirements is None:
             return
 
@@ -196,7 +201,7 @@ class Runner(RunnerInterface):
             # creates the requirement task
             requirement_task = nrunner.Task(requirement_runnable,
                                             identifier=task_id,
-                                            status_uris=[self.status_server.uri],
+                                            status_uris=[status_server_uri],
                                             category='requirement',
                                             job_id=job_id)
             # make sure we track the dependencies of a task
@@ -224,11 +229,13 @@ class Runner(RunnerInterface):
         # inject variant on runnable
         runnable.variant = dump_variant(variant)
 
+        status_server_uri = self._determine_status_server(test_suite,
+                                                          "nrunner.status_server_uri")
         # handles the test task
         task = nrunner.Task(runnable,
                             identifier=test_id,
                             known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                            status_uris=[self.status_server.uri],
+                            status_uris=[status_server_uri],
                             job_id=job_id)
         runtime_task = RuntimeTask(task)
         result.append(runtime_task)
@@ -237,7 +244,8 @@ class Runner(RunnerInterface):
         requirements_runtime_tasks = (
             self._get_requirements_runtime_tasks(runnable,
                                                  prefix,
-                                                 job_id))
+                                                 job_id,
+                                                 status_server_uri))
         # extend the list of tasks with the requirements runtime tasks
         if requirements_runtime_tasks is not None:
             for requirement_runtime_task in requirements_runtime_tasks:
@@ -278,15 +286,19 @@ class Runner(RunnerInterface):
                 job_id))
         return runtime_tasks
 
-    def _determine_status_server_uri(self, test_suite, job):
-        if test_suite.config.get('nrunner.status_server_auto'):
+    def _determine_status_server(self, test_suite, config_key):
+        if test_suite.config.get("nrunner.status_server_auto"):
             # no UNIX domain sockets on Windows
             if platform.system() != 'Windows':
-                return os.path.join(job.logdir, '.status_server.sock')
-        return test_suite.config.get('nrunner.status_server_listen')
+                if self.status_server_dir is None:
+                    self.status_server_dir = tempfile.TemporaryDirectory(
+                        prefix="avocado_"
+                    )
+                return os.path.join(self.status_server_dir.name, ".status_server.sock")
+        return test_suite.config.get(config_key)
 
     def _create_status_server(self, test_suite, job):
-        listen = self._determine_status_server_uri(test_suite, job)
+        listen = self._determine_status_server(test_suite, "nrunner.status_server_listen")
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
@@ -370,6 +382,8 @@ class Runner(RunnerInterface):
 
         job.result.end_tests()
         self.status_server.close()
+        if self.status_server_dir is not None:
+            self.status_server_dir.cleanup()
 
         # Update the overall summary with found test statuses, which will
         # determine the Avocado command line exit status
