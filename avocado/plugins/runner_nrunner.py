@@ -68,7 +68,10 @@ class RunnerInit(Init):
             help_msg=help_msg,
         )
 
-        help_msg = 'URI for listing the status server. Usually a "HOST:PORT" string'
+        help_msg = (
+            'URI for listing the status server. Usually a "HOST:PORT" string. '
+            'This is only effective if "status_server_auto" is disabled'
+        )
         settings.register_option(
             section=section,
             key="status_server_listen",
@@ -80,7 +83,8 @@ class RunnerInit(Init):
         help_msg = (
             "URI for connecting to the status server, usually "
             'a "HOST:PORT" string. Use this if your status server '
-            "is in another host, or different port"
+            "is in another host, or different port. This is only "
+            'effective if "status_server_auto" is disabled'
         )
         settings.register_option(
             section=section,
@@ -199,6 +203,10 @@ class Runner(RunnerInterface):
     name = "nrunner"
     description = "nrunner based implementation of job compliant runner"
 
+    def __init__(self):
+        super().__init__()
+        self.status_server_dir = None
+
     @staticmethod
     def _update_avocado_configuration_used_on_runnables(runnables, config):
         """Updates the config used on runnables with this suite's config values
@@ -211,18 +219,21 @@ class Runner(RunnerInterface):
         for runnable in runnables:
             runnable.config = Runnable.filter_runnable_config(runnable.kind, config)
 
-    def _determine_status_server_uri(self, test_suite):
-        # pylint: disable=W0201
-        self.status_server_dir = None
+    def _determine_status_server(self, test_suite, config_key):
         if test_suite.config.get("nrunner.status_server_auto"):
             # no UNIX domain sockets on Windows
             if platform.system() != "Windows":
-                self.status_server_dir = tempfile.TemporaryDirectory(prefix="avocado_")
+                if self.status_server_dir is None:
+                    self.status_server_dir = tempfile.TemporaryDirectory(
+                        prefix="avocado_"
+                    )
                 return os.path.join(self.status_server_dir.name, ".status_server.sock")
-        return test_suite.config.get("nrunner.status_server_listen")
+        return test_suite.config.get(config_key)
 
     def _create_status_server(self, test_suite, job):
-        listen = self._determine_status_server_uri(test_suite)
+        listen = self._determine_status_server(
+            test_suite, "nrunner.status_server_listen"
+        )
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
@@ -282,7 +293,7 @@ class Runner(RunnerInterface):
         graph = RuntimeTaskGraph(
             test_suite.get_test_variants(),
             test_suite.name,
-            self.status_server.uri,
+            self._determine_status_server(test_suite, "nrunner.status_server_uri"),
             job.unique_id,
         )
         # pylint: disable=W0201

@@ -100,9 +100,9 @@ class Task:
                            uniqueness aspect, it's also descriptive.  If an
                            identifier is not given, an automatically generated
                            one will be set.
-        :param status_uri: the URIs for the status servers that this task
-                           should send updates to.
-        :type status_uri: list
+        :param status_uris: the URIs for the status servers that this task
+                            should send updates to.
+        :type status_uris: list
         :param category: category of this task. Defaults to
                          :data:`TASK_DEFAULT_CATEGORY`.
         :type category: str
