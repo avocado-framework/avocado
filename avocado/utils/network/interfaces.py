@@ -595,3 +595,15 @@ class NetworkInterface:
         except Exception as ex:
             msg = f"Failed to ping. {ex}"
             raise NWException(msg)
+
+    def netmask_to_cidr(self, netmask):
+        """Function is used to check the netmask value and convert
+
+        it into short form (mask) of netmask values
+        Example : 255.255.255.0 = 24
+        255.255.252.0 = 22
+
+        :param netmask: Netmask value example 255.255.255.0
+        :return : Returns mask value of given netmask
+        """
+        return sum([bin(int(bits)).count("1") for bits in netmask.split(".")])
