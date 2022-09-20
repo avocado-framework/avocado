@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+
+from avocado.core.job import Job
+from avocado.core.suite import TestSuite
+
+# This bad location serves to test the "status_server_auto"
+# configuration
+status_server = '/path/to/a/very/bad/non-existing/location'
+
+config = {
+    "run.test_runner": "nrunner",
+    "nrunner.status_server_auto": True,
+    "nrunner.status_server_listen": status_server,
+    "nrunner.status_server_uri": status_server,
+    "run.references": ["examples/tests/passtest.py"],
+}
+
+suite = TestSuite.from_config(config, name="1")
+with Job(config, [suite]) as j:
+    result = j.run()
+
+# Check that one test actually ran and results were recorded. The
+# test's success will be checked by the job execution result
+assert len(j.result.tests) == 1
+
+sys.exit(result)
