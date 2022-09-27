@@ -188,7 +188,7 @@ class RpmBackend(BaseBackend):
         :return path: build directory
         """
 
-        build_option = "-bp"
+        build_option = "-bc"
         if dest_path is not None:
             build_option += f" --define '_builddir {dest_path}'"
         else:
