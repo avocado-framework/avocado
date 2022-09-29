@@ -87,6 +87,18 @@ distro: !mux
         version: 15.2
       15.3:
         version: 15.3
+  freebsd:
+    name: freebsd
+    version: !mux
+      13.0:
+        version: 13.0
+      12.2:
+        version: 12.2
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    !filter-out : /run/architectures/ppc64le
+    !filter-out : /run/architectures/s390x
 
 architectures: !mux
   arm:
