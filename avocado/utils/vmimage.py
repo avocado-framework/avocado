@@ -451,6 +451,54 @@ class CirrOSImageProvider(ImageProviderBase):
         self.image_pattern = "cirros-{version}-{arch}-disk.img$"
 
 
+class FreeBSDImageProvider(ImageProviderBase):
+    """
+    FreeBSD Image Provider
+    """
+
+    name = "FreeBSD"
+
+    def __init__(self, version="[0-9]+.[0-9]", build=None, arch=DEFAULT_ARCH):
+        # FreeBSD uses 'amd64' instead of 'x86_64'
+        if arch == "x86_64":
+            arch = "amd64"
+
+        super().__init__(version + "-RELEASE", build, arch)
+        self.url_versions = (
+            "http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/VM-IMAGES/"
+        )
+        self.url_images = self.url_versions + "{version}-RELEASE/{arch}/Latest/"
+
+        arch2 = ""
+        if arch == "aarch64":
+            arch2 = "arm64-"
+        elif arch == "riscv64":
+            arch2 = "riscv-"
+        self.image_pattern = (
+            "FreeBSD-(?P<version>{version})-RELEASE-"
+            + arch2
+            + "(?P<arch>{arch}).qcow2.xz"
+        )
+
+    def get_best_version(self, versions):  # pylint: disable=W0221
+        """Return best (more recent) version"""
+        max_float = max([float(item) for item in versions])
+        return str(f"{max_float:2.1f}")
+
+    def get_versions(self):
+        """Return all available versions for the current parameters."""
+        parser = VMImageHtmlParser(self.version_pattern)
+        self._feed_html_parser(self.url_versions, parser)
+
+        resulting_versions = []
+        if parser.items:
+            for version in parser.items:
+                max_float = float(version.split("-")[0])
+                resulting_versions.append(str(f"{max_float:2.1f}"))
+
+        return resulting_versions
+
+
 class Image:
     def __init__(
         self,
