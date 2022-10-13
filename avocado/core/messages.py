@@ -16,6 +16,7 @@ import os
 import time
 
 from .nrunner import TASK_DEFAULT_CATEGORY
+from .output import LOG_UI
 from .test_id import TestID
 
 DEFAULT_LOG_FILE = 'debug.log'
@@ -75,6 +76,7 @@ class RunningMessageHandler(BaseMessageHandler):
                           'stdout': [StdoutMessageHandler()],
                           'stderr': [StderrMessageHandler()],
                           'whiteboard': [WhiteboardMessageHandler()],
+                          'output': [OutputMessageHandler()],
                           'file': [FileMessageHandler()]}
 
     def process_message(self, message, task, job):
@@ -413,3 +415,30 @@ class FileMessageHandler(BaseRunningMessageHandler):
             os.makedirs(os.path.dirname(file), exist_ok=True)
         self._save_message_to_file(filename, message['log'], task,
                                    message.get('encoding', None))
+
+
+class OutputMessageHandler(BaseRunningMessageHandler):
+    """
+    Handler for displaying messages in UI.
+
+    It will show the message content in avocado UI.
+
+    :param status: 'running'
+    :param type: 'output'
+    :param log: output message
+    :type log: bytes
+    :param encoding: optional value for decoding messages
+    :type encoding: str
+    :param time: Time stamp of the message
+    :type time: float
+
+    example: {'status': 'running', 'type': 'output',
+             'log': 'this is the output', 'time': 18405.55351474}
+    """
+
+    def handle(self, message, task, job):
+        encoding = message.get('encoding', 'utf-8')
+        output = message['log'].decode(encoding)
+        task_id = TestID.from_identifier(task.identifier)
+        output = "%s: %s" % (task_id, output)
+        LOG_UI.debug(output)
