@@ -144,3 +144,8 @@ class SpawnerDispatcher(EnabledExtensionManager):
 class RunnableRunnerDispatcher(EnabledExtensionManager):
     def __init__(self):
         super().__init__("avocado.plugins.runnable.runner")
+
+
+class CacheDispatcher(EnabledExtensionManager):
+    def __init__(self):
+        super().__init__("avocado.plugins.cache")

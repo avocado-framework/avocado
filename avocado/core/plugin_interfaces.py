@@ -451,3 +451,17 @@ class RunnableRunner(Plugin):
         :param runnable: a Runnable instance that describes what is to be run
         :type runnable: :class:`avocado.core.nrunner.Runnable`
         """
+
+
+class Cache(Plugin):
+    """Plugin for manipulating with cache interface"""
+
+    @abc.abstractmethod
+    def list(self):
+        """List all cache entries
+
+        Creates list of cache entries which represents current cache state.
+
+        :return: Human-readable list of entries which will be printed to console.
+        :rtype: str
+        """

@@ -4,7 +4,7 @@ import re
 
 from avocado.core import exit_codes, output
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import Cache, CLICmd
 from avocado.core.settings import settings
 from avocado.utils import astring, vmimage
 
@@ -99,8 +99,7 @@ def display_images_list(images):
         output.TERM_SUPPORT.header_str("Architecture"),
         output.TERM_SUPPORT.header_str("File"),
     )
-    for line in astring.iter_tabular_output(image_matrix, header=header, strip=True):
-        LOG_UI.debug(line)
+    return astring.tabular_output(image_matrix, header=header, strip=True)
 
 
 class VMimage(CLICmd):
@@ -160,7 +159,7 @@ class VMimage(CLICmd):
         subcommand = config.get("vmimage_subcommand")
         if subcommand == "list":
             images = list_downloaded_images()
-            display_images_list(images)
+            LOG_UI.debug(display_images_list(images))
         elif subcommand == "get":
             name = config.get("vmimage.get.distro")
             version = config.get("vmimage.get.version")
@@ -171,5 +170,15 @@ class VMimage(CLICmd):
                 LOG_UI.debug("The requested image could not be downloaded")
                 return exit_codes.AVOCADO_FAIL
             LOG_UI.debug("The image was downloaded:")
-            display_images_list([image])
+            LOG_UI.debug(display_images_list([image]))
         return exit_codes.AVOCADO_ALL_OK
+
+
+class VMimageCache(Cache):
+
+    name = "vmimage"
+    description = "Provides VM images acquired from official repositories"
+
+    def list(self):
+        images = list_downloaded_images()
+        return display_images_list(images)

@@ -394,6 +394,7 @@ if __name__ == "__main__":
                 "assets = avocado.plugins.assets:Assets",
                 "jobs = avocado.plugins.jobs:Jobs",
                 "replay = avocado.plugins.replay:Replay",
+                "cache = avocado.plugins.cache:Cache",
             ],
             "avocado.plugins.job.prepost": [
                 "jobscripts = avocado.plugins.jobscripts:JobScripts",
@@ -450,6 +451,10 @@ if __name__ == "__main__":
             "avocado.plugins.spawner": [
                 "process = avocado.plugins.spawners.process:ProcessSpawner",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawner",
+            ],
+            "avocado.plugins.cache": [
+                "vmimage = avocado.plugins.vmimage:VMimageCache",
+                "requirement = avocado.plugins.requirement_cache:RequirementCache",
             ],
         },
         zip_safe=False,
