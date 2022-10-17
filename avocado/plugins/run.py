@@ -100,34 +100,11 @@ class Run(CLICmd):
             short_arg="-p",
         )
 
-        help_msg = (
-            "Selects the runner implementation from one of the "
-            "installed and active implementations.  You can run "
-            '"avocado plugins" and find the list of valid runners '
-            'under the "Plugins that run test suites on a job '
-            '(runners) section.  Defaults to "nrunner", which is '
-            "the new runner and only runner supported at this moment. "
-        )
         settings.add_argparser_to_option(
-            namespace="run.test_runner",
+            namespace="run.suite_runner",
             parser=parser,
             long_arg="--suite-runner",
             metavar="SUITE_RUNNER",
-            help_msg=help_msg,
-        )
-
-        help_msg = (
-            "This option name is currently DEPRECATED and will be "
-            "removed on Avocado 100.0 and later.  Please use "
-            '"--suite-runner" instead.'
-        )
-        settings.add_argparser_to_option(
-            namespace="run.test_runner",
-            parser=parser,
-            long_arg="--test-runner",
-            metavar="TEST_RUNNER",
-            help_msg=help_msg,
-            allow_multiple=True,
         )
 
         help_msg = "Instead of running the test only list them and log their params."

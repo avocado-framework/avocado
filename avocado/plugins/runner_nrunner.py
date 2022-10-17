@@ -29,8 +29,7 @@ from avocado.core.messages import MessageHandler
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
-from avocado.core.plugin_interfaces import CLI, Init
-from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.plugin_interfaces import CLI, Init, SuiteRunner
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
@@ -277,7 +276,7 @@ class RunnerCLI(CLI):
         pass
 
 
-class Runner(RunnerInterface):
+class Runner(SuiteRunner):
 
     name = "nrunner"
     description = "nrunner based implementation of job compliant runner"

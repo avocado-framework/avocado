@@ -82,7 +82,7 @@ Options for subcommand `run` (`avocado run --help`)::
                             This option format must be given in the NAME=VALUE
                             format, and may be given any number of times, or per
                             parameter.
-      --test-runner TEST_RUNNER
+      --suite-runner SUITE_RUNNER
                             Selects the runner implementation from one of the
                             installed and active implementations.  You can run
                             "avocado plugins" and find the list of valid runners
