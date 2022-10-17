@@ -183,49 +183,26 @@ Options for subcommand `run` (`avocado run --help`)::
 
     nrunner specific options:
       --shuffle             Shuffle the tasks to be executed
-      --nrunner-shuffle     This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            shuffle" instead.
       --status-server-disable-auto
                             If the status server should automatically choose a
                             "status_server_listen" and "status_server_uri"
                             configuration. Default is to auto configure a status
                             server.
-      --nrunner-status-server-disable-auto
-                            This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            status-server-disable-auto instead.
       --status-server-listen HOST_PORT
                             URI where status server will listen on. Usually a
                             "HOST:PORT" string. This is only effective if
                             "status_server_auto" is disabled
-      --nrunner-status-server-listen HOST_PORT
-                            This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            status-server-listen" instead.
       --status-server-uri HOST_PORT
                             URI for connecting to the status server, usually a
                             "HOST:PORT" string. Use this if your status server is
                             in another host, or different port. This is only
                             effective if "status_server_auto" is disabled
-      --nrunner-status-server-uri HOST_PORT
-                            This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            status-server-uri" instead.
       --max-parallel-tasks NUMBER_OF_TASKS
                             Number of maximum number tasks running in parallel.
                             You can disable parallel execution by setting this to
                             1. Defaults to the amount of CPUs on this machine.
-      --nrunner-max-parallel-tasks NUMBER_OF_TASKS
-                            This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            max-parallel-tasks" instead.
       --spawner SPAWNER     Spawn tasks in a specific spawner. Available spawners:
                             'process' and 'podman'
-      --nrunner-spawner SPAWNER
-                            This option is currently DEPRECATED and will not be
-                            available on Avocado 100.0 and later. Please use "--
-                            spawner" instead.
 
     podman spawner specific options:
       --spawner-podman-bin PODMAN_BIN

@@ -204,7 +204,7 @@ class Jobs(CLICmd):
 
         spawners = {"process": ProcessSpawner, "podman": PodmanSpawner}
 
-        spawner_name = config_data.get("nrunner.spawner")
+        spawner_name = config_data.get("run.spawner")
         spawner = spawners.get(spawner_name)
 
         if spawner is None:
@@ -246,7 +246,7 @@ class Jobs(CLICmd):
         data = {
             "JOB ID": job_id,
             "JOB LOG": results_data.get("debuglog"),
-            "SPAWNER": config_data.get("nrunner.spawner", "unknown"),
+            "SPAWNER": config_data.get("run.spawner", "unknown"),
         }
 
         # We could improve this soon with more data and colors

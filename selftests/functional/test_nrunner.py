@@ -30,8 +30,8 @@ class NRunnerFeatures(unittest.TestCase):
                 "/bin/true",
             ],
             "run.failfast": True,
-            "nrunner.shuffle": False,
-            "nrunner.max_parallel_tasks": 1,
+            "run.shuffle": False,
+            "run.max_parallel_tasks": 1,
         }
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 9)

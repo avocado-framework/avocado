@@ -373,7 +373,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "assert": True,
                 "reference": ["/bin/false", "/bin/true"],
                 "exit_code": 9,
-                "extra_job_config": {"nrunner.max_parallel_tasks": 1},
+                "extra_job_config": {"run.max_parallel_tasks": 1},
             },
             {
                 "namespace": "run.ignore_missing_references",
