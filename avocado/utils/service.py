@@ -427,6 +427,8 @@ def get_name_of_init(run=process.run):
                 return os.path.basename(init)
     else:
         output = run("readlink /proc/1/exe").stdout.strip()
+        if isinstance(output, bytes):
+            output = output.decode(encoding="utf-8")
         return os.path.basename(output)
 
 
