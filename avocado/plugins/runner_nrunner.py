@@ -69,8 +69,8 @@ class RunnerInit(Init):
         )
 
         help_msg = (
-            'URI for listing the status server. Usually a "HOST:PORT" string. '
-            'This is only effective if "status_server_auto" is disabled'
+            'URI where status server will listen on. Usually a "HOST:PORT" '
+            'string. This is only effective if "status_server_auto" is disabled'
         )
         settings.register_option(
             section=section,
