@@ -154,6 +154,7 @@ def get_pci_class_name(pci_address):
         "0108": "nvme",
         "0280": "net",
         "0207": "net",
+        "0c03": "usb",
     }
     pci_class_id = get_pci_prop(pci_address, "Class")
     if pci_class_id not in pci_class_dic:
