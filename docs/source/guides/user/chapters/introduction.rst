@@ -101,10 +101,10 @@ soon as possible.
 Due to our current runner architecture, tests are executed in parallel by
 default.  The ``--failfast`` option work on the best effort to cancel tests
 that have not started yet. To replicate the same behavior as the legacy runner,
-use ``--nrunner-max-parallel-tasks=1`` to limit the number of tasks executed in
+use ``--max-parallel-tasks=1`` to limit the number of tasks executed in
 parallel::
 
-    $ avocado run --failfast --nrunner-max-parallel-tasks=1 /bin/true /bin/false /bin/true /bin/true
+    $ avocado run --failfast --max-parallel-tasks=1 /bin/true /bin/false /bin/true /bin/true
     JOB ID     : 76bfe0e5cfa5efac3ab6881ee501cc5d4b69f913
     JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.41-76bfe0e/job.log
      (1/4) /bin/true: STARTED

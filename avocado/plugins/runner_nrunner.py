@@ -69,8 +69,8 @@ class RunnerInit(Init):
         )
 
         help_msg = (
-            'URI for listing the status server. Usually a "HOST:PORT" string. '
-            'This is only effective if "status_server_auto" is disabled'
+            'URI where status server will listen on. Usually a "HOST:PORT" '
+            'string. This is only effective if "status_server_auto" is disabled'
         )
         settings.register_option(
             section=section,
@@ -155,43 +155,122 @@ class RunnerCLI(CLI):
         settings.add_argparser_to_option(
             namespace="nrunner.shuffle",
             parser=parser,
+            long_arg="--shuffle",
+            action="store_true",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--shuffle" instead.'
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.shuffle",
+            parser=parser,
             long_arg="--nrunner-shuffle",
             action="store_true",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
         settings.add_argparser_to_option(
             namespace="nrunner.status_server_auto",
             parser=parser,
+            long_arg="--status-server-disable-auto",
+            action="store_false",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--status-server-disable-auto '
+            "instead."
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.status_server_auto",
+            parser=parser,
             long_arg="--nrunner-status-server-disable-auto",
             action="store_false",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
         settings.add_argparser_to_option(
             namespace="nrunner.status_server_listen",
             parser=parser,
+            long_arg="--status-server-listen",
+            metavar="HOST_PORT",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--status-server-listen" instead.'
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.status_server_listen",
+            parser=parser,
             long_arg="--nrunner-status-server-listen",
             metavar="HOST_PORT",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
         settings.add_argparser_to_option(
             namespace="nrunner.status_server_uri",
             parser=parser,
+            long_arg="--status-server-uri",
+            metavar="HOST_PORT",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--status-server-uri" instead.'
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.status_server_uri",
+            parser=parser,
             long_arg="--nrunner-status-server-uri",
             metavar="HOST_PORT",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
         settings.add_argparser_to_option(
             namespace="nrunner.max_parallel_tasks",
             parser=parser,
+            long_arg="--max-parallel-tasks",
+            metavar="NUMBER_OF_TASKS",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--max-parallel-tasks" instead.'
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.max_parallel_tasks",
+            parser=parser,
             long_arg="--nrunner-max-parallel-tasks",
             metavar="NUMBER_OF_TASKS",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
         settings.add_argparser_to_option(
             namespace="nrunner.spawner",
             parser=parser,
+            long_arg="--spawner",
+            metavar="SPAWNER",
+        )
+
+        help_msg = (
+            "This option is currently DEPRECATED and will not be available "
+            'on Avocado 100.0 and later.  Please use "--spawner" instead.'
+        )
+        settings.add_argparser_to_option(
+            namespace="nrunner.spawner",
+            parser=parser,
             long_arg="--nrunner-spawner",
             metavar="SPAWNER",
+            help_msg=help_msg,
+            allow_multiple=True,
         )
 
     def run(self, config):
