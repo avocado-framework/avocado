@@ -20,7 +20,7 @@ class ReadtheDocs(Test):
                    'User-Agent': ''}
 
         url = ('https://readthedocs.org/api/v3/projects/avocado-framework/'
-               'builds/?limit=1&?version=latest')
+               'builds/?limit=1&?version=92lts')
 
         http_request = urllib.request.Request(url, headers=headers)
         http_response = urllib.request.urlopen(http_request)
