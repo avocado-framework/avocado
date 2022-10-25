@@ -58,9 +58,8 @@ jobs:
     name: Check the right RPM packages are available in COPR
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: 'master'
+      - name: Check out repository code
+        uses: actions/checkout@v2
       - name: Check the right RPM packages are available
         run: ./selftests/pre_release/tests/check-copr-rpm-version.sh
 
