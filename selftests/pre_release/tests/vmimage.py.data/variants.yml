@@ -54,6 +54,10 @@ distro: !mux
         version: 33
       34:
         version: 34
+      35:
+        version: 35
+      36:
+        version: 36
   ubuntu:
     name: ubuntu
     !filter-out : /run/architectures/arm
