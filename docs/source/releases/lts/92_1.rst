@@ -1,0 +1,49 @@
+.. _lts_92_0:
+
+========
+92.1 LTS
+========
+
+The Avocado team is proud to present a minor release in the 92.0 LTS
+(Long Term Stability) series, version 92.1 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 92.0 to 92.1
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==92.1
+
+To use the latest 92.x release, you can also always do::
+
+  $ pip install avocado-framework<93.0
+
+Changes since 92.0
+==================
+
+* Third-party libraries log messages are no longer being saved on a
+  test's "debug.log"
+
+* The independence of the status server "uri" and "listen"
+  configurations was not being respected, making a configuration with
+  different addresses impossible, and that is now fixed.
+
+* The "--show" option is now working as expected, allowing users to
+  specify custom loggers to be shown on the UI.
+
+* Many fixes to the CI jobs.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (92.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/92.0...92.1>`_.
