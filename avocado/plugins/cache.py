@@ -36,6 +36,13 @@ class Cache(CLICmd):
                 cache_list = "\t" + "\t".join(plugin.obj.list().splitlines(True))
                 LOG_UI.debug("%s\n", cache_list)
 
+    def _clear_plugin_entries(self, plugins, selected_plugins):
+        if not selected_plugins:
+            selected_plugins = [p.name for p in plugins]
+        for plugin in plugins:
+            if plugin.name in selected_plugins:
+                plugin.obj.clear()
+
     def configure(self, parser):
         """
         Add the subparser for the cache action.
@@ -66,9 +73,34 @@ class Cache(CLICmd):
             allow_multiple=True,
         )
 
+        clear_help_msg = (
+            "Clear avocado cache, you can specify which part of cache"
+            " will be removed."
+        )
+        clear_parser = subcommands.add_parser("clear", help=clear_help_msg)
+        settings.register_option(
+            section="cache",
+            key="clear",
+            key_type=list,
+            default=[],
+            help_msg=clear_help_msg,
+        )
+
+        settings.add_argparser_to_option(
+            namespace="cache.clear",
+            nargs="*",
+            metavar="CACHE_TYPE",
+            parser=clear_parser,
+            long_arg=None,
+            positional_arg=True,
+            allow_multiple=True,
+        )
+
     def run(self, config):
         dispatcher = CacheDispatcher()
         plugins = dispatcher.get_extentions_by_priority()
         subcommand = config.get("cache_subcommand")
         if subcommand == "list":
             self._list_plugin_entries(plugins, config.get("cache.list"))
+        if subcommand == "clear":
+            self._clear_plugin_entries(plugins, config.get("cache.clear"))

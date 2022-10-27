@@ -40,7 +40,7 @@ with `avocado cache list`.
         dependency metadata in cache won't be updated, because of this, the resolution
         behavior is undefined and will probably crash.
         If such a change is made to the environment, it's recommended to clear 
-        the dependencies cache file.
+        the dependencies cache with `$avocado cache clear`.
 
 Defining a test dependency
 ---------------------------
