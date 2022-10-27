@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 
 from avocado.core import exit_codes, output
 from avocado.core.output import LOG_UI
@@ -182,3 +183,9 @@ class VMimageCache(Cache):
     def list(self):
         images = list_downloaded_images()
         return display_images_list(images)
+
+    def clear(self):
+        images = list_downloaded_images()
+        for image in images:
+            if os.path.exists(image["file"]):
+                shutil.rmtree(os.path.dirname(image["file"]))

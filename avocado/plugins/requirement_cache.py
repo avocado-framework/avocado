@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2022
 # Author: Jan Richter <jarichte@redhat.com>
 
+import os
+
 from avocado.core import output
 from avocado.core.dependencies.requirements.cache.backends import sqlite
 from avocado.core.plugin_interfaces import Cache
@@ -49,3 +51,7 @@ class RequirementCache(Cache):
             )
             requirement_list += "\n\n"
         return requirement_list
+
+    def clear(self):
+        if os.path.exists(sqlite.CACHE_DATABASE_PATH):
+            os.remove(sqlite.CACHE_DATABASE_PATH)

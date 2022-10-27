@@ -24,7 +24,8 @@ it will be reused by other tests.
 
 Also, the dependency will stay in cache after the Avocado run, so the second
 run of the tests will use dependencies from cache, which will make tests more
-efficient.
+efficient. If you want to know the sate of cache, you can use cache interface
+with `$avocado cache list`.
 
 .. warning::
 
@@ -32,7 +33,7 @@ efficient.
         (packages being uninstalled, podman images removed, etc), the 
         dependency resolution behavior is undefined and will probably crash. 
         If such a change is made to the environment, it's recommended to clear 
-        the dependencies cache file.
+        the dependencies cache with `$avocado cache clear`.
 
 Defining a test dependency
 ---------------------------

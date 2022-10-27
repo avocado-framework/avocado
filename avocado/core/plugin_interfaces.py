@@ -465,3 +465,10 @@ class Cache(Plugin):
         :return: Human-readable list of entries which will be printed to console.
         :rtype: str
         """
+
+    @abc.abstractmethod
+    def clear(self):
+        """Clear all cache entries
+
+        It removes every cache entire.
+        """
