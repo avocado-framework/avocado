@@ -35,7 +35,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         # When running Avocado Python modules, the interpreter on the new
         # process needs to know where Avocado can be found.
         env = os.environ.copy()
-        env["PYTHONPATH"] = ":".join(p for p in sys.path)
+        env["PYTHONPATH"] = ":".join(p for p in set(sys.path))
 
         # pylint: disable=E1133
         try:

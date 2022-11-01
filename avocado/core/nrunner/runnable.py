@@ -434,7 +434,7 @@ class Runnable:
         # When running Avocado Python modules, the interpreter on the new
         # process needs to know where Avocado can be found.
         env = os.environ.copy()
-        env["PYTHONPATH"] = ":".join(p for p in sys.path)
+        env["PYTHONPATH"] = ":".join(p for p in set(sys.path))
 
         standalone_executable_cmd = [f"avocado-runner-{kind}"]
         if Runnable.is_kind_supported_by_runner_command(
