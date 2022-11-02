@@ -835,9 +835,11 @@ the test parameters, as shown below.
 
 
 The YAML file defines a test parameter ``timeout`` which overrides
-the default test timeout before the runner ends the test forcefully by
-sending a class:`signal.SIGTERM` to the test, making it raise a
-:class:`avocado.core.exceptions.TestTimeoutError`.
+the default test timeout. When the timeout is reached, the spawner
+will terminate the test runner task, making it raise a
+:class:`avocado.core.exceptions.TestInterruptedError`. The termination
+process is specific to spawner implementation, for more information see
+:class:`avocado.core.plugin_interfaces.Spawner.terminate_task`.
 
 
 Skipping Tests
