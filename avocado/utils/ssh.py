@@ -205,7 +205,7 @@ class Session:
         """
         return self._ssh_cmd(self.DEFAULT_OPTIONS, ("-q",), command)
 
-    def cmd(self, command, ignore_status=True):
+    def cmd(self, command, ignore_status=True, timeout=None):
         """
         Runs a command over the SSH session
 
@@ -222,7 +222,7 @@ class Session:
         """
         try:
             return process.run(
-                self.get_raw_ssh_command(command), ignore_status=ignore_status
+                self.get_raw_ssh_command(command), ignore_status=ignore_status, timeout=timeout
             )
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
