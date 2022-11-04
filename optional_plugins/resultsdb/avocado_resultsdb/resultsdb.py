@@ -35,7 +35,7 @@ class ResultsdbResultEvent(ResultEvents):
     name = "resultsdb"
     description = "Resultsdb result support"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0231
         self.rdbapi = None
         resultsdb_api_url = config.get("plugins.resultsdb.api_url")
         if resultsdb_api_url is not None:

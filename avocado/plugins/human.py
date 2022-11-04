@@ -54,7 +54,7 @@ class Human(ResultEvents):
     name = "human"
     description = "Human Interface UI"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0231
         stdout_claimed_by = config.get("stdout_claimed_by", None)
         self.owns_stdout = not stdout_claimed_by
         self.omit_statuses = config.get("human_ui.omit.statuses")

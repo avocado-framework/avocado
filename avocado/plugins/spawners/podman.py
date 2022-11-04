@@ -101,7 +101,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     _PYTHON_VERSIONS_CACHE = {}
 
-    def __init__(self, config=None, job=None):
+    def __init__(self, config=None, job=None):  # pylint: disable=W0231
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
 

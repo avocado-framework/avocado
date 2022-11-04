@@ -28,7 +28,7 @@ class TestsTmpDir(JobPre, JobPost):
     name = "teststmpdir"
     description = "Creates a temporary directory for tests consumption"
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=W0231
         self._varname = test.COMMON_TMPDIR_NAME
         self._dirname = None
 

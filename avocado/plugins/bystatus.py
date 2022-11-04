@@ -20,7 +20,7 @@ from avocado.core.plugin_interfaces import ResultEvents
 class ByStatusLink(ResultEvents):
     description = "Creates symlinks on file system grouped by status"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0231
         pass
 
     def pre_tests(self, job):

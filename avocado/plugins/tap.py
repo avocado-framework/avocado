@@ -54,7 +54,7 @@ class TAPResult(ResultEvents):
     name = "tap"
     description = "TAP - Test Anything Protocol results"
 
-    def __init__(self, config):  # pylint: disable=W0613
+    def __init__(self, config):  # pylint: disable=W0613, W0231
         self.__logs = []
         self.__open_files = []
         self.config = config

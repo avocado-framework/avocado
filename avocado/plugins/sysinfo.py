@@ -155,7 +155,7 @@ class SysInfoJob(JobPreTests, JobPostTests):
     name = "sysinfo"
     description = "Collects system information before/after the job is run"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0231
         self.sysinfo = None
         self.sysinfo_enabled = config.get("sysinfo.collect.enabled")
 
