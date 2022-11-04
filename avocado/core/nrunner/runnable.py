@@ -245,12 +245,12 @@ class Runnable:
         command = Runnable.pick_runner_command(kind)
         if command is not None:
             whole_config = settings.as_dict()
-            whole_config.update(config)
             command = " ".join(command)
             configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
             filtered_config = {}
             for config_item in configuration_used:
-                filtered_config[config_item] = whole_config.get(config_item)
+                filtered_config[config_item] = config.get(config_item,
+                                                          whole_config.get(config_item))
             return filtered_config
         else:
             raise ValueError(f"Unsupported kind of runnable: {kind}")
