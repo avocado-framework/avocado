@@ -29,6 +29,10 @@ while [ true ]; do
             shift
             CONFIGURE_ARGS=$1
             ;;
+        "--branch")
+            shift
+            BRANCH=$1
+            ;;
         "--path")
             shift
             KVM_UNIT_TEST=$1
@@ -38,11 +42,12 @@ while [ true ]; do
             WILDCARD="$1"
             ;;
         "-h"|"--help")
-            echo "Usage: $0 [-h] [--endian ENDIAN] [--configure-args KVM_UNIT_TEST_CONFIGURE_ARGS] [--path PATH] [--wildcard WILDCARD] [avocado arguments ...]"
+            echo "Usage: $0 [-h] [--endian ENDIAN] [--configure-args KVM_UNIT_TEST_CONFIGURE_ARGS] [--branch KVM_UNIT_TEST_BRANCH] [--path PATH] [--wildcard WILDCARD] [avocado arguments ...]"
             echo
             echo "  -h                  Show this help"
             echo "  --endian            Endian flag to kvm-unit-test configure"
             echo "  --configure-args    Arguments given to configure kvm-unit-tests"
+            echo "  --branch            Branch/tag of kvm-unit-tests to clone (default is master)"
             echo "  --path              Path to kvm-unit-test suite (default is tmp)"
             echo "  --wildcard          BASH Wildcard to select tests (by default all)"
             echo
@@ -74,9 +79,10 @@ setup_skip_exitcode()
 
 # Initialize directory and download kvm-unit-test if necessary
 [ "$KVM_UNIT_TEST" ] || { KVM_UNIT_TEST="$(mktemp -d)"; CLEAN_DIR=true; }
+[ -n "$BRANCH" ] || BRANCH="master"
 [ -d "$KVM_UNIT_TEST" ] || mkdir -p "$KVM_UNIT_TEST"
 cd "$KVM_UNIT_TEST"
-[ -f "configure" ] || git clone --depth 1 -q https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git . || exit
+[ -f "configure" ] || git clone --depth 1 -b $BRANCH -q https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git . || exit
 
 # Compile kvm-unit-test as standalone to get tests as separate files
 ./configure $ENDIAN $CONFIGURE_ARGS || { echo Fail to configure kvm-unit-test; exit -1; }
