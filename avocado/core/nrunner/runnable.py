@@ -507,9 +507,6 @@ class Runnable:
 
         This is related to the :data:`SpawnMethod.PYTHON_CLASS`
 
-        :param runners_registry: a registry with previously registered
-                                 runner classes, keyed by runnable kind
-        :param runners_registry: dict
         :returns: a class that inherits from :class:`BaseRunner`
         :raises: ValueError if kind there's no runner from kind of runnable
         """
