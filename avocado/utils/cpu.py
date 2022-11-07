@@ -19,7 +19,6 @@
 """
 Get information from the current's machine CPU.
 """
-
 import glob
 import logging
 import os
@@ -27,6 +26,8 @@ import platform
 import random
 import re
 import warnings
+
+from avocado.utils import genio
 
 #: Map vendor's name with expected string in /proc/cpuinfo.
 VENDORS_MAP = {
@@ -472,6 +473,43 @@ def get_pid_cpus(pid):
         except IOError:
             continue
     return list(cpus)
+
+
+def get_numa_node_has_cpus():
+    """
+    Get the list NUMA node numbers which has CPU's on the system,
+    if there is no CPU associated to NUMA node,Those NUMA node number
+    will not be appended to list.
+    :return: A list where NUMA node numbers only which has
+             CPU's - as elements of The list.
+    :rtype : List
+    """
+    cpu_path = "/sys/devices/system/node/has_cpu"
+    delim = ",", "-"
+    regex_pat = "|".join(map(re.escape, delim))
+    read_cpu_path = genio.read_file(cpu_path).rstrip("\n")
+    nodes_with_cpus = re.split(regex_pat, read_cpu_path)
+    return nodes_with_cpus
+
+
+def numa_nodes_with_assigned_cpus():
+    """
+    Get NUMA nodes with associated CPU's on the system.
+    :return: A dictionary,in which "NUMA node numbers" as key
+             and "NUMA node associated CPU's" as values.
+    :rtype : dictionary
+    """
+    numa_nodes_with_cpus = {}
+    for path in glob.glob("/sys/devices/system/node/node[0-9]*"):
+        node = int(re.search(r".node(\d+)$", path).group(1))
+        node_dir = os.path.join(path + "/")
+        pinned_cpus = []
+        for cpu_numbers in glob.glob(node_dir + "cpu[0-9]*"):
+            cpu = int(re.search(r".cpu(\d+)$", cpu_numbers).group(1))
+            if pinned_cpus is not None:
+                pinned_cpus.append(cpu)
+                numa_nodes_with_cpus[node] = sorted(pinned_cpus)
+    return numa_nodes_with_cpus
 
 
 def _deprecated(newfunc, oldfuncname):
