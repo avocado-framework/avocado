@@ -43,7 +43,7 @@ jobs:
       - name: Install avocado
         run: |
           sudo python3 -m pip install -r requirements-dev.txt
-          sudo python3 setup.py develop
+          python3 setup.py develop --user
       - name: Avocado pre-release job
         run: ./selftests/pre_release/jobs/pre_release.py
       - name: Save artifacts
