@@ -68,8 +68,6 @@ class Runnable:
     """
 
     def __init__(self, kind, uri, *args, config=None, **kwargs):
-        if config is None:
-            config = self.filter_runnable_config(kind, {})
         self.kind = kind
         #: The main reference to what needs to be run.  This is free
         #: form, but commonly set to the path to a file containing the
@@ -81,6 +79,8 @@ class Runnable:
         #: its interest in using them with
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self._config = {}
+        if config is None:
+            config = self.filter_runnable_config(kind, {})
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
@@ -170,18 +170,15 @@ class Runnable:
         :param config: A config dict with new values for Runnable.
         :type config: dict
         """
-        command = self.pick_runner_command(self.kind)
-        if command is not None:
-            command = " ".join(command)
-            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
-            if not set(configuration_used).issubset(set(config.keys())):
-                LOG.warning(
-                    "The runnable config should have only values "
-                    "essential for its runner. In the next version of "
-                    "avocado, this will raise a Value Error. Please "
-                    "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
-                    "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
-                )
+        configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
+        if not set(configuration_used).issubset(set(config.keys())):
+            LOG.warning(
+                "The runnable config should have only values "
+                "essential for its runner. In the next version of "
+                "avocado, this will raise a Value Error. Please "
+                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
+                "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
+            )
         self._config = config
 
     @classmethod
@@ -224,8 +221,28 @@ class Runnable:
         config = cls.filter_runnable_config(kind, config)
         return cls(kind, uri, *args, config=config, **kwargs)
 
-    @staticmethod
-    def filter_runnable_config(kind, config):
+    @classmethod
+    def get_configuration_used_by_kind(cls, kind):
+        """Returns the configuration used by a runner of a given kind
+
+        :param kind: Kind of runner which should use the configuration.
+        :type kind: str
+        :returns: the configuration used by a runner of a given kind
+        :rtype: list
+        """
+        configuration_used = []
+        klass = cls.pick_runner_class_from_entry_point_kind(kind)
+        if klass is not None:
+            configuration_used = klass.CONFIGURATION_USED
+        else:
+            command = Runnable.pick_runner_command(kind)
+            if command is not None:
+                command = " ".join(command)
+                configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
+        return configuration_used
+
+    @classmethod
+    def filter_runnable_config(cls, kind, config):
         """
         Returns only essential values for specific runner.
 
@@ -242,18 +259,13 @@ class Runnable:
                   based on STANDALONE_EXECUTABLE_CONFIG_USED
         :rtype: dict
         """
-        command = Runnable.pick_runner_command(kind)
-        if command is not None:
-            whole_config = settings.as_dict()
-            whole_config.update(config)
-            command = " ".join(command)
-            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
-            filtered_config = {}
-            for config_item in configuration_used:
-                filtered_config[config_item] = whole_config.get(config_item)
-            return filtered_config
-        else:
-            raise ValueError(f"Unsupported kind of runnable: {kind}")
+        whole_config = settings.as_dict()
+        filtered_config = {}
+        for config_item in cls.get_configuration_used_by_kind(kind):
+            filtered_config[config_item] = config.get(
+                config_item, whole_config.get(config_item)
+            )
+        return filtered_config
 
     def get_command_args(self):
         """
@@ -487,6 +499,24 @@ class Runnable:
         """
         return Runnable.pick_runner_command(self.kind, runners_registry)
 
+    @staticmethod
+    def pick_runner_class_from_entry_point_kind(kind):
+        """Selects a runner class from entry points based on kind.
+
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`.
+
+        :param kind: Kind of runner
+        :type kind: str
+        :returns: a class that inherits from :class:`BaseRunner` or None
+        """
+        namespace = "avocado.plugins.runnable.runner"
+        for ep in pkg_resources.iter_entry_points(namespace, kind):
+            try:
+                obj = ep.load()
+                return obj
+            except ImportError:
+                return
+
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.
 
@@ -494,22 +524,13 @@ class Runnable:
 
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
-        namespace = "avocado.plugins.runnable.runner"
-        for ep in pkg_resources.iter_entry_points(namespace, self.kind):
-            try:
-                obj = ep.load()
-                return obj
-            except ImportError:
-                return
+        return Runnable.pick_runner_class_from_entry_point_kind(self.kind)
 
     def pick_runner_class(self):
         """Selects a runner class from the registry based on kind.
 
         This is related to the :data:`SpawnMethod.PYTHON_CLASS`
 
-        :param runners_registry: a registry with previously registered
-                                 runner classes, keyed by runnable kind
-        :param runners_registry: dict
         :returns: a class that inherits from :class:`BaseRunner`
         :raises: ValueError if kind there's no runner from kind of runnable
         """
