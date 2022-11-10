@@ -1,0 +1,106 @@
+===============
+99.0 The Chosen
+===============
+
+The Avocado team is proud to present another release: Avocado 99.0,
+AKA "The Chosen", is now available!
+
+Release documentation: `Avocado 99.0
+<http://avocado-framework.readthedocs.io/en/99.0/>`_
+
+Users/Test Writers
+==================
+
+* Ansible modules can now be used as dependencies.  For instance,
+  instead of asking test writers to write code to say, create user
+  accounts that will be used during a test, a developer can simply use
+  ansible's ``user`` module.
+
+  Likewise, if a test needs a service installed or up and running:
+  instead of writing all that code, the test writer can describe that
+  dependency using the ``service`` ansible module.
+
+* A Podman image can now be treated as a dependecy.  This is currently
+  mostly useful to tests that will manually create containers, but
+  it's expected to also be leveraged by the podman spawner and suite
+  and job level dependencies in the near future.
+
+* A new type of plugin, ``Cache``, has been introduced and is
+  responsible for manipulating with cache, and it's representation
+  through the Avocado interface. It is currrently implemented for
+  the ``vmimage`` and ``requirements`` cache.
+
+* All nrunner functionality that is activated through the command line
+  by means of an option like ``--nrunner-`` are deprecated.  Options
+  without the ``--nrunner-`` prefix are already available.  In the
+  next Avocado version, only the command line options without the
+  ``--nrunner`` prefix will be available.  The same deprecation was
+  applied to the ``--test-runner`` option, and users are encouraged
+  to use ``--suite-runner`` instead.
+
+* Updates to the nrunner documentation, fixing a number of outdated
+  and incorrect information.
+
+Bug Fixes
+=========
+
+* A problem caused by times when a test is interrupted by timeout
+  before it even starts has been fixed.
+
+* Under specific versions of podman, when querying for information on
+  the available containers, while other container operations are running
+  will result in a "Failed getting information about container" error.
+  A workaround for that behavior has been applied.
+
+* The HTML report now contains an "ALL" selection for test types,
+  instead of an empty value.
+
+* :func:`avocado.utils.data_factory.make_dir_and_populate` would crash
+  because it used a string instead of bytes when writing to files.
+
+* :func:`avocado.utils.software_manager.backends.dpkg.list_files`
+  assumed having a string instead of bytes when splitting lines.
+
+* The independence of ``--nrunner-status-server-uri``
+  and ``--nrunner-status-server-listen`` was not being respected.
+  Because Tasks are being created with whatever is the current status
+  server URI (either determined automatically, or with the "listen"
+  config), the "uri" config went unused.  These issues are now fixed.
+
+* A situation where the ``PYTHONPATH`` environment variable would grow
+  for each test executed was fixed.
+
+* A major performance regression has been fixed, under which a
+  :class:`avocado.core.nrunner.runnable.Runnable` instantiation would
+  many times imply the execution of an ``avocado-runner-$kind``
+  command, was fixed.
+
+Internal Changes
+================
+
+* Testing for s390x and ppc64le were migrated from Travis-CI to Packit
+  (which runs tests during the package builds) because of reliability
+  issues.
+
+* Some nrunner related tests that were dropped because of the input
+  URI format for unittests changed, were adapted and reintroduced
+  because they are valid in covering some functionality.
+
+* The "exec-like" runners (``exec-test``, ``tap``, ``golang`` and
+  ``robot``) were all refactored and now share a lot more code.
+
+* Some skip conditions for tests related to ``iso9660`` and ``disk``
+  (because of issues in other projects and CI limitations) have been
+  lifted.
+
+* The static syntax checks, based on ``black``, will now print the
+  differences and use color output.
+
+* The version of macOS used on GitHub Actions was bumped from
+  ``macos-10.15`` to ``macos-11``.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/98.0...99.0>`_.
