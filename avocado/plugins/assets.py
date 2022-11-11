@@ -272,7 +272,8 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
                         module_path, klass_method = test.uri.split(":", 1)
                         klass, method = klass_method.split(".", 1)
                         candidate = (module_path, klass, method)
-                        candidates.append(candidate)
+                        if candidate not in candidates:
+                            candidates.append(candidate)
 
         for candidate in candidates:
             fetch_assets(*candidate, logger)
