@@ -274,12 +274,6 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
                         candidate = (module_path, klass, method)
                         candidates.append(candidate)
 
-                # fetch assets only on instrumented tests
-                elif isinstance(test[0], str):
-                    candidate = (test[1]["modulePath"], test[0], test[1]["methodName"])
-                    if candidate not in candidates:
-                        candidates.append(candidate)
-
         for candidate in candidates:
             fetch_assets(*candidate, logger)
 
