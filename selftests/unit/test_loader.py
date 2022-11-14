@@ -16,21 +16,14 @@ DEFAULT_NON_EXEC_MODE = (
 )
 
 
-AVOCADO_TEST_OK = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_OK = """from avocado import Test
 
 class PassTest(Test):
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
-AVOCADO_TEST_OK_DISABLED = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_OK_DISABLED = """from avocado import Test
 
 class PassTest(Test):
     '''
@@ -39,9 +32,6 @@ class PassTest(Test):
     '''
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
 AVOCADO_MULTIPLE_TESTS = """from avocado import Test

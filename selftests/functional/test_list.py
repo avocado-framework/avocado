@@ -10,24 +10,17 @@ from avocado.core import exit_codes
 from avocado.utils import process, script
 from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
-AVOCADO_TEST_OK = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_OK = """from avocado import Test
 
 class PassTest(Test):
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
 
-AVOCADO_TEST_SLEEP_ELEVEN = """#!/usr/bin/env python
-import time
+AVOCADO_TEST_SLEEP_ELEVEN = """import time
 
 from avocado import Test
-from avocado import main
 
 class SleepEleven(Test):
     def test(self):
@@ -36,17 +29,12 @@ class SleepEleven(Test):
         time.sleep(1)
 
 time.sleep(11)
-
-if __name__ == "__main__":
-    main()
 """
 
 
-AVOCADO_TEST_MULTIPLE_CLASSES = """#!/usr/bin/env python
-import time
+AVOCADO_TEST_MULTIPLE_CLASSES = """import time
 
 from avocado import Test
-from avocado import main
 
 class First(Test):
     def test(self):
@@ -55,14 +43,9 @@ class First(Test):
 class Second(Test):
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
-AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME = """from avocado import Test
 
 class Multiple(Test):
     def test(self):
@@ -70,9 +53,6 @@ class Multiple(Test):
 
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
 NOT_A_TEST = """
@@ -88,7 +68,6 @@ AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES = """#!/usr/bin/env python
 # A simple test (executable bit set when saved to file) that looks like
 # an Avocado instrumented test, with base class on separate file
 from avocado import Test
-from avocado import main
 from test2 import *
 
 class BasicTestSuite(SuperTest):
@@ -101,7 +80,7 @@ class BasicTestSuite(SuperTest):
         self.assertTrue(True)
 
 if __name__ == '__main__':
-    main()
+    print('Hello from Python executable script')
 """
 
 AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB = """
@@ -112,13 +91,6 @@ from avocado import Test
 class SuperTest(Test):
     def xxx(self):
         print "ahoj"
-"""
-
-AVOCADO_TEST_SIMPLE_USING_MAIN = """#!/usr/bin/env python
-from avocado import main
-
-if __name__ == "__main__":
-    main()
 """
 
 
@@ -259,26 +231,6 @@ class ListTestFunctional(TestCaseTmpDir):
         cmd_line = f"{AVOCADO} -V list {mytest}"
         result = process.run(cmd_line)
         self.assertIn(b"exec-test: 1", result.stdout)
-        # job should be able to finish under 5 seconds. If this fails, it's
-        # possible that we hit the "simple test fork bomb" bug
-        cmd_line = (
-            f"{AVOCADO} run --disable-sysinfo --job-results-dir "
-            f"'{self.tmpdir.name}' -- '{mytest}'"
-        )
-        self._run_with_timeout(cmd_line, 5)
-
-    @skipOnLevelsInferiorThan(2)
-    def test_simple_using_main(self):
-        """
-        :avocado: tags=parallel:1
-        """
-        mytest = script.TemporaryScript(
-            "simple_using_main.py",
-            AVOCADO_TEST_SIMPLE_USING_MAIN,
-            "avocado_simpletest_functional",
-        )
-        mytest.save()
-        os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = (
