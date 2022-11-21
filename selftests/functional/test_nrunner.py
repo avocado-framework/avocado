@@ -6,7 +6,7 @@ from avocado.core.job import Job
 from avocado.utils import process
 from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
 
-RUNNER = f"{sys.executable} -m avocado.core.nrunner"
+RUNNER = "avocado-runner-noop"
 
 
 class NRunnerFeatures(unittest.TestCase):
