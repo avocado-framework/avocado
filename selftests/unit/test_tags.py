@@ -2,7 +2,6 @@ import stat
 import unittest
 
 from avocado.core import loader, tags
-from avocado.core.nrunner.runnable import Runnable
 from avocado.utils import script
 
 #: What is commonly known as "0664" or "u=rw,g=rw,o=r"
@@ -321,9 +320,3 @@ class ParseFilterByTags(unittest.TestCase):
                 (set([]), set(["FOO", "BAR", "BAZ"])),
             ],
         )
-
-
-class FilterRunnable(unittest.TestCase):
-    def test_no_tags(self):
-        runnable = Runnable("noop", None)
-        self.assertFalse(tags.filter_test_tags_runnable(runnable, []))

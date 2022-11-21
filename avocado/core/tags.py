@@ -15,6 +15,8 @@
 Test tags utilities module
 """
 
+from avocado.core.resolver import ReferenceResolutionResult
+
 
 def _parse_filter_by_tags(filter_by_tags):
     """
@@ -140,19 +142,20 @@ def filter_test_tags(
     return filtered
 
 
-def filter_test_tags_runnable(
-    runnable, filter_by_tags, include_empty=False, include_empty_key=False
+def filter_tags_on_runnables(
+    resolutions, filter_by_tags, include_empty=False, include_empty_key=False
 ):
     """
-    Filter the existing (unfiltered) test suite based on tags
+    Filters out runnables that do not match the tags criteria given
 
     The filtering mechanism is agnostic to test type.  It means that
     if users request filtering by tag and the specific test type does
     not populate the test tags, it will be considered to have empty
     tags.
 
-    :param test_suite: the unfiltered test suite
-    :type test_suite: dict
+    :param resolutions: possible multiple resolutions for multiple
+                        references
+    :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
     :param filter_by_tags: the list of tag sets to use as filters
     :type filter_by_tags: list of comma separated tags (['foo,bar', 'fast'])
     :param include_empty: if true tests without tags will not be filtered out
@@ -160,29 +163,39 @@ def filter_test_tags_runnable(
     :param include_empty_key: if true tests "keys" on key:val tags will be
                               included in the filtered results
     :type include_empty_key: bool
+    :returns: the resolutions converted to runnables filtered by tags
+    :rtype: list of :class:`avocado.core.nrunner.Runnable`
     """
+    filtered = []
     must_must_nots = _parse_filter_by_tags(filter_by_tags)
-    runnable_tags = runnable.tags or {}
 
-    if not runnable_tags:
-        if include_empty:
-            return True
-
-    for must, must_not in must_must_nots:
-        if must_not.intersection(runnable_tags):
+    for resolution in resolutions:
+        if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue
 
-        must_flat, must_key_val = _must_split_flat_key_val(must)
-        if must_key_val:
-            if not _must_key_val_matches(
-                must_key_val, runnable_tags, include_empty_key
-            ):
+        for runnable in resolution.resolutions:
+            test_tags = runnable.tags or {}
+            if not test_tags:
+                if include_empty:
+                    filtered.append(runnable)
                 continue
 
-        if must_flat:
-            if not must_flat.issubset(runnable_tags):
-                continue
+            for must, must_not in must_must_nots:
+                if must_not.intersection(test_tags):
+                    continue
 
-        return True
+                must_flat, must_key_val = _must_split_flat_key_val(must)
+                if must_key_val:
+                    if not _must_key_val_matches(
+                        must_key_val, test_tags, include_empty_key
+                    ):
+                        continue
 
-    return False
+                if must_flat:
+                    if not must_flat.issubset(test_tags):
+                        continue
+
+                filtered.append(runnable)
+                break
+
+    return filtered
