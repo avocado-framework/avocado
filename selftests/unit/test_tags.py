@@ -11,9 +11,7 @@ DEFAULT_NON_EXEC_MODE = (
 )
 
 
-AVOCADO_TEST_TAGS = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_TAGS = """from avocado import Test
 
 import time
 
@@ -79,22 +77,14 @@ class SafeAarch64Test(Test):
     '''
     def test_safe_aarch64(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
 
-AVOCADO_TEST_OK = """#!/usr/bin/env python
-from avocado import Test
-from avocado import main
+AVOCADO_TEST_OK = """from avocado import Test
 
 class PassTest(Test):
     def test(self):
         pass
-
-if __name__ == "__main__":
-    main()
 """
 
 
