@@ -46,24 +46,34 @@ class NetworkInterface:
         self.name = if_name
         self.if_type = if_type
         self.host = host
+        self.distro_is_rhel9 = False
 
     @property
     def config_filename(self):
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
-            path = "/etc/sysconfig/network-scripts"
+            if self.distro_is_rhel9:
+                path = "/etc/NetworkManager/system-connections"
+            else:
+                path = "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
             path = "/etc/sysconfig/network"
         else:
             msg = "Distro not supported by API. Could not get interface filename."
             raise NWException(msg)
-        return f"{path}/ifcfg-{self.name}"
+        if self.distro_is_rhel9:
+            return f"{path}/{self.name}.nmconnection"
+        else:
+            return f"{path}/ifcfg-{self.name}"
 
     @property
     def config_file_path(self):
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
-            return "/etc/sysconfig/network-scripts"
+            if self.distro_is_rhel9:
+                return "/etc/NetworkManager/system-connections"
+            else:
+                return "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
             return "/etc/sysconfig/network"
         else:
@@ -74,10 +84,16 @@ class NetworkInterface:
     def slave_config_filename(self):
         try:
             slave_dict = self._get_bondinterface_details()
-            return [
-                f"{self.config_file_path}/ifcfg-{slave}"
-                for slave in slave_dict["slaves"]
-            ]
+            if self.distro_is_rhel9:
+                return [
+                    f"{self.config_file_path}/{slave}.nmconnection"
+                    for slave in slave_dict["slaves"]
+                ]
+            else:
+                return [
+                    f"{self.config_file_path}/ifcfg-{slave}"
+                    for slave in slave_dict["slaves"]
+                ]
         except Exception:
             msg = "Slave config filename not available"
             LOG.debug(msg)
@@ -386,54 +402,101 @@ class NetworkInterface:
             raise NWException(msg)
 
         current_distro = distro_detect()
+        if current_distro.name == "rhel" and current_distro.version == "9":
+            self.distro_is_rhel9 = "rhel9"
 
         filename = f"ifcfg-{self.name}"
+        prefix = self.netmask_to_cidr(netmask)
         if current_distro.name in ["rhel", "fedora"]:
-            path = "/etc/sysconfig/network-scripts"
+            if self.distro_is_rhel9:
+                filename = f"{self.name}.nmconnection"
+                path = "/etc/NetworkManager/system-connections"
+            else:
+                path = "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
             path = "/etc/sysconfig/network"
         else:
             msg = "Distro not supported by API. Could not save ipaddr."
             raise NWException(msg)
 
-        ifcfg_dict = {
-            "TYPE": self.if_type,
-            "BOOTPROTO": "static",
-            "NAME": self.name,
-            "DEVICE": self.name,
-            "ONBOOT": "yes",
-            "IPADDR": ipaddr,
-            "NETMASK": netmask,
-            "IPV6INIT": "yes",
-            "IPV6_AUTOCONF": "yes",
-            "IPV6_DEFROUTE": "yes",
-        }
-        if current_distro.name == "SuSE":
-            ifcfg_dict.pop("BOOTPROTO")
+        if self.distro_is_rhel9:
+            ifcfg_dict = ""
+            if os.path.exists(f"{path}/{filename}") is False:
+                run_command(
+                    f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
+                    self.host,
+                )
+            self._move_file_to_backup(f"{path}/{filename}")
+            if os.path.exists(f"{path}/{filename}.backup"):
+                destination = f"{path}/{filename}"
+                shutil.copy(f"{path}/{filename}.backup", destination)
+            run_command(
+                f"nmcli c mod id {self.name} ipv4.method manual ipv4.address {ipaddr}/{prefix}",
+                self.host,
+            )
+            run_command(f"nmcli connection up {self.name}", self.host)
+        else:
+            ifcfg_dict = {
+                "TYPE": self.if_type,
+                "BOOTPROTO": "static",
+                "NAME": self.name,
+                "DEVICE": self.name,
+                "ONBOOT": "yes",
+                "IPADDR": ipaddr,
+                "NETMASK": netmask,
+                "IPV6INIT": "yes",
+                "IPV6_AUTOCONF": "yes",
+                "IPV6_DEFROUTE": "yes",
+            }
+            if current_distro.name == "SuSE":
+                ifcfg_dict = {
+                    "IPADDR": ipaddr,
+                    "BOOTPROTO": "static",
+                    "STARTMODE": "auto",
+                }
+            self._write_to_file(f"{path}/{filename}", ifcfg_dict)
 
         if self.if_type == "Bond":
-            ifcfg_dict["BONDING_MASTER"] = "yes"
             bond_dict = self._get_bondinterface_details()
-            ifcfg_slave_dict = {"SLAVE": "yes", "ONBOOT": "yes", "MASTER": self.name}
-            if current_distro.name == "SuSE":
-                ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
-                for index, slave in enumerate(bond_dict["slaves"]):
-                    bonding_slave = f"BONDING_SLAVE{index}"
-                    ifcfg_dict[bonding_slave] = slave
-                    ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
-                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
-            elif current_distro.name in ["rhel", "fedora"]:
-                ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
-                for index, slave in enumerate(bond_dict["slaves"]):
-                    ifcfg_slave_dict.update(
-                        {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
+            if self.distro_is_rhel9:
+                if os.path.exists(f"{path}/{filename}") is False:
+                    run_command(
+                        f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
+                        self.host,
                     )
-                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+                self._move_file_to_backup(f"{path}/{filename}")
+                if os.path.exists(f"{path}/{filename}.backup"):
+                    destination = f"{path}/{filename}"
+                    shutil.copy(f"{path}/{filename}.backup", destination)
+                run_command(
+                    f"nmcli c mod id {self.name} ipv4.method manual ipv4.address {ipaddr}/{prefix}",
+                    self.host,
+                )
+                run_command(f"nmcli connection up {self.name}", self.host)
             else:
-                msg = "Distro not supported by API. Could not save ipaddr."
-                raise NWException(msg)
-
-        self._write_to_file(f"{path}/{filename}", ifcfg_dict)
+                ifcfg_dict["BONDING_MASTER"] = "yes"
+                ifcfg_slave_dict = {
+                    "SLAVE": "yes",
+                    "ONBOOT": "yes",
+                    "MASTER": self.name,
+                }
+                if current_distro.name == "SuSE":
+                    ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
+                    for index, slave in enumerate(bond_dict["slaves"]):
+                        bonding_slave = f"BONDING_SLAVE{index}"
+                        ifcfg_dict[bonding_slave] = slave
+                        ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
+                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+                elif current_distro.name in ["rhel", "fedora"]:
+                    ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
+                    for index, slave in enumerate(bond_dict["slaves"]):
+                        ifcfg_slave_dict.update(
+                            {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
+                        )
+                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+                else:
+                    msg = "Distro not supported by API. Could not save ipaddr."
+                    raise NWException(msg)
 
     def set_mtu(self, mtu, timeout=30):
         """Sets a new MTU value to this interface.
