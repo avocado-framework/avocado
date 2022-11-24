@@ -435,3 +435,19 @@ def get_cfg(dom_pci_address):
         vendor_subvendor = re.search(r'([0-9a-e]{8})', cfg_dic['Description'])
         cfg_dic['subvendor_device'] = vendor_subvendor.group()
     return cfg_dic
+
+
+def get_port_state(pci_devices):
+    '''
+    returns state of fc ports corresponding to the given pci devices
+    '''
+    host_state = []
+    split_pattern = r':|\.'
+    pci_devices = ':'.join(re.split(split_pattern, pci_devices)[0:3])
+    cmd = 'ls -l /sys/class/fc_host | grep -i %s' % pci_devices
+    for line in process.getoutput(cmd).split('\n'):
+        if "/%s" % pci_devices in line:
+            host_state.append(process.getoutput(
+            'cat /sys/class/fc_host/%s/port_state' % line.split("/")[-1]))
+    return host_state
+
