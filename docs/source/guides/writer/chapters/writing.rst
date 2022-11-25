@@ -1028,9 +1028,9 @@ classes might inherit it's ``test*`` methods (useful for base-classes)::
 
 Results in::
 
-   $ avocado list --loader test.py
-   INSTRUMENTED test.py:SpecificTests.test_specific
-   INSTRUMENTED test.py:SpecificTests.test_shared
+   $ avocado list test.py
+   avocado-instrumented test.py:SpecificTests.test_specific
+   avocado-instrumented test.py:SpecificTests.test_shared
 
 The ``test.py:BaseBase.test`` is not discovered due the tag while
 the ``test.py:SpecificTests.test_shared`` is inherited from the
@@ -1071,9 +1071,9 @@ class::
 
 Results in::
 
-   $ avocado list --loader test.py
-   INSTRUMENTED test.py:NotInheritedFromTest.test
-   INSTRUMENTED test.py:SpecificTests.test_specific
+   $ avocado list test.py
+   avocado-instrumented test.py:NotInheritedFromTest.test
+   avocado-instrumented test.py:SpecificTests.test_specific
 
 The ``test.py:NotInheritedFromTest.test`` will not really work
 as it lacks several required methods, but still is discovered
@@ -1099,7 +1099,7 @@ Categorizing tests
 
 Avocado allows tests to be given tags, which can be used to create
 test categories.  With tags set, users can select a subset of the
-tests found by the test resolver (also known as test loader).
+tests found by the test resolver.
 
 To make this feature easier to grasp, let's work with an example: a
 single Python source code file, named ``perf.py``, that contains both
@@ -1180,14 +1180,14 @@ all methods, being merged with method local tags. Example::
 
 If you use the tag ``furious``, all tests will be included::
 
-    $ avocado list --loader furious_tests.py --filter-by-tags=furious
-    INSTRUMENTED test_tags.py:MyClass.test1
-    INSTRUMENTED test_tags.py:MyClass.test2
+    $ avocado list furious_tests.py --filter-by-tags=furious
+    avocado-instrumented test_tags.py:MyClass.test1
+    avocado-instrumented test_tags.py:MyClass.test2
 
 But using ``fast`` and ``furious`` will include only ``test1``::
 
-    $ avocado list --loader furious_tests.py --filter-by-tags=fast,furious
-    INSTRUMENTED test_tags.py:MyClass.test1
+    $ avocado list furious_tests.py --filter-by-tags=fast,furious
+    avocado-instrumented test_tags.py:MyClass.test1
 
 
 .. _tags_keyval:

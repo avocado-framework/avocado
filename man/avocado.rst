@@ -157,13 +157,6 @@ Options for subcommand `run` (`avocado run --help`)::
                             Limit the attached job log to given number of
                             characters (k/m/g suffix allowed)
 
-    loader options:
-      --loaders LOADER_NAME_OR_TEST_TYPE [LOADER_NAME_OR_TEST_TYPE ...]
-                            Overrides the priority of the test loaders. You can
-                            specify either @loader_name or TEST_TYPE. By default
-                            it tries all available loaders according to priority
-                            set in settings->plugins.loaders.
-
     filtering parameters:
       -t TAGS, --filter-by-tags TAGS
                             Filter tests based on tags
@@ -318,35 +311,14 @@ Options for subcommand `jobs` (`avocado jobs --help`)::
 Options for subcommand `list` (`avocado list --help`)::
 
     positional arguments:
-      references            List of test references (aliases or paths). If empty,
-                            Avocado will list tests on the configured test source,
-                            (see "avocado config --datadir") Also, if there are
-                            other test loader plugins active, tests from those
-                            plugins might also show up (behavior may vary among
-                            plugins)
+      TEST_REFERENCE        List of test references (aliases or paths)
 
     optional arguments:
       -h, --help            show this help message and exit
-      --resolver            Uses the Avocado resolver method (part of the nrunner
-                            architecture) to detect tests. This is enabled by
-                            default and exists only for compatibility purposes,
-                            and will be removed soon. To use the legacy (loader)
-                            method for finding tests, set the "--loader" option
-      --loader              Uses the Avocado legacy (loader) method for finding
-                            tests. This option will exist only for a transitional
-                            period until the legacy (loader) method is deprecated
-                            and removed
       --write-recipes-to-directory DIRECTORY
                             Writes runnable recipe files to a directory. Valid
                             only when using --resolver.
       --json JSON_FILE      Writes output to a json file.
-
-    loader options:
-      --loaders LOADER_NAME_OR_TEST_TYPE [LOADER_NAME_OR_TEST_TYPE ...]
-                            Overrides the priority of the test loaders. You can
-                            specify either @loader_name or TEST_TYPE. By default
-                            it tries all available loaders according to priority
-                            set in settings->plugins.loaders.
 
     filtering parameters:
       -t TAGS, --filter-by-tags TAGS
