@@ -111,16 +111,20 @@ class YumBackend(RpmBackend):
         except process.CmdError:
             return False
 
-    def add_repo(self, url):
+    def add_repo(self, url, **opt_params):
         """
         Adds package repository located on [url].
 
         :param url: Universal Resource Locator of the repository.
+        :param opt_params: Dict for optional repo options, eg. {"priority": "1"}.
         """
+        # Set default values for dnf repo options
+        repo_options = {"enabled": "1", "gpgcheck": "0"}
+        repo_options.update(opt_params)
         # Check if we URL is already set
         for section in self.repo_config_parser.sections():
             for option, value in self.repo_config_parser.items(section):
-                if option == "url" and value == url:
+                if option == "baseurl" and value == url:
                     return True
 
         # Didn't find it, let's set it up
@@ -134,12 +138,12 @@ class YumBackend(RpmBackend):
             self.repo_config_parser.set(
                 section_name, "name", "Avocado managed repository"
             )
-            self.repo_config_parser.set(section_name, "url", url)
-            self.repo_config_parser.set(section_name, "enabled", "1")
-            self.repo_config_parser.set(section_name, "gpgcheck", "0")
+            self.repo_config_parser.set(section_name, "baseurl", url)
+            for opt_key, opt_value in repo_options.items():
+                self.repo_config_parser.set(section_name, opt_key, opt_value)
             prefix = "avocado_software_manager"
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
-                self.repo_config_parser.write(tmp_file)
+                self.repo_config_parser.write(tmp_file, space_around_delimiters=False)
                 tmp_file.flush()  # Sync the content
                 process.system(f"cp {tmp_file.name} {self.REPO_FILE_PATH}", sudo=True)
             return True
@@ -158,9 +162,11 @@ class YumBackend(RpmBackend):
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
                 for section in self.repo_config_parser.sections():
                     for option, value in self.repo_config_parser.items(section):
-                        if option == "url" and value == url:
+                        if option == "baseurl" and value == url:
                             self.repo_config_parser.remove_section(section)
-                self.repo_config_parser.write(tmp_file.file)
+                self.repo_config_parser.write(
+                    tmp_file.file, space_around_delimiters=False
+                )
                 tmp_file.flush()  # Sync the content
                 process.system(f"cp {tmp_file.name} {self.REPO_FILE_PATH}", sudo=True)
                 return True
