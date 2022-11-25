@@ -642,10 +642,10 @@ class SubProcess:
         return cmd
 
     def _init_subprocess(self):
-        def signal_handler(signum, frame):  # pylint: disable=W0613
+        def signal_handler(*args):
             self.result.interrupted = "signal/ctrl+c"
             self.wait()
-            signal.default_int_handler()
+            signal.default_int_handler(*args)
 
         if self._popen is not None:
             return
