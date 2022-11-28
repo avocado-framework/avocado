@@ -117,7 +117,7 @@ class BasicTest(Test):
         spawner_command = ""
         if spawner == "podman":
             spawner_command = (
-                "--nrunner-spawner=podman --spawner-podman-image=fedora:latest"
+                "--nrunner-spawner=podman --spawner-podman-image=fedora:36"
             )
         return f"{AVOCADO} run {spawner_command} {path}"
 
