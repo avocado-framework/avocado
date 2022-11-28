@@ -568,6 +568,13 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 
 def create_suites(args):  # pylint: disable=W0621
     suites = []
+    config_check = {"run.ignore_missing_references": True}
+
+    if args.dict_tests["static-checks"]:
+        config_check_static = copy.copy(config_check)
+        config_check_static["resolver.references"] = glob.glob("selftests/*.sh")
+        suites.append(TestSuite.from_config(config_check_static, "static-checks"))
+
     # ========================================================================
     # Run nrunner interface checks for all available runners
     # ========================================================================
@@ -691,10 +698,6 @@ def create_suites(args):  # pylint: disable=W0621
     # Run all static checks, unit and functional tests
     # ========================================================================
 
-    config_check = {
-        "run.ignore_missing_references": True,
-    }
-
     if args.dict_tests["unit"]:
         config_check_unit = copy.copy(config_check)
         config_check_unit["resolver.references"] = ["selftests/unit/"]
@@ -730,11 +733,6 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(
             TestSuite.from_config(config_check_functional_serial, "functional-serial")
         )
-
-    if args.dict_tests["static-checks"]:
-        config_check_static = copy.copy(config_check)
-        config_check_static["resolver.references"] = glob.glob("selftests/*.sh")
-        suites.append(TestSuite.from_config(config_check_static, "static-checks"))
 
     if args.dict_tests["optional-plugins"]:
         config_check_optional = copy.copy(config_check)
@@ -773,8 +771,8 @@ def main(args):  # pylint: disable=W0621
 
     # Print features covered in this test
     if args.list_features:
-        suites = create_suite_job_api(args)
-        suites += create_suites(args)
+        suites = create_suites(args)
+        suites += create_suite_job_api(args)
         features = []
         for suite in suites:
             for variants in suite.config["run.dict_variants"]:
@@ -816,10 +814,9 @@ def main(args):  # pylint: disable=W0621
         print("Something went wrong, please report a bug!")
         exit(1)
 
-    suites = []
+    suites = create_suites(args)
     if args.dict_tests["job-api"]:
         suites += create_suite_job_api(args)
-    suites += create_suites(args)
 
     # ========================================================================
     # Job execution
