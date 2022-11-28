@@ -39,7 +39,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
                 f"{AVOCADO} run "
                 f"--job-results-dir {self.tmpdir.name} "
                 f"--disable-sysinfo --nrunner-spawner=podman "
-                f"--spawner-podman-image=fedora:latest -- "
+                f"--spawner-podman-image=fedora:36 -- "
                 f"{test}",
                 ignore_status=True,
             )
@@ -52,7 +52,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
             f"{AVOCADO} run "
             f"--job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo --nrunner-spawner=podman "
-            f"--spawner-podman-image=fedora:latest -- "
+            f"--spawner-podman-image=fedora:36 -- "
             f"/bin/true",
             ignore_status=True,
         )
@@ -70,7 +70,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
                 "run.results_dir": self.tmpdir.name,
                 "task.timeout.running": 2,
                 "nrunner.spawner": "podman",
-                "spawner.podman.image": "fedora:latest",
+                "spawner.podman.image": "fedora:36",
             }
 
             with Job.from_config(job_config=config) as job:
