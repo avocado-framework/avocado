@@ -109,9 +109,7 @@ class Asset:
         """
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
         hash_file = self._get_hash_file(asset_path)
-        with FileLock(hash_file, 30):
-            with open(hash_file, "w", encoding="utf-8") as fp:
-                fp.write(f"{self.algorithm} {result}\n")
+        self._add_hash_to_hash_file(hash_file, result, self.algorithm)
 
     def _create_metadata_file(self, asset_file):
         """
@@ -192,10 +190,10 @@ class Asset:
         if not os.path.isfile(hash_file):
             self._create_hash_file(asset_path)
 
-        return Asset.read_hash_from_file(hash_file)[1]
+        return Asset.read_hash_from_file(hash_file, self.algorithm)[1]
 
     @classmethod
-    def read_hash_from_file(cls, filename):
+    def read_hash_from_file(cls, filename, algorithm=None):
         """Read the CHECKSUM file and return the hash.
 
         This method raises a FileNotFoundError if file is missing and assumes
@@ -206,15 +204,37 @@ class Asset:
         try:
             with FileLock(filename, 30):
                 with open(filename, "r", encoding="utf-8") as hash_file:
+                    algorithm = algorithm or DEFAULT_HASH_ALGORITHM
                     for line in hash_file:
                         # md5 is 32 chars big and sha512 is 128 chars big.
                         # others supported algorithms are between those.
-                        if re.match("^.* [a-f0-9]{32,128}", line):
+                        if re.match(f"^{algorithm}\b.* [a-f0-9]{32,128}", line):
                             return line.split()
+                    return [None, None]
         except Exception:  # pylint: disable=W0703
             exc_type, exc_value = sys.exc_info()[:2]
             LOG.error("%s: %s", exc_type.__name__, exc_value)
             return [None, None]
+
+    @staticmethod
+    def _add_hash_to_hash_file(hash_file, new_hash, algorithm):
+        """
+        Adds new hash entry to the list inside hash file.
+
+        :param hash_file: path to hash
+        :param new_hash: hash value which will by added
+        :param algorithm: algorithm which generated the new hash
+        """
+        with FileLock(hash_file, 120):
+            try:
+                with open(hash_file, "r", encoding="utf-8") as fp:
+                    for line in fp:
+                        if algorithm == line.split()[0]:
+                            return
+            except FileNotFoundError:
+                pass
+            with open(hash_file, "a", encoding="utf-8") as fp:
+                fp.write(f"{algorithm} {new_hash}\n")
 
     def _get_local_file(self, url_obj, asset_path, _):
         """
@@ -324,7 +344,7 @@ class Asset:
         return False
 
     @classmethod
-    def _has_valid_hash(cls, asset_path, asset_hash=None):
+    def _has_valid_hash(cls, asset_path, asset_hash=None, algorithm=None):
         """Checks if a file has a valid hash based on the hash parameter.
 
         If asset_hash is None then will consider a valid asset.
@@ -332,9 +352,16 @@ class Asset:
         if asset_hash is None:
             LOG.debug("No hash provided. Cannot check the asset file" " integrity.")
             return True
+        if algorithm is None:
+            algorithm = DEFAULT_HASH_ALGORITHM
 
         hash_path = cls._get_hash_file(asset_path)
-        _, hash_from_file = cls.read_hash_from_file(hash_path)
+        _, hash_from_file = cls.read_hash_from_file(hash_path, algorithm)
+        if not hash_from_file:
+            hash_from_file = crypto.hash_file(asset_path, algorithm=algorithm)
+            if hash_from_file == asset_hash:
+                cls._add_hash_to_hash_file(hash_path, asset_hash, algorithm)
+                return True
         if hash_from_file == asset_hash:
             return True
         return False
@@ -348,7 +375,7 @@ class Asset:
         value as the hash of the asset_file, otherwise return False.
         :rtype: bool
         """
-        return self._has_valid_hash(asset_path, self.asset_hash)
+        return self._has_valid_hash(asset_path, self.asset_hash, self.algorithm)
 
     def fetch(self, timeout=None):
         """Try to fetch the current asset.
@@ -438,7 +465,7 @@ class Asset:
                 continue
 
             # Ignore mismatch hash
-            if not self._has_valid_hash(asset_file, self.asset_hash):
+            if not self._has_valid_hash(asset_file, self.asset_hash, self.algorithm):
                 continue
 
             if create_metadata:
