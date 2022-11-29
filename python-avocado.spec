@@ -201,7 +201,6 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %license LICENSE
 %{_pkgdocdir}/README.rst
 %{_bindir}/avocado
-%{_bindir}/avocado-runner
 %{_bindir}/avocado-runner-noop
 %{_bindir}/avocado-runner-dry-run
 %{_bindir}/avocado-runner-exec-test
@@ -409,6 +408,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Sun Nov 20 2022 Cleber Rosa <crosa@redhat.com> - 99.0-1
+- Remove generic runner avocado-runner
+
 * Thu Nov 10 2022 Cleber Rosa <crosa@redhat.com> - 99.0-1
 - New release
 

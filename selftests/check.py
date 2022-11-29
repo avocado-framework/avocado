@@ -583,52 +583,25 @@ def create_suites(args):  # pylint: disable=W0621
         "run.dict_variants.variant_id_keys": ["runner"],
         "run.dict_variants": [
             {
-                "runner": "avocado-runner",
-                "runnable-run-no-args-exit-code": 2,
-                "runnable-run-uri-only-exit-code": 2,
-                "task-run-id-only-exit-code": 2,
-            },
-            {
                 "runner": "avocado-runner-dry-run",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-noop",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-exec-test",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-python-unittest",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-avocado-instrumented",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-tap",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
             {
                 "runner": "avocado-runner-podman-image",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             },
         ],
     }
@@ -640,9 +613,6 @@ def create_suites(args):  # pylint: disable=W0621
         config_nrunner_interface["run.dict_variants"].append(
             {
                 "runner": "avocado-runner-golang",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             }
         )
 
@@ -653,9 +623,6 @@ def create_suites(args):  # pylint: disable=W0621
         config_nrunner_interface["run.dict_variants"].append(
             {
                 "runner": "avocado-runner-robot",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             }
         )
 
@@ -666,9 +633,6 @@ def create_suites(args):  # pylint: disable=W0621
         config_nrunner_interface["run.dict_variants"].append(
             {
                 "runner": "avocado-runner-ansible-module",
-                "runnable-run-no-args-exit-code": 0,
-                "runnable-run-uri-only-exit-code": 0,
-                "task-run-id-only-exit-code": 0,
             }
         )
 

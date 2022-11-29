@@ -342,7 +342,6 @@ if __name__ == "__main__":
         entry_points={
             "console_scripts": [
                 "avocado = avocado.core.main:main",
-                "avocado-runner = avocado.core.nrunner.__main__:main",
                 "avocado-runner-noop = avocado.plugins.runners.noop:main",
                 "avocado-runner-dry-run = avocado.plugins.runners.dry_run:main",
                 "avocado-runner-exec-test = avocado.plugins.runners.exec_test:main",
