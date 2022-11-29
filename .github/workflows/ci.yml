@@ -40,7 +40,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0]
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0, 3.11]
       fail-fast: false
 
     steps:
@@ -81,7 +81,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.10.0]
+        python-version: [3.11]
     env:
       CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
 
@@ -153,7 +153,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.9, 3.10.0]
+        python-version: [3.9, 3.10.0, 3.11]
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -182,7 +182,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0]
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0, 3.11]
       fail-fast: false
 
     steps:

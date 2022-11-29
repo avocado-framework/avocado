@@ -252,7 +252,7 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
     name = "fetchasset"
     description = "Fetch assets before the test run"
 
-    def __init__(self, config=None):
+    def __init__(self, config=None):  # pylint: disable=W0231
         pass
 
     def pre_tests(self, job):

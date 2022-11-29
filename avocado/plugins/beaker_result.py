@@ -31,7 +31,7 @@ class BeakerResult(ResultEvents):
     beaker_url = None
     job_id = None
 
-    def __init__(self, config=None):  # pylint: disable=W0613
+    def __init__(self, config=None):  # pylint: disable=W0613,W0231
         baseurl = os.environ.get("BEAKER_LAB_CONTROLLER_URL")
         recipeid = os.environ.get("RSTRNT_RECIPEID")
         taskid = os.environ.get("RSTRNT_TASKID")

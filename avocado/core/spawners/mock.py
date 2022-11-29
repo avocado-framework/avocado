@@ -14,7 +14,7 @@ class MockSpawner(Spawner):
 
     METHODS = [SpawnMethod.PYTHON_CLASS, SpawnMethod.STANDALONE_EXECUTABLE]
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=W0231
         self._known_tasks = {}
 
     def is_task_alive(self, runtime_task):  # pylint: disable=W0221

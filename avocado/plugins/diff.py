@@ -40,7 +40,7 @@ class Diff(CLICmd):
     name = "diff"
     description = "Shows the difference between 2 jobs."
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=W0231
         self.term = output.TERM_SUPPORT
         self.std_diff_output = True
 

@@ -112,7 +112,7 @@ class TestLogging(ResultEvents):
 
     description = "Nrunner specific Test logs for Job"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0231
         self.runner = config.get("run.test_runner")
 
     @staticmethod
