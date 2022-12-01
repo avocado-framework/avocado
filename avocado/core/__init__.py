@@ -205,15 +205,6 @@ def register_core_options():
         section="runner.output", key="color", default="auto", help_msg=help_msg
     )
 
-    help_msg = "Use UTF8 encoding (True or False)"
-    stgs.register_option(
-        section="runner.output",
-        key="utf8",
-        key_type=bool,
-        help_msg=help_msg,
-        default=True,
-    )
-
     help_msg = (
         "Suppress notification about broken plugins in the app "
         "standard error. Add the name of each broken plugin you "

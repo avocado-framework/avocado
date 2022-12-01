@@ -164,7 +164,6 @@ class Variants(CLICmd):
         except (IOError, ValueError) as details:
             LOG_UI.error("Unable to parse varianter: %s", details)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        use_utf8 = config.get("runner.output.utf8")
         # Parse obsolete options (unsafe to combine them with new args)
         if tree:
             variants = 0
@@ -188,7 +187,11 @@ class Variants(CLICmd):
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Produce the output
-        lines = varianter.to_str(summary=summary, variants=variants, use_utf8=use_utf8)
+        lines = varianter.to_str(
+            summary=summary,
+            variants=variants,
+            use_utf8=sys.getdefaultencoding() == "utf-8",
+        )
         for line in lines.splitlines():
             LOG_UI.debug(line)
 
