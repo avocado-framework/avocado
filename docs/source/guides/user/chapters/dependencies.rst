@@ -19,18 +19,26 @@ it is started.
 
 When any of the dependencies defined on a test fails, the test is skipped.
 
-When the dependency is fulfilled, it will be saved into the avocado cache, and
-it will be reused by other tests.
+When the dependency is fulfilled, its metadata will be saved into the avocado cache, so
+avocado will be able to reuse it in another tests.
 
-Also, the dependency will stay in cache after the Avocado run, so the second
+Also, the dependency metadata will stay in cache after the Avocado run, so the second
 run of the tests will use dependencies from cache, which will make tests more
-efficient.
+efficient. If you want to know the state of cache, you can use cache interface
+with `avocado cache list`.
+
+.. warning::
+
+   `avocado cache` interface works only with metadata about dependencies. Any manipulation
+   with `avocado cache` interface doesn't affects the real data stored in the environment.
+
 
 .. warning::
 
         If any environment is modified without Avocado knowing about it 
         (packages being uninstalled, podman images removed, etc), the 
-        dependency resolution behavior is undefined and will probably crash. 
+        dependency metadata in cache won't be updated, because of this, the resolution
+        behavior is undefined and will probably crash.
         If such a change is made to the environment, it's recommended to clear 
         the dependencies cache file.
 

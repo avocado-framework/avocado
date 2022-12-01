@@ -25,7 +25,7 @@ class Cache(CLICmd):
     """
 
     name = "cache"
-    description = "Interface for manipulating the Avocado cache"
+    description = "Interface for manipulating the Avocado cache metadata"
 
     def _list_plugin_entries(self, plugins, selected_plugins):
         if not selected_plugins:
@@ -46,7 +46,7 @@ class Cache(CLICmd):
         parser = super().configure(parser)
         subcommands = parser.add_subparsers(dest="cache_subcommand")
         subcommands.required = True
-        list_help_msg = "List entries in avocado cache"
+        list_help_msg = "List metadata in avocado cache"
         list_parser = subcommands.add_parser("list", help=list_help_msg)
         settings.register_option(
             section="cache",

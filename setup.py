@@ -453,7 +453,6 @@ if __name__ == "__main__":
                 "podman = avocado.plugins.spawners.podman:PodmanSpawner",
             ],
             "avocado.plugins.cache": [
-                "vmimage = avocado.plugins.vmimage:VMimageCache",
                 "requirement = avocado.plugins.requirement_cache:RequirementCache",
             ],
         },

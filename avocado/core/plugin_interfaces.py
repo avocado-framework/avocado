@@ -454,7 +454,7 @@ class RunnableRunner(Plugin):
 
 
 class Cache(Plugin):
-    """Plugin for manipulating with cache interface"""
+    """Plugin for manipulating with cache metadata interface"""
 
     @abc.abstractmethod
     def list(self):
