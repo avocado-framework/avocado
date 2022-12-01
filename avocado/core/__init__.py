@@ -228,11 +228,6 @@ def register_core_options():
         help_msg=help_msg,
     )
 
-    help_msg = "The encoding used by default on all data input"
-    stgs.register_option(
-        section="core", key="input_encoding", default="utf-8", help_msg=help_msg
-    )
-
     # All settings starting with 'runner.' will be passed to runner
     # exec-test runner config
     help_msg = (
