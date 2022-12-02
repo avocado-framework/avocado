@@ -23,8 +23,8 @@ Nvme utilities
 
 
 import os
-from avocado.utils import process
-from avocado.utils import pci
+
+from avocado.utils import pci, process
 
 
 class NvmeError(Exception):
@@ -42,7 +42,7 @@ def get_controller_name(pci_addr):
     :raises: :py:class:`NvmeError` on failure to find pci_address in OS
     """
     if pci_addr in pci.get_pci_addresses():
-        path = '/sys/bus/pci/devices/%s/nvme/' % pci_addr
+        path = f"/sys/bus/pci/devices/{pci_addr}/nvme/"
         return os.listdir(path)
     raise NvmeError("Unable to list as wrong pci_addr")
 
@@ -54,13 +54,12 @@ def get_number_of_ns_supported(controller_name):
     :param controller_name: Name of the controller eg: nvme0
     :rtype: integer
     """
-    cmd = 'nvme id-ctrl /dev/%s' % controller_name
-    out = process.run(cmd, ignore_status=True, sudo=True,
-                      shell=True).stdout_text
+    cmd = f"nvme id-ctrl /dev/{controller_name}"
+    out = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     for line in out.splitlines():
-        if line.split(":")[0].strip() == 'nn':
-            return int(line.split(':')[-1].strip())
-    return ''
+        if line.split(":")[0].strip() == "nn":
+            return int(line.split(":")[-1].strip())
+    return ""
 
 
 def get_total_capacity(controller_name):
@@ -70,13 +69,12 @@ def get_total_capacity(controller_name):
     :param controller_name: Name of the controller eg: nvme0
     :rtype: integer
     """
-    cmd = 'nvme id-ctrl /dev/%s' % controller_name
-    out = process.run(cmd, ignore_status=True, sudo=True,
-                      shell=True).stdout_text
+    cmd = f"nvme id-ctrl /dev/{controller_name}"
+    out = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     for line in out.splitlines():
-        if line.split(":")[0].strip() == 'tnvmcap':
-            return int(line.split(':')[-1].strip())
-    return ''
+        if line.split(":")[0].strip() == "tnvmcap":
+            return int(line.split(":")[-1].strip())
+    return ""
 
 
 def get_controller_id(controll_name):
@@ -86,10 +84,9 @@ def get_controller_id(controll_name):
     :param controller_name: Name of the controller eg: nvme0
     :rtype: string
     """
-    cmd = "nvme list-ctrl /dev/%s" % controll_name
-    output = process.system_output(cmd, shell=True,
-                                   ignore_status=True).decode("utf-8")
+    cmd = f"nvme list-ctrl /dev/{controll_name}"
+    output = process.system_output(cmd, shell=True, ignore_status=True).decode("utf-8")
     for line in output.splitlines():
-        if '0]' in line:
-            return line.split(':')[-1]
-    return ''
+        if "0]" in line:
+            return line.split(":")[-1]
+    return ""
