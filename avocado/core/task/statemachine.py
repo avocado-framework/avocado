@@ -2,6 +2,7 @@ import asyncio
 import collections
 import logging
 import multiprocessing
+import sys
 import time
 
 from avocado.core.exceptions import TestFailFast
@@ -20,6 +21,7 @@ class TaskStateMachine:
         self._triaging = []
         self._ready = []
         self._started = []
+        self._monitored = []
         self._finished = []
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
@@ -39,6 +41,10 @@ class TaskStateMachine:
     @property
     def started(self):
         return self._started
+
+    @property
+    def monitored(self):
+        return self._monitored
 
     @property
     def finished(self):
@@ -154,6 +160,46 @@ class Worker:
         return fmt.format(
             self._spawner, self._max_triaging, self._max_running, self._task_timeout
         )
+
+    async def _send_timeout_message(self, terminate_tasks):
+        """Sends messages related to timeout to status repository.
+        When the task is terminated, it is necessary to send a finish message to status
+        repository to close logging. This method will send log message with timeout
+        information and finish message with right fail reason.
+
+        :param terminate_tasks: runtime_tasks which were terminated
+        :type terminate_tasks: list
+        """
+        for terminated_task in terminate_tasks:
+            task_id = str(terminated_task.task.identifier)
+            job_id = terminated_task.task.job_id
+            log_message = {
+                "status": "running",
+                "type": "log",
+                "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
+                "Runner error occurred: Timeout reached".encode(
+                    sys.getdefaultencoding()
+                ),
+                "encoding": "utf-8",
+                "time": time.monotonic(),
+                "id": task_id,
+                "job_id": job_id,
+            }
+            finish_message = {
+                "status": "finished",
+                "result": "interrupted",
+                "fail_reason": "Test interrupted: Timeout reached",
+                "time": time.monotonic(),
+                "id": task_id,
+                "job_id": job_id,
+            }
+            try:
+                current_status, _ = self._state_machine._status_repo._status[task_id]
+            except KeyError:
+                return
+            if current_status != "finished":
+                self._state_machine._status_repo.process_message(log_message)
+                self._state_machine._status_repo.process_message(finish_message)
 
     async def bootstrap(self):
         """Reads from requested, moves into triaging."""
@@ -291,6 +337,8 @@ class Worker:
             return
 
         if self._spawner.is_task_alive(runtime_task):
+            async with self._state_machine.lock:
+                self._state_machine._monitored.append(runtime_task)
             try:
                 if runtime_task.execution_timeout is None:
                     remaining = None
@@ -300,15 +348,13 @@ class Worker:
             except asyncio.TimeoutError:
                 runtime_task.status = RuntimeTaskStatus.TIMEOUT
                 await self._spawner.terminate_task(runtime_task)
-                message = {
-                    "status": "finished",
-                    "result": "interrupted",
-                    "fail_reason": "Test interrupted: Timeout reached",
-                    "time": time.monotonic(),
-                    "id": str(runtime_task.task.identifier),
-                    "job_id": runtime_task.task.job_id,
-                }
-                self._state_machine._status_repo.process_message(message)
+                await self._send_timeout_message([runtime_task])
+            async with self._state_machine.lock:
+                try:
+                    self._state_machine.monitored.remove(runtime_task)
+                except ValueError:
+                    pass
+
         # from here, this `task` ran, so, let's check
         # the its latest data in the status repo
         latest_task_data = (
@@ -340,6 +386,23 @@ class Worker:
             raise TestFailFast("Interrupting job (failfast).")
 
         await self._state_machine.finish_task(runtime_task, RuntimeTaskStatus.FINISHED)
+
+    async def terminate_tasks_timeout(self):
+        """Terminate all running tasks with timeout message."""
+        await self._state_machine.abort(RuntimeTaskStatus.TIMEOUT)
+        terminated = []
+        while True:
+            is_complete = await self._state_machine.complete
+            async with self._state_machine.lock:
+                try:
+                    runtime_task = self._state_machine.monitored.pop(0)
+                except IndexError:
+                    if is_complete:
+                        break
+                runtime_task.status = RuntimeTaskStatus.TIMEOUT
+                await self._spawner.terminate_task(runtime_task)
+                terminated.append(runtime_task)
+        await self._send_timeout_message(terminated)
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""

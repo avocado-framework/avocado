@@ -409,9 +409,24 @@ class Runner(RunnerInterface):
         asyncio.ensure_future(self._update_status(job))
         loop = asyncio.get_event_loop()
         try:
-            loop.run_until_complete(
-                asyncio.wait_for(asyncio.gather(*workers), job.timeout or None)
-            )
+            try:
+                loop.run_until_complete(
+                    asyncio.wait_for(
+                        asyncio.shield(asyncio.gather(*workers)), job.timeout or None
+                    )
+                )
+            except (KeyboardInterrupt, asyncio.TimeoutError):
+                terminate_worker = Worker(
+                    state_machine=tsm,
+                    spawner=spawner,
+                    max_running=max_running,
+                    task_timeout=timeout,
+                    failfast=failfast,
+                )
+                loop.run_until_complete(
+                    asyncio.wait_for(terminate_worker.terminate_tasks_timeout(), None)
+                )
+                raise
         except (KeyboardInterrupt, asyncio.TimeoutError, TestFailFast) as ex:
             LOG_JOB.info(str(ex))
             job.interrupted_reason = str(ex)

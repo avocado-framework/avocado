@@ -41,15 +41,16 @@ class JobTimeOutTest(TestCaseTmpDir):
         )
         self.py.save()
 
-    def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures, e_nskip):
+    def run_and_check(self, cmd_line, e_rc, e_ntests, terminated_tests):
         os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
-        xml_output = result.stdout
+        output = result.stdout_text
+        xml_output = os.path.join(self.tmpdir.name, "latest", "results.xml")
         self.assertEqual(
             result.exit_status, e_rc, f"Avocado did not return rc {e_rc}:\n{result}"
         )
         try:
-            xunit_doc = xml.dom.minidom.parseString(xml_output)
+            xunit_doc = xml.dom.minidom.parse(xml_output)
         except Exception as detail:
             raise ParseXMLError(f"Failed to parse content: {detail}\n" f"{xml_output}")
 
@@ -70,26 +71,26 @@ class JobTimeOutTest(TestCaseTmpDir):
             (f"Unexpected number of executed tests, XML:\n" f"{xml_output}"),
         )
 
-        n_errors = int(testsuite_tag.attributes["errors"].value)
-        self.assertEqual(
-            n_errors,
-            e_nerrors,
-            (f"Unexpected number of test errors, XML:\n" f"{xml_output}"),
-        )
-
         n_failures = int(testsuite_tag.attributes["failures"].value)
         self.assertEqual(
             n_failures,
-            e_nfailures,
+            0,
             (f"Unexpected number of test failures, XML:\n" f"{xml_output}"),
         )
 
+        e_skip = e_ntests - output.count("STARTED")
         n_skip = int(testsuite_tag.attributes["skipped"].value)
         self.assertEqual(
             n_skip,
-            e_nskip,
+            e_skip,
             (f"Unexpected number of test skips, XML:\n" f"{xml_output}"),
         )
+        for terminated_test in terminated_tests:
+            self.assertTrue(
+                f"{terminated_test}:  INTERRUPTED: Test interrupted: Timeout reached"
+                in output,
+                f"Test {terminated_test} was not in {output}.",
+            )
 
     def _check_timeout_msg(self, idx):
         res_dir = os.path.join(self.tmpdir.name, "latest", "test-results")
@@ -103,45 +104,42 @@ class JobTimeOutTest(TestCaseTmpDir):
                 f"in the {idx}st test's debug.log:\n{debug_log}"
             ),
         )
-        self.assertIn(
-            "Traceback (most recent call last)",
-            debug_log,
-            (
-                f"Traceback not present in the {idx}st test's "
-                f"debug.log:\n{debug_log}"
-            ),
-        )
 
     @skipOnLevelsInferiorThan(1)
     def test_sleep_longer_timeout(self):
         """:avocado: tags=parallel:1"""
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo --xunit - "
+            f"--disable-sysinfo "
             f"--job-timeout=5 {self.script.path} "
             f"examples/tests/passtest.py"
         )
-        self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
+        self.run_and_check(cmd_line, 0, 2, [])
 
-    @unittest.skip("Job timeout is failing with nrunner, until we fix: #5295")
     def test_sleep_short_timeout(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo --xunit - "
+            f"--disable-sysinfo "
             f"--job-timeout=1 {self.script.path} "
             f"examples/tests/passtest.py"
         )
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, 1, 0, 1)
+        self.run_and_check(
+            cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, [self.script.path]
+        )
         self._check_timeout_msg(1)
 
-    @unittest.skip("Job timeout is failing with nrunner, until we fix: #5295")
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo --xunit - "
+            f"--disable-sysinfo "
             f"--job-timeout=1 {self.py.path}"
         )
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 3, 1, 0, 2)
+        self.run_and_check(
+            cmd_line,
+            exit_codes.AVOCADO_JOB_INTERRUPTED,
+            3,
+            [f"{self.py.path}:Dummy.test00sleep"],
+        )
         self._check_timeout_msg(1)
 
     def test_invalid_values(self):
