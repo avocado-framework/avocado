@@ -205,15 +205,6 @@ def register_core_options():
         section="runner.output", key="color", default="auto", help_msg=help_msg
     )
 
-    help_msg = "Use UTF8 encoding (True or False)"
-    stgs.register_option(
-        section="runner.output",
-        key="utf8",
-        key_type=bool,
-        help_msg=help_msg,
-        default=True,
-    )
-
     help_msg = (
         "Suppress notification about broken plugins in the app "
         "standard error. Add the name of each broken plugin you "
@@ -226,11 +217,6 @@ def register_core_options():
         key_type=list,
         default=[],
         help_msg=help_msg,
-    )
-
-    help_msg = "The encoding used by default on all data input"
-    stgs.register_option(
-        section="core", key="input_encoding", default="utf-8", help_msg=help_msg
     )
 
     # All settings starting with 'runner.' will be passed to runner
