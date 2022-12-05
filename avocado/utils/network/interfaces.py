@@ -20,7 +20,7 @@ import json
 import logging
 import os
 import shutil
-from ipaddress import ip_interface
+from ipaddress import IPv4Address, ip_interface
 
 from avocado.utils.distro import detect as distro_detect
 from avocado.utils.network.common import run_command
@@ -607,3 +607,68 @@ class NetworkInterface:
         :return : Returns mask value of given netmask
         """
         return sum([bin(int(bits)).count("1") for bits in netmask.split(".")])
+
+    def validate_ipv4_format(self, ip):
+        """
+        This function validates IPv4 address with following format set.
+
+        1. A string in decimal-dot notation, consisting of four decimal
+           integers in the inclusive range 0-255,separated by dots
+           (e.g- 192.168.0.1).Each integer represents an octet in the address.
+        2. An integer that fits into 32 bits.
+        3. An integer packed into a bytes object of length 4.
+
+        And for IP address which are not met above conditions,
+        raises AddressValueError and returns False.
+
+        :param ip: IP address
+        :type pattern: str
+        :return: True when IP address pattern/format matches if not
+                 return False
+        :rtype: boolean
+        """
+        try:
+            IPv4Address(ip)
+        except Exception as ex:
+            LOG.debug("Failed to validate IP format %s", ex)
+            return False
+        return True
+
+    def validate_ipv4_netmask_format(self, netmask):
+        """
+        This function validates IPv4 Netmask address with following format set.
+
+        1. A string in decimal-dot notation,consisting of four decimal integers
+           starting from 255 and octets separated by dots (e.g 255.255.255.0)
+        2. An integer packed into a bytes object of length 4
+
+        And for Netmask which are not met above conditions,
+        [ eg : 255.0.255.0, 255.255.255, 255.255.255.256, 255.255.255.255.0]
+        returns False.
+
+        :param netmask: netmask address
+        :type pattern: str
+        :return: True when netmask address pattern/format matches if not
+                 return False
+        :rtype: boolean
+        """
+        netmask_list = netmask.split(".")
+        if len(netmask_list) != 4:
+            return False
+        for octect in netmask_list:
+            num = int(octect)
+            if 0 <= num <= 255:
+                return False
+        octet_bin = [format(int(i), "08b") for i in netmask_list]
+        binary_netmask = ("").join(octet_bin)
+        accept_zero_only = False
+        first_bit = True
+        for symbol in binary_netmask:
+            if accept_zero_only and symbol == "1":
+                return False
+            elif symbol == "0":
+                accept_zero_only = True
+            if first_bit and symbol == "0":
+                return False
+            first_bit = False
+        return True
