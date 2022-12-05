@@ -10,7 +10,11 @@
 #
 # This code was inspired in the autotest project,
 # client/shared/utils.py
-# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
+# Authors: Martin J Bligh <mbligh@google.com>
+#          Andy Whitcroft <apw@shadowen.org>
+#
+# Modification History:
+# - Added read_line_with_matching_pattern()
 
 """
 Avocado generic IO related functions.
@@ -102,6 +106,32 @@ def read_all_lines(filename):
             contents = [line.rstrip("\n") for line in file_obj.readlines()]
     except Exception:  # pylint: disable=W0703
         pass
+    return contents
+
+
+def read_line_with_matching_pattern(filename, pattern):
+    """
+    Return the line/lines found with a given matching pattern.
+
+    This method returns the line/lines wherever the occurrence of the pattern,
+    that is passed as an input, is found in the file.
+
+    All the occurrences are stored in the list and the list is returned as
+    an output.
+
+    :param filename: Path to the file to be read.
+    :type filename: str
+    :param pattern: List of all the patterns, intended to be searched
+    :type pattern: list
+
+    :return: All those lines from the file, matching the pattern.
+    :rtype: list
+    """
+    contents = []
+    with open(filename, "r", encoding="utf-8") as file_obj:
+        for line in file_obj.readlines():
+            if pattern in line:
+                contents.append(line.rstrip("\n"))
     return contents
 
 
