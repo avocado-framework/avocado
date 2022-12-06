@@ -454,7 +454,7 @@ class RunnableRunner(Plugin):
 
 
 class Cache(Plugin):
-    """Plugin for manipulating with cache interface"""
+    """Plugin for manipulating with cache metadata interface"""
 
     @abc.abstractmethod
     def list(self):
@@ -464,4 +464,11 @@ class Cache(Plugin):
 
         :return: Human-readable list of entries which will be printed to console.
         :rtype: str
+        """
+
+    @abc.abstractmethod
+    def clear(self):
+        """Clear all cache entries
+
+        It removes every cache entire.
         """

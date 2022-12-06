@@ -4,7 +4,7 @@ import re
 
 from avocado.core import exit_codes, output
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import Cache, CLICmd
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
 from avocado.utils import astring, vmimage
 
@@ -172,13 +172,3 @@ class VMimage(CLICmd):
             LOG_UI.debug("The image was downloaded:")
             LOG_UI.debug(display_images_list([image]))
         return exit_codes.AVOCADO_ALL_OK
-
-
-class VMimageCache(Cache):
-
-    name = "vmimage"
-    description = "Provides VM images acquired from official repositories"
-
-    def list(self):
-        images = list_downloaded_images()
-        return display_images_list(images)

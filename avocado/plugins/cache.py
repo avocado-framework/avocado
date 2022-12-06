@@ -25,7 +25,7 @@ class Cache(CLICmd):
     """
 
     name = "cache"
-    description = "Interface for manipulating the Avocado cache"
+    description = "Interface for manipulating the Avocado cache metadata"
 
     def _list_plugin_entries(self, plugins, selected_plugins):
         if not selected_plugins:
@@ -35,6 +35,13 @@ class Cache(CLICmd):
                 LOG_UI.debug("%s:", plugin.obj.name)
                 cache_list = "\t" + "\t".join(plugin.obj.list().splitlines(True))
                 LOG_UI.debug("%s\n", cache_list)
+
+    def _clear_plugin_entries(self, plugins, selected_plugins):
+        if not selected_plugins:
+            selected_plugins = [p.name for p in plugins]
+        for plugin in plugins:
+            if plugin.name in selected_plugins:
+                plugin.obj.clear()
 
     def configure(self, parser):
         """
@@ -46,7 +53,7 @@ class Cache(CLICmd):
         parser = super().configure(parser)
         subcommands = parser.add_subparsers(dest="cache_subcommand")
         subcommands.required = True
-        list_help_msg = "List entries in avocado cache"
+        list_help_msg = "List metadata in avocado cache"
         list_parser = subcommands.add_parser("list", help=list_help_msg)
         settings.register_option(
             section="cache",
@@ -66,9 +73,34 @@ class Cache(CLICmd):
             allow_multiple=True,
         )
 
+        clear_help_msg = (
+            "Clear avocado cache, you can specify which part of cache"
+            " will be removed."
+        )
+        clear_parser = subcommands.add_parser("clear", help=clear_help_msg)
+        settings.register_option(
+            section="cache",
+            key="clear",
+            key_type=list,
+            default=[],
+            help_msg=clear_help_msg,
+        )
+
+        settings.add_argparser_to_option(
+            namespace="cache.clear",
+            nargs="*",
+            metavar="CACHE_TYPE",
+            parser=clear_parser,
+            long_arg=None,
+            positional_arg=True,
+            allow_multiple=True,
+        )
+
     def run(self, config):
         dispatcher = CacheDispatcher()
         plugins = dispatcher.get_extentions_by_priority()
         subcommand = config.get("cache_subcommand")
         if subcommand == "list":
             self._list_plugin_entries(plugins, config.get("cache.list"))
+        if subcommand == "clear":
+            self._clear_plugin_entries(plugins, config.get("cache.clear"))
