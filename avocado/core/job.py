@@ -606,7 +606,7 @@ class Job:
             self.post_tests()
             if self._time_end is None:
                 self._time_end = time.monotonic()
-                self.time_elapsed = self._time_end - self._time_start
+            self.time_elapsed = self._time_end - self._time_start
             self.render_results()
             pre_post_dispatcher.map_method("post", self)
 

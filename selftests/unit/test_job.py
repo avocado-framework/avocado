@@ -253,6 +253,20 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job._time_end, 20.0)
         self.assertEqual(self.job.time_elapsed, 100.0)
 
+    def test_job_elapsed_time(self):
+        config = {"core.show": ["none"], "run.results_dir": self.tmpdir.name}
+        self.job = job.Job(config)
+        self.job.setup()
+        self.job._time_start = 10.0
+        self.job._time_end = 25.0
+        # temporarily disable logging on console
+        logging.disable(logging.ERROR)
+        self.job.run()
+        logging.disable(logging.NOTSET)
+        # forcing a different value to check if it's not being
+        # calculated when time_start or time_end are manually set
+        self.assertEqual(self.job.time_elapsed, 15.0)
+
     def test_job_suites_config(self):
         config = {
             "run.results_dir": self.tmpdir.name,
