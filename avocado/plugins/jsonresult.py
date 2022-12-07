@@ -74,6 +74,7 @@ class JSONResult(Result):
             "warn": result.warned,
             "interrupt": result.interrupted,
             "time": result.tests_total_time,
+            "start": str(result.job_start_date_time),
         }
         return json.dumps(content, sort_keys=True, indent=4, separators=(",", ": "))
 

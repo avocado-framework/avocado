@@ -151,15 +151,10 @@ class Jobs(CLICmd):
         for filename in jobs_results.values():
             with open(filename, "r", encoding="utf-8") as fp:
                 job = json.load(fp)
-                try:
-                    started_ts = job["tests"][0]["start"]
-                    started = datetime.fromtimestamp(started_ts)
-                except IndexError:
-                    continue
                 LOG_UI.info(
                     "%-40s %-26s %3s (%s/%s/%s/%s)",
                     job["job_id"],
-                    str(started),
+                    job["start"],
                     job["total"],
                     job["pass"],
                     job["skip"],

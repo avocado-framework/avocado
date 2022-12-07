@@ -18,6 +18,7 @@ Job module - describes a sequence of automated test operations.
 """
 
 
+import datetime
 import logging
 import os
 import pprint
@@ -565,6 +566,7 @@ class Job:
                  :mod:`avocado.core.exit_codes` for more information.
         """
         assert self.tmpdir is not None, "Job.setup() not called"
+        self.result.job_start_date_time = datetime.datetime.now()
         if self._time_start is None:
             self._time_start = time.monotonic()
         try:
