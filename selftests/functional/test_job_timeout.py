@@ -8,7 +8,7 @@ from avocado.utils import genio, process, script
 from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 SCRIPT_CONTENT = """#!/bin/bash
-sleep 2
+sleep 10
 """
 
 PYTHON_CONTENT = """#!/usr/bin/env python
@@ -120,7 +120,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
-            f"--job-timeout=1 {self.script.path} "
+            f"--job-timeout=5 {self.script.path} "
             f"examples/tests/passtest.py"
         )
         self.run_and_check(
@@ -132,7 +132,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
-            f"--job-timeout=1 {self.py.path}"
+            f"--job-timeout=5 {self.py.path}"
         )
         self.run_and_check(
             cmd_line,
