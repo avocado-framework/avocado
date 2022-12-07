@@ -7,7 +7,7 @@ from avocado.core.suite import TestSuite
 
 ORDERLY_CONFIG = {
     "resolver.references": ["/bin/true", "/bin/true", "/bin/last"],
-    "nrunner.max_parallel_tasks": 1,
+    "run.max_parallel_tasks": 1,
 }
 
 RANDOM_CONFIG = {
@@ -20,7 +20,7 @@ RANDOM_CONFIG = {
         "/bin/last",
     ],
     "nrunner.shuffle": True,
-    "nrunner.max_parallel_tasks": 3,
+    "run.max_parallel_tasks": 3,
 }
 
 with Job(

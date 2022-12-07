@@ -29,8 +29,7 @@ from avocado.core.messages import MessageHandler
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
-from avocado.core.plugin_interfaces import CLI, Init
-from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.plugin_interfaces import CLI, Init, SuiteRunner
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
@@ -44,7 +43,7 @@ class RunnerInit(Init):
     description = "nrunner initialization"
 
     def initialize(self):
-        section = "nrunner"
+        section = "run"
         help_msg = "Shuffle the tasks to be executed"
         settings.register_option(
             section=section,
@@ -153,131 +152,52 @@ class RunnerCLI(CLI):
 
         parser = parser.add_argument_group("nrunner specific options")
         settings.add_argparser_to_option(
-            namespace="nrunner.shuffle",
+            namespace="run.shuffle",
             parser=parser,
             long_arg="--shuffle",
             action="store_true",
         )
 
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--shuffle" instead.'
-        )
         settings.add_argparser_to_option(
-            namespace="nrunner.shuffle",
-            parser=parser,
-            long_arg="--nrunner-shuffle",
-            action="store_true",
-            help_msg=help_msg,
-            allow_multiple=True,
-        )
-
-        settings.add_argparser_to_option(
-            namespace="nrunner.status_server_auto",
+            namespace="run.status_server_auto",
             parser=parser,
             long_arg="--status-server-disable-auto",
             action="store_false",
         )
 
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--status-server-disable-auto '
-            "instead."
-        )
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_auto",
-            parser=parser,
-            long_arg="--nrunner-status-server-disable-auto",
-            action="store_false",
-            help_msg=help_msg,
-            allow_multiple=True,
-        )
-
-        settings.add_argparser_to_option(
-            namespace="nrunner.status_server_listen",
+            namespace="run.status_server_listen",
             parser=parser,
             long_arg="--status-server-listen",
             metavar="HOST_PORT",
         )
 
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--status-server-listen" instead.'
-        )
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_listen",
-            parser=parser,
-            long_arg="--nrunner-status-server-listen",
-            metavar="HOST_PORT",
-            help_msg=help_msg,
-            allow_multiple=True,
-        )
-
-        settings.add_argparser_to_option(
-            namespace="nrunner.status_server_uri",
+            namespace="run.status_server_uri",
             parser=parser,
             long_arg="--status-server-uri",
             metavar="HOST_PORT",
         )
 
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--status-server-uri" instead.'
-        )
         settings.add_argparser_to_option(
-            namespace="nrunner.status_server_uri",
-            parser=parser,
-            long_arg="--nrunner-status-server-uri",
-            metavar="HOST_PORT",
-            help_msg=help_msg,
-            allow_multiple=True,
-        )
-
-        settings.add_argparser_to_option(
-            namespace="nrunner.max_parallel_tasks",
+            namespace="run.max_parallel_tasks",
             parser=parser,
             long_arg="--max-parallel-tasks",
             metavar="NUMBER_OF_TASKS",
         )
 
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--max-parallel-tasks" instead.'
-        )
         settings.add_argparser_to_option(
-            namespace="nrunner.max_parallel_tasks",
-            parser=parser,
-            long_arg="--nrunner-max-parallel-tasks",
-            metavar="NUMBER_OF_TASKS",
-            help_msg=help_msg,
-            allow_multiple=True,
-        )
-
-        settings.add_argparser_to_option(
-            namespace="nrunner.spawner",
+            namespace="run.spawner",
             parser=parser,
             long_arg="--spawner",
             metavar="SPAWNER",
-        )
-
-        help_msg = (
-            "This option is currently DEPRECATED and will not be available "
-            'on Avocado 100.0 and later.  Please use "--spawner" instead.'
-        )
-        settings.add_argparser_to_option(
-            namespace="nrunner.spawner",
-            parser=parser,
-            long_arg="--nrunner-spawner",
-            metavar="SPAWNER",
-            help_msg=help_msg,
-            allow_multiple=True,
         )
 
     def run(self, config):
         pass
 
 
-class Runner(RunnerInterface):
+class Runner(SuiteRunner):
 
     name = "nrunner"
     description = "nrunner based implementation of job compliant runner"
@@ -299,7 +219,7 @@ class Runner(RunnerInterface):
             runnable.config = Runnable.filter_runnable_config(runnable.kind, config)
 
     def _determine_status_server(self, test_suite, config_key):
-        if test_suite.config.get("nrunner.status_server_auto"):
+        if test_suite.config.get("run.status_server_auto"):
             # no UNIX domain sockets on Windows
             if platform.system() != "Windows":
                 if self.status_server_dir is None:
@@ -310,9 +230,7 @@ class Runner(RunnerInterface):
         return test_suite.config.get(config_key)
 
     def _create_status_server(self, test_suite, job):
-        listen = self._determine_status_server(
-            test_suite, "nrunner.status_server_listen"
-        )
+        listen = self._determine_status_server(test_suite, "run.status_server_listen")
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
@@ -372,7 +290,7 @@ class Runner(RunnerInterface):
         graph = RuntimeTaskGraph(
             test_suite.get_test_variants(),
             test_suite.name,
-            self._determine_status_server(test_suite, "nrunner.status_server_uri"),
+            self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,
         )
         # pylint: disable=W0201
@@ -381,7 +299,7 @@ class Runner(RunnerInterface):
         # Start the status server
         asyncio.ensure_future(self.status_server.serve_forever())
 
-        if test_suite.config.get("nrunner.shuffle"):
+        if test_suite.config.get("run.shuffle"):
             random.shuffle(self.runtime_tasks)
         test_ids = [
             rt.task.identifier
@@ -389,10 +307,10 @@ class Runner(RunnerInterface):
             if rt.task.category == "test"
         ]
         tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
-        spawner_name = test_suite.config.get("nrunner.spawner")
+        spawner_name = test_suite.config.get("run.spawner")
         spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
         max_running = min(
-            test_suite.config.get("nrunner.max_parallel_tasks"), len(self.runtime_tasks)
+            test_suite.config.get("run.max_parallel_tasks"), len(self.runtime_tasks)
         )
         timeout = test_suite.config.get("task.timeout.running")
         failfast = test_suite.config.get("run.failfast")

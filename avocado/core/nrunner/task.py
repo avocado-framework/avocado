@@ -119,9 +119,7 @@ class Task:
         self.category = category
         self.job_id = job_id
         self.status_services = []
-        status_uris = status_uris or self.runnable.config.get(
-            "nrunner.status_server_uri"
-        )
+        status_uris = status_uris or self.runnable.config.get("run.status_server_uri")
         if status_uris is not None:
             if type(status_uris) is not list:
                 status_uris = [status_uris]

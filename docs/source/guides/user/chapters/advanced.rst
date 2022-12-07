@@ -74,12 +74,12 @@ described and pluggable interface.  This means that users can choose
 Runner choices can be seen by running ``avocado plugins``::
 
   ...
-  Plugins that run test suites on a job (runners):
+  Plugins that run test suites on a job (suite.runner):
   nrunner nrunner based implementation of job compliant runner
 
 And to select a different test runner (if another one exists)::
 
-  avocado run --test-runner=other_runner_plugin ...
+  avocado run --suite-runner=other_runner_plugin ...
 
 Running tests with an external runner
 -------------------------------------

@@ -26,7 +26,7 @@ class StatusServer:
         return self._uri
 
     async def create_server(self):
-        limit = settings.as_dict().get("nrunner.status_server_buffer_size")
+        limit = settings.as_dict().get("run.status_server_buffer_size")
         if ":" in self._uri:
             host, port = self._uri.split(":")
             port = int(port)

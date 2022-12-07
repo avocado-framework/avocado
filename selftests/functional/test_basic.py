@@ -209,7 +209,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"--job-results-dir {self.tmpdir.name} "
             f"examples/tests/passtest.py examples/tests/failtest.py "
             f"examples/tests/passtest.py --failfast "
-            f"--nrunner-max-parallel-tasks=1"
+            f"--max-parallel-tasks=1"
         )
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Interrupting job (failfast).", result.stdout)
@@ -227,7 +227,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"--job-results-dir {self.tmpdir.name} "
             f"examples/tests/passtest.py examples/tests/errortest.py "
             f"examples/tests/passtest.py --failfast "
-            f"--nrunner-max-parallel-tasks=1"
+            f"--max-parallel-tasks=1"
         )
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Interrupting job (failfast).", result.stdout)
