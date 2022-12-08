@@ -18,6 +18,7 @@ Job module - describes a sequence of automated test operations.
 """
 
 
+import datetime
 import logging
 import os
 import pprint
@@ -166,15 +167,15 @@ class Job:
         self._timeout = None
         self._unique_id = None
 
-        #: The time at which the job has started or `-1` if it has not been
-        #: started by means of the `run()` method.
-        self.time_start = -1
-        #: The time at which the job has finished or `-1` if it has not been
-        #: started by means of the `run()` method.
-        self.time_end = -1
+        # The time at which the job has started or `None` if it has not been
+        # started by means of the `run()` method.
+        self._time_start = None
+        # The time at which the job has finished or `None` if it has not been
+        # started by means of the `run()` method.
+        self._time_end = None
         #: The total amount of time the job took from start to finish,
-        #: or `-1` if it has not been started by means of the `run()` method
-        self.time_elapsed = -1
+        #: or None if it has not been started by means of the `run()` method
+        self.time_elapsed = None
         self.funcatexit = CallbackRegister(f"JobExit {self.unique_id}", LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get("replay_sourcejob")
@@ -565,8 +566,9 @@ class Job:
                  :mod:`avocado.core.exit_codes` for more information.
         """
         assert self.tmpdir is not None, "Job.setup() not called"
-        if self.time_start == -1:
-            self.time_start = time.monotonic()
+        self.result.job_start_date_time = datetime.datetime.now()
+        if self._time_start is None:
+            self._time_start = time.monotonic()
         try:
             self.result.tests_total = self.size
             pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
@@ -604,9 +606,9 @@ class Job:
             return self.exitcode
         finally:
             self.post_tests()
-            if self.time_end == -1:
-                self.time_end = time.monotonic()
-                self.time_elapsed = self.time_end - self.time_start
+            if self._time_end is None:
+                self._time_end = time.monotonic()
+            self.time_elapsed = self._time_end - self._time_start
             self.render_results()
             pre_post_dispatcher.map_method("post", self)
 

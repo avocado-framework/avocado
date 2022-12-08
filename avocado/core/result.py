@@ -24,7 +24,7 @@ class Result:
     Result class, holder for job (and its tests) result information.
     """
 
-    def __init__(self, job_unique_id, job_logfile):
+    def __init__(self, job_unique_id, job_logfile, job_start_date_time=None):
         """
         Creates an instance of Result.
 
@@ -32,9 +32,11 @@ class Result:
                               :attr:`avocado.core.job.Job.unique_id`
         :param job_logfile: the job's unique ID, usually from
                             :attr:`avocado.core.job.Job.logfile`
+        :param job_start_date_time: the date and time a job started running
         """
         self.job_unique_id = job_unique_id
         self.logfile = job_logfile
+        self.job_start_date_time = job_start_date_time
         self.tests_total = 0
         self.tests_run = 0
         self.tests_total_time = 0.0
