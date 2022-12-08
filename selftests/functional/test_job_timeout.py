@@ -5,10 +5,14 @@ import xml.dom.minidom
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
-from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
-SCRIPT_CONTENT = """#!/bin/bash
+SCRIPT_SHORT_CONTENT = """#!/bin/bash
 sleep 2
+"""
+
+SCRIPT_LONG_CONTENT = """#!/bin/bash
+sleep 10
 """
 
 PYTHON_CONTENT = """#!/usr/bin/env python
@@ -32,10 +36,14 @@ class ParseXMLError(Exception):
 class JobTimeOutTest(TestCaseTmpDir):
     def setUp(self):
         super().setUp()
-        self.script = script.TemporaryScript(
-            "sleep.sh", SCRIPT_CONTENT, "avocado_timeout_functional"
+        self.script_short = script.TemporaryScript(
+            "sleep_short.sh", SCRIPT_SHORT_CONTENT, "avocado_timeout_functional"
         )
-        self.script.save()
+        self.script_short.save()
+        self.script_long = script.TemporaryScript(
+            "sleep_long.sh", SCRIPT_LONG_CONTENT, "avocado_timeout_functional"
+        )
+        self.script_long.save()
         self.py = script.TemporaryScript(
             "sleep_test.py", PYTHON_CONTENT, "avocado_timeout_functional"
         )
@@ -105,34 +113,41 @@ class JobTimeOutTest(TestCaseTmpDir):
             ),
         )
 
-    @skipOnLevelsInferiorThan(1)
-    def test_sleep_longer_timeout(self):
-        """:avocado: tags=parallel:1"""
-        cmd_line = (
-            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo "
-            f"--job-timeout=5 {self.script.path} "
-            f"examples/tests/passtest.py"
-        )
-        self.run_and_check(cmd_line, 0, 2, [])
-
     def test_sleep_short_timeout(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
-            f"--job-timeout=1 {self.script.path} "
+            f"--job-timeout=1 {self.script_long.path} "
+            f"examples/tests/passtest.py"
+        )
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, [])
+
+    def test_sleep_longer_timeout_interrupted(self):
+        cmd_line = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo "
+            f"--job-timeout=5 {self.script_long.path} "
             f"examples/tests/passtest.py"
         )
         self.run_and_check(
-            cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, [self.script.path]
+            cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, [self.script_long.path]
         )
         self._check_timeout_msg(1)
+
+    def test_sleep_longer_timeout_all_ok(self):
+        cmd_line = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo "
+            f"--job-timeout=10 {self.script_short.path} "
+            f"examples/tests/passtest.py"
+        )
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, 2, [])
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
-            f"--job-timeout=1 {self.py.path}"
+            f"--job-timeout=5 {self.py.path}"
         )
         self.run_and_check(
             cmd_line,
@@ -192,7 +207,8 @@ class JobTimeOutTest(TestCaseTmpDir):
 
     def tearDown(self):
         super().tearDown()
-        self.script.remove()
+        self.script_short.remove()
+        self.script_long.remove()
         self.py.remove()
 
 
