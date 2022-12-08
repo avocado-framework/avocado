@@ -24,7 +24,7 @@ from avocado.core.exceptions import (
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
-from avocado.core.tags import filter_test_tags_runnable
+from avocado.core.tags import filter_tags_on_runnables
 from avocado.core.tree import TreeNode
 from avocado.core.varianter import Varianter, is_empty_variant
 
@@ -63,19 +63,18 @@ def resolutions_to_runnables(resolutions, config):
     :returns: the resolutions converted to runnables
     :rtype: list of :class:`avocado.core.nrunner.Runnable`
     """
-    result = []
     filter_by_tags = config.get("filter.by_tags.tags")
     include_empty = config.get("filter.by_tags.include_empty")
     include_empty_key = config.get("filter.by_tags.include_empty_key")
+    if filter_by_tags:
+        return filter_tags_on_runnables(
+            resolutions, filter_by_tags, include_empty, include_empty_key
+        )
+    result = []
     for resolution in resolutions:
         if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue
         for runnable in resolution.resolutions:
-            if filter_by_tags:
-                if not filter_test_tags_runnable(
-                    runnable, filter_by_tags, include_empty, include_empty_key
-                ):
-                    continue
             result.append(runnable)
     return result
 

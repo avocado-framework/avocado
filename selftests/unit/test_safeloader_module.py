@@ -65,7 +65,7 @@ class PythonModuleTest(unittest.TestCase):
         This specific source file imports unittest.mock, and we want to
         make sure that unittest is accounted for.
         """
-        path = os.path.join(BASEDIR, "selftests", "unit", "test_loader.py")
+        path = os.path.join(BASEDIR, "selftests", "unit", "test_resolver.py")
         module = PythonModule(path, "unittest", "TestCase")
         for _ in module.iter_classes():
             pass

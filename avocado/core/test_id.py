@@ -16,7 +16,6 @@ class TestID:
 
         :param uid: unique test id (within the job)
         :param name: test name, as returned by the Avocado test resolver
-                     (AKA as test loader)
         :param variant: the variant applied to this Test ID
         :type variant: dict
         :param no_digits: number of digits of the test uid

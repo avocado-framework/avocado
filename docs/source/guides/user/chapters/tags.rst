@@ -6,7 +6,7 @@ Filtering tests by tags
 
 Avocado allows tests to be given tags, which can be used to create test
 categories. With tags set, users can select a subset of the tests found by the
-test resolver (also known as test loader).
+test resolver.
 
 Usually, listing and executing tests with the Avocado test runner
 would reveal all three tests::

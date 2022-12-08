@@ -1,8 +1,7 @@
 import stat
 import unittest
 
-from avocado.core import loader, tags
-from avocado.core.nrunner.runnable import Runnable
+from avocado.core import resolver, tags
 from avocado.utils import script
 
 #: What is commonly known as "0664" or "u=rw,g=rw,o=r"
@@ -93,170 +92,213 @@ class TagFilter(unittest.TestCase):
         with script.TemporaryScript(
             "tags.py",
             AVOCADO_TEST_TAGS,
-            "avocado_loader_unittest",
+            "avocado_resolver_tag_unittest",
             DEFAULT_NON_EXEC_MODE,
         ) as test_script:
-            this_loader = loader.FileLoader(None, {})
-            self.test_suite = this_loader.discover(
-                test_script.path, loader.DiscoverMode.ALL
-            )
+            self.result = resolver.resolve([test_script.path])
+            self.input_file_path = test_script.path
 
     def test_no_tag_filter(self):
-        self.assertEqual(len(self.test_suite), 8)
-        self.assertEqual(self.test_suite[0][0], "FastTest")
-        self.assertEqual(self.test_suite[0][1]["methodName"], "test_fast")
-        self.assertEqual(self.test_suite[1][0], "FastTest")
-        self.assertEqual(self.test_suite[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(self.test_suite[2][0], "SlowTest")
-        self.assertEqual(self.test_suite[2][1]["methodName"], "test_slow")
-        self.assertEqual(self.test_suite[3][0], "SlowUnsafeTest")
-        self.assertEqual(self.test_suite[3][1]["methodName"], "test_slow_unsafe")
-        self.assertEqual(self.test_suite[4][0], "SafeTest")
-        self.assertEqual(self.test_suite[4][1]["methodName"], "test_safe")
-        self.assertEqual(self.test_suite[5][0], "SafeX86Test")
-        self.assertEqual(self.test_suite[5][1]["methodName"], "test_safe_x86")
-        self.assertEqual(self.test_suite[6][0], "NoTagsTest")
-        self.assertEqual(self.test_suite[6][1]["methodName"], "test_no_tags")
-        self.assertEqual(self.test_suite[7][0], "SafeAarch64Test")
-        self.assertEqual(self.test_suite[7][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(len(self.result), 1)
+        self.assertEqual(
+            self.result[0].result, resolver.ReferenceResolutionResult.SUCCESS
+        )
+        self.assertEqual(len(self.result[0].resolutions), 8)
+        self.assertEqual(
+            self.result[0].resolutions[0].uri,
+            f"{self.input_file_path}:FastTest.test_fast",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[1].uri,
+            f"{self.input_file_path}:FastTest.test_fast_other",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[2].uri,
+            f"{self.input_file_path}:SlowTest.test_slow",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[3].uri,
+            f"{self.input_file_path}:SlowUnsafeTest.test_slow_unsafe",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[4].uri,
+            f"{self.input_file_path}:SafeTest.test_safe",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[5].uri,
+            f"{self.input_file_path}:SafeX86Test.test_safe_x86",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[6].uri,
+            f"{self.input_file_path}:NoTagsTest.test_no_tags",
+        )
+        self.assertEqual(
+            self.result[0].resolutions[7].uri,
+            f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64",
+        )
 
     def test_filter_fast_net(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["fast,net"], False, False)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["fast,net"], False, False
+        )
         self.assertEqual(len(filtered), 2)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
 
     def test_filter_fast_net_include_empty(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["fast,net"], True, False)
+        filtered = tags.filter_tags_on_runnables(self.result, ["fast,net"], True, False)
         self.assertEqual(len(filtered), 3)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(filtered[2][0], "NoTagsTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_no_tags")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
+        self.assertEqual(
+            filtered[2].uri, f"{self.input_file_path}:NoTagsTest.test_no_tags"
+        )
 
     def test_filter_arch(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch"], False, False)
+        filtered = tags.filter_tags_on_runnables(self.result, ["arch"], False, False)
         self.assertEqual(len(filtered), 2)
-        self.assertEqual(filtered[0][0], "SafeX86Test")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe_x86")
-        self.assertEqual(filtered[1][0], "SafeAarch64Test")
-        self.assertEqual(filtered[1][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(
+            filtered[0].uri, f"{self.input_file_path}:SafeX86Test.test_safe_x86"
+        )
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64"
+        )
 
     def test_filter_arch_include_empty(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch"], True, False)
+        filtered = tags.filter_tags_on_runnables(self.result, ["arch"], True, False)
         self.assertEqual(len(filtered), 3)
-        self.assertEqual(filtered[0][0], "SafeX86Test")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe_x86")
-        self.assertEqual(filtered[1][0], "NoTagsTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_no_tags")
-        self.assertEqual(filtered[2][0], "SafeAarch64Test")
-        self.assertEqual(filtered[2][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(
+            filtered[0].uri, f"{self.input_file_path}:SafeX86Test.test_safe_x86"
+        )
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:NoTagsTest.test_no_tags"
+        )
+        self.assertEqual(
+            filtered[2].uri, f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64"
+        )
 
     def test_filter_arch_x86_64(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch:x86_64"], False, False)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["arch:x86_64"], False, False
+        )
         self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0][0], "SafeX86Test")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe_x86")
+        self.assertEqual(
+            filtered[0].uri, f"{self.input_file_path}:SafeX86Test.test_safe_x86"
+        )
 
     def test_filter_arch_other(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch:ppc64"], False, False)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["arch:ppc64"], False, False
+        )
         self.assertEqual(len(filtered), 0)
 
     def test_filter_arch_other_include_empty_key(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch:ppc64"], False, True)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["arch:ppc64"], False, True
+        )
         self.assertEqual(len(filtered), 5)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(filtered[2][0], "SlowTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_slow")
-        self.assertEqual(filtered[3][0], "SlowUnsafeTest")
-        self.assertEqual(filtered[3][1]["methodName"], "test_slow_unsafe")
-        self.assertEqual(filtered[4][0], "SafeTest")
-        self.assertEqual(filtered[4][1]["methodName"], "test_safe")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
+        self.assertEqual(filtered[2].uri, f"{self.input_file_path}:SlowTest.test_slow")
+        self.assertEqual(
+            filtered[3].uri, f"{self.input_file_path}:SlowUnsafeTest.test_slow_unsafe"
+        )
+        self.assertEqual(filtered[4].uri, f"{self.input_file_path}:SafeTest.test_safe")
 
     def test_filter_arch_other_include_empty_flat_and_key(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["arch:ppc64"], True, True)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["arch:ppc64"], True, True
+        )
         self.assertEqual(len(filtered), 6)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(filtered[2][0], "SlowTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_slow")
-        self.assertEqual(filtered[3][0], "SlowUnsafeTest")
-        self.assertEqual(filtered[3][1]["methodName"], "test_slow_unsafe")
-        self.assertEqual(filtered[4][0], "SafeTest")
-        self.assertEqual(filtered[4][1]["methodName"], "test_safe")
-        self.assertEqual(filtered[5][0], "NoTagsTest")
-        self.assertEqual(filtered[5][1]["methodName"], "test_no_tags")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
+        self.assertEqual(filtered[2].uri, f"{self.input_file_path}:SlowTest.test_slow")
+        self.assertEqual(
+            filtered[3].uri, f"{self.input_file_path}:SlowUnsafeTest.test_slow_unsafe"
+        )
+        self.assertEqual(filtered[4].uri, f"{self.input_file_path}:SafeTest.test_safe")
+        self.assertEqual(
+            filtered[5].uri, f"{self.input_file_path}:NoTagsTest.test_no_tags"
+        )
 
     def test_filter_fast_net__slow_disk_unsafe(self):
-        filtered = tags.filter_test_tags(
-            self.test_suite, ["fast,net", "slow,disk,unsafe"], False, False
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["fast,net", "slow,disk,unsafe"], False, False
         )
         self.assertEqual(len(filtered), 3)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(filtered[2][0], "SlowUnsafeTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_slow_unsafe")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
+        self.assertEqual(
+            filtered[2].uri, f"{self.input_file_path}:SlowUnsafeTest.test_slow_unsafe"
+        )
 
     def test_filter_fast_net__slow_disk(self):
-        filtered = tags.filter_test_tags(
-            self.test_suite, ["fast,net", "slow,disk"], False, False
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["fast,net", "slow,disk"], False, False
         )
         self.assertEqual(len(filtered), 4)
-        self.assertEqual(filtered[0][0], "FastTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_fast")
-        self.assertEqual(filtered[1][0], "FastTest")
-        self.assertEqual(filtered[1][1]["methodName"], "test_fast_other")
-        self.assertEqual(filtered[2][0], "SlowTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_slow")
-        self.assertEqual(filtered[3][0], "SlowUnsafeTest")
-        self.assertEqual(filtered[3][1]["methodName"], "test_slow_unsafe")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:FastTest.test_fast")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:FastTest.test_fast_other"
+        )
+        self.assertEqual(filtered[2].uri, f"{self.input_file_path}:SlowTest.test_slow")
+        self.assertEqual(
+            filtered[3].uri, f"{self.input_file_path}:SlowUnsafeTest.test_slow_unsafe"
+        )
 
     def test_filter_not_fast_not_slow(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["-fast,-slow"], False)
+        filtered = tags.filter_tags_on_runnables(self.result, ["-fast,-slow"], False)
         self.assertEqual(len(filtered), 3)
-        self.assertEqual(filtered[0][0], "SafeTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe")
-        self.assertEqual(filtered[1][0], "SafeX86Test")
-        self.assertEqual(filtered[1][1]["methodName"], "test_safe_x86")
-        self.assertEqual(filtered[2][0], "SafeAarch64Test")
-        self.assertEqual(filtered[2][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:SafeTest.test_safe")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:SafeX86Test.test_safe_x86"
+        )
+        self.assertEqual(
+            filtered[2].uri, f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64"
+        )
 
     def test_filter_not_fast_not_slow_include_empty(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["-fast,-slow"], True)
+        filtered = tags.filter_tags_on_runnables(self.result, ["-fast,-slow"], True)
         self.assertEqual(len(filtered), 4)
-        self.assertEqual(filtered[0][0], "SafeTest")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe")
-        self.assertEqual(filtered[1][0], "SafeX86Test")
-        self.assertEqual(filtered[1][1]["methodName"], "test_safe_x86")
-        self.assertEqual(filtered[2][0], "NoTagsTest")
-        self.assertEqual(filtered[2][1]["methodName"], "test_no_tags")
-        self.assertEqual(filtered[3][0], "SafeAarch64Test")
-        self.assertEqual(filtered[3][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(filtered[0].uri, f"{self.input_file_path}:SafeTest.test_safe")
+        self.assertEqual(
+            filtered[1].uri, f"{self.input_file_path}:SafeX86Test.test_safe_x86"
+        )
+        self.assertEqual(
+            filtered[2].uri, f"{self.input_file_path}:NoTagsTest.test_no_tags"
+        )
+        self.assertEqual(
+            filtered[3].uri, f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64"
+        )
 
     def test_filter_safe_arch_not_x86_64(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["safe,arch:-x86_64"], False)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["safe,arch:-x86_64"], False
+        )
         self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0][0], "SafeAarch64Test")
-        self.assertEqual(filtered[0][1]["methodName"], "test_safe_aarch64")
+        self.assertEqual(
+            filtered[0].uri, f"{self.input_file_path}:SafeAarch64Test.test_safe_aarch64"
+        )
 
     def test_filter_not_fast_not_slow_not_safe(self):
-        filtered = tags.filter_test_tags(self.test_suite, ["-fast,-slow,-safe"], False)
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["-fast,-slow,-safe"], False
+        )
         self.assertEqual(len(filtered), 0)
 
     def test_filter_not_fast_not_slow_not_safe_others_dont_exist(self):
-        filtered = tags.filter_test_tags(
-            self.test_suite, ["-fast,-slow,-safe", "does,not,exist"], False
+        filtered = tags.filter_tags_on_runnables(
+            self.result, ["-fast,-slow,-safe", "does,not,exist"], False
         )
         self.assertEqual(len(filtered), 0)
 
@@ -279,25 +321,32 @@ class TagFilter(unittest.TestCase):
             },
         }
 
-        for _, info in self.test_suite:
-            name = info["name"].split(":", 1)[1]
-            self.assertEqual(info["tags"], tags_map[name])
+        for runnable in self.result[0].resolutions:
+            name = runnable.uri.split(":", 1)[1]
+            self.assertEqual(runnable.tags, tags_map[name])
             del tags_map[name]
         self.assertEqual(len(tags_map), 0)
 
 
 class TagFilter2(unittest.TestCase):
-    def test_filter_tags_include_empty(self):
+    def setUp(self):
         with script.TemporaryScript(
             "passtest.py",
             AVOCADO_TEST_OK,
-            "avocado_loader_unittest",
+            "avocado_resolver_tag_unittest",
             DEFAULT_NON_EXEC_MODE,
         ) as test_script:
-            this_loader = loader.FileLoader(None, {})
-            test_suite = this_loader.discover(test_script.path, loader.DiscoverMode.ALL)
-        self.assertEqual([], tags.filter_test_tags(test_suite, [], False, False))
-        self.assertEqual(test_suite, tags.filter_test_tags(test_suite, [], True, False))
+            self.result = resolver.resolve([test_script.path])
+            self.input_file_path = test_script.path
+
+    def test_filter_tags_include_empty(self):
+        self.assertEqual(
+            tags.filter_tags_on_runnables(self.result, [], False, False), []
+        )
+        self.assertEqual(
+            tags.filter_tags_on_runnables(self.result, [], True, False),
+            self.result[0].resolutions,
+        )
 
 
 class ParseFilterByTags(unittest.TestCase):
@@ -321,9 +370,3 @@ class ParseFilterByTags(unittest.TestCase):
                 (set([]), set(["FOO", "BAR", "BAZ"])),
             ],
         )
-
-
-class FilterRunnable(unittest.TestCase):
-    def test_no_tags(self):
-        runnable = Runnable("noop", None)
-        self.assertFalse(tags.filter_test_tags_runnable(runnable, []))
