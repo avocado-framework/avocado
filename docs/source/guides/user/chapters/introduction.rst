@@ -256,8 +256,9 @@ The default machine readable output in Avocado is `xunit
 
 xUnit is an XML format that contains test results in a structured form, and are
 used by other test automation projects, such as `jenkins
-<http://jenkins-ci.org/>`__. If you want to make Avocado to generate xunit
-output in the standard output of the runner, simply use::
+<http://jenkins-ci.org/>`__ or `GitLabCI <https://docs.gitlab.com/ee/ci/>`__.
+If you want to make Avocado to generate xunit output in the standard output of
+the runner, simply use::
 
     $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py --xunit -
     <?xml version="1.0" encoding="UTF-8"?>
@@ -303,6 +304,9 @@ output in the standard output of the runner, simply use::
           longer it only attaches up-to max-test-log-chars characters
           one half starting from the beginning of the content, the other
           half from the end of the content.
+
+.. note:: The avocado xunit format adds some attributes which are not a part of 
+          the official format, but they are used by `GitLabCI <https://gitlab.com/gitlab-org/gitlab/-/blob/7826c42924e3ced8ae625fda1ddd4e120492d596/lib/gitlab/ci/parsers/test/junit.rb#L83>`__.
 
 
 **2. JSON:**
