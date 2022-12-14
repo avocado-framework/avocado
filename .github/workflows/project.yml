@@ -6,7 +6,7 @@ on:
       - opened
       - reopened
 
-  pull_request:
+  pull_request_target:
     types:
       - opened
 
@@ -17,15 +17,88 @@ jobs:
     steps:
       - name: Generate token
         id: generate_token
-        uses: tibdex/github-app-token@v1.7.0
+        uses: tibdex/github-app-token@021a2405c7f990db57f5eae5397423dcc554159c
         with:
           app_id: ${{ secrets.MR_AVOCADO_ID }}
           installation_id: ${{ secrets.MR_AVOCADO_INSTALLATION_ID }}
           private_key: ${{ secrets.MR_AVOCADO_PRIVATE_KEY }}
-      - name: Add to Project
+      - name: Get project data
         env:
-          TOKEN: ${{ steps.generate_token.outputs.token }}
-        uses: actions/add-to-project@25580575b48384a3a473de527d26c5cace42b41b
-        with:
-          project-url: https://github.com/orgs/avocado-framework/projects/1
-          github-token: ${{ env.TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ORGANIZATION:  avocado-framework
+          PROJECT_NUMBER: 1
+        run: |
+          gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org){
+                projectV2(number: $number) {
+                  id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
+
+          echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
+          if [[ ${{ github.event_name  }} == pull_request_target ]]; then
+                  echo 'EVENT_ID='${{  github.event.pull_request.node_id }} >> $GITHUB_ENV
+                  echo 'FIELD_VALUE='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="Review Requested") |.id' project_data.json) >> $GITHUB_ENV
+          else
+                  echo 'EVENT_ID='${{  github.event.issue.node_id }} >> $GITHUB_ENV
+                  echo 'FIELD_VALUE='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="Triage") |.id' project_data.json) >> $GITHUB_ENV
+          fi
+
+      - name: Add Item to project
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          item_id="$( gh api graphql -f query='
+            mutation($project:ID!, $item:ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $item}) {
+                item {
+                  id
+                }
+              }
+            }' -f project=$PROJECT_ID -f item=$EVENT_ID --jq '.data.addProjectV2ItemById.item.id')"
+
+            echo 'ITEM_ID='$item_id >> $GITHUB_ENV
+
+      - name: Set fields
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api graphql -f query='
+            mutation (
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ) {
+              set_status: updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: { 
+                  singleSelectOptionId: $status_value
+                  }
+              }) {
+                projectV2Item {
+                  id
+                  }
+              }
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.FIELD_VALUE }} --silent
