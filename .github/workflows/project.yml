@@ -1,0 +1,31 @@
+name: Add new issue/PR to project
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  add-to-project:
+    name: Add issue or PR to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1.7.0
+        with:
+          app_id: ${{ secrets.MR_AVOCADO_ID }}
+          installation_id: ${{ secrets.MR_AVOCADO_INSTALLATION_ID }}
+          private_key: ${{ secrets.MR_AVOCADO_PRIVATE_KEY }}
+      - name: Add to Project
+        env:
+          TOKEN: ${{ steps.generate_token.outputs.token }}
+        uses: actions/add-to-project@25580575b48384a3a473de527d26c5cace42b41b
+        with:
+          project-url: https://github.com/orgs/avocado-framework/projects/1
+          github-token: ${{ env.TOKEN }}
