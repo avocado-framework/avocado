@@ -20,7 +20,7 @@ RANDOM_CONFIG = {
         "/bin/last",
     ],
     "run.shuffle": True,
-    "run.max_parallel_tasks": 3,
+    "run.max_parallel_tasks": 1,
 }
 
 with Job(
