@@ -19,7 +19,7 @@ RANDOM_CONFIG = {
         "/bin/true",
         "/bin/last",
     ],
-    "nrunner.shuffle": True,
+    "run.shuffle": True,
     "run.max_parallel_tasks": 3,
 }
 
