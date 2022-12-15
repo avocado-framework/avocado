@@ -226,6 +226,7 @@ class MultiplexTests(unittest.TestCase):
     def test_mux_inject(self):
         cmd = (
             f"{AVOCADO} run --disable-sysinfo --json - "
+            f"--job-results-dir {self.tmpdir.name} "
             f"--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
             f"foo:bar:b foo:baz:c bar:bar:bar "
             f"-- examples/tests/params.py "
