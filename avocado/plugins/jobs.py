@@ -138,7 +138,6 @@ class Jobs(CLICmd):
             return exit_codes.AVOCADO_GENERIC_CRASH
 
         results_file = os.path.join(results_dir, "results.json")
-        config_file = os.path.join(results_dir, "jobdata/args.json")
         try:
             results_data = self._get_data_from_file(results_file)
         except FileNotFoundError as ex:
@@ -146,15 +145,9 @@ class Jobs(CLICmd):
             LOG_UI.error(ex)
             return exit_codes.AVOCADO_GENERIC_CRASH
 
-        try:
-            config_data = self._get_data_from_file(config_file)
-        except FileNotFoundError:
-            pass
-
         data = {
             "JOB ID": job_id,
             "JOB LOG": results_data.get("debuglog"),
-            "SPAWNER": config_data.get("run.spawner", "unknown"),
         }
 
         # We could improve this soon with more data and colors
