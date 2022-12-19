@@ -19,8 +19,8 @@ RANDOM_CONFIG = {
         "/bin/true",
         "/bin/last",
     ],
-    "nrunner.shuffle": True,
-    "run.max_parallel_tasks": 3,
+    "run.shuffle": True,
+    "run.max_parallel_tasks": 1,
 }
 
 with Job(
