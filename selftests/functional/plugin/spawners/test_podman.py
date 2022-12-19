@@ -1,9 +1,10 @@
+import glob
 import os
 
 from avocado import Test
 from avocado.core.job import Job
 from avocado.utils import process, script
-from selftests.utils import AVOCADO
+from selftests.utils import AVOCADO, BASEDIR
 
 TEST_INSTRUMENTED_PASS = """from avocado import Test
 
@@ -83,3 +84,21 @@ class PodmanSpawnerTest(Test):
         self.assertEqual(
             "Test interrupted: Timeout reached", job.result.tests[0]["fail_reason"]
         )
+
+    def test_outputdir(self):
+        config = {
+            "resolver.references": [
+                os.path.join(BASEDIR, "examples", "tests", "gendata.py")
+            ],
+            "run.results_dir": self.workdir,
+            "run.spawner": "podman",
+            "spawner.podman.image": "fedora:36",
+        }
+
+        with Job.from_config(job_config=config) as job:
+            job.run()
+
+        self.assertEqual(1, job.result.passed)
+        data_files = glob.glob(os.path.join(job.test_results_path, "1-*", "data", "*"))
+        self.assertEqual(len(data_files), 1)
+        self.assertTrue(data_files[0].endswith("test.json"))
