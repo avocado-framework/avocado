@@ -30,6 +30,8 @@ def load_test(test_factory):
     :return: an instance of :class:`avocado.core.test.Test`.
     """
     test_class, test_parameters = test_factory
+    if "run.results_dir" in test_parameters:
+        test_parameters["base_logdir"] = test_parameters.pop("run.results_dir")
     if "modulePath" in test_parameters:
         test_path = test_parameters.pop("modulePath")
     else:
@@ -60,8 +62,6 @@ def load_test(test_factory):
                 if issubclass(obj, test.Test):
                     test_class = obj
                     break
-    if "run.results_dir" in test_parameters:
-        test_parameters["base_logdir"] = test_parameters.pop("run.results_dir")
     test_instance = test_class(**test_parameters)
 
     return test_instance
