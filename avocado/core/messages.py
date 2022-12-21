@@ -16,7 +16,7 @@ import os
 import time
 
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY
-from avocado.core.output import LOG_UI
+from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.test_id import TestID
 
 DEFAULT_LOG_FILE = "debug.log"
@@ -273,7 +273,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         return message
 
     @staticmethod
-    def _save_message_to_file(filename, buff, task, encoding=None):
+    def _save_message_to_file(filename, buff, task, encoding=None, append=True):
         """
         Method for saving messages into the file
 
@@ -290,6 +290,9 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         :type task: :class:`avocado.core.nrunner.Task`
         :param encoding: encoding of buff, default is None
         :type encoding: str
+        :param append: whether to append the message to the file or do
+                       nothing if the file already exists.
+        :type append: bool
         """
 
         def _save_to_file(file_name, mode):
@@ -297,6 +300,9 @@ class BaseRunningMessageHandler(BaseMessageHandler):
                 fp.write(buff)
 
         file = os.path.join(task.metadata["task_path"], filename)
+        if os.path.exists(file) and not append:
+            LOG_JOB.debug('File "%s" already exists, not overwritting it', file)
+            return
         if encoding:
             buff = BaseRunningMessageHandler._message_to_line(buff, encoding)
             _save_to_file(file, "a")
@@ -360,7 +366,7 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
         self._save_message_to_file(
-            "stdout", message["log"], task, message.get("encoding", None)
+            "stdout", message["log"], task, message.get("encoding", None), False
         )
 
 
@@ -388,7 +394,7 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
         self._save_message_to_file(
-            "stderr", message["log"], task, message.get("encoding", None)
+            "stderr", message["log"], task, message.get("encoding", None), False
         )
 
 
