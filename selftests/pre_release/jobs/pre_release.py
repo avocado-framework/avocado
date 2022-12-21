@@ -19,13 +19,13 @@ parallel_1 = {
         os.path.join("selftests", "functional"),
     ],
     "filter.by_tags.tags": ["parallel:1"],
-    "nrunner.max_parallel_tasks": 1,
+    "run.max_parallel_tasks": 1,
 }
 
 vmimage = {
     "resolver.references": [os.path.join(TESTS_DIR, "vmimage.py")],
     "yaml_to_mux.files": [os.path.join(TESTS_DIR, "vmimage.py.data", "variants.yml")],
-    "nrunner.max_parallel_tasks": 1,
+    "run.max_parallel_tasks": 1,
 }
 
 if __name__ == "__main__":

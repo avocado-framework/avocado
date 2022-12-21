@@ -10,9 +10,9 @@ from avocado.core.suite import TestSuite
 status_server = '/path/to/a/very/bad/non-existing/location'
 
 config = {
-    "nrunner.status_server_auto": True,
-    "nrunner.status_server_listen": status_server,
-    "nrunner.status_server_uri": status_server,
+    "run.status_server_auto": True,
+    "run.status_server_listen": status_server,
+    "run.status_server_uri": status_server,
     "resolver.references": ["examples/tests/passtest.py"],
 }
 

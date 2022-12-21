@@ -646,7 +646,7 @@ def create_suites(args):  # pylint: disable=W0621
     # ========================================================================
     config_nrunner_requirement = {
         "resolver.references": ["selftests/functional/serial/test_requirements.py"],
-        "nrunner.max_parallel_tasks": 1,
+        "run.max_parallel_tasks": 1,
         "run.dict_variants": [
             {"spawner": "process"},
             {"spawner": "podman"},
@@ -693,7 +693,7 @@ def create_suites(args):  # pylint: disable=W0621
         config_check_functional_serial["resolver.references"] = [
             "selftests/functional/serial/"
         ]
-        config_check_functional_serial["nrunner.max_parallel_tasks"] = 1
+        config_check_functional_serial["run.max_parallel_tasks"] = 1
         suites.append(
             TestSuite.from_config(config_check_functional_serial, "functional-serial")
         )
@@ -795,7 +795,7 @@ def main(args):  # pylint: disable=W0621
         max_parallel = int(multiprocessing.cpu_count() / 2)
         for suite in suites:
             if suite.name == "functional-parallel":
-                suite.config["nrunner.max_parallel_tasks"] = max_parallel
+                suite.config["run.max_parallel_tasks"] = max_parallel
 
     with Job(config, suites) as j:
         exit_code = j.run()

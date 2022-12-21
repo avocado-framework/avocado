@@ -15,9 +15,9 @@ assert status_server_listen != status_server_uri
 os.symlink(status_server_listen, status_server_uri)
 
 config = {
-    "nrunner.status_server_auto": False,
-    "nrunner.status_server_listen": status_server_listen,
-    "nrunner.status_server_uri": status_server_uri,
+    "run.status_server_auto": False,
+    "run.status_server_listen": status_server_listen,
+    "run.status_server_uri": status_server_uri,
     "resolver.references": ["examples/tests/passtest.py"],
 }
 

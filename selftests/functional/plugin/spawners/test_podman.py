@@ -69,7 +69,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
                 "resolver.references": [test.path],
                 "run.results_dir": self.tmpdir.name,
                 "task.timeout.running": 2,
-                "nrunner.spawner": "podman",
+                "run.spawner": "podman",
                 "spawner.podman.image": "fedora:36",
             }
 

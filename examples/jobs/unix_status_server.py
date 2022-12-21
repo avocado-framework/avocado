@@ -11,9 +11,9 @@ status_server_dir = tempfile.TemporaryDirectory()
 status_server = os.path.join(status_server_dir.name, "status_server.socket")
 
 config = {
-    "nrunner.status_server_auto": False,
-    "nrunner.status_server_listen": status_server,
-    "nrunner.status_server_uri": status_server,
+    "run.status_server_auto": False,
+    "run.status_server_listen": status_server,
+    "run.status_server_uri": status_server,
     "resolver.references": ["examples/tests/passtest.py"],
 }
 
