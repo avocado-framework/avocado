@@ -222,10 +222,9 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
         output_opts = ()
         if test_output:
-            podman_output = runtime_task.task.runnable.output_dir
             output_opts = (
                 "-v",
-                (f"{test_output}:" f"{os.path.expanduser(podman_output)}"),
+                f"{test_output}:{runtime_task.task.runnable.output_dir}",
             )
 
         image, _ = self._get_image_from_cache(runtime_task)
@@ -288,7 +287,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     def create_task_output_dir(self, runtime_task):
         output_dir_path = self.task_output_dir(runtime_task)
-        output_podman_path = "~/avocado/job-results/spawner/task"
+        output_podman_path = "/tmp/.avocado_task_output_dir"
 
         os.makedirs(output_dir_path, exist_ok=True)
         runtime_task.task.setup_output_dir(output_podman_path)

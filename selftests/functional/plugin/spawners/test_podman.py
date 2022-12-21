@@ -1,10 +1,10 @@
+import glob
 import os
-import shutil
-import unittest
 
+from avocado import Test
 from avocado.core.job import Job
 from avocado.utils import process, script
-from selftests.utils import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, BASEDIR
 
 TEST_INSTRUMENTED_PASS = """from avocado import Test
 
@@ -26,18 +26,20 @@ class PassTest(Test):
 """
 
 
-@unittest.skipIf(
-    shutil.which("podman") is None, "Podman not installed (command podman is missing)"
-)
-class PodmanSpawnerTest(TestCaseTmpDir):
+class PodmanSpawnerTest(Test):
+    """
+    :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
+    :avocado: dependency={"type": "podman-image", "uri": "registry.fedoraproject.org/fedora:36"}
+    """
+
     def test_avocado_instrumented(self):
 
         with script.Script(
-            os.path.join(self.tmpdir.name, "passtest.py"), TEST_INSTRUMENTED_PASS
+            os.path.join(self.workdir, "passtest.py"), TEST_INSTRUMENTED_PASS
         ) as test:
             result = process.run(
                 f"{AVOCADO} run "
-                f"--job-results-dir {self.tmpdir.name} "
+                f"--job-results-dir {self.workdir} "
                 f"--disable-sysinfo --spawner=podman "
                 f"--spawner-podman-image=fedora:36 -- "
                 f"{test}",
@@ -50,7 +52,7 @@ class PodmanSpawnerTest(TestCaseTmpDir):
     def test_exec(self):
         result = process.run(
             f"{AVOCADO} run "
-            f"--job-results-dir {self.tmpdir.name} "
+            f"--job-results-dir {self.workdir} "
             f"--disable-sysinfo --spawner=podman "
             f"--spawner-podman-image=fedora:36 -- "
             f"/bin/true",
@@ -63,11 +65,11 @@ class PodmanSpawnerTest(TestCaseTmpDir):
     def test_sleep_longer_timeout_podman(self):
 
         with script.Script(
-            os.path.join(self.tmpdir.name, "sleeptest.py"), TEST_INSTRUMENTED_SLEEP
+            os.path.join(self.workdir, "sleeptest.py"), TEST_INSTRUMENTED_SLEEP
         ) as test:
             config = {
                 "resolver.references": [test.path],
-                "run.results_dir": self.tmpdir.name,
+                "run.results_dir": self.workdir,
                 "task.timeout.running": 2,
                 "run.spawner": "podman",
                 "spawner.podman.image": "fedora:36",
@@ -82,3 +84,21 @@ class PodmanSpawnerTest(TestCaseTmpDir):
         self.assertEqual(
             "Test interrupted: Timeout reached", job.result.tests[0]["fail_reason"]
         )
+
+    def test_outputdir(self):
+        config = {
+            "resolver.references": [
+                os.path.join(BASEDIR, "examples", "tests", "gendata.py")
+            ],
+            "run.results_dir": self.workdir,
+            "run.spawner": "podman",
+            "spawner.podman.image": "fedora:36",
+        }
+
+        with Job.from_config(job_config=config) as job:
+            job.run()
+
+        self.assertEqual(1, job.result.passed)
+        data_files = glob.glob(os.path.join(job.test_results_path, "1-*", "data", "*"))
+        self.assertEqual(len(data_files), 1)
+        self.assertTrue(data_files[0].endswith("test.json"))
