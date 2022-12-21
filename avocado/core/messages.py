@@ -340,56 +340,66 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     """
     Handler for stdout message.
 
-    It will save the stdout to the stdout and debug file in the task directory.
+    It will save the stdout to the debug file in the task directory,
+    and optionally (depending on "log_only" value) to the stdout file.
 
     :param status: 'running'
     :param type: 'stdout'
     :param log: stdout message
     :type log: bytes
+    :param log_only: whether to save the "log" message only to the standard
+                     test log (and not to the "stdout" file)
+    :type log_only: bool
     :param encoding: optional value for decoding messages
     :type encoding: str
     :param time: Time stamp of the message
     :type time: float
 
     example: {'status': 'running', 'type': 'stdout', 'log': 'stdout message',
-             'time': 18405.55351474}
+              'log_only': False, 'time': 18405.55351474}
     """
 
     _tag = b"[stdout] "
 
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
-        self._save_message_to_file(
-            "stdout", message["log"], task, message.get("encoding", None)
-        )
+        if not message.get("log_only", False):
+            self._save_message_to_file(
+                "stdout", message["log"], task, message.get("encoding", None)
+            )
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
     """
     Handler for stderr message.
 
-    It will save the stderr to the stderr and debug file in the task directory.
+    It will save the stderr to the debug file in the task directory,
+    and optionally (depending on "log_only" value) to the stderr file.
 
     :param status: 'running'
     :param type: 'stderr'
     :param log: stderr message
     :type log: bytes
+    :param log_only: whether to save the "log" message only to the standard
+                     test log (and not to the "stderr" file)
+    :type log_only: bool
     :param encoding: optional value for decoding messages
     :type encoding: str
     :param time: Time stamp of the message
     :type time: float
 
     example: {'status': 'running', 'type': 'stderr', 'log': 'stderr message',
-             'time': 18405.55351474}
+              'log_only': False, 'time': 18405.55351474}
     """
 
     _tag = b"[stderr] "
 
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
-        self._save_message_to_file(
-            "stderr", message["log"], task, message.get("encoding", None)
-        )
+        if not message.get("log_only", False):
+            self._save_message_to_file(
+                "stderr", message["log"], task, message.get("encoding", None)
+            )
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):
