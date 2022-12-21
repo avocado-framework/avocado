@@ -133,6 +133,49 @@ class RunnableRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
 
+class ExecTestStdOutErr(unittest.TestCase):
+    def test_64kib(self):
+        path = os.path.join(
+            BASEDIR, "selftests", ".data", "exec_test_std", "exec_test_64kib.py"
+        )
+        res = process.run(
+            f"avocado-runner-exec-test runnable-run -u {path}", ignore_status=True
+        )
+        self.assertIn(b"'type': 'stdout'", res.stdout)
+        self.assertIn(b"'type': 'stderr'", res.stdout)
+        self.assertIn(b"'result': 'pass'", res.stdout)
+        self.assertIn(b"'returncode': 0", res.stdout)
+        self.assertEqual(res.exit_status, 0)
+
+
+class ExecTestStdOutErrOutputDir(TestCaseTmpDir):
+    def test_1mib(self):
+        path = os.path.join(
+            BASEDIR, "selftests", ".data", "exec_test_std", "exec_test_1mib.py"
+        )
+        res = process.run(
+            f"avocado-runner-exec-test runnable-run -u {path} output_dir={self.tmpdir.name}",
+            ignore_status=True,
+        )
+        self.assertIn(b"'type': 'stdout'", res.stdout)
+        self.assertIn(b"'type': 'stderr'", res.stdout)
+        self.assertIn(b"'result': 'pass'", res.stdout)
+        self.assertIn(b"'returncode': 0", res.stdout)
+        self.assertEqual(res.exit_status, 0)
+
+    def test_error_existing_stdout_stderr(self):
+        self.test_1mib()
+        path = os.path.join(
+            BASEDIR, "selftests", ".data", "exec_test_std", "exec_test_1mib.py"
+        )
+        res = process.run(
+            f"avocado-runner-exec-test runnable-run -u {path} output_dir={self.tmpdir.name}",
+            ignore_status=True,
+        )
+        self.assertIn(b"'result': 'error'", res.stdout)
+        self.assertEqual(res.exit_status, 0)
+
+
 class TaskRun(unittest.TestCase):
     def test_noop(self):
         res = process.run(
