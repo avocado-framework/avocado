@@ -140,11 +140,18 @@ class ExecTestRunner(BaseRunner):
         return env
 
     def _run_proc(self, runnable):
+        if runnable.output_dir is not None:
+            stdout = open(os.path.join(runnable.output_dir, "stdout"), "xb")
+            stderr = open(os.path.join(runnable.output_dir, "stderr"), "xb")
+        else:
+            stdout = subprocess.PIPE
+            stderr = subprocess.PIPE
+
         return subprocess.Popen(
             [runnable.uri] + list(runnable.args),
             stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=stdout,
+            stderr=stderr,
             env=self._get_env(runnable),
         )
 
@@ -165,11 +172,28 @@ class ExecTestRunner(BaseRunner):
 
         yield from self.running_loop(poll_proc)
 
-        stdout = process.stdout.read()
-        stderr = process.stderr.read()
+        if process.stdout is not None:
+            stdout = process.stdout.read()
+            yield self.prepare_status("running", {"type": "stdout", "log": stdout})
+        else:
+            stdout_path = os.path.join(runnable.output_dir, "stdout")
+            with open(stdout_path, "rb") as stdout_file:
+                stdout = stdout_file.read()
+            yield self.prepare_status(
+                "running", {"type": "stdout", "log": stdout, "log_only": True}
+            )
 
-        yield self.prepare_status("running", {"type": "stdout", "log": stdout})
-        yield self.prepare_status("running", {"type": "stderr", "log": stderr})
+        if process.stderr is not None:
+            stderr = process.stderr.read()
+            yield self.prepare_status("running", {"type": "stderr", "log": stderr})
+        else:
+            stderr_path = os.path.join(runnable.output_dir, "stderr")
+            with open(stderr_path, "rb") as stderr_file:
+                stderr = stderr_file.read()
+            yield self.prepare_status(
+                "running", {"type": "stderr", "log": stderr, "log_only": True}
+            )
+
         yield self._process_final_status(process, runnable, stdout, stderr)
         self._cleanup(runnable)
 
