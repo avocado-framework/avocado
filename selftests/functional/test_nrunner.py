@@ -9,10 +9,11 @@ from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExis
 RUNNER = "avocado-runner-noop"
 
 
-class NRunnerFeatures(unittest.TestCase):
+class NRunnerFeatures(TestCaseTmpDir):
     @skipUnlessPathExists("/bin/false")
     def test_custom_exit_codes(self):
         config = {
+            "run.results_dir": self.tmpdir.name,
             "resolver.references": ["/bin/false"],
             "runner.exectest.exitcodes.skip": [1],
         }
@@ -23,6 +24,7 @@ class NRunnerFeatures(unittest.TestCase):
     @skipUnlessPathExists("/bin/true")
     def test_failfast(self):
         config = {
+            "run.results_dir": self.tmpdir.name,
             "resolver.references": [
                 "/bin/true",
                 "/bin/false",
