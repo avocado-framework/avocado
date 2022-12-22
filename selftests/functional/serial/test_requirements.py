@@ -117,7 +117,9 @@ class BasicTest(Test):
         spawner_command = ""
         if spawner == "podman":
             spawner_command = "--spawner=podman --spawner-podman-image=fedora:36"
-        return f"{AVOCADO} run {spawner_command} {path}"
+        return (
+            f"{AVOCADO} run {spawner_command} --job-results-dir {self.workdir} {path}"
+        )
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)
     def test_single_success(self):

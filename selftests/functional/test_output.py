@@ -109,6 +109,7 @@ OUTPUT_SHOW_TEST = """
 #!/usr/bin/env python3
 
 import sys
+import tempfile
 
 from avocado import Test
 from avocado.core.job import Job
@@ -117,21 +118,24 @@ from avocado.core.suite import TestSuite
 
 class PassTest(Test):
     def test1(self):
-        config = {'core.show': ['none'],
+        config = {'run.results_dir': self.workdir,
+                  'core.show': ['none'],
                   'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
             j.run()
 
     def test2(self):
-        config = {'core.show': ['app'],
+        config = {'run.results_dir': self.workdir,
+                  'core.show': ['app'],
                   'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
             j.run()
 
     def test3(self):
-        config = {'core.show': ['none'],
+        config = {'run.results_dir': self.workdir,
+                  'core.show': ['none'],
                   'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
@@ -139,11 +143,16 @@ class PassTest(Test):
 
 
 if __name__ == '__main__':
-    config = {'resolver.references': [__file__],
+    test_results_dir = tempfile.TemporaryDirectory()
+
+    config = {'run.results_dir': test_results_dir.name,
+              'resolver.references': [__file__],
               'core.show': ['app']}
     suite = TestSuite.from_config(config)
     with Job(config, [suite]) as j:
-        sys.exit(j.run())
+        exit_code = j.run()
+        test_results_dir.cleanup()
+        sys.exit(exit_code)
 """
 
 
@@ -283,7 +292,7 @@ class OutputTest(TestCaseTmpDir):
             OUTPUT_SHOW_TEST,
             script.READ_ONLY_MODE,
         ) as test:
-            cmd = f"{AVOCADO} run --disable-sysinfo -- {test.path}"
+            cmd = f"{AVOCADO} run --disable-sysinfo --job-results-dir {self.tmpdir.name} -- {test.path}"
             result = process.run(cmd)
             expected_job_id_number = 1
             expected_bin_true_number = 0

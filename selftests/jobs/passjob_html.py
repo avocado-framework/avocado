@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Minimal job that runs an also minimal executable test
-
-import os
 import sys
 import tempfile
 
@@ -13,11 +10,9 @@ test_results_dir = tempfile.TemporaryDirectory()
 
 config = {
     "run.results_dir": test_results_dir.name,
-    'resolver.references': [
-        os.path.join(os.path.dirname(__file__), 'tests', 'pass'),
-        os.path.join(os.path.dirname(__file__), 'tests', 'passtest.py')
-        ]
-    }
+    "resolver.references": ["examples/tests/passtest.py:PassTest.test"],
+    "job.run.result.html.enabled": True,
+}
 
 suite = TestSuite.from_config(config)
 with Job(config, [suite]) as j:

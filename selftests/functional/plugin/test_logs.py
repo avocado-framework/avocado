@@ -18,11 +18,12 @@ class TestLogsUI(TestCaseTmpDir):
 
     def test(self):
         cmd_line = (
-            "%s --config=%s run -- examples/tests/passtest.py "
-            "examples/tests/failtest.py "
-            "examples/tests/canceltest.py "
+            f"{AVOCADO} --config={os.path.join(self.tmpdir.name, 'config')} "
+            f"run --job-results-dir {self.tmpdir.name} "
+            f"-- examples/tests/passtest.py "
+            f"examples/tests/failtest.py "
+            f"examples/tests/canceltest.py "
         )
-        cmd_line %= (AVOCADO, os.path.join(self.tmpdir.name, "config"))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(
             result.exit_status,

@@ -798,7 +798,15 @@ def main(args):  # pylint: disable=W0621
                 suite.config["run.max_parallel_tasks"] = max_parallel
 
     with Job(config, suites) as j:
+        pre_job_test_result_dirs = set(os.listdir(os.path.dirname(j.logdir)))
         exit_code = j.run()
+        post_job_test_result_dirs = set(os.listdir(os.path.dirname(j.logdir)))
+        if len(pre_job_test_result_dirs) != len(post_job_test_result_dirs):
+            if exit_code == 0:
+                exit_code = 1
+            print("check.py didn't clean test results.")
+            print("uncleaned directories:")
+            print(post_job_test_result_dirs.difference(pre_job_test_result_dirs))
     return exit_code
 
 
