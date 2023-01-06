@@ -140,9 +140,6 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
         log.setLevel(log_level)
         log.propagate = False
 
-        # LOG_UI = 'avocado.app'
-        output.LOG_UI.addHandler(RunnerLogHandler(queue, messages.StdoutFactory))
-
         sys.stdout = StreamToQueue(queue, messages.StdoutFactory)
         sys.stderr = StreamToQueue(queue, messages.StderrFactory)
 
