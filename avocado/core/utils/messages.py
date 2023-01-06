@@ -227,9 +227,6 @@ def start_logging(config, queue):
     log.setLevel(log_level)
     log.propagate = False
 
-    # LOG_UI = 'avocado.app'
-    output.LOG_UI.addHandler(RunnerLogHandler(queue, "stdout"))
-
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
 
