@@ -134,13 +134,3 @@ class FileFactory(GenericRunningFactory):
     @classmethod
     def get(cls, msg, path):  # pylint: disable=W0221
         return super().get(msg=msg, path=path)
-
-
-SUPPORTED_TYPES = {
-    LogFactory.message_type: LogFactory,
-    StdoutFactory.message_type: StdoutFactory,
-    StderrFactory.message_type: StderrFactory,
-    WhiteboardFactory.message_type: WhiteboardFactory,
-    OutputFactory.message_type: OutputFactory,
-    FileFactory.message_type: FileFactory,
-}

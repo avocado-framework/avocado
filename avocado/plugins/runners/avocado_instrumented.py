@@ -21,40 +21,40 @@ from avocado.core.varianter import is_empty_variant
 
 
 class RunnerLogHandler(logging.Handler):
-    def __init__(self, queue, message_type, kwargs=None):
+    def __init__(self, queue, message_factory, kwargs=None):
         """
         Runner logger which will put every log to the runner queue
 
         :param queue: queue for the runner messages
         :type queue: multiprocessing.SimpleQueue
-        :param message_type: type of the log
-        :type message_type: string
+        :param message_factory: class that knows how to create the right messages
+        :type message_type: :class:`avocado.core.messages.GenericFactory`
         """
         super().__init__()
         self.queue = queue
-        self.message = messages.SUPPORTED_TYPES[message_type]
+        self.message_factory = message_factory
         self.kwargs = kwargs or {}
 
     def emit(self, record):
         msg = self.format(record)
-        self.queue.put(self.message.get(msg, **self.kwargs))
+        self.queue.put(self.message_factory.get(msg, **self.kwargs))
 
 
 class StreamToQueue:
-    def __init__(self, queue, message_type):
+    def __init__(self, queue, message_factory):
         """
         Runner Stream which will transfer data to the runner queue
 
         :param queue: queue for the runner messages
         :type queue: multiprocessing.SimpleQueue
-        :param message_type: type of the log
-        :type message_type: string
+        :param message_factory: class that knows how to create the right messages
+        :type message_type: :class:`avocado.core.messages.GenericFactory`
         """
         self.queue = queue
-        self.message = messages.SUPPORTED_TYPES[message_type]
+        self.message_factory = message_factory
 
     def write(self, buf):
-        self.queue.put(self.message.get(buf))
+        self.queue.put(self.message_factory.get(buf))
 
     def flush(self):
         pass
@@ -123,7 +123,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 yield logger_name, level[0] if len(level) > 0 else default_level
 
         log_level = config.get("job.output.loglevel", logging.DEBUG)
-        log_handler = RunnerLogHandler(queue, "log")
+        log_handler = RunnerLogHandler(queue, messages.LogFactory)
         fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
         formatter = logging.Formatter(fmt=fmt)
         log_handler.setFormatter(formatter)
@@ -141,14 +141,14 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
         log.propagate = False
 
         # LOG_UI = 'avocado.app'
-        output.LOG_UI.addHandler(RunnerLogHandler(queue, "stdout"))
+        output.LOG_UI.addHandler(RunnerLogHandler(queue, messages.StdoutFactory))
 
-        sys.stdout = StreamToQueue(queue, "stdout")
-        sys.stderr = StreamToQueue(queue, "stderr")
+        sys.stdout = StreamToQueue(queue, messages.StdoutFactory)
+        sys.stderr = StreamToQueue(queue, messages.StderrFactory)
 
         # output custom test loggers
         enabled_loggers = config.get("core.show")
-        output_handler = RunnerLogHandler(queue, "output")
+        output_handler = RunnerLogHandler(queue, messages.OutputFactory)
         output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
         user_streams = [
             user_streams
@@ -166,7 +166,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             enabled_loggers, log_level
         ):
             store_stream_handler = RunnerLogHandler(
-                queue, "file", {"path": enabled_logger}
+                queue, messages.FileFactory, {"path": enabled_logger}
             )
             store_stream_handler.setFormatter(formatter)
             output_logger = logging.getLogger(enabled_logger)
