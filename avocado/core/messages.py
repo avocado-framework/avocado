@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2021
 # Authors: Jan Richter <jarichte@redhat.com>
 
+import logging
 import os
 import time
 
@@ -334,6 +335,15 @@ class LogMessageHandler(BaseRunningMessageHandler):
                 task.metadata["task_path"], "debug.log"
             )
         self._save_to_default_file(message, task)
+
+        # For messages from specific loggers, we preserve their names
+        # and levels so that they are handled appropriately based on
+        # the Avocado job logging configuration
+        log_name = message.get("log_name")
+        if log_name is not None:
+            logger = logging.getLogger(log_name)
+            level = logging.getLevelName(message.get("log_levelname"))
+            logger.log(level, message.get("log_message"))
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):

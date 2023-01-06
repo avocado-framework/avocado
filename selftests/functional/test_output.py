@@ -436,6 +436,36 @@ class OutputPluginTest(TestCaseTmpDir):
         job_id = job_id_list[0]
         self.assertEqual(len(job_id), 40)
 
+    def test_show_custom_log(self):
+        cmd_line = (
+            f"{AVOCADO} --show=avocado.test.progress run "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
+        )
+        self.assertEqual(
+            result.stdout_text,
+            (
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 0\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 1\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 2\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2\n"
+            ),
+        )
+
     def test_silent_trumps_test(self):
         # Also verify --show=none can be supplied as run option
         cmd_line = (

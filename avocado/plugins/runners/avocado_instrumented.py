@@ -34,10 +34,27 @@ class RunnerLogHandler(logging.Handler):
         self.queue = queue
         self.message_factory = message_factory
         self.kwargs = kwargs
+        self._message_only_formatter = None
+
+    @property
+    def message_only_formatter(self):
+        if self._message_only_formatter is None:
+            self._message_only_formatter = logging.Formatter()
+        return self._message_only_formatter
 
     def emit(self, record):
         msg = self.format(record)
-        self.queue.put(self.message_factory.get(msg, **self.kwargs))
+        if self.message_factory is messages.LogFactory:
+            formatted_msg = self.message_only_formatter.format(record)
+            kwargs = {
+                "log_name": record.name,
+                "log_levelname": record.levelname,
+                "log_message": formatted_msg,
+            }
+            kwargs.update(**self.kwargs)
+        else:
+            kwargs = self.kwargs
+        self.queue.put(self.message_factory.get(msg, **kwargs))
 
 
 class StreamToQueue:
