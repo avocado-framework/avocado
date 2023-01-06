@@ -1,19 +1,63 @@
+import logging
 import multiprocessing
 import os
+import sys
 import tempfile
 import time
 import traceback
 
+from avocado.core import output
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import (
     RUNNER_RUN_CHECK_INTERVAL,
     RUNNER_RUN_STATUS_INTERVAL,
     BaseRunner,
 )
+from avocado.core.streams import BUILTIN_STREAMS
 from avocado.core.test import TestID
 from avocado.core.tree import TreeNodeEnvOnly
 from avocado.core.utils import loader, messages
 from avocado.core.varianter import is_empty_variant
+
+
+class RunnerLogHandler(logging.Handler):
+    def __init__(self, queue, message_type, kwargs=None):
+        """
+        Runner logger which will put every log to the runner queue
+
+        :param queue: queue for the runner messages
+        :type queue: multiprocessing.SimpleQueue
+        :param message_type: type of the log
+        :type message_type: string
+        """
+        super().__init__()
+        self.queue = queue
+        self.message = messages.SUPPORTED_TYPES[message_type]
+        self.kwargs = kwargs or {}
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.queue.put(self.message.get(msg, **self.kwargs))
+
+
+class StreamToQueue:
+    def __init__(self, queue, message_type):
+        """
+        Runner Stream which will transfer data to the runner queue
+
+        :param queue: queue for the runner messages
+        :type queue: multiprocessing.SimpleQueue
+        :param message_type: type of the log
+        :type message_type: string
+        """
+        self.queue = queue
+        self.message = messages.SUPPORTED_TYPES[message_type]
+
+    def write(self, buf):
+        self.queue.put(self.message.get(buf))
+
+    def flush(self):
+        pass
 
 
 class AvocadoInstrumentedTestRunner(BaseRunner):
@@ -60,7 +104,81 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             return tree_nodes, paths
 
     @staticmethod
-    def _run_avocado(runnable, queue):
+    def _start_logging(config, queue):
+        """Helper method for connecting the avocado logging with avocado messages.
+
+        It will add the log Handlers to the :mod:`avocado.core.output` loggers,
+        which will convert the logs to the avocado messages and sent them to
+        processing queue.
+
+        :param config: avocado configuration
+        :type config: dict
+        :param queue: queue for the runner messages
+        :type queue: multiprocessing.SimpleQueue
+        """
+
+        def split_loggers_and_levels(enabled_loggers, default_level):
+            for logger_level_split in map(lambda x: x.split(":"), enabled_loggers):
+                logger_name, *level = logger_level_split
+                yield logger_name, level[0] if len(level) > 0 else default_level
+
+        log_level = config.get("job.output.loglevel", logging.DEBUG)
+        log_handler = RunnerLogHandler(queue, "log")
+        fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
+        formatter = logging.Formatter(fmt=fmt)
+        log_handler.setFormatter(formatter)
+
+        # main log = 'avocado'
+        logger = logging.getLogger("avocado")
+        logger.addHandler(log_handler)
+        logger.setLevel(log_level)
+        logger.propagate = False
+
+        # LOG_JOB = 'avocado.test'
+        log = output.LOG_JOB
+        log.addHandler(log_handler)
+        log.setLevel(log_level)
+        log.propagate = False
+
+        # LOG_UI = 'avocado.app'
+        output.LOG_UI.addHandler(RunnerLogHandler(queue, "stdout"))
+
+        sys.stdout = StreamToQueue(queue, "stdout")
+        sys.stderr = StreamToQueue(queue, "stderr")
+
+        # output custom test loggers
+        enabled_loggers = config.get("core.show")
+        output_handler = RunnerLogHandler(queue, "output")
+        output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
+        user_streams = [
+            user_streams
+            for user_streams in enabled_loggers
+            if user_streams not in BUILTIN_STREAMS
+        ]
+        for user_stream, level in split_loggers_and_levels(user_streams, log_level):
+            custom_logger = logging.getLogger(user_stream)
+            custom_logger.addHandler(output_handler)
+            custom_logger.setLevel(level)
+
+        # store custom test loggers
+        enabled_loggers = config.get("job.run.store_logging_stream")
+        for enabled_logger, level in split_loggers_and_levels(
+            enabled_loggers, log_level
+        ):
+            store_stream_handler = RunnerLogHandler(
+                queue, "file", {"path": enabled_logger}
+            )
+            store_stream_handler.setFormatter(formatter)
+            output_logger = logging.getLogger(enabled_logger)
+            output_logger.addHandler(store_stream_handler)
+            output_logger.setLevel(level)
+
+            if not enabled_logger.startswith("avocado."):
+                output_logger.addHandler(log_handler)
+                output_logger.propagate = False
+
+    @classmethod
+    def _run_avocado(cls, runnable, queue):
         try:
             # This assumes that a proper resolution (see resolver module)
             # was performed, and that a URI contains:
@@ -89,7 +207,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 },
             ]
 
-            messages.start_logging(runnable.config, queue)
+            cls._start_logging(runnable.config, queue)
 
             if "COVERAGE_RUN" in os.environ:
                 from coverage import Coverage
