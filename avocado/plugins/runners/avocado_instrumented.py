@@ -21,7 +21,7 @@ from avocado.core.varianter import is_empty_variant
 
 
 class RunnerLogHandler(logging.Handler):
-    def __init__(self, queue, message_factory, kwargs=None):
+    def __init__(self, queue, message_factory, **kwargs):
         """
         Runner logger which will put every log to the runner queue
 
@@ -33,7 +33,7 @@ class RunnerLogHandler(logging.Handler):
         super().__init__()
         self.queue = queue
         self.message_factory = message_factory
-        self.kwargs = kwargs or {}
+        self.kwargs = kwargs
 
     def emit(self, record):
         msg = self.format(record)
@@ -163,7 +163,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             enabled_loggers, log_level
         ):
             store_stream_handler = RunnerLogHandler(
-                queue, messages.FileFactory, {"path": enabled_logger}
+                queue, messages.FileFactory, path=enabled_logger
             )
             store_stream_handler.setFormatter(formatter)
             output_logger = logging.getLogger(enabled_logger)
