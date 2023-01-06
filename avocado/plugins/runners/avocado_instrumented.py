@@ -227,20 +227,20 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
             state = instance.get_state()
             fail_reason = state.get("fail_reason")
-            queue.put(messages.WhiteboardMessage.get(state["whiteboard"]))
+            queue.put(messages.WhiteboardFactory.get(state["whiteboard"]))
             queue.put(
-                messages.FinishedMessage.get(
+                messages.FinishedFactory.get(
                     state["status"].lower(), fail_reason=fail_reason
                 )
             )
         except Exception as e:
-            queue.put(messages.StderrMessage.get(traceback.format_exc()))
-            queue.put(messages.FinishedMessage.get("error", fail_reason=str(e)))
+            queue.put(messages.StderrFactory.get(traceback.format_exc()))
+            queue.put(messages.FinishedFactory.get("error", fail_reason=str(e)))
 
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
         try:
             queue = multiprocessing.SimpleQueue()
             process = multiprocessing.Process(
@@ -267,10 +267,10 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                         or now > next_execution_state_mark
                     ):
                         most_current_execution_state_time = now
-                        yield messages.RunningMessage.get()
+                        yield messages.RunningFactory.get()
                     if (now - time_started) > timeout:
                         process.terminate()
-                        yield messages.FinishedMessage.get("interrupted", "timeout")
+                        yield messages.FinishedFactory.get("interrupted", "timeout")
                         break
                 else:
                     message = queue.get()
@@ -281,8 +281,8 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                     if message.get("status") == "finished":
                         break
         except Exception as e:
-            yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get("error", fail_reason=str(e))
+            yield messages.StderrFactory.get(traceback.format_exc())
+            yield messages.FinishedFactory.get("error", fail_reason=str(e))
 
 
 class RunnerApp(BaseRunnerApp):

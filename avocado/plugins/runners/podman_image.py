@@ -43,22 +43,22 @@ class PodmanImageRunner(BaseRunner):
             )
 
     def run(self, runnable):
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
 
         if not runnable.uri:
             reason = "uri identifying the podman image is required"
-            yield messages.FinishedMessage.get("error", reason)
+            yield messages.FinishedFactory.get("error", reason)
         else:
             queue = SimpleQueue()
             process = Process(target=self._run_podman_pull, args=(runnable.uri, queue))
             process.start()
             while queue.empty():
                 time.sleep(RUNNER_RUN_STATUS_INTERVAL)
-                yield messages.RunningMessage.get()
+                yield messages.RunningFactory.get()
 
             output = queue.get()
             result = output.pop("result")
-            yield messages.FinishedMessage.get(result, **output)
+            yield messages.FinishedFactory.get(result, **output)
 
 
 class RunnerApp(BaseRunnerApp):

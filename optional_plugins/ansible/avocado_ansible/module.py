@@ -43,11 +43,11 @@ class AnsibleModuleRunner(BaseRunner):
         queue.put({"result": result, "stdout": stdout, "stderr": stderr})
 
     def run(self, runnable):
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
 
         if not runnable.uri:
             reason = "uri identifying the ansible module is required"
-            yield messages.FinishedMessage.get("error", reason)
+            yield messages.FinishedFactory.get("error", reason)
             return
 
         queue = SimpleQueue()
@@ -56,9 +56,9 @@ class AnsibleModuleRunner(BaseRunner):
         yield from self.running_loop(lambda: not queue.empty())
 
         status = queue.get()
-        yield messages.StdoutMessage.get(status["stdout"])
-        yield messages.StderrMessage.get(status["stderr"])
-        yield messages.FinishedMessage.get(status["result"])
+        yield messages.StdoutFactory.get(status["stdout"])
+        yield messages.StderrFactory.get(status["stderr"])
+        yield messages.FinishedFactory.get(status["result"])
 
 
 class RunnerApp(BaseRunnerApp):

@@ -86,7 +86,7 @@ class RobotRunner(BaseRunner):
         file_name, suite_name, test_name = self._uri_to_file_suite_test()
         if not all([file_name, suite_name, test_name]):
 
-            yield messages.FinishedMessage.get("error", fail_reason="Invalid URI given")
+            yield messages.FinishedFactory.get("error", fail_reason="Invalid URI given")
             return
 
         queue = multiprocessing.SimpleQueue()
@@ -94,13 +94,13 @@ class RobotRunner(BaseRunner):
             target=self._run, args=(file_name, suite_name, test_name, queue)
         )
         process.start()
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
         yield from self.running_loop(lambda: not queue.empty())
 
         status = queue.get()
-        yield messages.StdoutMessage.get(status["stdout"])
-        yield messages.StderrMessage.get(status["stderr"])
-        yield messages.FinishedMessage.get(status["result"])
+        yield messages.StdoutFactory.get(status["stdout"])
+        yield messages.StderrFactory.get(status["stderr"])
+        yield messages.FinishedFactory.get(status["result"])
 
 
 class RunnerApp(BaseRunnerApp):

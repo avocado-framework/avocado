@@ -65,12 +65,12 @@ class PreSysInfo:
         try:
             file_path = os.path.join(self.sysinfo_dir, log_hook.name)
             for data in log_hook.collect():
-                self.queue.put(messages.FileMessage.get(data, file_path))
+                self.queue.put(messages.FileFactory.get(data, file_path))
         except sysinfo_collectible.CollectibleException as e:
-            self.queue.put(messages.LogMessage.get(e.args[0]))
+            self.queue.put(messages.LogFactory.get(e.args[0]))
         except Exception as exc:  # pylint: disable=W0703
             self.queue.put(
-                messages.StderrMessage.get(
+                messages.StderrFactory.get(
                     f"Collection " f"{type(log_hook)} " f"failed: {exc}"
                 )
             )
@@ -83,12 +83,12 @@ class PreSysInfo:
 
         if self.log_packages:
             self._log_packages(self.sysinfo_dir)
-        self.queue.put(messages.FinishedMessage.get("pass"))
+        self.queue.put(messages.FinishedFactory.get("pass"))
 
     def _log_packages(self, path):
         installed_path = os.path.join(path, "installed_packages")
         installed_packages = "\n".join(self.installed_pkgs) + "\n"
-        self.queue.put(messages.FileMessage.get(installed_packages, installed_path))
+        self.queue.put(messages.FileFactory.get(installed_packages, installed_path))
 
 
 class PostSysInfo(PreSysInfo):
@@ -152,12 +152,12 @@ class SysinfoRunner(BaseRunner):
         sysinfo_config = self.runnable.kwargs.get("sysinfo", {})
         test_fail = self.runnable.kwargs.get("test_fail", False)
         if self.runnable.uri not in ["pre", "post"]:
-            yield messages.StderrMessage.get(
+            yield messages.StderrFactory.get(
                 f"Unsupported uri"
                 f"{self.runnable.uri}. "
                 f"Possible values, 'pre', 'post'"
             )
-            yield messages.FinishedMessage.get("error")
+            yield messages.FinishedFactory.get("error")
 
         try:
             queue = multiprocessing.SimpleQueue()
@@ -186,15 +186,15 @@ class SysinfoRunner(BaseRunner):
                         or now > next_execution_state_mark
                     ):
                         most_current_execution_state_time = now
-                        yield messages.RunningMessage.get()
+                        yield messages.RunningFactory.get()
                 else:
                     message = queue.get()
                     yield message
                     if message.get("status") == "finished":
                         break
         except Exception:  # pylint: disable=W0703
-            yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get("error")
+            yield messages.StderrFactory.get(traceback.format_exc())
+            yield messages.FinishedFactory.get("error")
 
 
 class RunnerApp(BaseRunnerApp):

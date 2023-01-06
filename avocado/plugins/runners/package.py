@@ -109,7 +109,7 @@ class PackageRunner(BaseRunner):
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
         # check if there is a valid 'action' argument
         cmd = self.runnable.kwargs.get("action", "install")
         # avoid invalid arguments
@@ -117,8 +117,8 @@ class PackageRunner(BaseRunner):
             stderr = (
                 f"Invalid action {cmd}. Use one of 'install', 'check' " f"or 'remove'"
             )
-            yield messages.StderrMessage.get(stderr.encode())
-            yield messages.FinishedMessage.get("error")
+            yield messages.StderrFactory.get(stderr.encode())
+            yield messages.FinishedFactory.get("error")
             return
 
         package = self.runnable.kwargs.get("name")
@@ -135,7 +135,7 @@ class PackageRunner(BaseRunner):
 
             while queue.empty():
                 time.sleep(RUNNER_RUN_STATUS_INTERVAL)
-                yield messages.RunningMessage.get()
+                yield messages.RunningFactory.get()
 
             output = queue.get()
             result = output["result"]
@@ -149,9 +149,9 @@ class PackageRunner(BaseRunner):
                 'Package name should be passed as kwargs using name="package_name".'
             )
 
-        yield messages.StdoutMessage.get(stdout.encode())
-        yield messages.StderrMessage.get(stderr.encode())
-        yield messages.FinishedMessage.get(result)
+        yield messages.StdoutFactory.get(stdout.encode())
+        yield messages.StderrFactory.get(stderr.encode())
+        yield messages.FinishedFactory.get(result)
 
 
 class RunnerApp(BaseRunnerApp):

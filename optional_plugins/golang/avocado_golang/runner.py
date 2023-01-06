@@ -45,7 +45,7 @@ class GolangRunner(BaseRunner):
             )
             return
 
-        yield messages.StartedMessage.get()
+        yield messages.StartedFactory.get()
         module_test = self.runnable.uri.split(":", 1)
         module = module_test[0]
         try:
@@ -71,9 +71,9 @@ class GolangRunner(BaseRunner):
         yield from self.running_loop(poll_proc)
 
         result = "pass" if process.returncode == 0 else "fail"
-        yield messages.StdoutMessage.get(process.stdout.read())
-        yield messages.StderrMessage.get(process.stderr.read())
-        yield messages.FinishedMessage.get(result, returncode=process.returncode)
+        yield messages.StdoutFactory.get(process.stdout.read())
+        yield messages.StderrFactory.get(process.stderr.read())
+        yield messages.FinishedFactory.get(result, returncode=process.returncode)
 
 
 class RunnerApp(BaseRunnerApp):

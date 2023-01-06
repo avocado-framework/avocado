@@ -1,7 +1,7 @@
 import time
 
 
-class GenericMessage:
+class GenericFactory:
     message_status = None
 
     @classmethod
@@ -33,17 +33,17 @@ class GenericMessage:
         return cls._prepare_message(additional_info=kwargs)
 
 
-class StartedMessage(GenericMessage):
+class StartedFactory(GenericFactory):
     message_status = "started"
 
 
-class RunningMessage(GenericMessage):
+class RunningFactory(GenericFactory):
     """Creates running message without any additional info."""
 
     message_status = "running"
 
 
-class FinishedMessage(GenericMessage):
+class FinishedFactory(GenericFactory):
     message_status = "finished"
 
     @classmethod
@@ -65,7 +65,7 @@ class FinishedMessage(GenericMessage):
         )
 
 
-class GenericRunningMessage(GenericMessage):
+class GenericRunningFactory(GenericFactory):
     message_status = "running"
     message_type = None
 
@@ -98,35 +98,35 @@ class GenericRunningMessage(GenericMessage):
         return super().get(**kwargs)
 
 
-class LogMessage(GenericRunningMessage):
+class LogFactory(GenericRunningFactory):
     message_type = "log"
 
 
-class StdoutMessage(GenericRunningMessage):
+class StdoutFactory(GenericRunningFactory):
     """Creates stdout message with all necessary information."""
 
     message_type = "stdout"
 
 
-class StderrMessage(GenericRunningMessage):
+class StderrFactory(GenericRunningFactory):
     """Creates stderr message with all necessary information."""
 
     message_type = "stderr"
 
 
-class WhiteboardMessage(GenericRunningMessage):
+class WhiteboardFactory(GenericRunningFactory):
     """Creates whiteboard message with all necessary information."""
 
     message_type = "whiteboard"
 
 
-class OutputMessage(GenericRunningMessage):
+class OutputFactory(GenericRunningFactory):
     """Creates output message with all necessary information."""
 
     message_type = "output"
 
 
-class FileMessage(GenericRunningMessage):
+class FileFactory(GenericRunningFactory):
     """Creates file message with all necessary information."""
 
     message_type = "file"
@@ -137,10 +137,10 @@ class FileMessage(GenericRunningMessage):
 
 
 SUPPORTED_TYPES = {
-    LogMessage.message_type: LogMessage,
-    StdoutMessage.message_type: StdoutMessage,
-    StderrMessage.message_type: StderrMessage,
-    WhiteboardMessage.message_type: WhiteboardMessage,
-    OutputMessage.message_type: OutputMessage,
-    FileMessage.message_type: FileMessage,
+    LogFactory.message_type: LogFactory,
+    StdoutFactory.message_type: StdoutFactory,
+    StderrFactory.message_type: StderrFactory,
+    WhiteboardFactory.message_type: WhiteboardFactory,
+    OutputFactory.message_type: OutputFactory,
+    FileFactory.message_type: FileFactory,
 }

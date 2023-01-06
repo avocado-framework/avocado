@@ -2,7 +2,7 @@ import io
 
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.tapparser import TapParser, TestResult
-from avocado.core.utils.messages import FinishedMessage
+from avocado.core.utils.messages import FinishedFactory
 from avocado.plugins.runners.exec_test import ExecTestRunner
 
 
@@ -62,7 +62,7 @@ class TAPRunner(ExecTestRunner):
     def _process_final_status(
         self, process, runnable, stdout=None, stderr=None
     ):  # pylint: disable=W0613
-        return FinishedMessage.get(
+        return FinishedFactory.get(
             self._get_tap_result(stdout), returncode=process.returncode
         )
 
