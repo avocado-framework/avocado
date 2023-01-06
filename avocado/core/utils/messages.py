@@ -165,10 +165,30 @@ class RunnerLogHandler(logging.Handler):
         self.queue = queue
         self.message = _supported_types[message_type]
         self.kwargs = kwargs or {}
+        self._message_only_formatter = None
+
+    @property
+    def message_only_formatter(self):
+        """
+        Property that initiates a :class:`logging.Formatter` lazily
+        """
+        if self._message_only_formatter is None:
+            self._message_only_formatter = logging.Formatter()
+        return self._message_only_formatter
 
     def emit(self, record):
         msg = self.format(record)
-        self.queue.put(self.message.get(msg, **self.kwargs))
+        if self.message is LogMessage:
+            formatted_msg = self.message_only_formatter.format(record)
+            kwargs = {
+                "log_name": record.name,
+                "log_levelname": record.levelname,
+                "log_message": formatted_msg,
+            }
+            kwargs.update(**self.kwargs)
+        else:
+            kwargs = self.kwargs
+        self.queue.put(self.message.get(msg, **kwargs))
 
 
 class StreamToQueue:
@@ -226,9 +246,6 @@ def start_logging(config, queue):
     log.addHandler(log_handler)
     log.setLevel(log_level)
     log.propagate = False
-
-    # LOG_UI = 'avocado.app'
-    output.LOG_UI.addHandler(RunnerLogHandler(queue, "stdout"))
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
