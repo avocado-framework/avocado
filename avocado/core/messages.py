@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2021
 # Authors: Jan Richter <jarichte@redhat.com>
 
+import logging
 import os
 import time
 
@@ -316,9 +317,23 @@ class LogMessageHandler(BaseRunningMessageHandler):
     :type log: string
     :param time: Time stamp of the message
     :type time: float
+    :param log_name: optional name of the logger, such as "avocado.test.foo"
+    :type log_name: string
+    :param log_levelname: level of the logger, such as "INFO", required
+                          if "log_name" is set
+    :type log_levelname: string
+    :param log_message: message formatted as message only (no name, level
+                        or timestamp), require if "log_name" is set
+    :type log_message: string
 
     example: {'status': 'running', 'type': 'log', 'log': 'log message',
-             'time': 18405.55351474}
+              'time': 18405.55351474}
+
+    or:
+
+    example: {'status': 'running', 'type': 'log', 'log': 'log message',
+              'time': 18405.55351474, 'log_name': 'avocado.test.foo',
+              'log_levelname': 'INFO', 'log_message': 'foo content'}
     """
 
     _tag = b"[stdlog] "
@@ -334,6 +349,15 @@ class LogMessageHandler(BaseRunningMessageHandler):
                 task.metadata["task_path"], "debug.log"
             )
         self._save_to_default_file(message, task)
+
+        # For messages from specific loggers, we preserve their names
+        # and levels so that they are handled appropriately based on
+        # the Avocado job logging configuration
+        log_name = message.get("log_name")
+        if log_name is not None:
+            logger = logging.getLogger(log_name)
+            level = logging.getLevelName(message.get("log_levelname"))
+            logger.log(level, message.get("log_message"))
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
