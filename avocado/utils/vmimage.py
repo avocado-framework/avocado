@@ -590,7 +590,7 @@ class Image:
             cache_dirs=cache_dirs,
             expire=None,
             metadata=metadata,
-        ).fetch()
+        ).fetch(timeout=asset.DOWNLOAD_TIMEOUT * 2)
 
         if archive.is_archive(asset_path):
             uncompressed_path = os.path.splitext(asset_path)[0]
