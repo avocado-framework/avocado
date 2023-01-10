@@ -612,6 +612,52 @@ class NetworkInterface:
             LOG.debug(msg)
             return False
 
+    def is_veth(self):
+        """Check if interface is a virtual ethernet.
+
+        This method checks if the interface is a virtual ethernet or not.
+
+        rtype: bool
+        """
+        if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec")
+            raise ValueError("Please provide valid inerface name")
+        cmd = f"cat /sys/class/net/{self.name}/device/devspec"
+        output = run_command(cmd, self.host)
+        if 'l-lan' in output:
+            return True
+        return False
+
+    def is_vnic(self):
+        """Check if interface is a virtual network.
+
+        This method checks if the interface is a virtual NIC or not.
+
+        rtype: bool
+        """
+        if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec")
+            raise ValueError("Please provide valid inerface name")
+        cmd = f"cat /sys/class/net/{self.name}/device/devspec"
+        output = run_command(cmd, self.host)
+        if 'vnic' in output:
+            return True
+        return False
+
+    def is_sriov(self):
+        """Check if interface is a SRIOV virtual interface.
+
+        This method checks if the interface is SRIOV logical interface or not.
+
+        rtype: bool
+        """
+        if not os.path.isfile(f"/sys/class/net/{self.name}/device/vpd")
+            raise ValueError("Please provide valid inerface name")
+        cmd = f"cat /sys/class/net/{self.name}/device/vpd"
+        output = run_command(cmd, self.host)
+        for vpd in output.split()
+            if 'VF' in vpd and vpd.endswith("SN"):
+                return True
+        return False
+
     def remove_cfg_file(self):
         """
         Remove any config files that is created as a part of the test
