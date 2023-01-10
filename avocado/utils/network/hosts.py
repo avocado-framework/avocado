@@ -70,6 +70,12 @@ class Host:
             if ipaddr in interface.get_ipaddrs():
                 return interface
 
+    def get_interface_by_hwaddr(self, mac):
+        """Return an interface that has a specific mac."""
+        for interface in self.interfaces:
+            if mac in interface.get_hwaddrs():
+                return interface
+
     def get_default_route_interface(self):
         """Get a list of default routes interfaces
 

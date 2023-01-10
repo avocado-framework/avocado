@@ -124,8 +124,7 @@ class NetworkInterface:
             mode, slaves = run_command(cmd, self.host).splitlines()
             return {"mode": mode.split(), "slaves": slaves.split()}
         except Exception:
-            raise NWException(
-                f"Slave interface not found for " f"the bond {self.name}")
+            raise NWException(f"Slave interface not found for " f"the bond {self.name}")
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = f"{filename}.backup"
@@ -482,23 +481,19 @@ class NetworkInterface:
                     "MASTER": self.name,
                 }
                 if current_distro.name == "SuSE":
-                    ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + \
-                        bond_dict["mode"][0]
+                    ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
                     for index, slave in enumerate(bond_dict["slaves"]):
                         bonding_slave = f"BONDING_SLAVE{index}"
                         ifcfg_dict[bonding_slave] = slave
-                        ifcfg_slave_dict.update(
-                            {"NAME": slave, "DEVICE": slave})
-                        self._write_to_file(
-                            f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+                        ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
+                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
                 elif current_distro.name in ["rhel", "fedora"]:
                     ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
                     for index, slave in enumerate(bond_dict["slaves"]):
                         ifcfg_slave_dict.update(
                             {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
                         )
-                        self._write_to_file(
-                            f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
                 else:
                     msg = "Distro not supported by API. Could not save ipaddr."
                     raise NWException(msg)
@@ -583,8 +578,7 @@ class NetworkInterface:
         if os.path.exists(backup_file):
             shutil.move(backup_file, self.config_filename)
         else:
-            raise NWException(
-                "Backup file not available, could not restore file.")
+            raise NWException("Backup file not available, could not restore file.")
 
     def is_available(self):
         """Check if interface is available.
@@ -619,17 +613,17 @@ class NetworkInterface:
             return False
 
     def is_veth(self):
-        """Check if interface is a virtual ethernet.
+        """Check if interface is a Virtual Ethernet.
 
-        This method checks if the interface is a virtual ethernet or not.
+        This method checks if the interface is a Virtual Ethernet or not.
 
         rtype: bool
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec"):
-            raise ValueError("Please provide valid inerface name")
+            raise NWException("Network interface sysfs file does not exists")
         cmd = f"cat /sys/class/net/{self.name}/device/devspec"
         output = run_command(cmd, self.host)
-        if 'l-lan' in output:
+        if "l-lan" in output:
             return True
         return False
 
@@ -641,10 +635,10 @@ class NetworkInterface:
         rtype: bool
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec"):
-            raise ValueError("Please provide valid inerface name")
+            raise NWException("Network interface sysfs file does not exists")
         cmd = f"cat /sys/class/net/{self.name}/device/devspec"
         output = run_command(cmd, self.host)
-        if 'vnic' in output:
+        if "vnic" in output:
             return True
         return False
 
@@ -656,11 +650,11 @@ class NetworkInterface:
         rtype: bool
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/vpd"):
-            raise ValueError("Please provide valid inerface name")
+            raise NWException("Network interface sysfs file does not exists")
         cmd = f"cat /sys/class/net/{self.name}/device/vpd"
         output = run_command(cmd, self.host)
         for vpd in output.split():
-            if 'VF' in vpd and vpd.endswith("SN"):
+            if "VF" in vpd and vpd.endswith("SN"):
                 return True
         return False
 
