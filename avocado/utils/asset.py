@@ -144,7 +144,7 @@ class Asset:
             # To avoid parallel downloads of the same asset, and errors during
             # the write after download, let's get the lock before start the
             # download.
-            with FileLock(asset_path, 120):
+            with FileLock(asset_path, timeout):
                 try:
                     self.find_asset_file(create_metadata=True)
                     return True
