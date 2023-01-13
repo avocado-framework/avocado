@@ -6,7 +6,7 @@ import subprocess
 import uuid
 
 from avocado.core.dependencies.requirements import cache
-from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
+from avocado.core.plugin_interfaces import CLI, Init, Spawner
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
@@ -94,16 +94,25 @@ class PodmanCLI(CLI):
         pass
 
 
-class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
+class PodmanSpawner(Spawner, SpawnerMixin):
 
     description = "Podman (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     _PYTHON_VERSIONS_CACHE = {}
+    _PYTHON_VERSIONS_CACHE_LOCK = asyncio.Lock()
 
     def __init__(self, config=None, job=None):  # pylint: disable=W0231
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
+        self._podman = None
+
+    @property
+    def podman(self):
+        if self._podman is None:
+            podman_bin = self.config.get("spawner.podman.bin")
+            self._podman = Podman(podman_bin)
+        return self._podman
 
     def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
@@ -160,25 +169,11 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     @property
     async def python_version(self):
         image = self.config.get("spawner.podman.image")
-        if image not in self._PYTHON_VERSIONS_CACHE:
-            if not self.podman:
-                msg = "Cannot get Python version: self.podman not defined."
-                LOG.debug(msg)
-                return None, None, None
-            result = await self.podman.get_python_version(image)
-            self._PYTHON_VERSIONS_CACHE[image] = result
+        async with self._PYTHON_VERSIONS_CACHE_LOCK:
+            if image not in self._PYTHON_VERSIONS_CACHE:
+                result = await self.podman.get_python_version(image)
+                self._PYTHON_VERSIONS_CACHE[image] = result
         return self._PYTHON_VERSIONS_CACHE[image]
-
-    async def deploy_artifacts(self):
-        pass
-
-    async def deploy_avocado(self, where):
-        # Deploy all the eggs to container inside /tmp/
-        major, minor, _ = await self.python_version
-        eggs = self.get_eggs_paths(major, minor)
-
-        for egg, to in eggs:
-            await self.podman.copy_to_container(where, egg, to)
 
     async def _create_container_for_task(
         self, runtime_task, env_args, test_output=None
@@ -191,10 +186,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             mount_status_server_socket = True
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
-        _, _, python_binary = await self.python_version
+        major, minor, python_binary = await self.python_version
         entry_point_args = [python_binary, "-m", "avocado.core.nrunner", "task-run"]
 
-        test_opts = ()
+        extra_opts = ()
         if runtime_task.task.category == "test":
             runnable_uri = runtime_task.task.runnable.uri
             try:
@@ -204,7 +199,11 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             if os.path.exists(test_path):
                 to = os.path.join("/tmp", test_path)
                 runtime_task.task.runnable.uri = os.path.join("/tmp", runnable_uri)
-                test_opts = ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+                extra_opts += ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+
+        # Make all the eggs available to the container inside /tmp/
+        for egg, to in self.get_eggs_paths(major, minor):
+            extra_opts += ("-v", f"{os.path.abspath(egg)}:{to}:ro")
 
         task = runtime_task.task
         entry_point_args.extend(task.get_command_args())
@@ -238,7 +237,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 "create",
                 *status_server_opts,
                 *output_opts,
-                *test_opts,
+                *extra_opts,
                 entry_point_arg,
                 *envs,
                 image,
@@ -252,14 +251,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
-        podman_bin = self.config.get("spawner.podman.bin")
-        try:
-            # pylint: disable=W0201
-            self.podman = Podman(podman_bin)
-        except PodmanException as ex:
-            runtime_task.status = str(ex)
-            return False
-
         major, minor, _ = await self.python_version
         # Return only the "to" location
         eggs = self.get_eggs_paths(major, minor)
@@ -271,8 +262,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         )
 
         runtime_task.spawner_handle = container_id
-
-        await self.deploy_avocado(container_id)
 
         try:
             # pylint: disable=W0201
