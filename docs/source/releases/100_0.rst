@@ -2,7 +2,7 @@
 100.0 The 100
 =============
 
-The Avocado team is proud to present another release: Avocado 99.0,
+The Avocado team is proud to present another release: Avocado 100.0,
 AKA "The 100", is now available!
 
 Release documentation: `Avocado 100.0
