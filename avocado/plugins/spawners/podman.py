@@ -192,7 +192,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         _, _, python_binary = await self.python_version
-        entry_point_args = [python_binary, "-m", "avocado.core.nrunner", "task-run"]
+
+        module_name = runtime_task.task.runnable.kind.replace("-", "_")
+        full_module_name = f"avocado.plugins.runners.{module_name}"
+        entry_point_args = [python_binary, "-m", full_module_name, "task-run"]
 
         test_opts = ()
         if runtime_task.task.category == "test":
