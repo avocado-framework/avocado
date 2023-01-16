@@ -293,6 +293,21 @@ jobs:
          python3 -c 'import sys; from pkg_resources import require; require("avocado-framework"); from avocado.core.main import main; sys.exit(main())' run /bin/true
 
 
+  podman_egg_task:
+
+    name: Podman Egg task
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Test running avocado from eggs under Podman spawner
+        run: |
+         apt update && apt -y install python3 python3-setuptools
+         python3 setup.py bdist_egg
+         mv dist/avocado_framework-*egg /tmp/avocado_framework.egg
+         python3 setup.py clean --all
+         python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:36 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
+
   fedora_develop_install_uninstall_task:
     name: Fedora develop install/uninstall task
     runs-on: ubuntu-latest
