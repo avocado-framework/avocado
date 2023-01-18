@@ -15,7 +15,7 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Allow git to operate on directory checked out by GH Actions
@@ -26,7 +26,7 @@ jobs:
         run: python3 setup.py test --select=static-checks
       - name: Archive failed tests logs
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: static-checks-logs
           path: /home/runner/avocado/job-results/
@@ -46,11 +46,11 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -67,7 +67,7 @@ jobs:
         run: python3 setup.py test --skip=static-checks
       - name: Archive failed tests logs
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: linux-logs-${{ matrix.python-version }}
           path: /home/runner/avocado/job-results/
@@ -88,9 +88,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
@@ -121,9 +121,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -158,9 +158,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -186,9 +186,9 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -200,7 +200,7 @@ jobs:
     - name: Build eggs
       run: python setup.py bdist_egg
     - name: Save eggs as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: egg-${{ matrix.python-version }}
         path: /home/runner/work/avocado/avocado/dist/
@@ -213,7 +213,7 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Run Codespell Check
@@ -223,7 +223,7 @@ jobs:
         run: make -f Makefile.gh bandit
         continue-on-error: True
       - name: Save bandit output as artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bandit-results
           path: /home/runner/work/avocado/avocado/bandit-output.txt
@@ -247,7 +247,7 @@ jobs:
                     "ubuntu:20.04"]
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install and run avocado --version
         run: |
          if ! command -v dnf &> /dev/null
@@ -276,7 +276,7 @@ jobs:
                     "ubuntu:20.04"]
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Test running avocado from eggs
         run: |
          if ! command -v dnf &> /dev/null
@@ -299,7 +299,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Test running avocado from eggs under Podman spawner
         run: |
          apt update && apt -y install python3 python3-setuptools
@@ -315,7 +315,7 @@ jobs:
       image: fedora:36
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Test avocado install/uninstall
         run: |
          python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
@@ -337,7 +337,7 @@ jobs:
       image: quay.io/avocado-framework/avocado-ci-fedora-36
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run unittests and functional tests
         run: |
          make develop
