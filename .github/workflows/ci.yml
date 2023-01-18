@@ -116,7 +116,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.9, 3.10.0]
+        python-version: [3.11.1]
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
