@@ -54,7 +54,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -V --version
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
@@ -127,7 +127,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -V --version
       - name: Install avocado
         run: |
           python3 -m pip install -r requirements-dev.txt
@@ -164,7 +164,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -V --version
       - name: Install avocado
         run: python setup.py develop --user
       - name: Show avocado help
