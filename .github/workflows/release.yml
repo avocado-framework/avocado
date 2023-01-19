@@ -82,11 +82,11 @@ jobs:
 
   build-and-publish-eggs:
     name: Build eggs and publish them
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: release
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0, 3.11]
+        python-version: [3.6.15, 3.7.15, 3.8.16, 3.9.16, 3.10.9, 3.11.1]
       fail-fast: false
 
     steps:
