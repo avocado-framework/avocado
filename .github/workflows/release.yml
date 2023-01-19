@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: install required packages
         run:  dnf -y install rpmdevtools git python3-pip make
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -64,7 +64,7 @@ jobs:
       - name: Build wheel
         run: make -f Makefile.gh build-wheel
       - name: Save wheel as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheel
           path: ${{github.workspace}}/PYPI_UPLOAD/
@@ -90,13 +90,13 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: ${{ github.event.inputs.version }}
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build eggs
