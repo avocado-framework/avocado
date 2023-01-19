@@ -27,7 +27,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 100.0
+Version: 100.1
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
@@ -408,6 +408,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Jan 19 2023 Cleber Rosa <crosa@redhat.com> - 100.1-1
+- New release
+
 * Fri Jan 13 2023 Cleber Rosa <crosa@redhat.com> - 100.0-1
 - New release
 
