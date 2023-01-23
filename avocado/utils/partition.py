@@ -138,8 +138,11 @@ class Partition:
             with open(filename) as open_file:  # pylint: disable=W1514
                 for line in open_file:
                     parts = line.split()
-                    if parts[0] == self.device and parts[1] == self.mountpoint:
-                        return parts[1]  # The mountpoint where it's mounted
+                    if parts[0] == self.device or os.path.realpath(
+                        parts[0]
+                    ) == os.path.realpath(self.device):
+                        if parts[1] == self.mountpoint:
+                            return parts[1]  # The mountpoint where it's mounted
                 return None
 
         # no specific file given, look in /proc/mounts
