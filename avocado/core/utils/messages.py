@@ -52,7 +52,9 @@ class FinishedMessage(GenericMessage):
     message_status = "finished"
 
     @classmethod
-    def get(cls, result, fail_reason=None, returncode=None):  # pylint: disable=W0221
+    def get(
+        cls, result, fail_reason=None, returncode=None, class_name=None
+    ):  # pylint: disable=W0221
         """Creates finished message with all necessary information.
 
         :param result: test result
@@ -62,11 +64,16 @@ class FinishedMessage(GenericMessage):
                             result.
         :type fail_reason: str
         :param returncode: exit status of runner
+        :param class_name: class name of the test
+        :type class_name: str
         :return: finished message
         :rtype: dict
         """
         return super().get(
-            result=result, fail_reason=fail_reason, returncode=returncode
+            result=result,
+            fail_reason=fail_reason,
+            returncode=returncode,
+            class_name=class_name,
         )
 
 

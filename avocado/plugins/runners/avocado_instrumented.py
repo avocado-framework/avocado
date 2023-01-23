@@ -112,7 +112,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             queue.put(messages.WhiteboardMessage.get(state["whiteboard"]))
             queue.put(
                 messages.FinishedMessage.get(
-                    state["status"].lower(), fail_reason=fail_reason
+                    state["status"].lower(), fail_reason=fail_reason, class_name=klass
                 )
             )
         except Exception as e:
