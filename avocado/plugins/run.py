@@ -259,7 +259,7 @@ class Run(CLICmd):
 
     def run(self, config):
         """
-        Run test modules or simple tests.
+        Runs an Avocado Job with a TestSuite created from test references
 
         :param config: Configuration received from command line parser and
                        possibly other sources.

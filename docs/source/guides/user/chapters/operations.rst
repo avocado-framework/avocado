@@ -177,8 +177,8 @@ Let's now list only the executable tests::
     exec-test /bin/true
     exec-test /bin/false
 
-Here, as mentioned before, ``exec-test`` means that those files are executables
-treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
+Here, as mentioned before, ``exec-test`` means that those files are treated as
+executable tests. You can also give the ``--verbose`` or ``-V`` flag to
 display files that were found by Avocado, but are not considered Avocado
 tests::
 
