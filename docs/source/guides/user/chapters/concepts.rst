@@ -5,33 +5,6 @@ Basic Concepts
 
 It is important to understand some basic concepts before start using Avocado.
 
-Test Resolution
----------------
-
-.. note:: Some definitions here may be out of date. The current runner can
-   still be using some of these definitions in its design, however, we are
-   working on an improved version of the runner, the NextRunner that will use
-   an alternative strategy.
-
-When you use the Avocado runner, frequently you'll provide paths to files,
-that will be inspected, and acted upon depending on their contents. The
-diagram below shows how Avocado analyzes a file and decides what to do with
-it:
-
-.. figure:: /_static/diagram.png
-
-It's important to note that the inspection mechanism is safe (that is, Python
-classes and files are not actually loaded and executed on discovery and
-inspection stage). Due to the fact Avocado doesn't actually load the code and
-classes, the introspection is simple and will *not* catch things like buggy
-test modules, missing imports and miscellaneous bugs in the code you want to
-list or run. We recommend only running tests from sources you trust, use of
-static checking and reviews in your test development process.
-
-Due to the simple test inspection mechanism, Avocado will not recognize test
-classes that inherit from a class derived from :class:`avocado.Test`. Please
-refer to the `WritingTests` documentation on how to use the tags functionality
-to mark derived classes as Avocado test classes.
 
 Identifiers and references
 --------------------------
