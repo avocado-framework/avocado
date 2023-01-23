@@ -50,7 +50,8 @@ class PodmanSpawnerInit(Init):
             "Avocado egg path to be used during initial bootstrap "
             "of avocado inside the isolated environment. By default, "
             "Avocado will try to download (or get from cache) an "
-            "egg from its repository."
+            "egg from its repository. Please use a valid URL, including "
+            'the protocol (for local files, use the "file:///" prefix).'
         )
 
         settings.register_option(
