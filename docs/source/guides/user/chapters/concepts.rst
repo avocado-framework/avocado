@@ -161,8 +161,9 @@ Avocado plugins can also introduce additional test types.
 Simple
 ~~~~~~
 
-Any executable in your box. The criteria for PASS/FAIL is the return code of the executable.
-If it returns 0, the test PASSes, if it returns anything else, it FAILs.
+Any executable file can serve as a test. The criteria for PASS/FAIL is
+the return code of the executable.  If it returns 0, the test PASSes,
+if it returns anything else, it FAILs.
 
 Python unittest
 ~~~~~~~~~~~~~~~
