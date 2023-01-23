@@ -18,7 +18,7 @@ from avocado.core.varianter import is_empty_variant
 
 class AvocadoInstrumentedTestRunner(BaseRunner):
     """
-    Runner for Avocado INSTRUMENTED tests
+    Runner for avocado-instrumented tests
 
     Runnable attributes usage:
 
@@ -31,7 +31,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
     """
 
     name = "avocado-instrumented"
-    description = "Runner for Avocado INSTRUMENTED tests"
+    description = "Runner for avocado-instrumented tests"
 
     CONFIGURATION_USED = [
         "run.test_parameters",

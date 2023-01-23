@@ -84,9 +84,10 @@ command:
 
 To fetch the assets defined inside an instrumented test, use::
 
- $ avocado assets fetch *AVOCADO_INSTRUMENTED*
+ $ avocado assets fetch *avocado-instrumented*
 
-Where ``AVOCADO_INSTRUMENTED`` is the path to the Avocado Instrumented file.
+Where ``avocado-instrumented`` is the path to the Avocado instrumented
+test file.
 
 Removing assets
 ---------------

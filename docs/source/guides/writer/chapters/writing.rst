@@ -200,7 +200,7 @@ Some tests can depend on data files, external to the test file itself.
 Avocado provides a test API that makes it really easy to access such
 files: :meth:`get_data() <avocado.core.test.TestData.get_data>`.
 
-For Avocado tests (that is, ``INSTRUMENTED`` tests)
+For Avocado tests (that is, ``avocado-instrumented`` tests)
 :meth:`get_data() <avocado.core.test.TestData.get_data>` allows test data files
 to be accessed from up to three sources:
 
@@ -222,7 +222,7 @@ to be accessed from up to three sources:
    ``MyTest.test_foo``, with variant ``debug-ffff``, the data directory path
    will be ``/home/user/test.py.data/MyTest.test_foo/debug-ffff/``.
 
-.. note:: Unlike INSTRUMENTED tests, SIMPLE tests only define ``file``
+.. note:: Unlike avocado-instrumented tests, exec-tests only define ``file``
           and ``variant`` data_dirs, therefore the most-specific data-dir
           might look like ``/bin/echo.data/debug-ffff/``.
 
@@ -674,7 +674,7 @@ the fetched files in.
   Setting the ``find_only`` parameter to ``True`` will make Avocado look for
   the asset in the cache, but will not attempt to download it if the asset
   is not available. The asset download can be done prior to the test execution
-  using the command-line ``avocado assets fetch INSTRUMENTED``.
+  using the command-line ``avocado assets fetch avocado-instrumented``.
 
   In this example, if the asset is not available in the cache, the test will
   continue to run and when the test tries to use the asset, it will fail. A
@@ -1005,8 +1005,8 @@ Now let's follow with some docstring directives examples.
 
 .. _docstring-directive-enable-disable:
 
-Declaring test as NOT-INSTRUMENTED
-----------------------------------
+Declaring test as not being avocado-instrumented
+------------------------------------------------
 
 In order to say `this class is not an Avocado instrumented` test, one
 can use ``:avocado: disable`` directive. The result is that this
@@ -1037,11 +1037,11 @@ the ``test.py:SpecificTests.test_shared`` is inherited from the
 base-class.
 
 
-Declaring test as INSTRUMENTED
-------------------------------
+Declaring test as being avocado-instrumented
+--------------------------------------------
 
 The ``:avocado: enable`` tag might be useful when you want to
-override that this is an `INSTRUMENTED` test, even though it is
+override that this is an `avocado-instrumented` test, even though it is
 not inherited from ``avocado.Test`` class and/or when you want
 to only limit the ``test*`` methods discovery to the current
 class::
@@ -1077,7 +1077,7 @@ Results in::
 
 The ``test.py:NotInheritedFromTest.test`` will not really work
 as it lacks several required methods, but still is discovered
-as an `INSTRUMENTED` test due to ``enable`` tag and the
+as an `avocado-instrumented` test due to ``enable`` tag and the
 ``SpecificTests`` only looks at it's ``test*`` methods,
 ignoring the inheritance, therefore the
 ``test.py:SpecificTests.test_shared`` will not be discovered.
@@ -1088,7 +1088,7 @@ ignoring the inheritance, therefore the
 
 The ``:avocado: recursive`` tag was used to enable recursive
 discovery, but nowadays this is the default. By using this
-tag one explicitly sets the class as `INSTRUMENTED`, therefore
+tag one explicitly sets the class as `avocado-instrumented`, therefore
 inheritance from `avocado.Test` is not required.
 
 
@@ -1284,13 +1284,13 @@ Avocado exports some information, including test parameters, as environment
 variables to the running test.
 
 The availability of the variable depends on the test type. A greater set of
-variables are available to INSTRUMENTED tests, while a reduced number of
+variables are available to avocado-instrumented tests, while a reduced number of
 variables are available to EXEC tests. Although the availability of the
 variable, they are usually more interesting to EXEC tests. The reason is that
-EXEC tests can not make direct use of Avocado API. INSTRUMENTED tests will
+EXEC tests can not make direct use of Avocado API. avocado-instrumented tests will
 usually have more powerful ways to access the same information.
 
-Here is a list of the variables that Avocado currently exports to INSTRUMENTED
+Here is a list of the variables that Avocado currently exports to avocado-instrumented
 tests:
 
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
@@ -1340,7 +1340,7 @@ tests:
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. note:: The same variables listed for the INSTRUMENTED tests above are
+.. note:: The same variables listed for the avocado-instrumented tests above are
    available to all the test types when using the legacy runner.
 
 SIMPLE Tests BASH extensions
@@ -1371,7 +1371,7 @@ by ``avocado exec-path`` (if any).  Also, the example test
 Docstring Directives Rules
 --------------------------
 
-Avocado INSTRUMENTED tests, those written in Python and using the
+Avocado avocado-instrumented tests, those written in Python and using the
 :class:`avocado.Test` API, can make use of special directives
 specified as docstrings.
 
