@@ -342,7 +342,7 @@ class Runner(unittest.TestCase):
         result = results[-1]
         self.assertEqual(result["status"], "finished")
         self.assertEqual(result["result"], "error")
-        self.assertEqual(result["output"], output)
+        self.assertEqual(result["fail_reason"], output)
 
     def test_runner_python_unittest_empty_uri_error(self):
         runnable = Runnable("python-unittest", "")
@@ -353,7 +353,7 @@ class Runner(unittest.TestCase):
         result = results[-1]
         self.assertEqual(result["status"], "finished")
         self.assertEqual(result["result"], "error")
-        self.assertEqual(result["output"], output)
+        self.assertEqual(result["fail_reason"], output)
 
 
 class RunnerTmp(unittest.TestCase):

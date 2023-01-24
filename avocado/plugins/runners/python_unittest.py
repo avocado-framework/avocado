@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import sys
 import time
+import traceback
 from unittest import TestLoader, TextTestRunner
 
 from avocado.core.nrunner.app import BaseRunnerApp
@@ -11,6 +12,7 @@ from avocado.core.nrunner.runner import (
     RUNNER_RUN_STATUS_INTERVAL,
     BaseRunner,
 )
+from avocado.core.utils import messages
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -95,12 +97,14 @@ class PythonUnittestRunner(BaseRunner):
             suite = loader.loadTestsFromName(module_class_method)
         except ValueError as ex:
             msg = "loadTestsFromName error finding unittest {}: {}"
+            queue.put(messages.StderrMessage.get(traceback.format_exc()))
             queue.put(
-                {
-                    "status": "finished",
-                    "result": "error",
-                    "output": msg.format(module_class_method, str(ex)),
-                }
+                messages.FinishedMessage.get(
+                    "error",
+                    fail_reason=msg.format(module_class_method, str(ex)),
+                    fail_class=ex.__class__.__name__,
+                    traceback=traceback.format_exc(),
+                )
             )
             return
 
@@ -121,59 +125,64 @@ class PythonUnittestRunner(BaseRunner):
             result = "pass"
 
         stream.seek(0)
-        output = {"status": "finished", "result": result, "output": stream.read()}
-
+        queue.put(messages.StdoutMessage.get(stream.read()))
+        fail_reason = None
         if unittest_result_entries is not None:
             last_entry = unittest_result_entries[-1]
             lines = last_entry[1].splitlines()
             fail_reason = lines[-1]
-            output["fail_reason"] = fail_reason
 
         stream.close()
-        queue.put(output)
+        queue.put(messages.FinishedMessage.get(result, fail_reason=fail_reason))
 
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
-
-        if not self.module_class_method:
-            error_msg = (
-                "Invalid URI: could not be converted to an unittest dotted name."
+        try:
+            yield messages.StartedMessage.get()
+            queue = multiprocessing.SimpleQueue()
+            process = multiprocessing.Process(
+                target=self._run_unittest,
+                args=(self.module_path, self.module_class_method, queue),
             )
-            yield self.prepare_status(
-                "finished", {"result": "error", "output": error_msg}
-            )
-            return
 
-        queue = multiprocessing.SimpleQueue()
-        process = multiprocessing.Process(
-            target=self._run_unittest,
-            args=(self.module_path, self.module_class_method, queue),
-        )
-        process.start()
-        yield self.prepare_status("started")
-
-        most_current_execution_state_time = None
-        while queue.empty():
-            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            now = time.monotonic()
-            if most_current_execution_state_time is not None:
-                next_execution_state_mark = (
-                    most_current_execution_state_time + RUNNER_RUN_STATUS_INTERVAL
+            if not self.module_class_method:
+                raise ValueError(
+                    "Invalid URI: could not be converted to an unittest dotted name."
                 )
-            if (
-                most_current_execution_state_time is None
-                or now > next_execution_state_mark
-            ):
-                most_current_execution_state_time = now
-                yield self.prepare_status("running")
+            process.start()
 
-        status = queue.get()
-        yield self.prepare_status(
-            "running", {"type": "stdout", "log": status.pop("output").encode()}
-        )
-        status["time"] = time.monotonic()
-        yield status
+            most_current_execution_state_time = None
+            while True:
+                if queue.empty():
+                    time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+                    now = time.monotonic()
+                    if most_current_execution_state_time is not None:
+                        next_execution_state_mark = (
+                            most_current_execution_state_time
+                            + RUNNER_RUN_STATUS_INTERVAL
+                        )
+                    if (
+                        most_current_execution_state_time is None
+                        or now > next_execution_state_mark
+                    ):
+                        most_current_execution_state_time = now
+                        yield messages.RunningMessage.get()
+
+                else:
+                    message = queue.get()
+                    yield message
+                    if message.get("status") == "finished":
+                        break
+
+        except Exception as e:
+            yield messages.StderrMessage.get(traceback.format_exc())
+            yield messages.FinishedMessage.get(
+                "error",
+                fail_reason=str(e),
+                fail_class=e.__class__.__name__,
+                traceback=traceback.format_exc(),
+            )
 
 
 class RunnerApp(BaseRunnerApp):
