@@ -53,7 +53,13 @@ class FinishedMessage(GenericMessage):
 
     @classmethod
     def get(
-        cls, result, fail_reason=None, returncode=None, class_name=None
+        cls,
+        result,
+        fail_reason=None,
+        returncode=None,
+        class_name=None,
+        fail_class=None,
+        traceback=None,
     ):  # pylint: disable=W0221
         """Creates finished message with all necessary information.
 
@@ -66,6 +72,10 @@ class FinishedMessage(GenericMessage):
         :param returncode: exit status of runner
         :param class_name: class name of the test
         :type class_name: str
+        :param fail_class: Exception class of the failure
+        :type fail_class: str
+        :param traceback: Traceback of the exception
+        :type traceback: str
         :return: finished message
         :rtype: dict
         """
@@ -74,6 +84,8 @@ class FinishedMessage(GenericMessage):
             fail_reason=fail_reason,
             returncode=returncode,
             class_name=class_name,
+            fail_class=fail_class,
+            traceback=traceback,
         )
 
 

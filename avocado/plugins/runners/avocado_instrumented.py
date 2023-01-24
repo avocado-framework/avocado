@@ -112,12 +112,23 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             queue.put(messages.WhiteboardMessage.get(state["whiteboard"]))
             queue.put(
                 messages.FinishedMessage.get(
-                    state["status"].lower(), fail_reason=fail_reason, class_name=klass
+                    state["status"].lower(),
+                    fail_reason=fail_reason,
+                    class_name=klass,
+                    fail_class=state.get("fail_class"),
+                    traceback=state.get("traceback"),
                 )
             )
         except Exception as e:
             queue.put(messages.StderrMessage.get(traceback.format_exc()))
-            queue.put(messages.FinishedMessage.get("error", fail_reason=str(e)))
+            queue.put(
+                messages.FinishedMessage.get(
+                    "error",
+                    fail_reason=str(e),
+                    fail_class=e.__class__.__name__,
+                    traceback=traceback.format_exc(),
+                )
+            )
 
     def run(self, runnable):
         # pylint: disable=W0201
@@ -164,7 +175,12 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                         break
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get("error", fail_reason=str(e))
+            yield messages.FinishedMessage.get(
+                "error",
+                fail_reason=str(e),
+                fail_class=e.__class__.__name__,
+                traceback=traceback.format_exc(),
+            )
 
 
 class RunnerApp(BaseRunnerApp):
