@@ -81,7 +81,7 @@ def analyze_unpickable_item(path_prefix, obj):
             subitems = enumerate(obj)
             path_prefix += "[%s]"
         elif hasattr(obj, "__iter__"):
-            subitems = enumerate(obj.__iter__())
+            subitems = enumerate(iter(obj))
             path_prefix += "<%s>"
         elif hasattr(obj, "__dict__"):
             subitems = obj.__dict__.items()
