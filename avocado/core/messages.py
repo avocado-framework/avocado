@@ -166,9 +166,19 @@ class FinishMessageHandler(BaseMessageHandler):
     :type result: `avocado.core.teststatus.STATUSES`
     :param time: end time of the test
     :type time: float
-    :param fail_reason: Optional parameter for brief specification, of the
-                       failed result.
+    :param fail_reason: Parameter for brief specification, of the
+                        failed result. [Optional]
     :type fail_reason: string
+    :param returncode: Exit status of runner. [Optional]
+    :type returncode: int
+    :param class_name: class name of the test. [Optional]
+    :type class_name: string
+    :param returncode: Exit status of runner. [Optional]
+    :type returncode: int
+    :param fail_class: Exception class of the failure. [Optional]
+    :type fail_class: string
+    :param traceback: Traceback of the exception. [Optional]
+    :type traceback: string
 
     example: {'status': 'finished', 'result': 'pass', 'time': 16444.819830573}
     """
