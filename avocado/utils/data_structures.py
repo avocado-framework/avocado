@@ -56,6 +56,7 @@ def geometric_mean(values):
     no_values = len(values)
     if no_values == 0:
         return None
+    # pylint: disable=R1728
     return math.exp(sum([math.log(number) for number in values]) / no_values)
 
 

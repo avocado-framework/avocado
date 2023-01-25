@@ -440,6 +440,7 @@ class Job:
     @property
     def size(self):
         """Job size is the sum of all test suites sizes."""
+        # pylint: disable=R1728
         return sum([suite.size for suite in self.test_suites])
 
     @property

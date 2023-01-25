@@ -112,7 +112,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
                 env.add((f"{origin}:{key}", astring.to_text(value)))
         if not env:
             return out
-        fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
+        fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209,R1728
             [len(_[0]) for _ in env]
         )
         for record in sorted(env):
@@ -197,7 +197,7 @@ class FakeVariantDispatcher:
                     env.add((f"{origin}:{key}", astring.to_text(value)))
             if not env:
                 continue
-            fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
+            fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209,R1728
                 [len(_[0]) for _ in env]
             )
             for record in sorted(env):
