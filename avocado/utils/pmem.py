@@ -50,12 +50,12 @@ class PMem:
         """
         abs_ndctl = path.find_command(ndctl, False)
         if not abs_ndctl:
-            raise PMemException("Cannot use library without " "proper ndctl binary")
+            raise PMemException("Cannot use library without proper ndctl binary")
         self.ndctl = abs_ndctl
 
         abs_daxctl = path.find_command(daxctl, False)
         if not abs_daxctl:
-            raise PMemException("Cannot use library without " "proper daxctl binary")
+            raise PMemException("Cannot use library without proper daxctl binary")
         self.daxctl = abs_daxctl
 
     @staticmethod

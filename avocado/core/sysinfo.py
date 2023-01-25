@@ -110,7 +110,7 @@ class SysInfo:
 
             if self.profiler is False:
                 if not self.sysinfo_files["profilers"]:
-                    log.info("Profiler disabled: no profiler" " commands configured")
+                    log.info("Profiler disabled: no profiler commands configured")
                 else:
                     log.info("Profiler disabled")
         else:

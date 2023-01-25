@@ -288,7 +288,7 @@ class RpmBackend(BaseBackend):
                         failed_packages.append(package_path)
             if len(packages) == len(failed_packages) > 0:
                 LOG.warning(
-                    "Some of the rpm packages could not be " "installed: %s",
+                    "Some of the rpm packages could not be installed: %s",
                     ", ".join(failed_packages),
                 )
                 return False

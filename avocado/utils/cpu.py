@@ -317,7 +317,7 @@ def get_idle_state():
                 )  # pylint: disable=W1514
             except IOError as err:
                 LOG.warning(
-                    "Failed to read idle state on cpu %s " "for state %s:\n%s",
+                    "Failed to read idle state on cpu %s for state %s:\n%s",
                     cpu,
                     state_no,
                     err,
@@ -369,7 +369,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning(
-                        "Failed to set idle state on cpu %s " "for state %s:\n%s",
+                        "Failed to set idle state on cpu %s for state %s:\n%s",
                         cpu,
                         state_no,
                         err,
@@ -385,7 +385,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning(
-                        "Failed to set idle state on cpu %s " "for state %s:\n%s",
+                        "Failed to set idle state on cpu %s for state %s:\n%s",
                         cpu,
                         state_no,
                         err,
@@ -421,7 +421,7 @@ def set_freq_governor(governor="random"):
             return False
         governor = random.choice(avl_govs)
     if governor not in avl_govs:
-        LOG.warning("Trying to change unknown frequency " "governor: %s", governor)
+        LOG.warning("Trying to change unknown frequency governor: %s", governor)
     for cpu in range(cpus_list):
         cur_gov_file = f"/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor"
         try:

@@ -462,7 +462,7 @@ class TestAvocadoParams(unittest.TestCase):
         # Booth of different origin
         self.assertRaisesRegex(
             ValueError,
-            r"'clash2'.* \[u?'/ch11=>equal', " r"u?'/ch111=>equal'\]",
+            r"'clash2'.* \[u?'/ch11=>equal', u?'/ch111=>equal'\]",
             self.params1.get,
             "clash2",
             path="/*",

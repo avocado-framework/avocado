@@ -541,7 +541,7 @@ class FedoraImageProvider(unittest.TestCase):
         parameters = provider.get_image_parameters(image)
         self.assertIsNone(
             parameters,
-            "get_image_parameters() finds parameters " "where there should be none",
+            "get_image_parameters() finds parameters where there should be none",
         )
 
     @unittest.mock.patch("avocado.utils.vmimage.urlopen")

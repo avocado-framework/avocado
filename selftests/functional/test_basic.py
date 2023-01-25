@@ -727,7 +727,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.tmpdir.name,
             "latest",
             "test-results",
-            "1-examples_tests_logging_streams.py_Plant" ".test_plant_organic",
+            "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
             "avocado.test.progress",
         )
         self.assertTrue(os.path.exists(progress_info))
@@ -831,7 +831,7 @@ class RunnerExecTest(TestCaseTmpDir):
         )
         self.pass_script.save()
         self.fail_script = script.TemporaryScript(
-            "avocado_fail.sh", "#!/bin/sh\nfalse", "avocado_exec_test_" "functional"
+            "avocado_fail.sh", "#!/bin/sh\nfalse", "avocado_exec_test_functional"
         )
         self.fail_script.save()
 
@@ -942,7 +942,7 @@ class RunnerReferenceFromConfig(TestCaseTmpDir):
     def setUp(self):
         super().setUp()
         self.config_file = script.TemporaryScript(
-            "avocado.conf", "[resolver]\n" "references = ['/bin/true']\n"
+            "avocado.conf", "[resolver]\nreferences = ['/bin/true']\n"
         )
         self.config_file.save()
 
@@ -970,7 +970,7 @@ class RunnerExecTestFailureFields(TestCaseTmpDir):
         super().setUp()
         self.config_file = script.TemporaryScript(
             "avocado.conf",
-            "[simpletests.status]\n" "failure_fields = ['stdout', 'stderr']\n",
+            "[simpletests.status]\nfailure_fields = ['stdout', 'stderr']\n",
         )
         self.config_file.save()
 

@@ -536,9 +536,7 @@ class Assets(CLICmd):
                 success, fail = fetch_assets(test_file)
 
                 for asset_file in success:
-                    LOG_UI.debug(
-                        "  File %s fetched or already on" " cache.", asset_file
-                    )
+                    LOG_UI.debug("  File %s fetched or already on cache.", asset_file)
                 for asset_file in fail:
                     LOG_UI.error(asset_file)
 

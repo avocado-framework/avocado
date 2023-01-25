@@ -212,7 +212,7 @@ class YumBackend(RpmBackend):
             # all possible occurrences of pattern 'name'
             d_provides = self.yum_base.searchPackageProvides(args=["*/" + name])
         except Exception as exc:  # pylint: disable=W0703
-            log.error("Error searching for package that " "provides %s: %s", name, exc)
+            log.error("Error searching for package that provides %s: %s", name, exc)
             d_provides = []
 
         provides_list = [key for key in d_provides]

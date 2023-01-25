@@ -124,7 +124,7 @@ class ZypperBackend(RpmBackend):
                     pass
             if len(list_provides) > 1:
                 log.warning(
-                    "More than one package found, " "opting by the first queue result"
+                    "More than one package found, opting by the first queue result"
                 )
             if list_provides:
                 log.info("Package %s provides %s", list_provides[0], name)

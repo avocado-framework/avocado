@@ -260,7 +260,7 @@ def vg_ramdisk_cleanup(
             else:
                 errs.append("umount")
                 LOGGER.error(
-                    "Unexpected failure unmounting %s, check the " "log", vg_ramdisk_dir
+                    'Unexpected failure unmounting %s, check the "log"', vg_ramdisk_dir
                 )
 
         if os.path.exists(vg_ramdisk_dir):

@@ -38,7 +38,7 @@ class Base(unittest.TestCase):
     )
     @unittest.skipIf(
         not process.can_sudo("mkfs.ext2 -V"),
-        'current user must be allowed to run "mkfs.ext2" under ' "sudo",
+        'current user must be allowed to run "mkfs.ext2" under sudo',
     )
     @unittest.skipUnless(
         utils_path.find_command("mkfs.ext2", False),

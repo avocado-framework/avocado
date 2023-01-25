@@ -307,7 +307,7 @@ class DataSize:
 
         except ValueError:
             raise InvalidDataSize(
-                "String not in size + unit format (i.e. " '"10M", "100k", ...)'
+                'String not in size + unit format (i.e. "10M", "100k", ...)'
             )
 
     @property
