@@ -63,7 +63,10 @@ class XUnitResult(Result):
         testcase.setAttribute("classname", self._get_attr(state, "class_name"))
         name = state.get("name")
         if isinstance(name, TestID):
-            testcase.setAttribute("name", self._escape_attr(name.name))
+            testcase.setAttribute(
+                "name",
+                f"{self._escape_attr(name.name)}{self._escape_attr(name.str_variant)}",
+            )
             file_path, _ = reference_split(name.name)
         else:
             testcase.setAttribute("name", self._get_attr(state, "name"))
