@@ -331,7 +331,6 @@ if __name__ == "__main__":
             "Topic :: Software Development :: Quality Assurance",
             "Topic :: Software Development :: Testing",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
@@ -458,7 +457,7 @@ if __name__ == "__main__":
         },
         zip_safe=False,
         test_suite="selftests",
-        python_requires=">=3.6",
+        python_requires=">=3.7",
         cmdclass={
             "clean": Clean,
             "develop": Develop,
