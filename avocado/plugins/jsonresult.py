@@ -45,7 +45,7 @@ class JSONResult(Result):
             # Actually we are saving the TestID() there.
             test_id = test.get("name", UNKNOWN)
             if isinstance(test_id, TestID):
-                name = test_id.name
+                name = f"{test_id.name}{test_id.str_variant}"
             tests.append(
                 {
                     "id": str(test_id),
