@@ -88,7 +88,7 @@ def register_core_options():
     )
 
     help_msg = (
-        "Fields to include in the presentation of SIMPLE test "
+        "Fields to include in the presentation of executable test "
         "failures.  Accepted values: status, stdout, stderr."
     )
     stgs.register_option(

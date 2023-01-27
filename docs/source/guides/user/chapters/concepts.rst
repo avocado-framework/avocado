@@ -5,33 +5,6 @@ Basic Concepts
 
 It is important to understand some basic concepts before start using Avocado.
 
-Test Resolution
----------------
-
-.. note:: Some definitions here may be out of date. The current runner can
-   still be using some of these definitions in its design, however, we are
-   working on an improved version of the runner, the NextRunner that will use
-   an alternative strategy.
-
-When you use the Avocado runner, frequently you'll provide paths to files,
-that will be inspected, and acted upon depending on their contents. The
-diagram below shows how Avocado analyzes a file and decides what to do with
-it:
-
-.. figure:: /_static/diagram.png
-
-It's important to note that the inspection mechanism is safe (that is, Python
-classes and files are not actually loaded and executed on discovery and
-inspection stage). Due to the fact Avocado doesn't actually load the code and
-classes, the introspection is simple and will *not* catch things like buggy
-test modules, missing imports and miscellaneous bugs in the code you want to
-list or run. We recommend only running tests from sources you trust, use of
-static checking and reviews in your test development process.
-
-Due to the simple test inspection mechanism, Avocado will not recognize test
-classes that inherit from a class derived from :class:`avocado.Test`. Please
-refer to the `WritingTests` documentation on how to use the tags functionality
-to mark derived classes as Avocado test classes.
 
 Identifiers and references
 --------------------------
@@ -177,7 +150,7 @@ Test types
 
 Avocado at its simplest configuration can run three different types of tests:
 
-* simple
+* Executable tests (``exec-test``)
 * python unittest
 * instrumented
 
@@ -185,11 +158,12 @@ You can mix and match those in a single job.
 
 Avocado plugins can also introduce additional test types.
 
-Simple
-~~~~~~
+Executable Tests
+~~~~~~~~~~~~~~~~
 
-Any executable in your box. The criteria for PASS/FAIL is the return code of the executable.
-If it returns 0, the test PASSes, if it returns anything else, it FAILs.
+Any executable file can serve as a test. The criteria for PASS/FAIL is
+the return code of the executable.  If it returns 0, the test PASSes,
+if it returns anything else, it FAILs.
 
 Python unittest
 ~~~~~~~~~~~~~~~
@@ -209,7 +183,7 @@ Avocado test API.
 
 To be more precise, the Python file must contain a class derived from
 :mod:`avocado.test.Test`.  This means that an executable written in Python is
-not always an instrumented test, but may work as a simple test.
+not always an instrumented test, but may work as an executable test.
 
 The instrumented tests allows the writer finer control over the process
 including logging, test result status and other more sophisticated test APIs.
@@ -220,7 +194,7 @@ successful. The ``ERROR``, ``FAIL`` and ``INTERRUPTED`` signal failures.
 TAP
 ~~~
 
-TAP tests are pretty much like Simple tests in the sense that they are
+TAP tests are pretty much like executable tests in the sense that they are
 programs (either binaries or scripts) that will executed.  The
 difference is that the test result will be decided based on the
 produced output, that should be in `Test Anything Protocol

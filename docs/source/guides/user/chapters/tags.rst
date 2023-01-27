@@ -85,7 +85,7 @@ given tags on all tests.  In some situations, though, it may be
 desirable to include tests that have no tags set.
 
 For instance, you may want to include tests of certain types that do
-not have support for tags (such as SIMPLE tests) or tests that have
+not have support for tags (such as executable tests) or tests that have
 not (yet) received tags.  Consider this command::
 
   $ avocado list perf.py /bin/true --filter-by-tags=disk
@@ -96,7 +96,7 @@ using the ``--filter-by-tags-include-empty`` option, you can force the
 inclusion of tests without tags::
 
   $ avocado list perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
-  SIMPLE       /bin/true
+  exec-test /bin/true
   avocado-instrumented perf.py:Idle.test_idle
   avocado-instrumented perf.py:Disk.test_device
 

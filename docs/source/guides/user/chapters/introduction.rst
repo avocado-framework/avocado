@@ -19,26 +19,27 @@ name::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.15 s
 
-You probably noticed that we used ``/bin/true`` as a test, and in accordance
-with our expectations, it passed! These are known as `simple tests`, but there
-is also another type of test, which we call `instrumented tests`. See more at
-`test-types` or just keep reading.
+You probably noticed that we used ``/bin/true`` as a test, and in
+accordance with our expectations, it passed! These are known as
+`executable tests` (``exec-test``), but there is also another type of
+test, which we call `instrumented tests` . See more at `test-types` or
+just keep reading.
 
 
 Running a job with multiple tests
 ---------------------------------
 
 You can run any number of test in an arbitrary order, as well as mix and match
-instrumented and simple tests::
+instrumented and executable tests::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py /tmp/simple_test.sh 
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py /tmp/exec_test.sh 
     JOB ID     : 2391dddf53b950631589bd1d44a5a6fdd023b400
     JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.35-2391ddd/job.log
      (1/4) examples/tests/sleeptest.py:SleepTest.test: STARTED
      (2/4) examples/tests/failtest.py:FailTest.test: STARTED
      (3/4) examples/tests/synctest.py:SyncTest.test: STARTED
-     (4/4) /tmp/simple_test.sh: STARTED
-     (4/4) /tmp/simple_test.sh: PASS (0.01 s)
+     (4/4) /tmp/exec_test.sh: STARTED
+     (4/4) /tmp/exec_test.sh: PASS (0.01 s)
      (2/4) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.05 s)
      (1/4) examples/tests/sleeptest.py:SleepTest.test: PASS (1.02 s)
      (3/4) examples/tests/synctest.py:SyncTest.test: PASS (1.39 s)
