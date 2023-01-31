@@ -329,6 +329,27 @@ jobs:
          python3 setup.py clean --all
          python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:36 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
 
+  podman_external_runner_task:
+
+    name: Podman spawner with 3rd party runner plugin
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Test running avocado from released eggs under Podman spawner with 3rd party plugins
+        run: |
+         apt update && apt -y install python3 python3-setuptools
+         python3 setup.py develop --user
+         cd examples/plugins/tests/magic
+         python3 setup.py develop --user
+         cd ../../../../
+         python3 -m avocado -V list -- pass fail | grep "magic: 2"
+         podman pull quay.io/avocado-framework/avocado-ci-magic
+         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- pass
+         tail -n1 ~/avocado/job-results/latest/results.tap | grep "ok 1 pass"
+         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- fail || true
+         tail -n1 ~/avocado/job-results/latest/results.tap | grep "not ok 1 fail"
+
   fedora_develop_install_uninstall_task:
     name: Fedora develop install/uninstall task
     runs-on: ubuntu-latest

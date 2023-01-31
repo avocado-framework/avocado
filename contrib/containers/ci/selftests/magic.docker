@@ -1,0 +1,12 @@
+# This dockerfile copies and installs the magic example plugin, and
+# thus needs access to the "magic" directory.  Make sure the context
+# (directory) is correct before building this image.  One example
+# is by running:
+# $ cd examples/plugins/tests
+# $ buildah bud -f ../../../contrib/containers/ci/selftests/magic.docker
+FROM fedora:36
+LABEL description "Image that contains the example magic plugin"
+RUN dnf -y install python3-setuptools
+COPY magic /tmp/magic
+WORKDIR /tmp/magic
+RUN python3 setup.py install
