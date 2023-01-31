@@ -20,4 +20,4 @@ list tests with::
 
 And run tests with::
 
-  avocado run --test-runner=nrunner $REFERENCE
+  avocado run $REFERENCE
