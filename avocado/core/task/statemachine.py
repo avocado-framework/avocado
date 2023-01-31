@@ -124,9 +124,10 @@ class TaskStateMachine:
                 if status_reason:
                     runtime_task.status = status_reason
                     LOG.debug(
-                        'Task "%s" finished with status: %s',
+                        'Task "%s" finished with status: %s (%s)',
                         runtime_task.task.identifier,
                         status_reason,
+                        runtime_task.status_description,
                     )
                 else:
                     LOG.debug('Task "%s" finished', runtime_task.task.identifier)

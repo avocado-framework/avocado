@@ -249,7 +249,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             )
         except PodmanException as ex:
             msg = f"Could not create podman container: {ex}"
-            runtime_task.status = msg
+            runtime_task.status_description = msg
             return False
 
         return stdout.decode().strip()
@@ -261,7 +261,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             self.podman = Podman(podman_bin)
         except PodmanException as ex:
-            runtime_task.status = str(ex)
+            runtime_task.status_description = str(ex)
             return False
 
         major, minor, _ = await self.python_version
@@ -283,7 +283,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             returncode, _, _ = await self.podman.start(container_id)
         except PodmanException as ex:
             msg = f"Could not start container: {ex}"
-            runtime_task.status = msg
+            runtime_task.status_description = msg
             LOG.error(msg)
             return False
 
@@ -307,7 +307,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             await self.podman.stop(runtime_task.spawner_handle)
         except PodmanException as ex:
             msg = f"Could not stop container: {ex}"
-            runtime_task.status = msg
+            runtime_task.status_description = msg
             LOG.error(msg)
             return False
 

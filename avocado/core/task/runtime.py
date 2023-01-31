@@ -46,8 +46,10 @@ class RuntimeTask:
         """
         #: The :class:`avocado.core.nrunner.Task`
         self.task = task
-        #: Additional descriptive information about the task status
+        #: A :class:`avocado.core.task.runtime.RuntimeTaskStatus` value
         self.status = None
+        #: Additional descriptive information about the task status
+        self.status_description = None
         #: Information about task result when it is finished
         self.result = None
         #: Timeout limit for the completion of the task execution
