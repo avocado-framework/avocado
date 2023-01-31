@@ -70,6 +70,17 @@ build-wheel: pip
 		fi;\
 	done
 
+build-egg:
+	if test ! -d EGG_UPLOAD; then mkdir EGG_UPLOAD; fi
+	$(PYTHON) setup.py bdist_egg -d EGG_UPLOAD
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/setup.py; then\
+			cd $$PLUGIN;\
+			$(PYTHON) setup.py bdist_egg -d ../../EGG_UPLOAD;\
+			cd -;\
+		fi;\
+	done
+
 update-pypi:
 ifndef TWINE_USERNAME
 	$(error TWINE_USERNAME is undefined)
