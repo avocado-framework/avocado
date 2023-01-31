@@ -177,7 +177,7 @@ jobs:
 # Checks that Python packages builds succeeds
 
   package-build:
-    name: Build Package for Python ${{ matrix.python-version }}
+    name: Build Package (wheel/tarball) for Python ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
 
     strategy:
@@ -196,16 +196,33 @@ jobs:
     - name: Save tarballs and wheels as artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: tarballs_and_wheels
+        name: tarballs_and_wheels-${{ matrix.python-version }}
         path: ${{github.workspace}}/PYPI_UPLOAD/
         retention-days: 1
+    - run: echo "🥑 This job's status is ${{ job.status }}."
+
+  egg-build:
+    name: Build Egg for Python ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, 3.10.0, 3.11]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
     - name: Build eggs
-      run: python setup.py bdist_egg
+      run: make -f Makefile.gh build-egg
     - name: Save eggs as artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: egg-${{ matrix.python-version }}
-        path: /home/runner/work/avocado/avocado/dist/
+        name: eggs-${{ matrix.python-version }}
+        path: ${{github.workspace}}/EGG_UPLOAD/
         retention-days: 1
     - run: echo "🥑 This job's status is ${{ job.status }}."
 
