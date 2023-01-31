@@ -1,6 +1,5 @@
 include Makefile.include
 
-PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
@@ -27,9 +26,6 @@ all:
 	@echo "man:          Generate the avocado man page"
 	@echo "pip:          Auxiliary target to install pip. (It's not recommended to run this directly)"
 	@echo
-
-pip:
-	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS)
 
 clean:
 	$(PYTHON) setup.py clean --all
