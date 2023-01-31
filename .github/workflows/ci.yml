@@ -193,6 +193,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Build tarballs and wheels
       run: make -f Makefile.gh build-wheel
+    - name: Save tarballs and wheels as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: tarballs_and_wheels
+        path: ${{github.workspace}}/PYPI_UPLOAD/
+        retention-days: 1
     - name: Build eggs
       run: python setup.py bdist_egg
     - name: Save eggs as artifacts
