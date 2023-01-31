@@ -273,6 +273,8 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         container_id = await self._create_container_for_task(
             runtime_task, env_args, output_dir_path
         )
+        if container_id is False:
+            return False
 
         runtime_task.spawner_handle = container_id
 
