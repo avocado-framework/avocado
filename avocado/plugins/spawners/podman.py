@@ -236,21 +236,16 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             image = self.config.get("spawner.podman.image")
 
         envs = [f"-e={k}={v}" for k, v in env_args.items()]
-        try:
-            # pylint: disable=W0201
-            _, stdout, _ = await self.podman.execute(
-                "create",
-                *status_server_opts,
-                *output_opts,
-                *test_opts,
-                entry_point_arg,
-                *envs,
-                image,
-            )
-        except PodmanException as ex:
-            LOG.error("Could not create podman container: %s", ex)
-            return False
-
+        # pylint: disable=W0201
+        _, stdout, _ = await self.podman.execute(
+            "create",
+            *status_server_opts,
+            *output_opts,
+            *test_opts,
+            entry_point_arg,
+            *envs,
+            image,
+        )
         return stdout.decode().strip()
 
     async def spawn_task(self, runtime_task):
@@ -269,9 +264,13 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
         env_args = {"PYTHONPATH": destination_eggs}
         output_dir_path = self.task_output_dir(runtime_task)
-        container_id = await self._create_container_for_task(
-            runtime_task, env_args, output_dir_path
-        )
+        try:
+            container_id = await self._create_container_for_task(
+                runtime_task, env_args, output_dir_path
+            )
+        except PodmanException as ex:
+            LOG.error("Could not create podman container: %s", ex)
+            return False
 
         runtime_task.spawner_handle = container_id
 
