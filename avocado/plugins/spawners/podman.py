@@ -193,9 +193,15 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         _, _, python_binary = await self.python_version
+        full_module_name = (
+            runtime_task.task.runnable.pick_runner_module_from_entry_point_kind(
+                runtime_task.task.runnable.kind
+            )
+        )
+        if full_module_name is None:
+            runtime_task.status_description = f"Could not determine Python module name for runnable with kind {runtime_task.task.runnable.kind}"
+            return False
 
-        module_name = runtime_task.task.runnable.kind.replace("-", "_")
-        full_module_name = f"avocado.plugins.runners.{module_name}"
         entry_point_args = [python_binary, "-m", full_module_name, "task-run"]
 
         test_opts = ()
