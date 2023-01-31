@@ -248,8 +248,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 image,
             )
         except PodmanException as ex:
-            msg = f"Could not create podman container: {ex}"
-            runtime_task.status = msg
+            LOG.error("Could not create podman container: %s", ex)
             return False
 
         return stdout.decode().strip()
@@ -261,7 +260,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             self.podman = Podman(podman_bin)
         except PodmanException as ex:
-            runtime_task.status = str(ex)
+            LOG.error(ex)
             return False
 
         major, minor, _ = await self.python_version
@@ -282,9 +281,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             returncode, _, _ = await self.podman.start(container_id)
         except PodmanException as ex:
-            msg = f"Could not start container: {ex}"
-            runtime_task.status = msg
-            LOG.error(msg)
+            LOG.error("Could not start container: %s", ex)
             return False
 
         return returncode == 0
@@ -306,9 +303,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         try:
             await self.podman.stop(runtime_task.spawner_handle)
         except PodmanException as ex:
-            msg = f"Could not stop container: {ex}"
-            runtime_task.status = msg
-            LOG.error(msg)
+            LOG.error("Could not stop container: %s", ex)
             return False
 
     @staticmethod
