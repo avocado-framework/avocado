@@ -407,9 +407,7 @@ class Distro(CLICmd):
         path = config.get("distro.distro_def_path")
         if config.get("distro.distro_def_create"):
             if not (name and version and arch and distro_type and path):
-                LOG_UI.error(
-                    "Required arguments: name, version, arch, type " "and path"
-                )
+                LOG_UI.error("Required arguments: name, version, arch, type and path")
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
             output_file_name = self._get_output_file_name(name, version, arch, release)
@@ -427,7 +425,7 @@ class Distro(CLICmd):
         else:
             detected = utils_distro.detect()
             LOG_UI.debug(
-                "Detected distribution: %s (%s) version %s release " "%s",
+                "Detected distribution: %s (%s) version %s release %s",
                 detected.name,
                 detected.arch,
                 detected.version,

@@ -136,7 +136,7 @@ class TestStatus:
             if not proc.is_alive():
                 if not self.early_status:
                     raise exceptions.TestError(
-                        "Process died before it pushed " "early test_status."
+                        "Process died before it pushed early test_status."
                     )
             if time.monotonic() > end and not self.early_status:
                 os.kill(proc.pid, signal.SIGTERM)
@@ -185,7 +185,7 @@ class TestStatus:
             return add_runner_failure(
                 test_state,
                 "ERROR",
-                "TestStatus failed," " see overall job.log for details.",
+                "TestStatus failed, see overall job.log for details.",
             )
         return test_state
 

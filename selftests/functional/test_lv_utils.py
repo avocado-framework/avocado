@@ -27,7 +27,7 @@ class LVUtilsTest(TestCaseTmpDir):
     )
     @unittest.skipIf(
         not process.can_sudo(),
-        "This test requires root or " "passwordless sudo configured.",
+        "This test requires root or passwordless sudo configured.",
     )
     def setUp(self):
         super().setUp()
@@ -41,7 +41,7 @@ class LVUtilsTest(TestCaseTmpDir):
     @unittest.skipIf(sys.platform.startswith("darwin"), "macOS does not support LVM")
     @unittest.skipIf(
         process.system(
-            "vgs --all | grep -q avocado_testing_vg_" "e5kj3erv11a; [ $? -ne 0 ]",
+            "vgs --all | grep -q avocado_testing_vg_e5kj3erv11a; [ $? -ne 0 ]",
             sudo=True,
             shell=True,
             ignore_status=True,
@@ -130,7 +130,7 @@ class DiskSpace(unittest.TestCase):
     )
     @unittest.skipIf(
         not process.can_sudo(),
-        "This test requires root or " "passwordless sudo configured.",
+        "This test requires root or passwordless sudo configured.",
     )
     @unittest.skipIf(
         path.find_command("modprobe", default=False),

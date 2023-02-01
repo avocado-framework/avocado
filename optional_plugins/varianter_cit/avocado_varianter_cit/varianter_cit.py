@@ -97,7 +97,7 @@ class VarianterCit(Varianter):
             cit_parameter_file = os.path.expanduser(cit_parameter_file)
             if not os.access(cit_parameter_file, os.R_OK):
                 LOG_UI.error(
-                    "parameter file '%s' could not be found or " "is not readable",
+                    "parameter file '%s' could not be found or is not readable",
                     cit_parameter_file,
                 )
                 self.error_exit(config)

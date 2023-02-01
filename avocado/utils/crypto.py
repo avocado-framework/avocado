@@ -45,7 +45,7 @@ def hash_file(filename, size=None, algorithm="md5"):
         hash_obj = hashlib.new(algorithm)
     except ValueError as detail:
         LOG.error(
-            'Returning "None" due to inability to create hash ' 'object: "%s"', detail
+            'Returning "None" due to inability to create hash object: "%s"', detail
         )
         return None
 

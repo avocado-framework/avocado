@@ -534,7 +534,7 @@ class OutputPluginTest(TestCaseTmpDir):
             if "test_json" in test["id"]:
                 json_dir = test["logfile"]
 
-            self.assertTrue(json_dir, "Failed to get test_json output " "directory")
+            self.assertTrue(json_dir, "Failed to get test_json output directory")
             json_dir = os.path.join(os.path.dirname(json_dir), "data", "test.json")
             self.assertTrue(
                 os.path.exists(json_dir),

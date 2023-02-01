@@ -110,7 +110,7 @@ class DataDirTest(Base):
         self.assertEqual(
             None,
             data_dir.get_job_results_dir(expected_jrd, logs_dir),
-            ("If passing a directory reference, it expects the id" "file"),
+            ("If passing a directory reference, it expects the id file"),
         )
 
         # Create the id file.
@@ -179,7 +179,7 @@ class DataDirTest(Base):
         self.assertEqual(
             None,
             data_dir.get_job_results_dir(almost_id, logs_dir),
-            ("It should not get if the id is equal on only" "the first 7 characters"),
+            ("It should not get if the id is equal on only the first 7 characters"),
         )
 
         os.symlink(expected_jrd, os.path.join(logs_dir, "latest"))

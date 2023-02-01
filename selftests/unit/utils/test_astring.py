@@ -73,14 +73,14 @@ class AstringUtilsTest(unittest.TestCase):
         matrix = [[], [1], [2, 2], [333, 333, 333], [4, 4, 4, 4444]]
         self.assertEqual(
             astring.tabular_output(matrix),
-            "1\n" "2   2\n" "333 333 333\n" "4   4   4   4444",
+            "1\n2   2\n333 333 333\n4   4   4   4444",
         )
 
     # This could be a skip based on the Python version, but this is more
     # specific to the exact reason why it does/doesn't make sense to run it
     @unittest.skipUnless(
         sys.getdefaultencoding() == "ascii",
-        "Test verifies conversion behavior of between ascii " "and utf-8 only",
+        "Test verifies conversion behavior of between ascii and utf-8 only",
     )
     def test_unicode_tabular(self):
         """

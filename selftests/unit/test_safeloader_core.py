@@ -160,9 +160,7 @@ def get_this_file():
     elif this_file.endswith(".pyc") or this_file.endswith(".pyo"):
         return this_file[:-1]
     else:
-        raise ValueError(
-            "Could not find the Python file associated with this " "module"
-        )
+        raise ValueError("Could not find the Python file associated with this module")
 
 
 class UnlimitedDiff(unittest.TestCase):

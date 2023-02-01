@@ -367,7 +367,7 @@ class StdOutput:
         except RuntimeError as details:
             # Paginator not available
             logging.getLogger("avocado.app.debug").error(
-                "Failed to enable " "paginator: %s", details
+                "Failed to enable paginator: %s", details
             )
             return
         self.stdout = self.stderr = paginator

@@ -78,9 +78,7 @@ class GdbTest(Test):
             r = g.cmd(info_cmd)
             self.assertEqual(r.result.result.command.exists, "true")
 
-        self.log.info(
-            "Testing non-existing (invalid) GDB commands using raw " "commands"
-        )
+        self.log.info("Testing non-existing (invalid) GDB commands using raw commands")
         for cmd in self.INVALID_CMDS:
             info_cmd = f"-info-gdb-mi-command {cmd[1:]}"
             r = g.cmd(info_cmd)
@@ -89,13 +87,13 @@ class GdbTest(Test):
     def test_existing_commands(self):
         g = gdb.GDB()
 
-        self.log.info("Testing existing (valid) GDB commands using utility " "methods")
+        self.log.info("Testing existing (valid) GDB commands using utility methods")
         for cmd in self.VALID_CMDS:
             self.assertTrue(g.cmd_exists(cmd))
             g.cmd(cmd)
 
         self.log.info(
-            "Testing non-existing (invalid) GDB commands using " "utility methods"
+            "Testing non-existing (invalid) GDB commands using utility methods"
         )
         for cmd in self.INVALID_CMDS:
             self.assertFalse(g.cmd_exists(cmd))
@@ -189,7 +187,7 @@ class GdbTest(Test):
         Connect/disconnect repeatedly from a remote debugger using raw commands
         """
         self.log.info(
-            "Testing connecting and disconnecting repeatedly using " "raw commands"
+            "Testing connecting and disconnecting repeatedly using raw commands"
         )
         s = gdb.GDBServer()
         g = gdb.GDB()

@@ -350,7 +350,7 @@ class MiscProcessTests(unittest.TestCase):
         )
         self.assertEqual("first_bin", res)
         res = process.binary_from_shell_cmd(
-            "VAR=VALUE 1st_binary var=value " "second_binary"
+            "VAR=VALUE 1st_binary var=value second_binary"
         )
         self.assertEqual("1st_binary", res)
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")

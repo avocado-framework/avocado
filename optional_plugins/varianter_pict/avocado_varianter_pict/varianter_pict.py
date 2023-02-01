@@ -143,7 +143,7 @@ class VarianterPict(Varianter):
             pict_parameter_file = os.path.expanduser(pict_parameter_file)
             if not os.access(pict_parameter_file, os.R_OK):
                 LOG_UI.error(
-                    "pict parameter file '%s' could not be found or " "is not readable",
+                    "pict parameter file '%s' could not be found or is not readable",
                     pict_parameter_file,
                 )
                 error = True

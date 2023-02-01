@@ -350,7 +350,7 @@ class Asset:
         If asset_hash is None then will consider a valid asset.
         """
         if asset_hash is None:
-            LOG.debug("No hash provided. Cannot check the asset file" " integrity.")
+            LOG.debug("No hash provided. Cannot check the asset file integrity.")
             return True
         if algorithm is None:
             algorithm = DEFAULT_HASH_ALGORITHM

@@ -314,7 +314,7 @@ class Varianter:
         """
         if not self.is_parsed():
             raise NotImplementedError(
-                "Dumping Varianter state before " "multiplexation is not supported."
+                "Dumping Varianter state before multiplexation is not supported."
             )
         return dump_ivariants(self.itertests)
 
