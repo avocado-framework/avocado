@@ -383,7 +383,7 @@ class TestAvocadoParams(unittest.TestCase):
         repr(self.params1)
         str(self.params1)
         str(parameters.AvocadoParams([], []))
-        self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
+        self.assertEqual(15, sum(1 for _ in self.params1.iteritems()))
 
     def test_unhashable(self):
         """Verifies that unhashable arguments can be passed to params.get"""
@@ -462,7 +462,7 @@ class TestAvocadoParams(unittest.TestCase):
         # Booth of different origin
         self.assertRaisesRegex(
             ValueError,
-            r"'clash2'.* \[u?'/ch11=>equal', " r"u?'/ch111=>equal'\]",
+            r"'clash2'.* \[u?'/ch11=>equal', u?'/ch111=>equal'\]",
             self.params1.get,
             "clash2",
             path="/*",

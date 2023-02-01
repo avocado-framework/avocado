@@ -143,7 +143,7 @@ class VarianterPict(Varianter):
             pict_parameter_file = os.path.expanduser(pict_parameter_file)
             if not os.access(pict_parameter_file, os.R_OK):
                 LOG_UI.error(
-                    "pict parameter file '%s' could not be found or " "is not readable",
+                    "pict parameter file '%s' could not be found or is not readable",
                     pict_parameter_file,
                 )
                 error = True
@@ -237,7 +237,7 @@ class VarianterPict(Varianter):
             if not env:
                 return out
             fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
-                [len(_[0]) for _ in env]
+                len(_[0]) for _ in env
             )
             for record in sorted(env):
                 out.append(fmt % record)

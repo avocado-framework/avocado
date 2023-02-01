@@ -99,7 +99,7 @@ class GitRepoHelper:
             self.git_cmd("reset --hard")
         else:
             LOG.debug(
-                "Initializing new git repo at %s for receiving " "git repo %s",
+                "Initializing new git repo at %s for receiving git repo %s",
                 self.destination_dir,
                 self.uri,
             )

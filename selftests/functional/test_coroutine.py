@@ -16,6 +16,6 @@ class Coroutine(TestCaseTmpDir):
         result = process.run(cmd, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
         self.assertNotIn(
-            "RuntimeWarning: coroutine 'AsyncSleepTest.test' " "was never awaited",
+            "RuntimeWarning: coroutine 'AsyncSleepTest.test' was never awaited",
             result.stdout_text,
         )

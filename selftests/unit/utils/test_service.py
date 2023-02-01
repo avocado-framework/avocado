@@ -207,7 +207,7 @@ class TestSystemdServiceManager(unittest.TestCase):
         list_result = service_manager.list(ignore_status=False)
         self.assertEqual(
             run_mock.call_args[0][0],  # pylint: disable=E1136
-            "systemctl list-unit-files --type=service " "--no-pager --full",
+            "systemctl list-unit-files --type=service --no-pager --full",
         )
         self.assertEqual(
             list_result,

@@ -148,7 +148,7 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=30):
             process.kill_process_tree(proc.pid)
-            self.fail("Avocado was still running after receiving SIGINT " "twice.")
+            self.fail("Avocado was still running after receiving SIGINT twice.")
 
         self.assertTrue(
             wait.wait_for(self._no_test_in_process_table, timeout=10),
@@ -197,7 +197,7 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail("Avocado was still running after receiving SIGINT " "twice.")
+            self.fail("Avocado was still running after receiving SIGINT twice.")
 
         self.assertTrue(
             wait.wait_for(self._no_test_in_process_table, timeout=10),
@@ -244,7 +244,7 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail("Avocado was still running after receiving SIGINT " "twice.")
+            self.fail("Avocado was still running after receiving SIGINT twice.")
 
         self.assertTrue(
             wait.wait_for(self._no_test_in_process_table, timeout=10),
@@ -293,7 +293,7 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail("Avocado was still running after receiving SIGINT " "twice.")
+            self.fail("Avocado was still running after receiving SIGINT twice.")
 
         self.assertTrue(
             wait.wait_for(self._no_test_in_process_table, timeout=10),

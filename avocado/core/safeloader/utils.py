@@ -14,7 +14,7 @@ def get_statement_import_as(statement):
     if not any(
         [isinstance(statement, ast.Import), isinstance(statement, ast.ImportFrom)]
     ):
-        raise ValueError("Value given is not an ast import or " "import from statement")
+        raise ValueError("Value given is not an ast import or import from statement")
     result = collections.OrderedDict()
     for name in statement.names:
         if name.asname is not None:

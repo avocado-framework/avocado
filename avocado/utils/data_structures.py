@@ -56,7 +56,7 @@ def geometric_mean(values):
     no_values = len(values)
     if no_values == 0:
         return None
-    return math.exp(sum([math.log(number) for number in values]) / no_values)
+    return math.exp(sum(math.log(number) for number in values) / no_values)
 
 
 def compare_matrices(matrix1, matrix2, threshold=0.05):
@@ -307,7 +307,7 @@ class DataSize:
 
         except ValueError:
             raise InvalidDataSize(
-                "String not in size + unit format (i.e. " '"10M", "100k", ...)'
+                'String not in size + unit format (i.e. "10M", "100k", ...)'
             )
 
     @property

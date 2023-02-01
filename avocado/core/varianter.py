@@ -112,9 +112,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
                 env.add((f"{origin}:{key}", astring.to_text(value)))
         if not env:
             return out
-        fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
-            [len(_[0]) for _ in env]
-        )
+        fmt = "    %%-%ds => %%s" % max(len(_[0]) for _ in env)  # pylint: disable=C0209
         for record in sorted(env):
             out.append(fmt % record)
     return out
@@ -198,7 +196,7 @@ class FakeVariantDispatcher:
             if not env:
                 continue
             fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
-                [len(_[0]) for _ in env]
+                len(_[0]) for _ in env
             )
             for record in sorted(env):
                 out.append(fmt % record)
@@ -314,7 +312,7 @@ class Varianter:
         """
         if not self.is_parsed():
             raise NotImplementedError(
-                "Dumping Varianter state before " "multiplexation is not supported."
+                "Dumping Varianter state before multiplexation is not supported."
             )
         return dump_ivariants(self.itertests)
 

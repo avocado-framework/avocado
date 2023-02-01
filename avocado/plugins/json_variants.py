@@ -50,7 +50,7 @@ class JsonVariantsCLI(CLI):
             if subparser is None:
                 continue
             sparser = subparser.add_argument_group(
-                "JSON serialized based " "varianter options"
+                "JSON serialized based varianter options"
             )
             settings.add_argparser_to_option(
                 namespace="json.variants.load",
@@ -85,7 +85,7 @@ class JsonVariants(Varianter):
                 self.variants = varianter.Varianter(state=json.load(var_file))
         except IOError:
             LOG_UI.error(
-                "JSON serialized file '%s' could not be found or " "is not readable",
+                "JSON serialized file '%s' could not be found or is not readable",
                 load_variants,
             )
             if config.get("subcommand") == "run":
@@ -98,7 +98,7 @@ class JsonVariants(Varianter):
             return
         elif self.variants is None:
             raise RuntimeError(
-                "Iterating Varianter before initialization is" "not supported"
+                "Iterating Varianter before initialization is not supported"
             )
 
         for variant in self.variants.itertests():
@@ -109,7 +109,7 @@ class JsonVariants(Varianter):
             return 0
         elif self.variants is None:
             raise RuntimeError(
-                "Calling Varianter __len__ before" "initialization is not supported"
+                "Calling Varianter __len__ before initialization is not supported"
             )
 
         return len(self.variants)
@@ -154,7 +154,7 @@ class JsonVariants(Varianter):
                 if not env:
                     return out
                 fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
-                    [len(_[0]) for _ in env]
+                    len(_[0]) for _ in env
                 )
                 for record in sorted(env):
                     out.append(fmt % record)

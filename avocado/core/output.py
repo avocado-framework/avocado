@@ -367,7 +367,7 @@ class StdOutput:
         except RuntimeError as details:
             # Paginator not available
             logging.getLogger("avocado.app.debug").error(
-                "Failed to enable " "paginator: %s", details
+                "Failed to enable paginator: %s", details
             )
             return
         self.stdout = self.stderr = paginator
@@ -802,4 +802,4 @@ def log_plugin_failures(failures):
             str_tb = "".join(traceback.format_tb(failure[1].__traceback__))
         else:
             str_tb = "Traceback not available"
-        LOG_UI.error(msg_fmt, failure[0].module_name, failure[1].__repr__(), str_tb)
+        LOG_UI.error(msg_fmt, failure[0].module_name, repr(failure[1]), str_tb)

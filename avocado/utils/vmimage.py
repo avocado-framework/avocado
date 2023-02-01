@@ -307,7 +307,7 @@ class UbuntuImageProvider(ImageProviderBase):
 
     def get_best_version(self, versions):  # pylint: disable=W0221
         """Return best (more recent) version"""
-        max_float = max([float(item) for item in versions])
+        max_float = max(float(item) for item in versions)
         return str(f"{max_float:2.2f}")
 
     def get_versions(self):
@@ -490,7 +490,7 @@ class FreeBSDImageProvider(ImageProviderBase):
 
     def get_best_version(self, versions):  # pylint: disable=W0221
         """Return best (more recent) version"""
-        max_float = max([float(item) for item in versions])
+        max_float = max(float(item) for item in versions)
         return str(f"{max_float:2.1f}")
 
     def get_versions(self):

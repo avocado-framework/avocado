@@ -106,7 +106,7 @@ class BaseIso9660:
         self.iso.close()
         self.assertFalse(
             os.path.exists(base),
-            "the mnt_dir is suppose to be " "destroyed after iso.close()",
+            "the mnt_dir is suppose to be destroyed after iso.close()",
         )
 
     def tearDown(self):

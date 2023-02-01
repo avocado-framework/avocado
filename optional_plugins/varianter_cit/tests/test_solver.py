@@ -24,7 +24,7 @@ class SolverTest(unittest.TestCase):
         self.assertEqual(
             solver.constraints,
             constraints,
-            "compute_constraints change constraints without secret " "constraint",
+            "compute_constraints change constraints without secret constraint",
         )
 
     def test_compute_constraints_new_constraint_with_more_than_one_value_for_one_parameter(
@@ -44,7 +44,7 @@ class SolverTest(unittest.TestCase):
         self.assertEqual(
             solver.constraints,
             constraints,
-            "compute_constraints change constraints without secret " "constraint",
+            "compute_constraints change constraints without secret constraint",
         )
 
     def test_compute_constraints_detect_invalid_constraints(self):
@@ -136,7 +136,7 @@ class SolverTest(unittest.TestCase):
         self.assertEqual(
             solver.constraints,
             constraints,
-            "solver change constraints without secret " "constraint",
+            "solver change constraints without secret constraint",
         )
 
     def test_solver_constraints_without_simplification(self):

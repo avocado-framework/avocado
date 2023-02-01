@@ -332,7 +332,7 @@ class RedHatProbe(Probe):
     CHECK_FILE_CONTAINS = "Red Hat Enterprise Linux"
     CHECK_FILE_DISTRO_NAME = "rhel"
     CHECK_VERSION_REGEX = re.compile(
-        r"Red Hat Enterprise Linux\s+\w*\s*release\s+" r"(\d{1,2})\.(\d{1,2}).*"
+        r"Red Hat Enterprise Linux\s+\w*\s*release\s+(\d{1,2})\.(\d{1,2}).*"
     )
 
 
@@ -345,7 +345,7 @@ class CentosProbe(RedHatProbe):
     CHECK_FILE = "/etc/redhat-release"
     CHECK_FILE_CONTAINS = "CentOS"
     CHECK_FILE_DISTRO_NAME = "centos"
-    CHECK_VERSION_REGEX = re.compile(r"CentOS.* release " r"(\d{1,2})\.(\d{1,2}).*")
+    CHECK_VERSION_REGEX = re.compile(r"CentOS.* release (\d{1,2})\.(\d{1,2}).*")
 
 
 class FedoraProbe(RedHatProbe):

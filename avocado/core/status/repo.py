@@ -121,7 +121,7 @@ class StatusRepo:
                 )
             elif status == "started":
                 LOG.warning(
-                    "Received a started message when the status " "is already %s: %s",
+                    "Received a started message when the status is already %s: %s",
                     current_status,
                     message,
                 )
