@@ -494,7 +494,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         return out
 
     if use_utf8 is None:
-        use_utf8 = locale.getdefaultlocale()[1] == "UTF-8"
+        use_utf8 = locale.getpreferredencoding() == "UTF-8"
     if use_utf8:
         charset = {
             "DoubleDown": " \u2551   ",
