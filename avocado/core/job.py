@@ -440,7 +440,7 @@ class Job:
     @property
     def size(self):
         """Job size is the sum of all test suites sizes."""
-        return sum([suite.size for suite in self.test_suites])
+        return sum(suite.size for suite in self.test_suites)
 
     @property
     def test_suite(self):

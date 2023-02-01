@@ -383,7 +383,7 @@ class TestAvocadoParams(unittest.TestCase):
         repr(self.params1)
         str(self.params1)
         str(parameters.AvocadoParams([], []))
-        self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
+        self.assertEqual(15, sum(1 for _ in self.params1.iteritems()))
 
     def test_unhashable(self):
         """Verifies that unhashable arguments can be passed to params.get"""

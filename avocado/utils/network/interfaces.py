@@ -715,7 +715,7 @@ class NetworkInterface:
         :param netmask: Netmask value example 255.255.255.0
         :return : Returns mask value of given netmask
         """
-        return sum([bin(int(bits)).count("1") for bits in netmask.split(".")])
+        return sum(bin(int(bits)).count("1") for bits in netmask.split("."))
 
     def validate_ipv4_format(self, ip):
         """

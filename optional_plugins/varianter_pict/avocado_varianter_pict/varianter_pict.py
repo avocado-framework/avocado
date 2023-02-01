@@ -237,7 +237,7 @@ class VarianterPict(Varianter):
             if not env:
                 return out
             fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
-                [len(_[0]) for _ in env]
+                len(_[0]) for _ in env
             )
             for record in sorted(env):
                 out.append(fmt % record)
