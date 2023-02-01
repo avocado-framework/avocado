@@ -694,6 +694,7 @@ class GenericASTBuilder(GenericParser):
         self.AST = AST
 
     def preprocess(self, rule, func):  # pylint: disable=W0221
+        # pylint: disable=C3001
         rebind = (
             lambda lhs, self=self: lambda args, lhs=lhs, self=self: self.buildASTNode(
                 args, lhs
@@ -802,6 +803,7 @@ class GenericASTMatcher(GenericParser):
         self.ast = ast
 
     def preprocess(self, rule, func):  # pylint: disable=W0221
+        # pylint: disable=C3001
         rebind = (
             lambda func, self=self: lambda args, func=func, self=self: self.foundMatch(
                 args, func
