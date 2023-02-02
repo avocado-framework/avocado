@@ -61,6 +61,7 @@ class Clean(clean):
         super().run()
         cleaning_list = [
             "PYPI_UPLOAD",
+            "EGG_UPLOAD",
             "./build",
             "./dist",
             "./man/avocado.1",
