@@ -450,7 +450,7 @@ class NetworkInterface:
             }
             if current_distro.name == "SuSE":
                 ifcfg_dict = {
-                    "IPADDR": ipaddr,
+                    "IPADDR": f"{ipaddr}/{prefix}",
                     "BOOTPROTO": "static",
                     "STARTMODE": "auto",
                 }
