@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 name = "magic"
 module = "avocado_magic"
@@ -20,4 +20,5 @@ if __name__ == "__main__":
             "avocado.plugins.runnable.runner": [runner_ep],
             "console_scripts": [runner_script],
         },
+        packages=find_packages(),
     )
