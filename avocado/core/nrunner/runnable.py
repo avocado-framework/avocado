@@ -2,7 +2,6 @@ import base64
 import collections
 import json
 import logging
-import os
 import subprocess
 import sys
 
@@ -409,13 +408,6 @@ class Runnable:
         return kind in capabilities.get("runnables", [])
 
     @staticmethod
-    def _module_exists(module_name):
-        """Returns whether a nrunner "runner" module exists."""
-        module_filename = f"{module_name}.py"
-        mod_path = os.path.join("plugins", "runners", module_filename)
-        return pkg_resources.resource_exists("avocado", mod_path)
-
-    @staticmethod
     def pick_runner_command(kind, runners_registry=None):
         """Selects a runner command based on the runner kind.
 
@@ -455,10 +447,9 @@ class Runnable:
         # runner convention within the avocado.plugins.runners namespace dir.
         # Looking for the file only avoids an attempt to load the module
         # and should be a lot faster
-        module_name = kind.replace("-", "_")
-        if Runnable._module_exists(module_name):
-            full_module_name = f"avocado.plugins.runners.{module_name}"
-            candidate_cmd = [sys.executable, "-m", full_module_name]
+        module_name = Runnable.pick_runner_module_from_entry_point_kind(kind)
+        if module_name is not None:
+            candidate_cmd = [sys.executable, "-m", module_name]
             if Runnable.is_kind_supported_by_runner_command(
                 kind, candidate_cmd, env=get_python_path_env_if_egg()
             ):
@@ -488,6 +479,22 @@ class Runnable:
         :rtype: list of str or None
         """
         return Runnable.pick_runner_command(self.kind, runners_registry)
+
+    @staticmethod
+    def pick_runner_module_from_entry_point_kind(kind):
+        """Selects a runner module from entry points based on kind.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`.
+        The module found (if any) will be one that can be used with the
+        Python interpreter using the "python -m $module" command.
+
+        :param kind: Kind of runner
+        :type kind: str
+        :returns: a module that can be run with "python -m" or None"""
+        namespace = "console_scripts"
+        section = f"avocado-runner-{kind}"
+        for ep in pkg_resources.iter_entry_points(namespace, section):
+            return ep.module_name
 
     @staticmethod
     def pick_runner_class_from_entry_point_kind(kind):

@@ -46,7 +46,8 @@ class RuntimeTask:
         """
         #: The :class:`avocado.core.nrunner.Task`
         self.task = task
-        #: Additional descriptive information about the task status
+        #: The task status, a value from the enum
+        #: :class:`avocado.core.task.runtime.RuntimeTaskStatus`
         self.status = None
         #: Information about task result when it is finished
         self.result = None

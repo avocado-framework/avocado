@@ -18,6 +18,10 @@ from avocado.utils.podman import Podman, PodmanException
 LOG = logging.getLogger(__name__)
 
 
+class PodmanSpawnerException(PodmanException):
+    """Errors more closely related to the spawner functionality"""
+
+
 class PodmanSpawnerInit(Init):
 
     description = "Podman (container) based spawner initialization"
@@ -193,9 +197,15 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         _, _, python_binary = await self.python_version
+        full_module_name = (
+            runtime_task.task.runnable.pick_runner_module_from_entry_point_kind(
+                runtime_task.task.runnable.kind
+            )
+        )
+        if full_module_name is None:
+            msg = f"Could not determine Python module name for runnable with kind {runtime_task.task.runnable.kind}"
+            raise PodmanSpawnerException(msg)
 
-        module_name = runtime_task.task.runnable.kind.replace("-", "_")
-        full_module_name = f"avocado.plugins.runners.{module_name}"
         entry_point_args = [python_binary, "-m", full_module_name, "task-run"]
 
         test_opts = ()
@@ -236,22 +246,16 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             image = self.config.get("spawner.podman.image")
 
         envs = [f"-e={k}={v}" for k, v in env_args.items()]
-        try:
-            # pylint: disable=W0201
-            _, stdout, _ = await self.podman.execute(
-                "create",
-                *status_server_opts,
-                *output_opts,
-                *test_opts,
-                entry_point_arg,
-                *envs,
-                image,
-            )
-        except PodmanException as ex:
-            msg = f"Could not create podman container: {ex}"
-            runtime_task.status = msg
-            return False
-
+        # pylint: disable=W0201
+        _, stdout, _ = await self.podman.execute(
+            "create",
+            *status_server_opts,
+            *output_opts,
+            *test_opts,
+            entry_point_arg,
+            *envs,
+            image,
+        )
         return stdout.decode().strip()
 
     async def spawn_task(self, runtime_task):
@@ -261,7 +265,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             self.podman = Podman(podman_bin)
         except PodmanException as ex:
-            runtime_task.status = str(ex)
+            LOG.error(ex)
             return False
 
         major, minor, _ = await self.python_version
@@ -270,9 +274,13 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
         env_args = {"PYTHONPATH": destination_eggs}
         output_dir_path = self.task_output_dir(runtime_task)
-        container_id = await self._create_container_for_task(
-            runtime_task, env_args, output_dir_path
-        )
+        try:
+            container_id = await self._create_container_for_task(
+                runtime_task, env_args, output_dir_path
+            )
+        except PodmanException as ex:
+            LOG.error("Could not create podman container: %s", ex)
+            return False
 
         runtime_task.spawner_handle = container_id
 
@@ -282,9 +290,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             returncode, _, _ = await self.podman.start(container_id)
         except PodmanException as ex:
-            msg = f"Could not start container: {ex}"
-            runtime_task.status = msg
-            LOG.error(msg)
+            LOG.error("Could not start container: %s", ex)
             return False
 
         return returncode == 0
@@ -306,9 +312,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         try:
             await self.podman.stop(runtime_task.spawner_handle)
         except PodmanException as ex:
-            msg = f"Could not stop container: {ex}"
-            runtime_task.status = msg
-            LOG.error(msg)
+            LOG.error("Could not stop container: %s", ex)
             return False
 
     @staticmethod
