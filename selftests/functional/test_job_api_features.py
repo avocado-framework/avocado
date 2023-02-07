@@ -7,6 +7,8 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.core.job import Job
+from avocado.core.nrunner.runnable import Runnable
+from avocado.core.suite import TestSuite
 from selftests.utils import TestCaseTmpDir
 
 
@@ -34,6 +36,25 @@ class Test(TestCaseTmpDir):
             result = j.run()
         self.assertEqual(result, exit_codes.AVOCADO_ALL_OK)
         self.assertTrue(os.path.exists(json_results_path))
+
+    def test_job_params(self):
+        test = Runnable(
+            "avocado-instrumented",
+            "examples/tests/sleeptest.py:SleepTest.test",
+            variant={
+                "paths": ["/"],
+                "variant_id": None,
+                "variant": [["/", [["/", "sleep_length", "0.01"]]]],
+            },
+        )
+        suite = TestSuite("suite_1", tests=[test], config=self.base_config)
+        with Job(self.base_config, [suite]) as j:
+            result = j.run()
+            test_runtime = j.result.tests[0].get("time_elapsed")
+        self.assertEqual(result, exit_codes.AVOCADO_ALL_OK)
+        self.assertLess(
+            test_runtime, 1, "SleepTest runtime was longer than parameter enforced."
+        )
 
 
 if __name__ == "__main__":

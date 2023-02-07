@@ -281,14 +281,12 @@ class Runner(SuiteRunner):
 
         self._abort_if_missing_runners(missing_requirements)
 
-        job.result.tests_total = test_suite.variants.get_number_of_tests(
-            test_suite.tests
-        )
+        job.result.tests_total = len(test_suite.tests)
 
         self._create_status_server(test_suite, job)
 
         graph = RuntimeTaskGraph(
-            test_suite.get_test_variants(),
+            test_suite.tests,
             test_suite.name,
             self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,

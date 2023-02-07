@@ -65,7 +65,7 @@ class DependencyGraph(TestCaseTmpDir):
         ) as test:
             config = {"resolver.references": [test.path]}
             suite = TestSuite.from_config(config=config)
-            tests = suite.get_test_variants()
+            tests = suite.tests
             graph = RuntimeTaskGraph(tests, suite.name, 1, "")
             runtime_tests = graph.get_tasks_in_topological_order()
             self.assertTrue(runtime_tests[0].task.identifier.name.endswith("test_a"))
@@ -81,7 +81,7 @@ class DependencyGraph(TestCaseTmpDir):
         ) as test:
             config = {"resolver.references": [test.path]}
             suite = TestSuite.from_config(config=config)
-            tests = suite.get_test_variants()
+            tests = suite.tests
             graph = RuntimeTaskGraph(tests, suite.name, 1, "")
             runtime_tests = graph.get_tasks_in_topological_order()
             self.assertTrue(runtime_tests[0].task.identifier.name.endswith("hello"))
