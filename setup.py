@@ -310,6 +310,9 @@ class Plugin(SimpleCommand):
             return
 
 
+EGG_URL_FMT = f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework-{VERSION}-py{{py_major}}.{{py_minor}}.egg"
+
+
 if __name__ == "__main__":
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
@@ -455,6 +458,24 @@ if __name__ == "__main__":
             "avocado.plugins.cache": [
                 "requirement = avocado.plugins.requirement_cache:RequirementCache",
             ],
+            "distutils.setup_keywords": [
+                "runners_assets = avocado.core.runners_assets:check_runners_assets",
+            ],
+            "egg_info.writers": [
+                "runners_assets.json = avocado.core.runners_assets:write_runners_assets_json",
+            ],
+        },
+        runners_assets={
+            "noop": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "dry-run": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "exec-test": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "python-unittest": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "avocado-instrumented": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "tap": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "asset": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "package": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "podman-image": [{"url_format": EGG_URL_FMT, "type": "egg"}],
+            "sysinfo": [{"url_format": EGG_URL_FMT, "type": "egg"}],
         },
         zip_safe=False,
         test_suite="selftests",

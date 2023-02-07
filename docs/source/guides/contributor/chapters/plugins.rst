@@ -362,3 +362,52 @@ you'd run ``avocado run -- pass fail``::
   RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB HTML   : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/results.html
   JOB TIME   : 1.83 s
+
+Automating the deployment of runners
+------------------------------------
+
+Sometimes, the environment in which a test will actually be run, is
+different from the one where the the main Avocado job is running.
+This is true, for instance, in the case of the Podman spawner
+(``avocado run --spawner=podman``) which runs test on isolated
+containers.
+
+It's possible to declare where Avocado can find your runner.  At this
+time, runners packaged in a Python egg are supported, but support for
+standalone runners (executables) is planned.
+
+To do so, add a ``runners_asset`` parameter to the ``setup`` function
+on your ``setup.py`` file (or equivalent, such as ``setup.cfg``).
+The following is a verbatim copy of the ``robot`` plugin ``setup.py``::
+
+  runners_assets={
+    "robot": [
+        {
+            "url_format": f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework_plugin_robot-{VERSION}-py{{py_major}}.{{py_minor}}.egg",
+            "type": "egg",
+        }
+    ],
+  },
+
+It's possible to use either a ``url`` parameter, which will be used as
+is, or a ``url_format`` parameter, which can be formatted with the
+following parameters:
+
+* ``py_major``: the Python major version (such as ``3``).
+* ``py_minor``: the Python minor version (such as ``3.11``, ``3.10``
+  and the like)
+
+As stated earlier, so far the only supported ``type`` is ``egg``, but
+support for other asset types is planned.
+
+Another requirement is to add the following boiler plate code, so that
+the ``runners_assets`` parameter is recognized by ``setup.py``::
+
+  entry_points={
+      "distutils.setup_keywords": [
+          "runners_assets = avocado.core.runners_assets:check_runners_assets",
+      ],
+      "egg_info.writers": [
+          "runners_assets.json = avocado.core.runners_assets:write_runners_assets_json",
+      ],
+  }

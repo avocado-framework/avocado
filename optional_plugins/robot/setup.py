@@ -42,5 +42,19 @@ setup(
         ],
         "avocado.plugins.runnable.runner": ["robot = avocado_robot.runner:RobotRunner"],
         "avocado.plugins.resolver": ["robot = avocado_robot.robot:RobotResolver"],
+        "distutils.setup_keywords": [
+            "runners_assets = avocado.core.runners_assets:check_runners_assets",
+        ],
+        "egg_info.writers": [
+            "runners_assets.json = avocado.core.runners_assets:write_runners_assets_json",
+        ],
+    },
+    runners_assets={
+        "robot": [
+            {
+                "url_format": f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework_plugin_robot-{VERSION}-py{{py_major}}.{{py_minor}}.egg",
+                "type": "egg",
+            }
+        ],
     },
 )

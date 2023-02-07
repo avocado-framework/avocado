@@ -5,6 +5,8 @@ import os
 import subprocess
 import uuid
 
+import pkg_resources
+
 from avocado.core.dependencies.requirements import cache
 from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.settings import settings
@@ -136,7 +138,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         asset = Asset(url, cache_dirs=cachedirs)
         return asset.fetch()
 
-    def get_eggs_paths(self, py_major, py_minor):
+    def get_eggs_paths(self, py_major, py_minor, kind=None):
         """Return the basic eggs needed to bootstrap Avocado.
 
         This will return a tuple with the current location and where this
@@ -155,6 +157,16 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         else:
             remote_egg = f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework-{VERSION}-py{py_major}.{py_minor}.egg"
             eggs.append(remote_egg)
+
+        if kind is not None:
+            kind_eggs = self.get_eggs_by_kind(kind)
+            if kind_eggs:
+                for kind_egg in kind_eggs:
+                    kind_egg = kind_egg.format(
+                        VERSION=VERSION, py_major=py_major, py_minor=py_minor
+                    )
+                    if kind_egg not in eggs:
+                        eggs.append(kind_egg)
 
         for url in eggs:
             path = self._fetch_asset(url)
@@ -177,10 +189,30 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     async def deploy_artifacts(self):
         pass
 
-    async def deploy_avocado(self, where):
+    @staticmethod
+    def get_eggs_by_kind(kind):
+        result = []
+        for ep in pkg_resources.iter_entry_points(
+            "console_scripts", f"avocado-runner-{kind}"
+        ):
+            try:
+                runners_assets = ep.dist.get_metadata("runners_assets.json")
+            except (FileNotFoundError, OSError):
+                continue
+            if runners_assets:
+                runners_assets = json.loads(runners_assets)
+                kind_entries = runners_assets.get(kind)
+                for kind_entry in kind_entries:
+                    if kind_entry.get("type") == "egg":
+                        result.append(
+                            kind_entry.get("url_format", kind_entry.get("url"))
+                        )
+        return result
+
+    async def deploy_avocado(self, where, kind=None):
         # Deploy all the eggs to container inside /tmp/
         major, minor, _ = await self.python_version
-        eggs = self.get_eggs_paths(major, minor)
+        eggs = self.get_eggs_paths(major, minor, kind)
 
         for egg, to in eggs:
             await self.podman.copy_to_container(where, egg, to)
@@ -270,7 +302,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
         major, minor, _ = await self.python_version
         # Return only the "to" location
-        eggs = self.get_eggs_paths(major, minor)
+        eggs = self.get_eggs_paths(major, minor, runtime_task.task.runnable.kind)
         destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
         env_args = {"PYTHONPATH": destination_eggs}
         output_dir_path = self.task_output_dir(runtime_task)
@@ -284,7 +316,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
         runtime_task.spawner_handle = container_id
 
-        await self.deploy_avocado(container_id)
+        await self.deploy_avocado(container_id, runtime_task.task.runnable.kind)
 
         try:
             # pylint: disable=W0201
