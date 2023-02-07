@@ -100,12 +100,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build eggs
-        run: python setup.py bdist_egg
+        run: make -f Makefile.gh build-egg
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.RELEASE_TOKEN }}
-          file: ${{ github.workspace }}/dist/avocado_framework*
+          file: ${{ github.workspace }}/EGG_UPLOAD/avocado_framework*egg
           tag: ${{ github.event.inputs.version }}
           overwrite: true
           file_glob: true
