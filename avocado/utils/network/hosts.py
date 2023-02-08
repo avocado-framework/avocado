@@ -18,6 +18,7 @@ This module provides an useful API for hosts in a network.
 """
 
 import json
+import re
 
 from avocado.utils.network.common import run_command
 from avocado.utils.network.exceptions import NWException
@@ -75,6 +76,36 @@ class Host:
         for interface in self.interfaces:
             if mac in interface.get_hwaddr():
                 return interface
+
+    def validate_mac_addr(self, mac_id):
+        """Check if mac address is valid.
+        This method checks if the mac address is 12 digit hexadecimal number.
+
+        Valid:
+            36:84:37:5a:ea:02
+
+        Invalid:
+            36:84:37-5a-ea-02
+            36-84-37-5a-ea-02
+            36.84.37.5a.ea
+            36:84:37:5a:ea:0ff
+            2345:84:37:5a:ea:0
+            3684375aea02
+
+        :param mac_id: Network mac address
+        :type pattern: str
+        :return: True if a user provided a valid mac address else False
+        :rtype: bool
+        """
+
+        exp = "^[0-9a-f]{2}([:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$"
+        check = re.compile(exp)
+        if mac_id is None:
+            return False
+        if re.search(check, mac_id):
+            return True
+        else:
+            return False
 
     def get_default_route_interface(self):
         """Get a list of default routes interfaces
