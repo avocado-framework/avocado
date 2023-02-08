@@ -138,8 +138,9 @@ class PathInspector:
         return mode & stat.S_IXUSR
 
     def is_empty(self):
-        size = os.stat(self.path)[stat.ST_SIZE]
-        return size == 0
+        if os.path.exists(self.path):
+            size = os.stat(self.path)[stat.ST_SIZE]
+            return size == 0
 
     def is_script(self, language=None):
         first_line = self.get_first_line()
