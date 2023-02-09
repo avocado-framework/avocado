@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import os
 import tempfile
@@ -49,6 +50,11 @@ class LXCSpawnerInit(Init):
     def initialize(self):
         section = "spawner.lxc"
 
+        help_msg = "List of already available container slots to spawn in"
+        settings.register_option(
+            section=section, key="slots", help_msg=help_msg, key_type=list, default=[]
+        )
+
         help_msg = "Distribution for the LXC container"
         settings.register_option(
             section=section, key="dist", help_msg=help_msg, default="fedora"
@@ -72,10 +78,32 @@ class LXCSpawnerInit(Init):
         )
 
 
+def with_slot_reservation(fn):
+    """
+    Decorator for slot cache context manager.
+
+    :param fn: function to run with slot reservation
+    :type fn: function
+    :returns: same function with the slot now reserved
+    :rtype: function
+
+    The main reason for the decorator is to not have to indent the entire
+    task running function in order to safely release the slot upon any error.
+    """
+
+    async def wrapper(self, runtime_task):
+        with LXCSpawner.reserve_slot(self, runtime_task) as slot:
+            runtime_task.spawner_handle = slot
+            return await fn(self, runtime_task)
+
+    return wrapper
+
+
 class LXCSpawner(Spawner, SpawnerMixin):
 
     description = "LXC (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    slots_cache = {}
 
     @staticmethod
     def run_container_cmd(container, command):
@@ -96,6 +124,48 @@ class LXCSpawner(Spawner, SpawnerMixin):
                 None, os.waitpid, pid, os.WUNTRACED
             )
             return exitcode, tmp_out.read(), tmp_err.read()
+
+    @contextlib.contextmanager
+    def reserve_slot(self, runtime_task):
+        """
+        Reserve a free or custom container slot for the runtime task.
+
+        :param runtime_task: runtime task to reserve the slot for
+        :type runtime_task: :py:class:`avocado.core.task.runtime.RuntimeTask`
+        :yields: a free slot to use if such was found
+        :raises: :py:class:`RuntimeError` if no free slot could be found
+
+        This will either use a runtime cache to find a free container slot to
+        run the task in or use a custom container/slot ID to allow for custom
+        schedulers to make their own decisions on which containers to run when.
+        """
+        if len(LXCSpawner.slots_cache) == 0:
+            # TODO: consider whether to provide persistence across runs via external storage
+            LXCSpawner.slots_cache = {
+                k: False for k in self.config.get("spawner.lxc.slots") if k
+            }
+            # TODO: spawner can look for free containers directly and populate these slots
+            # for c in lxcontainer.list_containers(as_object=True): ...
+
+        if runtime_task.spawner_handle is not None:
+            slot = runtime_task.spawner_handle
+        else:
+            slots = LXCSpawner.slots_cache
+            for key, value in slots.items():
+                if not value:
+                    slot = key
+                    slots[key] = True
+                    break
+            else:
+                raise RuntimeError(
+                    "No free slot available for the task, are "
+                    "you running with more processes than slots?"
+                )
+
+        try:
+            yield slot
+        finally:
+            LXCSpawner.slots_cache[slot] = False
 
     @staticmethod
     def is_task_alive(runtime_task):
@@ -118,6 +188,7 @@ class LXCSpawner(Spawner, SpawnerMixin):
         )
         return status == 0
 
+    @with_slot_reservation
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
         task = runtime_task.task
@@ -189,9 +260,6 @@ class LXCSpawner(Spawner, SpawnerMixin):
         if exitcode != 0:
             LOG.error(f"Error '{err}' on {container_id} with output:\n{output}")
             return False
-
-        # TODO: spawner can look for free containers rather than those being externally provided
-        # for c in lxcontainer.list_containers(as_object=True): ...
 
         return True
 
