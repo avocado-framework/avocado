@@ -271,6 +271,10 @@ def online_count():
     return os.sysconf("SC_NPROCESSORS_ONLN")
 
 
+def is_hotpluggable(cpu):
+    return os.path.exists(f"/sys/devices/system/cpu/cpu{cpu}/online")
+
+
 def online(cpu):
     """Online given CPU."""
     if _get_status(cpu) is False:
