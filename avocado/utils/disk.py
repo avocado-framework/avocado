@@ -123,6 +123,25 @@ def get_disks():
     return [str(disk["name"]) for disk in json_data["blockdevices"]]
 
 
+def get_disks_by_id():
+    """
+    Returns the physical "hard drives" available with wwid
+
+    This will get all the sysfs scsi disks by its device id,
+    irrespective of any platform and device type, a unique key
+    ie wwid will help work with devices in unpredictable device
+    name environment.
+
+    :returns: a list of scsi ids of real scsi devcies
+    :rtype: list of str
+    """
+    disk_list = []
+    for device in os.listdir("/dev/disk/by-id/"):
+        if os.path.realpath(os.path.join("/dev/disk/by-id/", device)):
+            disk_list.append(f"/dev/disk/by-id/{device}")
+    return disk_list
+
+
 def get_available_filesystems():
     """
     Return a list of all available filesystem types
