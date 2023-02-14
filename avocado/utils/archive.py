@@ -30,6 +30,10 @@ LOG = logging.getLogger(__name__)
 #: The first two bytes that all gzip files start with
 GZIP_MAGIC = b"\037\213"
 
+#: The first two bytes that all zstd files start with.  See
+#: https://datatracker.ietf.org/doc/html/rfc8878#section-3.1.1-3.2
+ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+
 
 def is_gzip_file(path):
     """
@@ -89,6 +93,14 @@ def lzma_uncompress(path, output_path=None, force=False):
         with open(output_path, "wb") as newfile_obj:
             newfile_obj.write(file_obj.read())
     return output_path
+
+
+def is_zstd_file(path):
+    """
+    Checks if file given by path has contents that suggests zstd file
+    """
+    with open(path, "rb") as zstd_file:  # pylint: disable=W1514
+        return zstd_file.read(len(ZSTD_MAGIC)) == ZSTD_MAGIC
 
 
 class ArchiveException(Exception):
@@ -251,6 +263,7 @@ def is_archive(filename):
         or tarfile.is_tarfile(filename)
         or is_gzip_file(filename)
         or is_lzma_file(filename)
+        or is_zstd_file(filename)
     )
 
 
