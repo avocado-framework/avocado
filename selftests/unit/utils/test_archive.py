@@ -199,9 +199,6 @@ class ArchiveTest(unittest.TestCase):
         xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
         self.assertTrue(archive.is_archive(xz_path))
 
-    def test_null_lzma_is_not_archive(self):
-        self.assertFalse(archive.is_archive(os.devnull))
-
     def test_uncompress_lzma(self):
         xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
         ret = archive.uncompress(xz_path, self.decompressdir)
@@ -220,7 +217,7 @@ class ArchiveTest(unittest.TestCase):
         zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
         self.assertTrue(archive.is_archive(zstd_path))
 
-    def test_null_zstd_is_not_archive(self):
+    def test_null_is_not_archive(self):
         self.assertFalse(archive.is_archive(os.devnull))
 
     def tearDown(self):
