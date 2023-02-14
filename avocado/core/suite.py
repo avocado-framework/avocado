@@ -13,6 +13,7 @@
 # Author: Beraldo Leal <bleal@redhat.com>
 
 import os
+from copy import deepcopy
 from enum import Enum
 from uuid import uuid4
 
@@ -26,7 +27,7 @@ from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
 from avocado.core.tags import filter_tags_on_runnables
 from avocado.core.tree import TreeNode
-from avocado.core.varianter import Varianter, is_empty_variant
+from avocado.core.varianter import Varianter, dump_variant, is_empty_variant
 
 
 class TestSuiteError(Exception):
@@ -270,33 +271,38 @@ class TestSuite:
             self._variants = variants
         return self._variants
 
-    def get_test_variants(self):
-        """Computes test variants based on the parameters"""
+    def _get_test_variants(self):
+        def add_variant(runnable, variant):
+            runnable = deepcopy(runnable)
+            runnable.variant = dump_variant(variant)
+            runnable_with_variant.append(runnable)
 
+        runnable_with_variant = []
         if self.test_parameters:
             paths = ["/"]
             tree_nodes = TreeNode().get_node(paths[0], True)
             tree_nodes.value = self.test_parameters
             variant = {"variant": tree_nodes, "variant_id": None, "paths": paths}
-            test_variant = [(test, variant) for test in self.tests]
-
-        else:
+            for runnable in self.tests:
+                add_variant(runnable, variant)
+        elif self.variants:
             # let's use variants when parameters are not available
             # define execution order
             execution_order = self.config.get("run.execution_order")
             if execution_order == "variants-per-test":
-                test_variant = [
-                    (test, variant)
-                    for test in self.tests
-                    for variant in self.variants.itertests()
-                ]
+                for runnable in self.tests:
+                    for variant in self.variants.itertests():
+                        add_variant(runnable, variant)
             elif execution_order == "tests-per-variant":
-                test_variant = [
-                    (test, variant)
-                    for variant in self.variants.itertests()
-                    for test in self.tests
-                ]
-        return test_variant
+                for variant in self.variants.itertests():
+                    for runnable in self.tests:
+                        add_variant(runnable, variant)
+        return runnable_with_variant
+
+    def get_test_variants(self):
+        """Computes test variants based on the parameters"""
+
+        return [(test, test.variant) for test in self._get_test_variants()]
 
     def run(self, job):
         """Run this test suite with the job context in mind.
@@ -336,6 +342,8 @@ class TestSuite:
         runner = config.get("run.suite_runner")
         if runner == "nrunner":
             suite = cls._from_config_with_resolver(config, name)
+            if suite.test_parameters or suite.variants:
+                suite.tests = suite._get_test_variants()
         else:
             raise TestSuiteError(
                 f'Suite creation for runner "{runner}" ' f"is not supported"

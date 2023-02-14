@@ -1,11 +1,9 @@
-from copy import deepcopy
 from enum import Enum
 from itertools import chain
 
 from avocado.core.dispatcher import TestPreDispatcher
 from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
-from avocado.core.varianter import dump_variant
 
 
 class RuntimeTaskStatus(Enum):
@@ -108,7 +106,6 @@ class RuntimeTask:
         runnable,
         no_digits,
         index,
-        variant,
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
@@ -138,9 +135,7 @@ class RuntimeTask:
             prefix = f"{test_suite_name}-{index}"
         else:
             prefix = index
-        test_id = TestID(prefix, runnable.identifier, variant, no_digits)
-        # inject variant on runnable
-        runnable.variant = dump_variant(variant)
+        test_id = TestID(prefix, runnable.identifier, runnable.variant, no_digits)
 
         # handles the test task
         task = Task(
@@ -222,7 +217,7 @@ class RuntimeTaskGraph:
         From the list of tests, it will create runtime tasks and connects them
         inside the graph by its dependencies.
 
-        :param tests: variants of runnables from test suite
+        :param tests: runnables from test suite
         :type tests: list
         :param test_suite_name: test suite name which this test is related to
         :type test_suite_name: str
@@ -237,13 +232,11 @@ class RuntimeTaskGraph:
         self.graph = {}
         # create graph
         no_digits = len(str(len(tests)))
-        for index, (runnable, variant) in enumerate(tests, start=1):
-            runnable = deepcopy(runnable)
+        for index, runnable in enumerate(tests, start=1):
             runtime_test = RuntimeTask.from_runnable(
                 runnable,
                 no_digits,
                 index,
-                variant,
                 test_suite_name,
                 status_server_uri,
                 job_id,
