@@ -209,6 +209,20 @@ class ArchiveTest(unittest.TestCase):
         with open(ret, "rb") as decompressed:
             self.assertEqual(decompressed.read(), b"avocado\n")
 
+    def test_is_zstd_file(self):
+        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        self.assertTrue(archive.is_zstd_file(xz_path))
+
+    def test_null_is_not_zstd_file(self):
+        self.assertFalse(archive.is_zstd_file(os.devnull))
+
+    def test_zstd_is_archive(self):
+        zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        self.assertTrue(archive.is_archive(zstd_path))
+
+    def test_null_zstd_is_not_archive(self):
+        self.assertFalse(archive.is_archive(os.devnull))
+
     def tearDown(self):
         try:
             self.basedir.cleanup()
