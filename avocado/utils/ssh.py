@@ -256,6 +256,7 @@ class Session:
         :returns: True if success and an exception if not.
         :rtype: bool
         """
+        path = destination.split(":")[-1]
         try:
             cmd = path_utils.find_command("scp")
         except path_utils.CmdNotFoundError as exc:
@@ -268,6 +269,8 @@ class Session:
             options += " -r"
         options += f" {source} {destination}"
         try:
+            if self.cmd(f"test -d {path}").exit_status != 0:
+                self.cmd(f"mkdir -p {path}")
             result = process.run(f"{cmd} {options}", ignore_status=True)
             return result.exit_status == 0
         except process.CmdError as exc:
