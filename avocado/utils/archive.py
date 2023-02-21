@@ -20,7 +20,9 @@ import logging
 import lzma
 import os
 import platform
+import shutil
 import stat
+import subprocess
 import tarfile
 import zipfile
 
@@ -33,6 +35,12 @@ GZIP_MAGIC = b"\037\213"
 #: The first two bytes that all zstd files start with.  See
 #: https://datatracker.ietf.org/doc/html/rfc8878#section-3.1.1-3.2
 ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+
+#: A valid zstd archive with "avocado\n" as content.  Created with:
+#: echo "avocado" | zstd -c
+ZSTD_AVOCADO = (
+    ZSTD_MAGIC + b"\x04\x58\x41\x00\x00\x61\x76\x6f\x63\x61\x64\x6f\x0a\x3c\xfc\x9f\xb9"
+)
 
 
 def is_gzip_file(path):
@@ -76,17 +84,22 @@ def is_lzma_file(path):
     return True
 
 
-def lzma_uncompress(path, output_path=None, force=False):
-    """
-    Extracts a XZ compressed file to the same directory.
-    """
+def _decide_on_path(path, suffix, output_path=None):
     if output_path is None:
         output_path = os.path.splitext(path)[0]
     elif os.path.isdir(output_path):
         basename = os.path.basename(path)
-        if basename.endswith(".xz"):
+        if basename.endswith(suffix):
             basename = os.path.splitext(basename)[0]
         output_path = os.path.join(output_path, basename)
+    return output_path
+
+
+def lzma_uncompress(path, output_path=None, force=False):
+    """
+    Extracts a XZ compressed file to the same directory.
+    """
+    output_path = _decide_on_path(path, ".xz", output_path)
     if not force and os.path.exists(output_path):
         return output_path
     with lzma.open(path, "rb") as file_obj:
@@ -101,6 +114,45 @@ def is_zstd_file(path):
     """
     with open(path, "rb") as zstd_file:  # pylint: disable=W1514
         return zstd_file.read(len(ZSTD_MAGIC)) == ZSTD_MAGIC
+
+
+def _probe_zstd_cmd():
+    zstd_cmd = shutil.which("zstd")
+    if zstd_cmd is not None:
+        proc = subprocess.run(
+            [zstd_cmd, "-d"],
+            input=ZSTD_AVOCADO,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout == b"avocado\n":
+            return zstd_cmd
+        else:
+            LOG.error("zstd command does not seem to be the Zstandard compression tool")
+
+
+def zstd_uncompress(path, output_path=None, force=False):
+    """
+    Extracts a zstd compressed file.
+    """
+    zstd_cmd = _probe_zstd_cmd()
+    if not zstd_cmd:
+        raise ArchiveException("Unable to find a suitable zstd compression tool")
+    output_path = _decide_on_path(path, ".zst", output_path)
+    if not force and os.path.exists(output_path):
+        return output_path
+    proc = subprocess.run(
+        [zstd_cmd, "-d", path, "-o", output_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if not proc.returncode == 0:
+        raise ArchiveException(
+            f"Unable to decompress {path} into {output_path}: {proc.stderr}"
+        )
+    return output_path
 
 
 class ArchiveException(Exception):
@@ -297,6 +349,8 @@ def uncompress(filename, path):
         return gzip_uncompress(filename, path)
     elif is_lzma_file(filename) and not is_tar:
         return lzma_uncompress(filename, path)
+    elif is_zstd_file(filename) and not is_tar:
+        return zstd_uncompress(filename, path)
     else:
         with ArchiveFile.open(filename) as x:
             return x.extract(path)
