@@ -238,13 +238,14 @@ class YumBackend(RpmBackend):
             log.error(details)
             return False
 
-    def get_source(self, name, dest_path):
+    def get_source(self, name, dest_path, build_option=None):
         """
         Downloads the source package and prepares it in the given dest_path
         to be ready to build.
 
         :param name: name of the package
         :param dest_path: destination_path
+        :param  build_option : rpmbuild option
 
         :return final_dir: path of ready-to-build directory
         """
@@ -281,7 +282,7 @@ class YumBackend(RpmBackend):
                         os.environ["HOME"], "rpmbuild", "SPECS", f"{name}.spec"
                     )
                     if self.build_dep(spec_path):
-                        return self.prepare_source(spec_path, dest_path)
+                        return self.prepare_source(spec_path, dest_path, build_option)
                     else:
                         log.error("Installing build dependencies failed")
                         return ""

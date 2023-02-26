@@ -180,15 +180,17 @@ class RpmBackend(BaseBackend):
         return True
 
     @staticmethod
-    def prepare_source(spec_file, dest_path=None):
+    def prepare_source(spec_file, dest_path=None, build_option=None):
         """
         Rpmbuild the spec path and return build dir
 
         :param spec_path: spec path to install
+        :param  build_option : rpmbuild option
         :return path: build directory
         """
 
-        build_option = "-bc"
+        if build_option is None:
+            build_option = "-bc"
         if dest_path is not None:
             build_option += f" --define '_builddir {dest_path}'"
         else:
