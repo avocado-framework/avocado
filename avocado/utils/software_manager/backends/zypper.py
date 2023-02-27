@@ -167,13 +167,14 @@ class ZypperBackend(RpmBackend):
             log.error("Installing source failed")
             return ""
 
-    def get_source(self, name, dest_path):
+    def get_source(self, name, dest_path, build_option=None):
         """
         Downloads the source package and prepares it in the given dest_path
         to be ready to build
 
         :param name: name of the package
         :param dest_path: destination_path
+        :param  build_option : rpmbuild option
 
         :return final_dir: path of ready-to-build directory
         """
@@ -188,7 +189,7 @@ class ZypperBackend(RpmBackend):
         try:
             spec_path = self._source_install(name)
             if spec_path:
-                return self.prepare_source(spec_path, dest_path)
+                return self.prepare_source(spec_path, dest_path, build_option)
             else:
                 log.error("Source not installed properly")
                 return ""
