@@ -23,7 +23,6 @@ from xml.dom.minidom import Document
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Init, Result
-from avocado.core.references import reference_split
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
 from avocado.utils import astring
@@ -67,11 +66,8 @@ class XUnitResult(Result):
                 "name",
                 f"{self._escape_attr(name.name)}{self._escape_attr(name.str_variant)}",
             )
-            file_path, _ = reference_split(name.name)
         else:
             testcase.setAttribute("name", self._get_attr(state, "name"))
-            file_path, _ = reference_split(self._get_attr(state, "name"))
-        testcase.setAttribute("file", self._escape_attr(file_path))
         testcase.setAttribute(
             "time", self._format_time(self._get_attr(state, "time_elapsed"))
         )

@@ -27,7 +27,6 @@ class JsonResultTest(TestCaseTmpDir):
         self.assertEqual(
             els[0].attributes["name"].value, "examples/tests/passtest.py:PassTest.test"
         )
-        self.assertEqual(els[0].attributes["file"].value, "examples/tests/passtest.py")
         els = dom.getElementsByTagName("failure")
         self.assertEqual(len(els), 0)
 
