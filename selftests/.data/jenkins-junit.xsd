@@ -71,7 +71,6 @@
                 <xs:element ref="system-err" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="file" type="xs:string" use="optional"/>
             <xs:attribute name="assertions" type="xs:string" use="optional"/>
             <xs:attribute name="time" type="xs:string" use="optional"/>
             <xs:attribute name="classname" type="xs:string" use="optional"/>
