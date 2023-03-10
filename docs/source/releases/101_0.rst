@@ -1,0 +1,73 @@
+====================================
+101.0 One Hundred and One Dalmatians
+====================================
+
+The Avocado team is proud to present another release: Avocado 101.0,
+AKA "One Hundred and One Dalmatians", is now available!
+
+Release documentation: `Avocado 101.0
+<http://avocado-framework.readthedocs.io/en/101.0/>`_
+
+Users/Test Writers
+==================
+
+* The ``xunit`` (AKA ``junit``) result file now contains the class
+  name and better error information for test cases.
+
+* The ``xunit`` and ``json`` result files now contain the test variant
+  information.
+
+* The documentation now uses proper terminology everywhere, matching
+  the nrunner architecture.
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.cpu` introduced a utility to check if a given CPU
+  is hotpluggable.
+
+* :mod:`avocado.utils.network` introduced
+  :func:`avocado.utils.network.hosts.Host.validate_mac_addr` which
+  checks if a given MAC address is valid.
+
+* :mod:`avocado.utils.network` now adds a missing network mask prefix
+  when creating static configurations.
+
+* :mod:`avocado.utils.disk` introduced
+  :func:`avocado.utils.disk.get_disks_by_id` which returns all disks by
+  device ids.
+
+* :mod:`avocado.utils.archive` added support for Zstandard
+  uncompression.
+
+Bug Fixes
+=========
+
+* Test runners written in Python (using Python modules as an
+  entrypoint) will now be found by the podman spawner.
+
+* A runnable's variant (and thus parameters) information was not being
+  respected when using the Job API.
+
+Internal Changes
+================
+
+* A number of lint checks were added, with the bump of Pylint to
+  version 2.15.10.
+
+* Besides the main Avocado egg, all of the optional plugins (but part
+  of the Avocado code repository), now build eggs on the CI.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/100.0...101.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/27?closed=1>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0055254/>`_.
