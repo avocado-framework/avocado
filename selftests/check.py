@@ -47,7 +47,7 @@ class JobAPIFeaturesTest(Test):
         """Creates the Job config."""
         if value is None:
             value = self.params.get("value")
-        reference = self.params.get("reference", default=["/bin/true"])
+        reference = self.params.get("reference", default=["examples/tests/true"])
         config = {
             "core.show": ["none"],
             "run.results_dir": self.workdir,
@@ -346,7 +346,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "namespace": "job.run.result.tap.include_logs",
                 "value": False,
                 "file": "results.tap",
-                "content": "Command '/bin/true' finished with 0",
+                "content": "Command 'examples/tests/true' finished with 0",
                 "assert": False,
             },
             {
@@ -371,7 +371,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "file": "results.json",
                 "content": '"skip": 1',
                 "assert": True,
-                "reference": ["/bin/false", "/bin/true"],
+                "reference": ["examples/tests/false", "examples/tests/true"],
                 "exit_code": 9,
                 "extra_job_config": {"run.max_parallel_tasks": 1},
             },
@@ -381,7 +381,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "file": "results.json",
                 "content": '"pass": 1',
                 "assert": True,
-                "reference": ["/bin/true", "foo"],
+                "reference": ["examples/tests/true", "foo"],
             },
             {
                 "namespace": "run.unique_job_id",
