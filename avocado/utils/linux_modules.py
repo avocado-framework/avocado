@@ -22,6 +22,7 @@ Linux kernel modules APIs
 """
 
 import logging
+import os
 import platform
 import re
 from enum import Enum
@@ -203,7 +204,11 @@ def get_loaded_modules():
     Gets list of loaded modules.
     :return: List of loaded modules.
     """
-    with open("/proc/modules", "rb") as proc_modules:  # pylint: disable=W1514
+    modules_path = "/proc/modules"
+    if not os.path.exists(modules_path):
+        LOG.info("Modules file can not be found at %s", modules_path)
+        return []
+    with open(modules_path, "rb") as proc_modules:  # pylint: disable=W1514
         return [astring.to_text(_.split(b" ", 1)[0]) for _ in proc_modules]
 
 
