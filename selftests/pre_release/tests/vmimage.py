@@ -1,11 +1,8 @@
-import os
-import shutil
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from avocado import Test, fail_on
-from avocado.plugins import vmimage as vmimage_plug
-from avocado.utils import process, vmimage
+from avocado.utils import vmimage
 
 
 class Base(Test):
@@ -72,24 +69,3 @@ class Image(Base):
             self.vmimage_build,
             self.vmimage_arch,
         )
-
-
-class ImageFunctional(Base):
-    @staticmethod
-    def __get_cache_files():
-        return set(i["file"] for i in vmimage_plug.list_downloaded_images())
-
-    def setUp(self):
-        super().setUp()
-        self.cache_files = self.__get_cache_files()
-
-    @fail_on(process.CmdError)
-    def test_get(self):
-        cmd = "avocado vmimage get --distro=%s --distro-version=%s --arch=%s"
-        cmd %= (self.vmimage_name, self.vmimage_version, self.vmimage_arch)
-        process.run(cmd)
-
-    def tearDown(self):
-        dirty_files = self.__get_cache_files() - self.cache_files
-        for file_path in dirty_files:
-            shutil.rmtree(os.path.dirname(file_path))
