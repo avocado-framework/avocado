@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+# this mimics the /bin/false binary available on many systems
+# and results in a FAIL when executed as a test
+import sys
+
+if __name__ == '__main__':
+   sys.exit(1)
