@@ -411,15 +411,42 @@ class OpenSUSEImageProvider(ImageProviderBase):
             "https://download.opensuse.org/pub/opensuse/distribution/leap/"
         )
         self.url_images = self.url_versions + "{version}/appliances/"
+        self._image_pattern = None
 
-        if not build:
-            self.image_pattern = "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-OpenStack-Cloud.qcow2$"
+    @property
+    def image_pattern(self):
+        if not self._image_pattern:
+            if self.version >= "15.5" and self.arch == "aarch64":
+                image_pattern = "openSUSE-Leap-(?P<version>{version})-ARM-JeOS-efi.(?P<arch>aarch64)[build].qcow2$"
+                if self.build:
+                    self._image_pattern = image_pattern.replace(
+                        "[build]", "-(?P<build>{build})"
+                    )
+                else:
+                    self._image_pattern = image_pattern.replace("[build]", "")
+            elif self.version >= "15.5" and self.arch == "x86_64":
+                image_pattern = "openSUSE-Leap-(?P<version>{version})-Minimal-VM.(?P<arch>x86_64)-[version]Cloud[build].qcow2$"
+                if self.build:
+                    self._image_pattern = image_pattern.replace(
+                        "[build]", "-(?P<build>{build})"
+                    ).replace("[version]", "{version}-")
+                else:
+                    self._image_pattern = image_pattern.replace("[build]", "").replace(
+                        "[version]", ""
+                    )
+            else:
+                if not self.build:
+                    self._image_pattern = "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-OpenStack-Cloud.qcow2$"
+                else:
+                    self._image_pattern = (
+                        "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-{version}"
+                        "-OpenStack-Cloud-Build(?P<build>{build}).qcow2$"
+                    )
+        return self._image_pattern
 
-        else:
-            self.image_pattern = (
-                "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-{version}"
-                "-OpenStack-Cloud-Build(?P<build>{build}).qcow2$"
-            )
+    @image_pattern.setter
+    def image_pattern(self, image_pattern):
+        self._image_pattern = image_pattern
 
     @staticmethod
     def _convert_version_numbers(versions):
