@@ -12,6 +12,11 @@ import collections
 import json
 import sys
 
+try:
+    from avocado.core.teststatus import STATUSES_NOT_OK
+except ImportError:
+    STATUSES_NOT_OK = ["ERROR", "FAIL", "INTERRUPTED"]
+
 
 def get_one_job_results(path, results):
     with open(path, encoding="utf-8") as result_json:
@@ -50,7 +55,7 @@ def main():
     number_of_jobs = len(sys.argv[1:])
     any_failure = False
     for test in all_job_results:
-        if all_job_results[test].get("PASS") != number_of_jobs:
+        if set(all_job_results[test].keys()).intersection(STATUSES_NOT_OK):
             any_failure = True
             print(test)
             for status, count in all_job_results[test].items():
