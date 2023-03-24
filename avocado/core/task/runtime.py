@@ -147,12 +147,24 @@ class RuntimeTask:
 class PreRuntimeTask(RuntimeTask):
     @classmethod
     def from_runnable(
-        cls, pre_runnable, status_server_uri=None, job_id=None
-    ):  # pylint: disable=W0221
+        cls,
+        runnable,
+        no_digits,
+        index,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+    ):
         """Creates runtime task for pre_test plugin from runnable
 
-        :param pre_runnable: the "description" of what the task should run.
+        :param runnable: the "description" of what the task should run.
         :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
         :param status_server_uri: the URIs for the status servers that this
                                   task should send updates to.
         :type status_server_uri: list
@@ -162,14 +174,18 @@ class PreRuntimeTask(RuntimeTask):
         :type job_id: str
         :returns: RuntimeTask of the test from runnable
         """
-        name = f'{pre_runnable.kind}-{pre_runnable.kwargs.get("name")}'
-        prefix = 0
+        # create test ID
+        if test_suite_name:
+            prefix = f"{test_suite_name}-{index}"
+        else:
+            prefix = index
+        name = f'{runnable.kind}-{runnable.kwargs.get("name")}'
         # the human UI works with TestID objects, so we need to
         # use it to name Task
-        task_id = TestID(prefix, name)
+        task_id = TestID(prefix, name, runnable.variant, no_digits)
         # creates the dependency task
         task = Task(
-            pre_runnable,
+            runnable,
             identifier=task_id,
             status_uris=status_server_uri,
             category="pre_test",
@@ -178,11 +194,25 @@ class PreRuntimeTask(RuntimeTask):
         return cls(task)
 
     @classmethod
-    def get_pre_tasks_from_runnable(cls, runnable, status_server_uri=None, job_id=None):
+    def get_pre_tasks_from_runnable(
+        cls,
+        runnable,
+        no_digits,
+        index,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+    ):
         """Creates runtime tasks for preTest task from runnable
 
         :param runnable: the "description" of what the task should run.
         :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
         :param status_server_uri: the URIs for the status servers that this
                                   task should send updates to.
         :type status_server_uri: list
@@ -203,7 +233,14 @@ class PreRuntimeTask(RuntimeTask):
         )
         pre_test_tasks = []
         for pre_runnable in pre_runnables:
-            pre_task = cls.from_runnable(pre_runnable, status_server_uri, job_id)
+            pre_task = cls.from_runnable(
+                pre_runnable,
+                no_digits,
+                index,
+                test_suite_name,
+                status_server_uri,
+                job_id,
+            )
             pre_test_tasks.append(pre_task)
         return pre_test_tasks
 
@@ -246,7 +283,12 @@ class RuntimeTaskGraph:
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
                 pre_tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
-                    runnable, status_server_uri, job_id
+                    runnable,
+                    no_digits,
+                    index,
+                    test_suite_name,
+                    status_server_uri,
+                    job_id,
                 )
                 if pre_tasks:
                     pre_tasks.append(runtime_test)
