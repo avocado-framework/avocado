@@ -36,11 +36,14 @@ class RuntimeTask:
     information about its execution by a spawner within a state machine.
     """
 
-    def __init__(self, task):
+    def __init__(self, task, satisfiable_deps_execution_statuses=None):
         """Instantiates a new RuntimeTask.
 
         :param task: The task to keep additional information about
         :type task: :class:`avocado.core.nrunner.Task`
+        :param satisfiable_deps_execution_statuses: The dependency result types that
+        satisfy the execution of this RuntimeTask.
+        :type satisfiable_deps_execution_statuses: list of test results.
         """
         #: The :class:`avocado.core.nrunner.Task`
         self.task = task
@@ -59,6 +62,9 @@ class RuntimeTask:
         #: The result of the spawning of a Task
         self.spawning_result = None
         self.dependencies = []
+        self.satisfiable_deps_execution_statuses = (
+            satisfiable_deps_execution_statuses or ["pass"]
+        )
 
     def __repr__(self):
         if self.status is None:
@@ -96,7 +102,7 @@ class RuntimeTask:
             return False
 
         for dependency in self.dependencies:
-            if dependency.result != "pass":
+            if dependency.result not in self.satisfiable_deps_execution_statuses:
                 return False
         return True
 
@@ -109,6 +115,7 @@ class RuntimeTask:
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
+        satisfiable_deps_execution_statuses=None,
     ):
         """Creates runtime task for test from runnable
 
@@ -127,6 +134,9 @@ class RuntimeTask:
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param satisfiable_deps_execution_statuses: The dependency result types that
+        satisfy the execution of this RuntimeTask.
+        :type satisfiable_deps_execution_statuses: list of test results.
         :returns: RuntimeTask of the test from runnable
         """
 
@@ -141,7 +151,7 @@ class RuntimeTask:
         task = Task(
             runnable, identifier=test_id, status_uris=status_server_uri, job_id=job_id
         )
-        return cls(task)
+        return cls(task, satisfiable_deps_execution_statuses)
 
 
 class PreRuntimeTask(RuntimeTask):
@@ -154,6 +164,7 @@ class PreRuntimeTask(RuntimeTask):
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
+        satisfiable_deps_execution_statuses=None,
     ):
         """Creates runtime task for pre_test plugin from runnable
 
@@ -172,6 +183,9 @@ class PreRuntimeTask(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param satisfiable_deps_execution_statuses: The dependency result types that
+        satisfy the execution of this RuntimeTask.
+        :type satisfiable_deps_execution_statuses: list of test results.
         :returns: RuntimeTask of the test from runnable
         """
         # create test ID
@@ -202,6 +216,7 @@ class PreRuntimeTask(RuntimeTask):
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
+        satisfiable_deps_execution_statuses=None,
     ):
         """Creates runtime tasks for preTest task from runnable
 
@@ -220,6 +235,9 @@ class PreRuntimeTask(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param satisfiable_deps_execution_statuses: The dependency result types that
+        satisfy the execution of this RuntimeTask.
+        :type satisfiable_deps_execution_statuses: list of test results.
         :returns: Pre RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
@@ -240,6 +258,7 @@ class PreRuntimeTask(RuntimeTask):
                 test_suite_name,
                 status_server_uri,
                 job_id,
+                satisfiable_deps_execution_statuses,
             )
             pre_test_tasks.append(pre_task)
         return pre_test_tasks
