@@ -26,7 +26,7 @@ function check()
 if [ -n "$INPUT_FILE" ]; then
     check "$INPUT_FILE";
 else
-    for input_file in $(grep -c -m1 -E 'import unittest$' selftests/unit{,/plugin,/utils}/test_*.py selftests/functional{,/plugin}/test_*.py | grep -v -E ':0$' | cut -d ':' -f 1); do
+    for input_file in $(grep -c -m1 -E 'import unittest$' selftests/unit{,/plugin,/utils}/*.py selftests/functional{,/plugin}/*.py | grep -v -E ':0$' | cut -d ':' -f 1); do
         check "$input_file"
     done
 fi

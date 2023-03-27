@@ -206,8 +206,8 @@ The list of test availables for --skip and --select are:
 
   static-checks         Run static checks (isort, lint, etc)
   job-api               Run job API checks
-  nrunner-interface     Run selftests/functional/test_nrunner_interface.py
-  nrunner-requirement   Run selftests/functional/serial/test_requirements.py
+  nrunner-interface     Run selftests/functional/nrunner_interface.py
+  nrunner-requirement   Run selftests/functional/serial/requirements.py
   unit                  Run selftests/unit/
   jobs                  Run selftests/jobs/
   functional            Run selftests/functional/
@@ -579,7 +579,7 @@ def create_suites(args):  # pylint: disable=W0621
     # Run nrunner interface checks for all available runners
     # ========================================================================
     config_nrunner_interface = {
-        "resolver.references": ["selftests/functional/test_nrunner_interface.py"],
+        "resolver.references": ["selftests/functional/nrunner_interface.py"],
         "run.dict_variants.variant_id_keys": ["runner"],
         "run.dict_variants": [
             {
@@ -645,7 +645,7 @@ def create_suites(args):  # pylint: disable=W0621
     # Run functional requirement tests
     # ========================================================================
     config_nrunner_requirement = {
-        "resolver.references": ["selftests/functional/serial/test_requirements.py"],
+        "resolver.references": ["selftests/functional/serial/requirements.py"],
         "run.max_parallel_tasks": 1,
         "run.dict_variants": [
             {"spawner": "process"},
@@ -674,7 +674,7 @@ def create_suites(args):  # pylint: disable=W0621
 
     if args.dict_tests["functional"]:
         functional_path = os.path.join("selftests", "functional")
-        references = glob.glob(os.path.join(functional_path, "test*.py"))
+        references = glob.glob(os.path.join(functional_path, "*.py"))
         references.extend(
             [
                 os.path.join(functional_path, "utils"),

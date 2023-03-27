@@ -3,7 +3,7 @@ import os
 import unittest
 
 from avocado.core.safeloader.module import PythonModule
-from selftests.unit.test_safeloader_core import get_this_file
+from selftests.unit.safeloader_core import get_this_file
 from selftests.utils import BASEDIR
 
 
@@ -65,7 +65,7 @@ class PythonModuleTest(unittest.TestCase):
         This specific source file imports unittest.mock, and we want to
         make sure that unittest is accounted for.
         """
-        path = os.path.join(BASEDIR, "selftests", "unit", "test_resolver.py")
+        path = os.path.join(BASEDIR, "selftests", "unit", "resolver.py")
         module = PythonModule(path, "unittest", "TestCase")
         for _ in module.iter_classes():
             pass
@@ -73,7 +73,7 @@ class PythonModuleTest(unittest.TestCase):
 
     def test_import_relative(self):
         """Tests if relative imports are tracked on the module object."""
-        path = os.path.join(BASEDIR, "selftests", "functional", "test_basic.py")
+        path = os.path.join(BASEDIR, "selftests", "functional", "basic.py")
         module = PythonModule(path)
         for _ in module.iter_classes():
             pass

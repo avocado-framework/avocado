@@ -19,7 +19,7 @@ all:
 
 codespell:
 	pip install codespell
-	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/test_cpu.py.data/*"
+	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/cpu.py.data/*"
 
 bandit:
 	pip install bandit
