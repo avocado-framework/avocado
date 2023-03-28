@@ -19,6 +19,7 @@ It needs root access.
 
 import ast
 import logging
+import re
 import time
 
 from avocado.utils import distro, process, service, wait
@@ -420,3 +421,41 @@ def add_path(path):
     if process.system(cmd) == 0:
         return wait.wait_for(is_path_added, timeout=10) or False
     return False
+
+
+def get_mpath_devices():
+    """
+    Returns wwid, dm_id, disk, disk size, hcil, dm_st, chk_st, dev_st and
+    dev_t from command
+    multipathd -k"show topology"
+
+    :return: dictionary contains mpath values
+    """
+    cmd = 'multipathd -k"show topology"'
+    multipath_op = process.getoutput(cmd).splitlines()
+    multipath_dict = {}
+    for line in multipath_op:
+        wwid_regex = re.compile("[0-9a-fA-F]{33}")
+        if bool(wwid_regex.search(line)):
+            mpath_dev = wwid_regex.search(line).group()
+            multipath_dict[mpath_dev] = {}
+            multipath_dict[mpath_dev]["dmid"] = (
+                re.compile("dm-[0-9]{1,3}").search(line).group()
+            )
+            if "mpath" in line:
+                multipath_dict[mpath_dev]["user_friendly_names"] = (
+                    re.compile("mpath[a-z]{1,2}").search(line).group()
+                )
+            multipath_dict[mpath_dev]["paths"] = {}
+            multipath_dict[mpath_dev]["disk_size"] = ""
+        elif line.startswith("size"):
+            multipath_dict[mpath_dev]["disk_size"] = line.split()[0].split("=")[1]
+        elif line.startswith(("| |-", "| `-", "  |-", "  `-")):
+            disk_att = line[line.index("-") + 1 :].strip().split()
+            multipath_dict[mpath_dev]["paths"][disk_att[1]] = {}
+            multipath_dict[mpath_dev]["paths"][disk_att[1]]["hcil"] = disk_att[0]
+            multipath_dict[mpath_dev]["paths"][disk_att[1]]["dm_st"] = disk_att[3]
+            multipath_dict[mpath_dev]["paths"][disk_att[1]]["chk_st"] = disk_att[4]
+            multipath_dict[mpath_dev]["paths"][disk_att[1]]["dev_st"] = disk_att[5]
+            multipath_dict[mpath_dev]["paths"][disk_att[1]]["dev_t"] = disk_att[2]
+    return multipath_dict
