@@ -476,7 +476,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         mytest.save()
         result = process.run(
-            f"{AVOCADO} --show test run --disable-sysinfo "
+            f"{AVOCADO} --show job run --disable-sysinfo "
             f"--job-results-dir {self.tmpdir.name} {mytest}"
         )
         self.assertIn(

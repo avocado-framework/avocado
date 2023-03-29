@@ -53,7 +53,7 @@ class StreamsTest(TestCaseTmpDir):
             cmd_in_log = os.path.join(BASEDIR, "avocado", "__main__.py")
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn(
-                f"avocado.test: Command line: {cmd_in_log}", result.stdout_text
+                f"avocado.job: Command line: {cmd_in_log}", result.stdout_text
             )
 
     def test_test(self):
@@ -61,7 +61,7 @@ class StreamsTest(TestCaseTmpDir):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = (
-            f"{AVOCADO} --show=test run --disable-sysinfo "
+            f"{AVOCADO} --show=job run --disable-sysinfo "
             f"--job-results-dir {self.tmpdir.name} "
             f"examples/tests/passtest.py"
         )
@@ -135,6 +135,21 @@ class StreamsTest(TestCaseTmpDir):
         run("avocado.app:20", 1)
         run("avocado.app:wARn", 0)
         run("avocado.app:30", 0)
+
+    def test_job_test_separation(self):
+        """
+        Checks that job.log doesn't have any test related logs.
+        """
+        cmd = (
+            f"{AVOCADO} --show none run --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd)
+        job_log_path = os.path.join(self.tmpdir.name, "latest", "job.log")
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        with open(job_log_path, "rb") as job_log:
+            self.assertNotIn(b"avocado.test", job_log.read())
 
 
 if __name__ == "__main__":

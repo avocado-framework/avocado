@@ -3,7 +3,6 @@ import logging
 import sys
 import time
 
-from avocado.core import output
 from avocado.core.streams import BUILTIN_STREAMS
 
 
@@ -265,8 +264,8 @@ def start_logging(config, queue):
     logger.setLevel(log_level)
     logger.propagate = False
 
-    # LOG_JOB = 'avocado.test'
-    log = output.LOG_JOB
+    # 'avocado.test'
+    log = logging.getLogger("avocado.test")
     log.addHandler(log_handler)
     log.setLevel(log_level)
     log.propagate = False

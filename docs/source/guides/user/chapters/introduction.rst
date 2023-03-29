@@ -392,9 +392,9 @@ Using the option --show
 Probably, you frequently want to look straight at the job log, without
 switching screens or having to "tail" the job log.
 
-In order to do that, you can use ``avocado --show=test run ...``::
+In order to do that, you can use ``avocado --show=job run ...``::
 
-    $ avocado --show=test run examples/tests/sleeptest.py
+    $ avocado --show=job run examples/tests/sleeptest.py
     ...
     Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
 

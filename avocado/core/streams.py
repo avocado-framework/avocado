@@ -2,6 +2,7 @@
 BUILTIN_STREAMS = {
     "app": "application output",
     "test": "test output",
+    "job": "job output",
     "debug": "tracebacks and other debugging info",
     "early": ("early logging of other streams, including test " "(very verbose)"),
 }

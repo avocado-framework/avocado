@@ -220,7 +220,7 @@ class Job:
 
         # Enable console loggers
         enabled_logs = self.config.get("core.show")
-        if "test" in enabled_logs and "early" not in enabled_logs:
+        if "job" in enabled_logs and "early" not in enabled_logs:
             self._stdout_stderr = sys.stdout, sys.stderr
             # Enable std{out,err} but redirect both to stdout
             sys.stdout = STD_OUTPUT.stdout
