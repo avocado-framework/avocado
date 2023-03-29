@@ -97,6 +97,24 @@ def get_mpath_name(wwid):
         return process.run(cmd, sudo=True).stdout_text.split()[0]
 
 
+def get_mpath_from_dm(dm_id):
+    """
+    Get the mpath name for given device mapper id
+
+    :param dev_mapper: Input device mapper dm-x
+    :return: mpath name like mpathx
+    :rtype: str
+    """
+    cmd = "multipathd show maps format '%d %n'"
+    try:
+        mpaths = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    except process.CmdError as ex:
+        raise MPException(f"Multipathd Command Failed : {ex} ")
+    for mpath in mpaths.splitlines():
+        if dm_id in mpath:
+            return mpath.split()[1]
+
+
 def get_multipath_wwids():
     """
     Get list of multipath wwids.
