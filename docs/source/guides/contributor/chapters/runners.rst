@@ -317,7 +317,7 @@ given interface/behavior, including accepting standardized command
 line arguments and producing standardized output.
 
 .. tip:: for a very basic example of the interface expected, refer to
-         ``selftests/functional/test_nrunner_interface.py`` on the
+         ``selftests/functional/nrunner_interface.py`` on the
          Avocado source code tree.
 
 Runner output
