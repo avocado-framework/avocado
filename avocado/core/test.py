@@ -21,6 +21,7 @@ framework tests.
 import asyncio
 import functools
 import inspect
+import logging
 import os
 import shutil
 import sys
@@ -30,7 +31,6 @@ import unittest
 import warnings
 
 from avocado.core import exceptions, parameters
-from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
 from avocado.core.teststatus import STATUSES_NOT_OK
@@ -305,7 +305,7 @@ class Test(unittest.TestCase, TestData):
 
         self.__outputdir = utils_path.init_dir(self.logdir, "data")
 
-        self.__log = LOG_JOB
+        self.__log = logging.getLogger("avocado.test")
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
@@ -607,13 +607,13 @@ class Test(unittest.TestCase, TestData):
                 self.setUp()
         except exceptions.TestSkipError as details:
             self.__skip_test = True
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise
         except:  # Old-style exceptions are not inherited from Exception()
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
         else:
@@ -625,10 +625,10 @@ class Test(unittest.TestCase, TestData):
                 else:
                     testMethod()
             except exceptions.TestCancel:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
                 raise
             except:  # Old-style exceptions are not inherited from Exception() pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
                 details = sys.exc_info()[1]
                 if not isinstance(details, Exception):  # Avoid passing nasty exc
                     details = exceptions.TestError(f"{details!r}: {details}")
@@ -649,7 +649,7 @@ class Test(unittest.TestCase, TestData):
                 self.__phase = "TEARDOWN"
                 self.tearDown()
         except exceptions.TestSkipError as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             skip_illegal_msg = (
                 f"Using skip decorators in tearDown() "
                 f"is not allowed in "
@@ -658,10 +658,10 @@ class Test(unittest.TestCase, TestData):
             )
             raise exceptions.TestError(skip_illegal_msg)
         except exceptions.TestCancel:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise
         except:  # avoid old-style exception failures pylint: disable=W0702
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
 

@@ -420,7 +420,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_show_test(self):
         cmd_line = (
-            f"{AVOCADO} --show=test run "
+            f"{AVOCADO} --show=job run "
             f"--job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo examples/tests/passtest.py"
         )

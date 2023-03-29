@@ -14,7 +14,8 @@ clear stages on a single test:
 
 Currently Avocado will store any log information that is part of the
 'avocado.*' namespaces. You just need to choose a namespace when setting up
-your logger.
+your logger. For storing logs into test log file you have to use
+`avocado.test.*` namespace.
 
 .. note:: Sometimes you might want to store logs, which is not part of 
    `avocado.*` name space. For that, you can use `--store-logging-stream`

@@ -33,7 +33,7 @@ logging.raiseExceptions = False
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
 #: Pre-defined Avocado job/test logger
-LOG_JOB = logging.getLogger("avocado.test")
+LOG_JOB = logging.getLogger("avocado.job")
 
 
 class TermSupport:
@@ -443,6 +443,7 @@ def reconfigure(args):
     configuration = {}
     # Reconfigure stream loggers
     enabled = args.get("core.show")
+    logging.getLogger("avocado.test").propagate = False
     if isinstance(enabled, list):
         enabled = set(enabled)
     if not isinstance(enabled, set):
