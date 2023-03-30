@@ -27,6 +27,7 @@ from avocado.core.resolver import (
     ReferenceResolution,
     ReferenceResolutionResult,
     check_file,
+    get_file_assets,
 )
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
 
@@ -50,7 +51,7 @@ class ExecTestResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable("exec-test", reference)
+        runnable = Runnable("exec-test", reference, assets=get_file_assets(reference))
         return ReferenceResolution(
             reference, ReferenceResolutionResult.SUCCESS, [runnable]
         )
@@ -74,7 +75,15 @@ def python_resolver(name, reference, find_tests):
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue
             uri = f"{module_path}:{klass_method}"
-            runnables.append(Runnable(name, uri=uri, tags=tags, dependencies=depens))
+            runnables.append(
+                Runnable(
+                    name,
+                    uri=uri,
+                    tags=tags,
+                    dependencies=depens,
+                    assets=get_file_assets(reference),
+                )
+            )
     if runnables:
         return ReferenceResolution(
             reference, ReferenceResolutionResult.SUCCESS, runnables
@@ -130,7 +139,7 @@ class TapResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable("tap", reference)
+        runnable = Runnable("tap", reference, assets=get_file_assets(reference))
         return ReferenceResolution(
             reference, ReferenceResolutionResult.SUCCESS, [runnable]
         )
