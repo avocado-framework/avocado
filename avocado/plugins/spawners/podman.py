@@ -7,6 +7,7 @@ import uuid
 
 from avocado.core.dependencies.requirements import cache
 from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
+from avocado.core.resolver import ReferenceResolutionAssetType
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
@@ -208,17 +209,24 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
         entry_point_args = [python_binary, "-m", full_module_name, "task-run"]
 
-        test_opts = ()
-        if runtime_task.task.category == "test":
-            runnable_uri = runtime_task.task.runnable.uri
-            try:
-                test_path, _ = runnable_uri.split(":", 1)
-            except ValueError:
-                test_path = runnable_uri
-            if os.path.exists(test_path):
-                to = os.path.join("/tmp", test_path)
-                runtime_task.task.runnable.uri = os.path.join("/tmp", runnable_uri)
-                test_opts = ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+        test_opts = []
+        if runtime_task.task.category == "test" and runtime_task.task.runnable.assets:
+            for asset_type, asset in runtime_task.task.runnable.assets:
+                if asset_type in (
+                    ReferenceResolutionAssetType.TEST_FILE,
+                    ReferenceResolutionAssetType.DATA_FILE,
+                ):
+                    if os.path.exists(asset):
+                        to = os.path.join("/tmp", asset)
+                        test_opts.append("-v")
+                        test_opts.append(f"{os.path.abspath(asset)}:{to}:ro")
+                if asset_type == ReferenceResolutionAssetType.TEST_FILE:
+                    # The URI may contain a test specification within the file,
+                    # which is separated by a colon
+                    if runtime_task.task.runnable.uri.split(":")[0] == asset:
+                        runtime_task.task.runnable.uri = os.path.join(
+                            "/tmp", runtime_task.task.runnable.uri
+                        )
 
         task = runtime_task.task
         entry_point_args.extend(task.get_command_args())

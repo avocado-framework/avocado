@@ -87,6 +87,9 @@ class Runnable:
         self.dependencies = kwargs.pop("dependencies", None)
         self.variant = kwargs.pop("variant", None)
         self.output_dir = kwargs.pop("output_dir", None)
+        #: list of (:class:`ReferenceResolutionAssetType`, str) tuples
+        #: expressing assets that the test will require in order to run.
+        self.assets = kwargs.pop("assets", None)
         self.kwargs = kwargs
         self._identifier_format = config.get("runner.identifier_format", "{uri}")
 
