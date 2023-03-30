@@ -45,7 +45,7 @@ class Run(TestCaseTmpDir):
         )
         all_tests_content = b""
         for test_result_file in test_result_files:
-            with open(test_result_file, "r+b") as one_test_result:
+            with open(test_result_file, "rb") as one_test_result:
                 all_tests_content += one_test_result.read()
 
         # all values should be looked for at least once

@@ -679,7 +679,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         with open(json_path, encoding="utf-8") as json_file:
             result_json = json.load(json_file)
         with open(
-            result_json["tests"][0]["logfile"], "r+b"
+            result_json["tests"][0]["logfile"], "rb"
         ) as test_log_file:  # pylint: disable=W1514
             test_log = test_log_file.read()
 
