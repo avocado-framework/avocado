@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-from avocado.core import register_core_options, initialize_plugins
+from avocado.core import initialize_plugins, register_core_options
 from avocado.core.settings import settings
 
 register_core_options()
