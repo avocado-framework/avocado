@@ -2,7 +2,7 @@ from enum import Enum
 from itertools import chain
 
 from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
-from avocado.core.nrunner.task import Task
+from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
 from avocado.core.test_id import TestID
 
 
@@ -26,7 +26,66 @@ class RuntimeTaskStatus(Enum):
         ]
 
 
-class RuntimeTask:
+class RuntimeTaskMixin:
+    """Common utilities for RuntimeTask implementations."""
+    @classmethod
+    def from_runnable(
+        cls,
+        runnable,
+        no_digits,
+        index,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+        satisfiable_deps_execution_statuses=None,
+    ):
+        """Creates runtime task for test from runnable
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
+        :param status_server_uri: the URIs for the status servers that this
+                                  task should send updates to.
+        :type status_server_uri: list
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will
+                       make into the job's results.
+        :type job_id: str
+        :param satisfiable_deps_execution_statuses: The dependency result types that
+        satisfy the execution of this RuntimeTask.
+        :type satisfiable_deps_execution_statuses: list of test results.
+        :returns: RuntimeTask of the test from runnable
+        """
+
+        # create test ID
+        if test_suite_name:
+            prefix = f"{test_suite_name}-{index}"
+        else:
+            prefix = index
+        if cls.category is TASK_DEFAULT_CATEGORY:
+            name = runnable.identifier
+        else:
+            name = f'{runnable.kind}-{runnable.kwargs.get("name")}'
+
+        test_id = TestID(prefix, name, runnable.variant, no_digits)
+
+        # handles the test task
+        task = Task(
+            runnable,
+            identifier=test_id,
+            status_uris=status_server_uri,
+            category=cls.category,
+            job_id=job_id,
+        )
+        return cls(task, satisfiable_deps_execution_statuses)
+
+
+class RuntimeTask(RuntimeTaskMixin):
     """Task with extra status information on its life cycle status.
 
     The :class:`avocado.core.nrunner.Task` class contains information
@@ -35,6 +94,8 @@ class RuntimeTask:
     This class wraps a :class:`avocado.core.nrunner.Task`, with extra
     information about its execution by a spawner within a state machine.
     """
+
+    category = TASK_DEFAULT_CATEGORY
 
     def __init__(self, task, satisfiable_deps_execution_statuses=None):
         """Instantiates a new RuntimeTask.
@@ -106,8 +167,11 @@ class RuntimeTask:
                 return False
         return True
 
+
+class PrePostRuntimeTaskMixin(RuntimeTask):
+    """Common utilities for PrePostRuntimeTask implementations."""
     @classmethod
-    def from_runnable(
+    def get_tasks_from_runnable(
         cls,
         runnable,
         no_digits,
@@ -115,108 +179,6 @@ class RuntimeTask:
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
-        satisfiable_deps_execution_statuses=None,
-    ):
-        """Creates runtime task for test from runnable
-
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
-        :param no_digits: number of digits of the test uid
-        :type no_digits: int
-        :param index: index of tests inside test suite
-        :type index: int
-        :param test_suite_name: test suite name which this test is related to
-        :type test_suite_name: str
-        :param status_server_uri: the URIs for the status servers that this
-                                  task should send updates to.
-        :type status_server_uri: list
-        :param job_id: the ID of the job, for authenticating messages that get
-                       sent to the destination job's status server and will
-                       make into the job's results.
-        :type job_id: str
-        :param satisfiable_deps_execution_statuses: The dependency result types that
-        satisfy the execution of this RuntimeTask.
-        :type satisfiable_deps_execution_statuses: list of test results.
-        :returns: RuntimeTask of the test from runnable
-        """
-
-        # create test ID
-        if test_suite_name:
-            prefix = f"{test_suite_name}-{index}"
-        else:
-            prefix = index
-        test_id = TestID(prefix, runnable.identifier, runnable.variant, no_digits)
-
-        # handles the test task
-        task = Task(
-            runnable, identifier=test_id, status_uris=status_server_uri, job_id=job_id
-        )
-        return cls(task, satisfiable_deps_execution_statuses)
-
-
-class PreRuntimeTask(RuntimeTask):
-    @classmethod
-    def from_runnable(
-        cls,
-        runnable,
-        no_digits,
-        index,
-        test_suite_name=None,
-        status_server_uri=None,
-        job_id=None,
-        satisfiable_deps_execution_statuses=None,
-    ):
-        """Creates runtime task for pre_test plugin from runnable
-
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
-        :param no_digits: number of digits of the test uid
-        :type no_digits: int
-        :param index: index of tests inside test suite
-        :type index: int
-        :param test_suite_name: test suite name which this test is related to
-        :type test_suite_name: str
-        :param status_server_uri: the URIs for the status servers that this
-                                  task should send updates to.
-        :type status_server_uri: list
-        :param job_id: the ID of the job, for authenticating messages that get
-                       sent to the destination job's status server and will
-                       make into the job's results.
-        :type job_id: str
-        :param satisfiable_deps_execution_statuses: The dependency result types that
-        satisfy the execution of this RuntimeTask.
-        :type satisfiable_deps_execution_statuses: list of test results.
-        :returns: RuntimeTask of the test from runnable
-        """
-        # create test ID
-        if test_suite_name:
-            prefix = f"{test_suite_name}-{index}"
-        else:
-            prefix = index
-        name = f'{runnable.kind}-{runnable.kwargs.get("name")}'
-        # the human UI works with TestID objects, so we need to
-        # use it to name Task
-        task_id = TestID(prefix, name, runnable.variant, no_digits)
-        # creates the dependency task
-        task = Task(
-            runnable,
-            identifier=task_id,
-            status_uris=status_server_uri,
-            category="pre_test",
-            job_id=job_id,
-        )
-        return cls(task)
-
-    @classmethod
-    def get_pre_tasks_from_runnable(
-        cls,
-        runnable,
-        no_digits,
-        index,
-        test_suite_name=None,
-        status_server_uri=None,
-        job_id=None,
-        satisfiable_deps_execution_statuses=None,
     ):
         """Creates runtime tasks for preTest task from runnable
 
@@ -235,24 +197,24 @@ class PreRuntimeTask(RuntimeTask):
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
-        :param satisfiable_deps_execution_statuses: The dependency result types that
-        satisfy the execution of this RuntimeTask.
-        :type satisfiable_deps_execution_statuses: list of test results.
-        :returns: Pre RuntimeTasks of the dependencies from runnable
+        :returns: Pre/Post RuntimeTasks of the dependencies from runnable
         :rtype: list
         """
 
-        pre_runnables = list(
+        runnables = list(
             chain.from_iterable(
-                TestPreDispatcher().map_method_with_return(
-                    "pre_test_runnables", runnable
+                cls.dispatcher().map_method_with_return(
+                    f"{cls.category}_runnables", runnable
                 )
             )
         )
-        pre_test_tasks = []
-        for pre_runnable in pre_runnables:
-            pre_task = cls.from_runnable(
-                pre_runnable,
+        tasks = []
+        for runnable in runnables:
+            satisfiable_deps_execution_statuses = None
+            if isinstance(runnable, tuple):
+                runnable, satisfiable_deps_execution_statuses = runnable
+            task = cls.from_runnable(
+                runnable,
                 no_digits,
                 index,
                 test_suite_name,
@@ -260,116 +222,22 @@ class PreRuntimeTask(RuntimeTask):
                 job_id,
                 satisfiable_deps_execution_statuses,
             )
-            pre_test_tasks.append(pre_task)
-        return pre_test_tasks
+            tasks.append(task)
+        return tasks
 
 
-class PostRuntimeTask(RuntimeTask):
-    @classmethod
-    def from_runnable(
-        cls,
-        runnable,
-        no_digits,
-        index,
-        test_suite_name=None,
-        status_server_uri=None,
-        job_id=None,
-        possible_dependency_results=None,
-    ):
-        """Creates runtime task for post_test plugin from runnable
+class PreRuntimeTask(PrePostRuntimeTaskMixin):
+    """Runtime task for tasks run before test"""
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
-        :param no_digits: number of digits of the test uid
-        :type no_digits: int
-        :param index: index of tests inside test suite
-        :type index: int
-        :param test_suite_name: test suite name which this test is related to
-        :type test_suite_name: str
-        :param status_server_uri: the URIs for the status servers that this
-                                  task should send updates to.
-        :type status_server_uri: list
-        :param job_id: the ID of the job, for authenticating messages that get
-                       sent to the destination job's status server and will
-                       make into the job's results.
-        :type job_id: str
-        :param possible_dependency_results: Dependencies results which
-        allow running this Task
-        :type possible_dependency_results: list of test results.
-        :returns: RuntimeTask of the test from runnable
-        """
-        # create test ID
-        if test_suite_name:
-            prefix = f"{test_suite_name}-{index}"
-        else:
-            prefix = index
-        name = f'{runnable.kind}-{runnable.kwargs.get("name")}'
-        # the human UI works with TestID objects, so we need to
-        # use it to name Task
-        task_id = TestID(prefix, name)
-        # creates the dependency task
-        task = Task(
-            runnable,
-            identifier=task_id,
-            status_uris=status_server_uri,
-            category="post_test",
-            job_id=job_id,
-        )
-        return cls(task, possible_dependency_results)
-
-    @classmethod
-    def get_post_tasks_from_runnable(
-        cls,
-        runnable,
-        no_digits,
-        index,
-        test_suite_name=None,
-        status_server_uri=None,
-        job_id=None,
-    ):
-        """Creates runtime tasks for postTest task from runnable
+    category = "pre_test"
+    dispatcher = TestPreDispatcher
 
 
-        :param runnable: the "description" of what the task should run.
-        :type runnable: :class:`avocado.core.nrunner.Runnable`
-        :param no_digits: number of digits of the test uid
-        :type no_digits: int
-        :param index: index of tests inside test suite
-        :type index: int
-        :param test_suite_name: test suite name which this test is related to
-        :type test_suite_name: str
-        :param status_server_uri: the URIs for the status servers that this
-                                  task should send updates to.
-        :type status_server_uri: list
-        :param job_id: the ID of the job, for authenticating messages that get
-                       sent to the destination job's status server and will
-                       make into the job's results.
-        :type job_id: str
-        :returns: Pre RuntimeTasks of the dependencies from runnable
-        :rtype: list
-        """
+class PostRuntimeTask(PrePostRuntimeTaskMixin):
+    """Runtime task for tasks run after test"""
 
-        post_runnables = list(
-            chain.from_iterable(
-                TestPostDispatcher().map_method_with_return(
-                    "post_test_runnables", runnable
-                )
-            )
-        )
-        post_test_tasks = []
-        for post_runnable in post_runnables:
-            post_task = cls.from_runnable(
-                post_runnable[0],
-                no_digits,
-                index,
-                test_suite_name,
-                status_server_uri,
-                job_id,
-                post_runnable[1],
-            )
-
-            post_test_tasks.append(post_task)
-        return post_test_tasks
+    category = "post_test"
+    dispatcher = TestPostDispatcher
 
 
 class RuntimeTaskGraph:
@@ -409,7 +277,7 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
+                tasks = PreRuntimeTask.get_tasks_from_runnable(
                     runnable,
                     no_digits,
                     index,
@@ -418,7 +286,7 @@ class RuntimeTaskGraph:
                     job_id,
                 )
                 tasks.append(runtime_test)
-                tasks = tasks + PostRuntimeTask.get_post_tasks_from_runnable(
+                tasks = tasks + PostRuntimeTask.get_tasks_from_runnable(
                     runnable,
                     no_digits,
                     index,
