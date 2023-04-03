@@ -1,3 +1,7 @@
+"""
+isort:skip_file
+"""
+
 # docstrings, methods, imports... pylint: disable=C0111,R0903,C0411,E0611,C0412
 
 # module imports

@@ -1,3 +1,7 @@
+"""
+isort:skip_file
+"""
+
 import avocado as foo
 import avocado as bar  # pylint: disable=W0404
 
