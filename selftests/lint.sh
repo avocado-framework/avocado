@@ -1,10 +1,6 @@
 #!/bin/sh
 echo "** Running lint..."
 
-if [ "$AVOCADO_PARALLEL_LINT_JOBS" ]; then
-    PYLINT_OPTIONS="--jobs=$AVOCADO_PARALLEL_LINT_JOBS";
-fi
-
 PYLINT=$(which pylint-3 2>/dev/null || which pylint)
 
 # Those are files from our main packages, we should follow the .pylintrc file with all
