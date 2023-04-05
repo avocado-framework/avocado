@@ -48,7 +48,7 @@ class Host:
     """
 
     def __init__(self, host):
-        if type(self) == Host:
+        if isinstance(self, Host):
             raise TypeError("Host class should not be instantiated")
         self.host = host
 
