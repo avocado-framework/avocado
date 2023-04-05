@@ -19,7 +19,7 @@ class CancelOnException(avocado.Test):
         """
 
         @avocado.cancel_on(RuntimeError)
-        def foo():
+        def raises_runtime_error():
             raise RuntimeError
 
-        foo()
+        raises_runtime_error()

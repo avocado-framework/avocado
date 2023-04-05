@@ -17,11 +17,11 @@ class Parameters(unittest.TestCase):
     def test_same_origin_of_different_nodes(self):
         # ideally we have one tree, therefore shared key
         # have identical origin (id of the origin env)
-        foo = tree.TreeNode().get_node("/foo", True)
-        root = foo.parent
-        root.value = {"timeout": 1}
-        bar = root.get_node("/bar", True)
-        params1 = parameters.AvocadoParams([foo, bar], "/")
+        node_foo = tree.TreeNode().get_node("/foo", True)
+        node_root = node_foo.parent
+        node_root.value = {"timeout": 1}
+        node_bar = node_root.get_node("/bar", True)
+        params1 = parameters.AvocadoParams([node_foo, node_bar], "/")
         self.assertEqual(params1.get("timeout"), 1)
         self.assertEqual(params1.get("timeout", "/foo/"), 1)
         self.assertEqual(params1.get("timeout", "/bar/"), 1)
@@ -33,9 +33,9 @@ class Parameters(unittest.TestCase):
         # only leave-nodes without connecting the parents, which result
         # in same paths with different node objects. Let's make sure
         # they behave correctly.
-        baz = tree.TreeNode().get_node("/baz", True)
-        baz.parent.value = {"timeout": 2}
-        params2 = parameters.AvocadoParams([foo, baz], "/")
+        node_baz = tree.TreeNode().get_node("/baz", True)
+        node_baz.parent.value = {"timeout": 2}
+        params2 = parameters.AvocadoParams([node_foo, node_baz], "/")
         self.assertEqual(params2.get("timeout"), 1)
         self.assertEqual(params2.get("timeout", "/foo/"), 1)
         self.assertEqual(params2.get("timeout", "/baz/"), 2)
