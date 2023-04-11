@@ -121,7 +121,7 @@ class Task:
         self.status_services = []
         status_uris = status_uris or self.runnable.config.get("run.status_server_uri")
         if status_uris is not None:
-            if type(status_uris) is not list:
+            if not isinstance(status_uris, list):
                 status_uris = [status_uris]
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))

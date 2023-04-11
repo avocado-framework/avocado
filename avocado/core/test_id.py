@@ -98,7 +98,7 @@ class TestID:
                  and `name` "test".
         :rtype: :class:`avocado.core.test_id.TestID`
         """
-        if type(identifier) is cls:
+        if isinstance(identifier, cls):
             return identifier
         else:
             return cls(str(identifier), "test")

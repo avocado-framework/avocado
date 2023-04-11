@@ -104,7 +104,7 @@ class GenericRunningMessage(GenericMessage):
         :rtype: dict
         """
         message = {"type": cls.message_type, "log": msg}
-        if type(msg) is not bytes:
+        if not isinstance(msg, bytes):
             msg = msg.encode("utf-8")
             message.update({"log": msg, "encoding": "utf-8"})
         return message

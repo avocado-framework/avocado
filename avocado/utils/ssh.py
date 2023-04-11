@@ -177,7 +177,7 @@ class Session:
             master.wait()
             if self.password is not None:
                 os.unlink(ssh_askpass_path)
-            if not master.returncode == 0:
+            if master.returncode != 0:
                 return False
             self._connection = master
         return self._check()

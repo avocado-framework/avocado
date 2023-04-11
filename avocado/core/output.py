@@ -339,7 +339,7 @@ class StdOutput:
         # that the failure was due to stdout or stderr not being
         # connected to an open PIPE.
         except IOError as detail:
-            if not detail.errno == errno.EPIPE:
+            if detail.errno != errno.EPIPE:
                 raise
 
     def fake_outputs(self):
