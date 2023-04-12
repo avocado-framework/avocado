@@ -16,11 +16,23 @@
 Test resolver module.
 """
 
+import glob
 import os
 from enum import Enum
 
 from avocado.core.enabled_extension_manager import EnabledExtensionManager
 from avocado.core.exceptions import JobTestSuiteReferenceResolutionError
+
+
+class ReferenceResolutionAssetType(Enum):
+    #: The actual test file.  Spawners may use this as the entry point
+    #: to run the tests.  Usually only one of this is given, and the
+    #: behavior with either a single or multiple items given is spawner
+    #: dependent.
+    TEST_FILE = "test_file"
+    #: Auxiliary data file placed alongside the test in a ".data"
+    #: directory
+    DATA_FILE = "data_file"
 
 
 class ReferenceResolutionResult(Enum):
@@ -187,6 +199,19 @@ def check_file(
         )
 
     return True
+
+
+def get_file_assets(test_file_path):
+    """Gets asset files from the test file and its the ".data" directory
+
+    :param test_file_path: the filesystem location of the test file
+    :type test_file_path: str
+    :returns: list of tuples with (asset type, path)
+    """
+    file_assets = [(ReferenceResolutionAssetType.TEST_FILE, test_file_path)]
+    for data_file in glob.glob(os.path.join(f"{test_file_path}.data", "*")):
+        file_assets.append((ReferenceResolutionAssetType.DATA_FILE, data_file))
+    return file_assets
 
 
 def _extend_directory(path):

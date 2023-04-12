@@ -256,6 +256,43 @@ and transform the reference given into its **url**:
 
 .. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/resolver.py
 
+Tests contained in files and associated data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A ``magic`` test does *not* depend on a file, only on the "magic" word
+(either "pass" or "fail").  Because of that, there's no need to
+provide information at resolution time about the file(s) comprising
+the magic tests.
+
+For most other test types, though, the test will be contained within a
+file, and/or may be comprised by many supplemental files containing
+test specific data.  While local execution of a test will easily find
+those files, in order to be prepared for the execution of a test in
+different environments (by different spawners), it's recommended that
+the resolver (and discoverer) provide that kind of information.
+
+A feature that is strongly recommended to be implemented by resolvers
+and discoverers of tests that are file-based is the ``.data``
+directory support.  Whenever a test contained in a file has a matching
+directory with the ``.data`` :data:`suffix
+<avocado.core.test.TestData.SUFFIX>`, the test can get quick access to
+these files with the :meth:`get_data
+<avocado.core.test.TestData.get_data>` method.
+
+To do so, use the ``assets`` keyword argument when creating
+:class:`Runnable <avocado.core.nrunner.runnable.Runnable>` instances.
+The ``assets`` keyword argument takes a list of tuples with ``(type,
+path)`` tuples, which will then be available at the :data:`Runnable
+<avocado.core.nrunner.runnable.Runnable.assets>` attribute.
+Actual examples are available in the implementation of the
+``exec-test`` and similar builtin resolvers.
+
+For the file that contains the test, it's recommended that resolvers
+and discoverers use the type
+:data:`avocado.core.resolver.ReferenceResolutionAssetType.TEST_FILE`.
+For other data files, use the
+:data:`avocado.core.resolver.ReferenceResolutionAssetType.DATA_FILE`.
+
 Runner example
 --------------
 

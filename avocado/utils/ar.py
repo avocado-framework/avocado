@@ -50,7 +50,7 @@ class Ar:
         self._valid = False
 
     def __enter__(self):
-        self._file = open(self._path, "r+b")
+        self._file = open(self._path, "rb")
         return self._file
 
     def __exit__(self, _exc_type, _exc_value, _traceback):

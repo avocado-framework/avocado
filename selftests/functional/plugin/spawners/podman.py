@@ -102,3 +102,17 @@ class PodmanSpawnerTest(Test):
         data_files = glob.glob(os.path.join(job.test_results_path, "1-*", "data", "*"))
         self.assertEqual(len(data_files), 1)
         self.assertTrue(data_files[0].endswith("test.json"))
+
+    def test_asset_files(self):
+        test = os.path.join(BASEDIR, "examples", "tests", "use_data.sh")
+        result = process.run(
+            f"{AVOCADO} run "
+            f"--job-results-dir {self.workdir} "
+            f"--disable-sysinfo --spawner=podman "
+            f"--spawner-podman-image=fedora:36 -- "
+            f"{test}",
+            ignore_status=True,
+        )
+        self.assertEqual(result.exit_status, 0)
+        self.assertIn("use_data.sh: STARTED", result.stdout_text)
+        self.assertIn("use_data.sh:  PASS", result.stdout_text)
