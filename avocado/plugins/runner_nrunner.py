@@ -237,10 +237,6 @@ class Runner(SuiteRunner):
         self.status_server = StatusServer(listen, self.status_repo)
 
     async def _update_status(self, job):
-        tasks_by_id = {
-            str(runtime_task.task.identifier): runtime_task.task
-            for runtime_task in self.runtime_tasks
-        }
         message_handler = MessageHandler()
         while True:
             try:
@@ -251,7 +247,7 @@ class Runner(SuiteRunner):
                 continue
 
             message = self.status_repo.get_task_data(task_id, index)
-            task = tasks_by_id.get(task_id)
+            task = self.tsm.tasks_by_id.get(task_id)
             message_handler.process_message(message, task, job)
 
     @staticmethod
@@ -290,6 +286,7 @@ class Runner(SuiteRunner):
             test_suite.name,
             self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,
+            test_suite.config,
         )
         # pylint: disable=W0201
         self.runtime_tasks = graph.get_tasks_in_topological_order()
@@ -304,7 +301,7 @@ class Runner(SuiteRunner):
             for rt in self.runtime_tasks
             if rt.task.category == "test"
         ]
-        tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
+        self.tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
         spawner_name = test_suite.config.get("run.spawner")
         spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
         max_running = min(
@@ -314,7 +311,7 @@ class Runner(SuiteRunner):
         failfast = test_suite.config.get("run.failfast")
         workers = [
             Worker(
-                state_machine=tsm,
+                state_machine=self.tsm,
                 spawner=spawner,
                 max_running=max_running,
                 task_timeout=timeout,
@@ -333,7 +330,7 @@ class Runner(SuiteRunner):
                 )
             except (KeyboardInterrupt, asyncio.TimeoutError):
                 terminate_worker = Worker(
-                    state_machine=tsm,
+                    state_machine=self.tsm,
                     spawner=spawner,
                     max_running=max_running,
                     task_timeout=timeout,

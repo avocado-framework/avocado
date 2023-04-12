@@ -26,6 +26,11 @@ class TaskStateMachine:
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
 
+        self._tasks_by_id = {
+            str(runtime_task.task.identifier): runtime_task.task
+            for runtime_task in tasks
+        }
+
     @property
     def requested(self):
         return self._requested
@@ -63,6 +68,16 @@ class TaskStateMachine:
         async with self._lock:
             pending = any([self._requested, self._triaging, self._ready, self._started])
         return not pending
+
+    @property
+    def tasks_by_id(self):
+        return self._tasks_by_id
+
+    async def add_new_task(self, runtime_task):
+        async with self.lock:
+            self._requested.appendleft(runtime_task)
+            self._tasks_by_id[str(runtime_task.task.identifier)] = runtime_task.task
+        return
 
     async def abort(self, status_reason=None):
         """Abort all non-started tasks.
@@ -264,25 +279,27 @@ class Worker:
                 )
                 return
         if runtime_task.task.category != "test":
-            async with self._state_machine.cache_lock:
-                is_task_in_cache = await self._spawner.is_requirement_in_cache(
-                    runtime_task
-                )
-                if is_task_in_cache is None:
-                    async with self._state_machine.lock:
-                        self._state_machine.triaging.append(runtime_task)
-                        runtime_task.status = RuntimeTaskStatus.WAIT
-                        await asyncio.sleep(0.1)
-                    return
-
-                if is_task_in_cache:
-                    await self._state_machine.finish_task(
-                        runtime_task, RuntimeTaskStatus.IN_CACHE
+            # save or retrieve task from cache
+            if runtime_task.is_cacheable:
+                async with self._state_machine.cache_lock:
+                    is_task_in_cache = await self._spawner.is_requirement_in_cache(
+                        runtime_task
                     )
-                    runtime_task.result = "pass"
-                    return
+                    if is_task_in_cache is None:
+                        async with self._state_machine.lock:
+                            self._state_machine.triaging.append(runtime_task)
+                            runtime_task.status = RuntimeTaskStatus.WAIT
+                            await asyncio.sleep(0.1)
+                        return
 
-                await self._spawner.save_requirement_in_cache(runtime_task)
+                    if is_task_in_cache:
+                        await self._state_machine.finish_task(
+                            runtime_task, RuntimeTaskStatus.IN_CACHE
+                        )
+                        runtime_task.result = "pass"
+                        return
+
+                    await self._spawner.save_requirement_in_cache(runtime_task)
 
         # the task is ready to run
         async with self._state_machine.lock:
