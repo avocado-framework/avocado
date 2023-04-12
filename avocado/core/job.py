@@ -41,7 +41,7 @@ from avocado.core import (
     version,
 )
 from avocado.core.job_id import create_unique_job_id
-from avocado.core.output import LOG_JOB, LOG_UI, STD_OUTPUT
+from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.core.utils.version import get_avocado_git_version
@@ -210,38 +210,15 @@ class Job:
         # Enable test logger
         fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
         output.add_log_handler(
-            LOG_JOB, logging.FileHandler, self.logfile, self.loglevel, fmt
+            LOG_JOB,
+            logging.FileHandler,
+            self.logfile,
+            self.loglevel,
+            fmt,
+            handler_filter=output.FilterTestMessage(),
         )
-        logging.getLogger("avocado").setLevel(self.loglevel)
-        output.add_log_handler(
-            "avocado", logging.FileHandler, self.logfile, self.loglevel, fmt
-        )
-
-        # Enable console loggers
-        enabled_logs = self.config.get("core.show")
-        if "job" in enabled_logs and "early" not in enabled_logs:
-            self._stdout_stderr = sys.stdout, sys.stderr
-            # Enable std{out,err} but redirect both to stdout
-            sys.stdout = STD_OUTPUT.stdout
-            sys.stderr = STD_OUTPUT.stdout
-            output.add_log_handler(
-                LOG_JOB,
-                logging.StreamHandler,
-                STD_OUTPUT.stdout,
-                logging.DEBUG,
-                fmt="%(message)s",
-            )
-            output.add_log_handler(
-                "avocado",
-                logging.StreamHandler,
-                STD_OUTPUT.stdout,
-                logging.DEBUG,
-                fmt="%(message)s",
-            )
 
     def __stop_job_logging(self):
-        if self._stdout_stderr:
-            sys.stdout, sys.stderr = self._stdout_stderr
         output.del_last_configuration()
 
     def _log_avocado_config(self):

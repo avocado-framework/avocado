@@ -30,6 +30,8 @@ from avocado.utils import path as utils_path
 #: Handle cases of logging exceptions which will lead to recursion error
 logging.raiseExceptions = False
 
+#: Pre-defined Avocado root logger
+LOG_ROOT = logging.getLogger("avocado")
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
 #: Pre-defined Avocado job/test logger
@@ -400,12 +402,12 @@ def early_start():
     Replace all outputs with in-memory handlers
     """
     if os.environ.get("AVOCADO_LOG_EARLY"):
-        add_log_handler("avocado", logging.StreamHandler, sys.stdout, logging.DEBUG)
-        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout, logging.DEBUG)
+        add_log_handler(LOG_ROOT, logging.StreamHandler, sys.stdout)
+        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout)
     else:
         STD_OUTPUT.fake_outputs()
-        add_log_handler("avocado", MemStreamHandler, None, logging.DEBUG)
-    logging.getLogger("avocado").level = logging.DEBUG
+        add_log_handler(LOG_ROOT, MemStreamHandler, None)
+    LOG_ROOT.level = logging.DEBUG
 
 
 CONFIG = []
@@ -436,10 +438,11 @@ def reconfigure(args):
 
     CONFIG.append({})
 
+    LOG_ROOT.propagate = False
+    LOG_ROOT.setLevel(logging.DEBUG)
+
     # Reconfigure stream loggers
     enabled = args.get("core.show")
-    logging.getLogger("avocado.test").propagate = False
-    logging.getLogger("avocado.test").addHandler(logging.NullHandler())
     if isinstance(enabled, list):
         enabled = set(enabled)
     if not isinstance(enabled, set):
@@ -460,17 +463,23 @@ def reconfigure(args):
     else:
         STD_OUTPUT.enable_stderr()
     STD_OUTPUT.print_records()
-    if "app" in enabled:
-        add_log_handler(
-            LOG_UI,
-            ProgressStreamHandler,
-            STD_OUTPUT.stdout,
-            logging.DEBUG,
-            "%(message)s",
-            FilterInfoAndLess(),
-        )
-    else:
-        disable_log_handler(LOG_UI)
+
+    for logger_name, logger in BUILTIN_STREAMS.items():
+        if logger_name in enabled:
+            kwargs = {}
+            if logger_name == "app":
+                kwargs = {
+                    "fmt": logging.Formatter("%(message)s"),
+                    "handler_filter": FilterInfoAndLess(),
+                }
+            add_log_handler(
+                logger,
+                ProgressStreamHandler,
+                STD_OUTPUT.stdout,
+                **kwargs,
+            )
+
+    # Error handler
     add_log_handler(
         LOG_UI,
         ProgressStreamHandler,
@@ -479,18 +488,6 @@ def reconfigure(args):
         "%(message)s",
         FilterWarnAndMore(),
     )
-    if not os.environ.get("AVOCADO_LOG_EARLY"):
-        LOG_JOB.getChild("stdout").propagate = False
-        LOG_JOB.getChild("stderr").propagate = False
-    if "early" in enabled:
-        add_log_handler(
-            "avocado", logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
-        )
-        add_log_handler(
-            LOG_JOB, logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
-        )
-    else:
-        disable_log_handler("avocado")
 
     # Add custom loggers
     for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
@@ -511,12 +508,11 @@ def reconfigure(args):
                 "Failed to set logger for --show %s:%s: %s.", name, level, details
             )
             sys.exit(exit_codes.AVOCADO_FAIL)
-    # Remove the in-memory handlers
-    for handler in logging.getLogger("avocado").handlers:
-        if isinstance(handler, MemStreamHandler):
-            logging.getLogger("avocado").handlers.remove(handler)
 
     # Log early_messages
+    for handler in LOG_ROOT.handlers:
+        if isinstance(handler, MemStreamHandler):
+            LOG_ROOT.removeHandler(handler)
     for record in MemStreamHandler.log:
         logging.getLogger(record.name).handle(record)
 
@@ -529,6 +525,11 @@ class FilterWarnAndMore(logging.Filter):
 class FilterInfoAndLess(logging.Filter):
     def filter(self, record):
         return record.levelno <= logging.INFO
+
+
+class FilterTestMessage(logging.Filter):
+    def filter(self, record):
+        return record.module != "messages" and record.funcName != "handle"
 
 
 class ProgressStreamHandler(logging.StreamHandler):
@@ -658,8 +659,10 @@ def add_log_handler(
     if handler_filter:
         handler.addFilter(handler_filter)
     handler.setFormatter(fmt)
+    if handler_filter:
+        handler.addFilter(handler_filter)
+
     logger.addHandler(handler)
-    logger.propagate = False
     save_handler(logger.name, handler)
     return handler
 
@@ -673,70 +676,6 @@ def disable_log_handler(logger):
     while logger.handlers:
         logger.handlers.pop()
     logger.handlers.append(logging.NullHandler())
-    logger.propagate = False
-
-
-class LoggingFile:
-
-    """
-    File-like object that will receive messages pass them to logging.
-    """
-
-    def __init__(self, prefixes=None, level=logging.DEBUG, loggers=None):
-        """
-        Constructor. Sets prefixes and which loggers are going to be used.
-
-        :param prefixes: Prefix per logger to be prefixed to each line.
-        :param level: Log level to be used when writing messages.
-        :param loggers: Loggers into which write should be issued. (list)
-        """
-        if not loggers:
-            loggers = [logging.getLogger()]
-        self._level = level
-        self._loggers = loggers
-        if prefixes is None:
-            prefixes = [""] * len(loggers)
-        self._prefixes = prefixes
-
-    def write(self, data):
-        """ "
-        Splits the line to individual lines and forwards them into loggers
-        with expected prefixes. It includes the tailing newline <lf> as well
-        as the last partial message. Do configure your logging to not to add
-        newline <lf> automatically.
-        :param data - Raw data (a string) that will be processed.
-        """
-        # splitlines() discards a trailing blank line, so use split() instead
-        data_lines = data.split("\n")
-        if len(data_lines) > 1:  # when not last line, contains \n
-            self._log_line(f"{data_lines[0]}\n")
-        for line in data_lines[1:-1]:
-            self._log_line(f"{line}\n")
-        if data_lines[-1]:  # Last line does not contain \n
-            self._log_line(data_lines[-1])
-
-    def _log_line(self, line):
-        """
-        Forwards line to all the expected loggers along with expected prefix
-        """
-        for logger, prefix in zip(self._loggers, self._prefixes):
-            logger.log(self._level, prefix + line)
-
-    def flush(self):
-        pass
-
-    @staticmethod
-    def isatty():
-        return False
-
-    def add_logger(self, logger, prefix=""):
-        self._loggers.append(logger)
-        self._prefixes.append(prefix)
-
-    def rm_logger(self, logger):
-        idx = self._loggers.index(logger)
-        self._loggers.remove(logger)
-        self._prefixes = self._prefixes[:idx] + self._prefixes[idx + 1 :]
 
 
 class Throbber:

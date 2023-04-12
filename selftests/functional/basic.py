@@ -476,7 +476,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         mytest.save()
         result = process.run(
-            f"{AVOCADO} --show job run --disable-sysinfo "
+            f"{AVOCADO} --show avocado.core run --disable-sysinfo "
             f"--job-results-dir {self.tmpdir.name} {mytest}"
         )
         self.assertIn(
@@ -530,6 +530,10 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn(
             b"Plant.test_plant_organic: preparing soil on row 0", result.stdout
+        )
+        lines = result.stdout.split(b"\n")
+        self.assertEqual(
+            len(lines), len(set(lines)), "The --show option has duplicities"
         )
 
     def test_empty_args_list(self):
@@ -734,8 +738,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "INFO | 1-examples/tests/logging_streams.py:"
-                "Plant.test_plant_organic: preparing soil on row 0",
+                "avocado.test.progress INFO | preparing soil on row 0",
                 stream_line,
             )
 

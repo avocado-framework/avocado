@@ -363,10 +363,11 @@ class LogMessageHandler(BaseRunningMessageHandler):
         # and levels so that they are handled appropriately based on
         # the Avocado job logging configuration
         log_name = message.get("log_name")
-        if log_name is not None:
+        if log_name is not None and log_name != "avocado.app":
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
-            logger.log(level, message.get("log_message"))
+            log_message = f"{task.identifier}: {message.get('log_message')}"
+            logger.log(level, log_message)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
