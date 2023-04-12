@@ -41,7 +41,7 @@ from avocado.core import (
     version,
 )
 from avocado.core.job_id import create_unique_job_id
-from avocado.core.output import LOG_JOB, LOG_UI, STD_OUTPUT
+from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.core.utils.version import get_avocado_git_version
@@ -213,34 +213,11 @@ class Job:
         test_handler = output.add_log_handler(
             LOG_JOB, logging.FileHandler, self.logfile, self.loglevel, fmt
         )
-        main_logger = logging.getLogger("avocado")
-        main_logger.addHandler(test_handler)
-        main_logger.setLevel(self.loglevel)
-        self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
-
-        # Enable console loggers
-        enabled_logs = self.config.get("core.show")
-        if "job" in enabled_logs and "early" not in enabled_logs:
-            self._stdout_stderr = sys.stdout, sys.stderr
-            # Enable std{out,err} but redirect both to stdout
-            sys.stdout = STD_OUTPUT.stdout
-            sys.stderr = STD_OUTPUT.stdout
-            test_handler = output.add_log_handler(
-                LOG_JOB,
-                logging.StreamHandler,
-                STD_OUTPUT.stdout,
-                logging.DEBUG,
-                fmt="%(message)s",
-            )
-            main_logger.addHandler(test_handler)
-            self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
+        self.__logging_handlers[test_handler] = LOG_JOB.name
 
     def __stop_job_logging(self):
-        if self._stdout_stderr:
-            sys.stdout, sys.stderr = self._stdout_stderr
-        for handler, loggers in self.__logging_handlers.items():
-            for logger in loggers:
-                logging.getLogger(logger).removeHandler(handler)
+        for handler, logger in self.__logging_handlers.items():
+            logging.getLogger(logger).removeHandler(handler)
 
     def _log_avocado_config(self):
         LOG_JOB.info("Avocado config:")
@@ -477,7 +454,6 @@ class Job:
         """
         Cleanup the temporary job handlers (dirs, global setting, ...)
         """
-        output.del_last_configuration()
         self.__stop_job_logging()
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)

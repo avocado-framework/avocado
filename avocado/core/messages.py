@@ -367,7 +367,8 @@ class LogMessageHandler(BaseRunningMessageHandler):
         if log_name is not None:
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
-            logger.log(level, message.get("log_message"))
+            log_message = f"{task.identifier}: {message.get('log_message')}"
+            logger.log(level, log_message)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
