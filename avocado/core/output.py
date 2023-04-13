@@ -410,6 +410,28 @@ def early_start():
     logging.getLogger("avocado").level = logging.DEBUG
 
 
+def split_loggers_and_levels(loggers):
+    """Separates logger names and legger leves.
+
+    :param loggers: Logger names with or without levels
+    :type loggers: List of strings in format STREAM[:LEVEL][,STREAM[:LEVEL][,...]]
+    :yields: Logger name and level
+    :rtype: tuple(logger_name, logger_level)
+    """
+    for stream_name in loggers:
+        stream_level = re.split(r"(?<!\\):", stream_name, maxsplit=1)
+        name = stream_level[0]
+        if len(stream_level) == 1:
+            yield name, None
+        else:
+            level = (
+                int(stream_level[1])
+                if stream_level[1].isdigit()
+                else logging.getLevelName(stream_level[1].upper())
+            )
+            yield name, level
+
+
 def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
@@ -470,18 +492,12 @@ def reconfigure(args):
     )
 
     # Add custom loggers
-    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
-        stream_level = re.split(r"(?<!\\):", name, maxsplit=1)
-        name = stream_level[0]
-        if len(stream_level) == 1:
-            level = logging.DEBUG
-        else:
-            level = (
-                int(stream_level[1])
-                if stream_level[1].isdigit()
-                else logging.getLevelName(stream_level[1].upper())
-            )
+    for name, level in split_loggers_and_levels(
+        [_ for _ in enabled if _ not in BUILTIN_STREAMS]
+    ):
         try:
+            if not level:
+                level = logging.DEBUG
             add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout, level)
         except ValueError as details:
             LOG_UI.error(

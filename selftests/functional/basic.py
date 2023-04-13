@@ -732,13 +732,85 @@ class RunnerOperationTest(TestCaseTmpDir):
             "latest",
             "test-results",
             "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
-            "avocado.test.progress",
+            "avocado.test.progress.log",
         )
         self.assertTrue(os.path.exists(progress_info))
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "avocado.test.progress INFO | preparing soil on row 0",
+                "INFO | preparing soil on row 0",
+                stream_line,
+            )
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "avocado.test.progress.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress INFO | "
+                "1-examples/tests/logging_streams.py:Plant.test_plant_organic: "
+                "preparing soil on row 0",
+                stream_line,
+            )
+
+    def test_store_logging_stream_all(self):
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--store-logging-stream=all "
+            f"--disable-sysinfo -- examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "full.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream = file.read()
+            self.assertIn("avocado.job", stream)
+            self.assertIn("avocado.core", stream)
+            self.assertIn("avocado.test", stream)
+            self.assertIn("avocado.app", stream)
+
+    def test_store_logging_stream_level(self):
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--store-logging-stream=avocado.test.progress:error "
+            f"--disable-sysinfo -- examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "test-results",
+            "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
+            "avocado.test.progress.ERROR.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress ERROR| Avocados are Gone",
+                stream_line,
+            )
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "avocado.test.progress.ERROR.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress ERROR| 1-examples/tests/logging_streams.py:Plant.test_plant_organic: Avocados are Gone",
                 stream_line,
             )
 
