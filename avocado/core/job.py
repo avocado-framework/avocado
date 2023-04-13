@@ -41,7 +41,7 @@ from avocado.core import (
     version,
 )
 from avocado.core.job_id import create_unique_job_id
-from avocado.core.output import LOG_JOB, LOG_UI
+from avocado.core.output import LOG_JOB, LOG_UI, split_loggers_and_levels
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.core.utils.version import get_avocado_git_version
@@ -84,7 +84,7 @@ def register_job_options():
         key="store_logging_stream",
         nargs="+",
         help_msg=help_msg,
-        default=["avocado.core:DEBUG"],
+        default=[],
         metavar="STREAM[:LEVEL]",
         key_type=list,
     )
@@ -221,6 +221,20 @@ class Job:
         output.add_log_handler(
             logging.getLogger(""), logging.FileHandler, full_log, self.loglevel, fmt
         )
+
+        # --store-logging-stream files
+        store_loggers = set(self.config.get("job.run.store_logging_stream"))
+        for enabled_logger, level in split_loggers_and_levels(store_loggers):
+            if level:
+                logfile = os.path.join(
+                    self.logdir, f"{enabled_logger}.{logging.getLevelName(level)}.log"
+                )
+            else:
+                level = logging.DEBUG
+                logfile = os.path.join(self.logdir, f"{enabled_logger}.log")
+            output.add_log_handler(
+                enabled_logger, logging.FileHandler, logfile, level, fmt
+            )
 
     def __stop_job_logging(self):
         output.del_last_configuration()

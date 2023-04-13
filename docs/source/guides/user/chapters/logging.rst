@@ -40,8 +40,11 @@ directory by running::
 
   $ avocado run --store-logging-stream STREAM[:LEVEL][,STREAM[:LEVEL][,...]
  
-This will produce ``$STREAM.$LEVEL`` files per each (unique) entry in the test
-results directory.
+This will produce ``$STREAM.$LEVEL`` files per each (unique) entry in two places.
+One in each test result directory where the stream is separated by test and one in
+job log directory where the stream will be gathered from all tests into one place.
+This might be useful when you don't use parallel run and you want to have logs
+from all tests in one place.
 
 .. note:: You have to specify separated logging streams. You can't use the
  built-in streams in this function.
