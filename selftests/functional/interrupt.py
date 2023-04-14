@@ -207,11 +207,6 @@ class InterruptTest(TestCaseTmpDir):
         # Make sure the Interrupted test sentence is there
         self.assertIn(b"Terminated\n", proc.stdout.read())
 
-    @unittest.skip(
-        "Skip until "
-        "https://github.com/avocado-framework/avocado/issues/4994 "
-        "is implemented"
-    )
     @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigint(self):
         """
@@ -250,16 +245,6 @@ class InterruptTest(TestCaseTmpDir):
             wait.wait_for(self._no_test_in_process_table, timeout=10),
             "Avocado left processes behind.",
         )
-
-        output = proc.stdout.read()
-        # Make sure the Interrupted requested sentence is there
-        self.assertIn(
-            b"Interrupt requested. Waiting 2 seconds for test to "
-            b"finish (ignoring new Ctrl+C until then)",
-            output,
-        )
-        # Make sure the Killing test subprocess message is not there
-        self.assertNotIn(b"Killing test subprocess", output)
 
     @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigterm(self):

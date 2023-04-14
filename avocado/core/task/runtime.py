@@ -6,6 +6,7 @@ from avocado.core.test_id import TestID
 
 
 class RuntimeTaskStatus(Enum):
+    INTERRUPTED = "FINISHED INTERRUPTED"
     WAIT_DEPENDENCIES = "WAITING DEPENDENCIES"
     WAIT = "WAITING"
     FINISHED = "FINISHED"

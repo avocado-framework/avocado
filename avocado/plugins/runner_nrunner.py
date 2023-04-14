@@ -328,7 +328,7 @@ class Runner(SuiteRunner):
                         asyncio.shield(asyncio.gather(*workers)), job.timeout or None
                     )
                 )
-            except (KeyboardInterrupt, asyncio.TimeoutError):
+            except asyncio.TimeoutError:
                 terminate_worker = Worker(
                     state_machine=self.tsm,
                     spawner=spawner,
@@ -338,6 +338,20 @@ class Runner(SuiteRunner):
                 )
                 loop.run_until_complete(
                     asyncio.wait_for(terminate_worker.terminate_tasks_timeout(), None)
+                )
+                raise
+            except KeyboardInterrupt:
+                terminate_worker = Worker(
+                    state_machine=self.tsm,
+                    spawner=spawner,
+                    max_running=max_running,
+                    task_timeout=timeout,
+                    failfast=failfast,
+                )
+                loop.run_until_complete(
+                    asyncio.wait_for(
+                        terminate_worker.terminate_tasks_interrupted(), None
+                    )
                 )
                 raise
         except (KeyboardInterrupt, asyncio.TimeoutError, TestFailFast) as ex:
