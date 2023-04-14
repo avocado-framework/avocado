@@ -123,23 +123,53 @@ def get_disks():
     return [str(disk["name"]) for disk in json_data["blockdevices"]]
 
 
-def get_disks_by_id():
+def get_all_disk_paths():
     """
-    Returns the physical "hard drives" available with wwid
+    Returns all available disk names and alias on this  system
 
-    This will get all the sysfs scsi disks by its device id,
-    irrespective of any platform and device type, a unique key
-    ie wwid will help work with devices in unpredictable device
-    name environment.
+    This will get all the sysfs disks name entries by its device
+    node name, by-uuid, by-id and by-path, irrespective of any
+    platform and device type
 
-    :returns: a list of scsi ids of real scsi devcies
+    :returns: a list of all disk path names
     :rtype: list of str
     """
-    disk_list = []
-    for device in os.listdir("/dev/disk/by-id/"):
-        if os.path.realpath(os.path.join("/dev/disk/by-id/", device)):
-            disk_list.append(f"/dev/disk/by-id/{device}")
+    disk_list = abs_path = []
+    for path in [
+        "/dev",
+        "/dev/mapper",
+        "/dev/disk/by-id",
+        "/dev/disk/by-path",
+        "/dev/disk/by-uuid",
+        "/dev/disk/by-partuuid",
+        "/dev/disk/by-partlabel",
+    ]:
+        if os.path.exists(path):
+            for device in os.listdir(path):
+                abs_path.append(os.path.join(path, device))
+            disk_list.extend(abs_path)
     return disk_list
+
+
+def get_absolute_disk_path(device):
+    """
+    Returns absolute device path of given disk
+
+    This will get actual disks path of given device, it can take
+    node name, by-uuid, by-id and by-path, irrespective of any
+    platform and device type
+
+    :param device: disk name or disk alias names sda or scsi-xxx
+    :type device: str
+
+    :returns: the device absolute path name
+    :rtype: bool
+    """
+    if not os.path.exists(device):
+        for dev_path in get_all_disk_paths():
+            if device == os.path.basename(dev_path):
+                return dev_path
+    return device
 
 
 def get_available_filesystems():
