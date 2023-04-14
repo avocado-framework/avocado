@@ -2,7 +2,6 @@ import asyncio
 import collections
 import logging
 import multiprocessing
-import sys
 import time
 
 from avocado.core.exceptions import TestFailFast
@@ -188,14 +187,13 @@ class Worker:
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
+            encoding = "utf-8"
             log_message = {
                 "status": "running",
                 "type": "log",
                 "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
-                "Runner error occurred: Timeout reached".encode(
-                    sys.getdefaultencoding()
-                ),
-                "encoding": "utf-8",
+                "Runner error occurred: Timeout reached".encode(encoding),
+                "encoding": encoding,
                 "time": time.monotonic(),
                 "id": task_id,
                 "job_id": job_id,
