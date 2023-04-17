@@ -1415,12 +1415,6 @@ subprocesses we create before ending our execution.
 
 Signals sent to the Avocado main process will be handled as follows:
 
-- SIGSTP/Ctrl+Z: On SIGSTP, Avocado will pause the execution of the
-  subprocesses, while the main process will still be running,
-  respecting the timeout timer and waiting for the subprocesses to
-  finish. A new SIGSTP will make the subprocesses to resume the
-  execution.
-
 - SIGINT/Ctrl+C: This signal will be forwarded to the test process and
   Avocado will wait until it's finished. If the test process does not
   finish after receiving a SIGINT, user can send a second SIGINT (after

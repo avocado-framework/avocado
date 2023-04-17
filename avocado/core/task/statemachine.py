@@ -2,7 +2,6 @@ import asyncio
 import collections
 import logging
 import multiprocessing
-import sys
 import time
 
 from avocado.core.exceptions import TestFailFast
@@ -176,7 +175,7 @@ class Worker:
             self._spawner, self._max_triaging, self._max_running, self._task_timeout
         )
 
-    async def _send_timeout_message(self, terminate_tasks):
+    async def _send_finished_tasks_message(self, terminate_tasks, reason):
         """Sends messages related to timeout to status repository.
         When the task is terminated, it is necessary to send a finish message to status
         repository to close logging. This method will send log message with timeout
@@ -188,14 +187,13 @@ class Worker:
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
+            encoding = "utf-8"
             log_message = {
                 "status": "running",
                 "type": "log",
                 "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
-                "Runner error occurred: Timeout reached".encode(
-                    sys.getdefaultencoding()
-                ),
-                "encoding": "utf-8",
+                f"Runner error occurred: {reason}".encode(encoding),
+                "encoding": encoding,
                 "time": time.monotonic(),
                 "id": task_id,
                 "job_id": job_id,
@@ -203,7 +201,7 @@ class Worker:
             finish_message = {
                 "status": "finished",
                 "result": "interrupted",
-                "fail_reason": "Test interrupted: Timeout reached",
+                "fail_reason": f"Test interrupted: {reason}",
                 "time": time.monotonic(),
                 "id": task_id,
                 "job_id": job_id,
@@ -363,9 +361,10 @@ class Worker:
                     remaining = runtime_task.execution_timeout - time.monotonic()
                 await asyncio.wait_for(self._spawner.wait_task(runtime_task), remaining)
             except asyncio.TimeoutError:
-                runtime_task.status = RuntimeTaskStatus.TIMEOUT
-                await self._spawner.terminate_task(runtime_task)
-                await self._send_timeout_message([runtime_task])
+                await self._terminate_task(runtime_task, RuntimeTaskStatus.TIMEOUT)
+                await self._send_finished_tasks_message(
+                    [runtime_task], "Timeout reached"
+                )
             async with self._state_machine.lock:
                 try:
                     self._state_machine.monitored.remove(runtime_task)
@@ -404,9 +403,12 @@ class Worker:
 
         await self._state_machine.finish_task(runtime_task, RuntimeTaskStatus.FINISHED)
 
-    async def terminate_tasks_timeout(self):
-        """Terminate all running tasks with timeout message."""
-        await self._state_machine.abort(RuntimeTaskStatus.TIMEOUT)
+    async def _terminate_task(self, runtime_task, task_status):
+        runtime_task.status = task_status
+        await self._spawner.terminate_task(runtime_task)
+
+    async def _terminate_tasks(self, task_status):
+        await self._state_machine.abort(task_status)
         terminated = []
         while True:
             is_complete = await self._state_machine.complete
@@ -416,10 +418,21 @@ class Worker:
                 except IndexError:
                     if is_complete:
                         break
-                runtime_task.status = RuntimeTaskStatus.TIMEOUT
-                await self._spawner.terminate_task(runtime_task)
+                await self._terminate_task(runtime_task, task_status)
                 terminated.append(runtime_task)
-        await self._send_timeout_message(terminated)
+        return terminated
+
+    async def terminate_tasks_timeout(self):
+        """Terminate all running tasks with a timeout message."""
+        task_status = RuntimeTaskStatus.TIMEOUT
+        terminated = await self._terminate_tasks(task_status)
+        await self._send_finished_tasks_message(terminated, "Timeout reached")
+
+    async def terminate_tasks_interrupted(self):
+        """Terminate all running tasks with an interrupted message."""
+        task_status = RuntimeTaskStatus.INTERRUPTED
+        terminated = await self._terminate_tasks(task_status)
+        await self._send_finished_tasks_message(terminated, "Interrupted by user")
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""

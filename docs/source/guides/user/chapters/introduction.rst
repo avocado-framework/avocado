@@ -86,13 +86,6 @@ this does not help user can press ``ctrl+c`` again (after 2s grace period)
 which destroys the test's process ungracefully and safely finishes the job
 execution always providing the test results.
 
-To pause the test execution a user can use ``ctrl+z`` which sends ``SIGSTOP``
-to all processes inherited from the test's PID. We do our best to stop all
-processes, but the operation is not atomic and some new processes might not be
-stopped. Another ``ctrl+z`` sends ``SIGCONT`` to all processes inherited by the
-test's PID resuming the execution. Note the test execution time (concerning the
-test timeout) are still running while the test's process is stopped.
-
 Interrupting the job on first fail (failfast)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
