@@ -224,7 +224,7 @@ class Session:
             return process.run(
                 self.get_raw_ssh_command(command), 
                 ignore_status=ignore_status,
-                timeout=timeout
+                timeout=timeout,
             )
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
