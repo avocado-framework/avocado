@@ -205,7 +205,7 @@ class Session:
         """
         return self._ssh_cmd(self.DEFAULT_OPTIONS, ("-q",), command)
 
-    def cmd(self, command, ignore_status=True):
+    def cmd(self, command, ignore_status=True, timeout=None):
         """
         Runs a command over the SSH session
 
@@ -217,12 +217,17 @@ class Session:
                               in case of either the command or ssh connection
                               returned with exit status other than zero.
         :type ignore_status: bool
+        :param timeout: Limit the command execution time, if you want the command
+                        to end within a few seconds, you can set a specific time.
+        :type timeout: float
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
         try:
             return process.run(
-                self.get_raw_ssh_command(command), ignore_status=ignore_status
+                self.get_raw_ssh_command(command),
+                ignore_status=ignore_status,
+                timeout=timeout,
             )
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
