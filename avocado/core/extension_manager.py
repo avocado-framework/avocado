@@ -189,13 +189,13 @@ class ExtensionManager:
             except KeyboardInterrupt:
                 raise
             except:  # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger="avocado.app.debug")
                 LOG_UI.error(
                     'Error running method "%s" of plugin "%s": %s',
                     method_name,
                     ext.name,
                     sys.exc_info()[1],
                 )
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_UI)
         return ret
 
     def map_method(self, method_name, *args):
@@ -215,13 +215,13 @@ class ExtensionManager:
             except KeyboardInterrupt:
                 raise
             except:  # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger="avocado.app.debug")
                 LOG_UI.error(
                     'Error running method "%s" of plugin "%s": %s',
                     method_name,
                     ext.name,
                     sys.exc_info()[1],
                 )
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_UI)
 
     def __getitem__(self, name):
         for ext in self.extensions:

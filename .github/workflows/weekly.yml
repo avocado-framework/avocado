@@ -43,7 +43,6 @@ jobs:
         run: python -m avocado run  examples/tests/passtest.py
       - name: Tree static check, unittests and fast functional tests
         run: |
-          export AVOCADO_LOG_DEBUG="yes"
           export AVOCADO_CHECK_LEVEL="1"
           python3 selftests/check.py
       - name: Archive test logs
@@ -86,7 +85,6 @@ jobs:
         run: avocado --version
       - name: Tree static check, unittests and fast functional tests without plugins
         run: |
-          export AVOCADO_LOG_DEBUG="yes"
           export AVOCADO_CHECK_LEVEL="1"
           python3 selftests/check.py --disable-plugin-checks golang,html,resultsdb,result_upload,robot,varianter_cit,varianter_pict,varianter_yaml_to_mux
       - name: Archive test logs
