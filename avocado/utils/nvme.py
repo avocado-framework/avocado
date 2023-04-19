@@ -84,9 +84,9 @@ def get_controller_id(controll_name):
     :param controller_name: Name of the controller eg: nvme0
     :rtype: string
     """
-    cmd = f"nvme list-ctrl /dev/{controll_name}"
-    output = process.system_output(cmd, shell=True, ignore_status=True).decode("utf-8")
+    cmd = f"nvme id-ctrl /dev/{controll_name}"
+    output = process.run(cmd, shell=True, sudo=True, ignore_status=True).stdout_text
     for line in output.splitlines():
-        if "0]" in line:
-            return line.split(":")[-1]
+        if "cntlid" in line:
+            return line.split(":")[-1].strip()
     return ""
