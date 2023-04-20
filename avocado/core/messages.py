@@ -119,7 +119,7 @@ class StartMessageHandler(BaseMessageHandler):
         """
         task_id = TestID.from_identifier(task.identifier)
         base_path = job.test_results_path
-        task_path = os.path.join(base_path, task_id.str_filesystem)
+        task_path = task.runnable.output_dir
         logfile = os.path.join(task_path, DEFAULT_LOG_FILE)
         os.makedirs(task_path, exist_ok=True)
         params = []
@@ -131,7 +131,6 @@ class StartMessageHandler(BaseMessageHandler):
                 for param in params[1]
             ]
 
-        open(logfile, "w", encoding="utf-8").close()
         metadata = {
             "job_logdir": job.logdir,
             "job_unique_id": job.unique_id,
