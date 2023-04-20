@@ -366,9 +366,7 @@ class StdOutput:
             paginator = Paginator()
         except RuntimeError as details:
             # Paginator not available
-            logging.getLogger("avocado.app.debug").error(
-                "Failed to enable paginator: %s", details
-            )
+            LOG_UI.error("Failed to enable paginator: %s", details)
             return
         self.stdout = self.stderr = paginator
         self.__configured = True
@@ -401,10 +399,6 @@ def early_start():
     """
     Replace all outputs with in-memory handlers
     """
-    if os.environ.get("AVOCADO_LOG_DEBUG"):
-        add_log_handler(
-            LOG_UI.getChild("debug"), logging.StreamHandler, sys.stdout, logging.DEBUG
-        )
     if os.environ.get("AVOCADO_LOG_EARLY"):
         add_log_handler("avocado", logging.StreamHandler, sys.stdout, logging.DEBUG)
         add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout, logging.DEBUG)
@@ -460,8 +454,6 @@ def reconfigure(args):
         enabled.update(BUILTIN_STREAMS)
     if os.environ.get("AVOCADO_LOG_EARLY"):
         enabled.add("early")
-    if os.environ.get("AVOCADO_LOG_DEBUG"):
-        enabled.add("debug")
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:
@@ -503,15 +495,6 @@ def reconfigure(args):
             save_handler(LOG_JOB.name, handler, configuration)
         else:
             disable_log_handler("avocado")
-    # Not enabled by env
-    if not os.environ.get("AVOCADO_LOG_DEBUG"):
-        if "debug" in enabled:
-            handler = add_log_handler(
-                LOG_UI.getChild("debug"), stream=STD_OUTPUT.stdout
-            )
-            save_handler(LOG_UI.getChild("debug").name, handler, configuration)
-        else:
-            disable_log_handler(LOG_UI.getChild("debug"))
 
     # Add custom loggers
     for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
