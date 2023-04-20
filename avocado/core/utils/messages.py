@@ -267,12 +267,13 @@ def start_logging(config, queue):
     enabled_loggers = config.get("core.show")
     output_handler = RunnerLogHandler(queue, "output")
     output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
-    for user_stream, level in split_loggers_and_levels(enabled_loggers):
+    for enabled_logger, level in split_loggers_and_levels(enabled_loggers):
         if not level:
             level = log_level
-        custom_logger = logging.getLogger(user_stream)
-        custom_logger.addHandler(output_handler)
-        custom_logger.setLevel(level)
+        output_logger = logging.getLogger(enabled_logger)
+        if not enabled_logger.startswith("avocado."):
+            output_logger.addHandler(log_handler)
+            output_logger.propagate = False
 
     # store custom test loggers
     enabled_loggers = config.get("job.run.store_logging_stream")

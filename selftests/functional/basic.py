@@ -778,6 +778,41 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.assertIn("avocado.test", stream)
             self.assertIn("avocado.app", stream)
 
+    @unittest.skipUnless(
+        os.getenv("CI"),
+        "This test runs on CI environments only as it depends on the system package "
+        "manager, and some environments don't have it available.",
+    )
+    def test_store_logging_stream_external(self):
+        """
+        :avocado: dependency={"type": "ansible-module", "uri": "pip", "name": "matplotlib"}
+        """
+
+        def check_matplotlib_logs(file_path):
+            self.assertTrue(os.path.exists(file_path))
+            with open(file_path, encoding="utf-8") as file:
+                stream = file.read()
+                self.assertIn("matplotlib DEBUG|", stream)
+
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--store-logging-stream=matplotlib "
+            f"--disable-sysinfo -- examples/tests/external_logging_stream.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        log_dir = os.path.join(self.tmpdir.name, "latest")
+        test_log_dir = os.path.join(
+            log_dir,
+            "test-results",
+            "1-examples_tests_external_logging_stream.py_MatplotlibTest.test",
+        )
+
+        check_matplotlib_logs(os.path.join(log_dir, "full.log"))
+        check_matplotlib_logs(os.path.join(log_dir, "matplotlib.log"))
+        check_matplotlib_logs(os.path.join(test_log_dir, "matplotlib.log"))
+        check_matplotlib_logs(os.path.join(test_log_dir, "debug.log"))
+
     def test_store_logging_stream_level(self):
         cmd = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "

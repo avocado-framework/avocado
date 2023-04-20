@@ -227,6 +227,8 @@ class Job:
             else:
                 level = logging.DEBUG
                 logfile = os.path.join(self.logdir, f"{enabled_logger}.log")
+            if not enabled_logger.startswith("avocado."):
+                logging.getLogger(enabled_logger).setLevel(level)
             test_handler = output.add_log_handler(
                 enabled_logger, logging.FileHandler, full_log, level, fmt
             )
