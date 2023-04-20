@@ -22,7 +22,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
     Difference between two dictionaries are returned
     Dict values can be a dictionary, list and value
 
-    :rtype: List/null
+    :rtype: list or None
     """
     if isinstance(dict1, dict) and isinstance(dict2, dict):
         if dict1.keys() != dict2.keys():
