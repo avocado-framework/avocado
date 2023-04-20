@@ -17,12 +17,6 @@ generic utility functions.
 """
 
 
-class GenericUtilityException(Exception):
-    """
-    Generic Utility Exception
-    """
-
-
 def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
     """
     Difference between two dictionaries are returned
