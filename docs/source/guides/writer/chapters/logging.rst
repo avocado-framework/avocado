@@ -197,3 +197,41 @@ Again you could watch the progress with::
     2023-04-13 17:54:18,916 avocado.job INFO |  'core.paginator': False,
     2023-04-13 17:54:18,916 avocado.job INFO |  'core.show': {'app'},
 
+External logs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your tests use some external logs which are not part of `avocado.*` namespace, avocado
+will still log these logs into the standard log files.  Let's see an example with
+Matplotlib external library:
+
+.. literalinclude:: ../../../../../examples/tests/external_logging_stream.py
+
+Avocado will add Matplotlib logs into the standard avocado logs::
+
+     $ avocado run examples/tests/external_logging_stream.py
+
+You can check the logs by::
+
+        $ cat ~/avocado/job-results/latest/test-results/1-examples_tests_external_logging_stream.py_MatplotlibTest.test/debug.log
+        [stdlog] 2023-04-20 10:07:03,743 matplotlib DEBUG| matplotlib data path: /home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data
+        [stdlog] 2023-04-20 10:07:03,748 matplotlib DEBUG| CONFIGDIR=/home/janrichter/.config/matplotlib
+        [stdlog] 2023-04-20 10:07:03,749 matplotlib DEBUG| interactive is False
+        [stdlog] 2023-04-20 10:07:03,749 matplotlib DEBUG| platform is linux
+        [stdlog] 2023-04-20 10:07:03,801 matplotlib DEBUG| CACHEDIR=/home/janrichter/.cache/matplotlib
+        [stdlog] 2023-04-20 10:07:03,802 matplotlib.font_manager DEBUG| Using fontManager instance from /home/janrichter/.cache/matplotlib/fontlist-v330.json
+        [stdlog] 2023-04-20 10:07:03,985 avocado.test INFO | INIT 1-examples/tests/external_logging_stream.py:MatplotlibTest.test
+        [stdlog] 2023-04-20 10:07:03,986 avocado.test DEBUG| PARAMS (key=timeout, path=*, default=None) => None
+        [stdlog] 2023-04-20 10:07:03,986 avocado.test DEBUG| Test metadata:
+        [stdlog] 2023-04-20 10:07:03,986 avocado.test DEBUG|   filename: /home/janrichter/Avocado/avocado/examples/tests/external_logging_stream.py
+        [stdlog] 2023-04-20 10:07:03,986 avocado.test DEBUG|   teststmpdir: /var/tmp/avocado_3b1c_sqy
+        [stdlog] 2023-04-20 10:07:03,987 avocado.test INFO | START 1-examples/tests/external_logging_stream.py:MatplotlibTest.test
+        [stdlog] 2023-04-20 10:07:03,995 matplotlib.pyplot DEBUG| Loaded backend agg version v2.2.
+        [stdlog] 2023-04-20 10:07:03,997 matplotlib.font_manager DEBUG| findfont: Matching sans\-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0.
+        [stdlog] 2023-04-20 10:07:03,997 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans-Bold.ttf', name='DejaVu Sans', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 0.33499999999999996
+        [stdlog] 2023-04-20 10:07:03,997 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSansMono-BoldOblique.ttf', name='DejaVu Sans Mono', style='oblique', variant='normal', weight=700, stretch='normal', size='scalable')) = 11.335
+        [stdlog] 2023-04-20 10:07:03,997 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/cmsy10.ttf', name='cmsy10', style='normal', variant='normal', weight=400, stretch='normal', size='scalable')) = 10.05
+        [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/STIXNonUni.ttf', name='STIXNonUnicode', style='normal', variant='normal', weight=400, stretch='normal', size='scalable')) = 10.05
+        [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/STIXGeneralBolIta.ttf', name='STIXGeneral', style='italic', variant='normal', weight=700, stretch='normal', size='scalable')) = 11.335
+        [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSansMono-Bold.ttf', name='DejaVu Sans Mono', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 10.335
+        [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/STIXNonUniBol.ttf', name='STIXNonUnicode', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 10.335
+
