@@ -1,3 +1,4 @@
+import itertools
 import os
 from enum import Enum
 
@@ -305,7 +306,7 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                tasks = PreRuntimeTask.get_tasks_from_test_task(
+                pre_tasks = PreRuntimeTask.get_tasks_from_test_task(
                     runtime_test,
                     no_digits,
                     base_dir,
@@ -314,8 +315,7 @@ class RuntimeTaskGraph:
                     job_id,
                     suite_config,
                 )
-                tasks.append(runtime_test)
-                tasks = tasks + PostRuntimeTask.get_tasks_from_test_task(
+                post_tasks = PostRuntimeTask.get_tasks_from_test_task(
                     runtime_test,
                     no_digits,
                     base_dir,
@@ -324,11 +324,13 @@ class RuntimeTaskGraph:
                     job_id,
                     suite_config,
                 )
-                if tasks:
-                    self._connect_tasks(tasks)
+                if pre_tasks or post_tasks:
+                    self._connect_tasks(pre_tasks, [runtime_test], post_tasks)
 
-    def _connect_tasks(self, tasks):
-        for dependency, task in zip(tasks, tasks[1:]):
+    def _connect_tasks(self, pre_tasks, tasks, post_tasks):
+        connections = list(itertools.product(pre_tasks, tasks))
+        connections += list(itertools.product(tasks, post_tasks))
+        for dependency, task in connections:
             self.graph[task] = task
             self.graph[dependency] = dependency
             task.dependencies.append(dependency)
