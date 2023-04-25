@@ -29,7 +29,11 @@ class Env(Test):
         def log_std_io(name, std_io):
             self.log.debug("%s:", name.upper())
             self.log.debug(" sys.%s: %s", name, std_io)
-            self.log.debug(" sys.%s is a tty: %s", name, std_io.isatty())
+            self.log.debug(
+                " sys.%s is a tty: %s",
+                name,
+                hasattr(std_io, "isatty") and std_io.isatty(),
+            )
             if hasattr(std_io, "fileno"):
                 self.log.debug(" fd: %s", std_io.fileno())
                 self.log.debug(" fd is tty: %s", os.isatty(std_io.fileno()))
