@@ -117,33 +117,6 @@ class TestError(TestBaseException):
     status = "ERROR"
 
 
-class TestNotFoundError(TestBaseException):
-
-    """
-    Indicates that the test was not found in the test directory.
-    """
-
-    status = "ERROR"
-
-
-class TestTimeoutInterrupted(TestBaseException):
-
-    """
-    Indicates that the test did not finish before the timeout specified.
-    """
-
-    status = "INTERRUPTED"
-
-
-class TestInterruptedError(TestBaseException):
-
-    """
-    Indicates that the test was interrupted by the user (Ctrl+C)
-    """
-
-    status = "INTERRUPTED"
-
-
 class TestAbortError(TestBaseException):
 
     """
