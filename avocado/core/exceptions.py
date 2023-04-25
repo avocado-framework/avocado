@@ -74,6 +74,18 @@ class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
     status = "ERROR"
 
 
+class JobFailFast(JobBaseException):
+
+    """
+    Indicates that the test has failed because failfast is enabled.
+
+    Should be thrown when a test has failed and failfast is enabled. This will
+    indicate that other tests will be skipped.
+    """
+
+    status = "SKIP"
+
+
 class OptionValidationError(Exception):
 
     """
@@ -150,18 +162,6 @@ class TestFail(TestBaseException, AssertionError):
     """
 
     status = "FAIL"
-
-
-class TestFailFast(TestBaseException):
-
-    """
-    Indicates that the test has failed because failfast is enabled.
-
-    Should be thrown when a test has failed and failfast is enabled. This will
-    indicate that other tests will be skipped.
-    """
-
-    status = "SKIP"
 
 
 class TestWarn(TestBaseException):

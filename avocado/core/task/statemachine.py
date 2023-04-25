@@ -4,7 +4,7 @@ import logging
 import multiprocessing
 import time
 
-from avocado.core.exceptions import TestFailFast
+from avocado.core.exceptions import JobFailFast
 from avocado.core.task.runtime import RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
 
@@ -399,7 +399,7 @@ class Worker:
         )
         if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
             await self._state_machine.abort(RuntimeTaskStatus.FAILFAST)
-            raise TestFailFast("Interrupting job (failfast).")
+            raise JobFailFast("Interrupting job (failfast).")
 
         await self._state_machine.finish_task(runtime_task, RuntimeTaskStatus.FINISHED)
 
