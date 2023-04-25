@@ -22,11 +22,8 @@ class JobBaseException(Exception):
     """
     The parent of all job exceptions.
 
-    You should be never raising this, but just in case, we'll set its
-    status' as FAIL.
+    It should never be raised directly.
     """
-
-    status = "FAIL"
 
 
 class JobError(JobBaseException):
@@ -35,16 +32,12 @@ class JobError(JobBaseException):
     A generic error happened during a job execution.
     """
 
-    status = "ERROR"
-
 
 class JobTestSuiteError(JobBaseException):
 
     """
     Generic error happened during the creation of a job's test suite
     """
-
-    status = "ERROR"
 
 
 class JobTestSuiteEmptyError(JobTestSuiteError):
@@ -53,8 +46,6 @@ class JobTestSuiteEmptyError(JobTestSuiteError):
     Error raised when the creation of a test suite results in an empty suite
     """
 
-    status = "ERROR"
-
 
 class JobTestSuiteDuplicateNameError(JobTestSuiteError):
 
@@ -62,16 +53,12 @@ class JobTestSuiteDuplicateNameError(JobTestSuiteError):
     Error raised when a test suite name is not unique in a job
     """
 
-    status = "ERROR"
-
 
 class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
 
     """
     Test References did not produce a valid reference by any resolver
     """
-
-    status = "ERROR"
 
 
 class JobFailFast(JobBaseException):
@@ -83,16 +70,12 @@ class JobFailFast(JobBaseException):
     indicate that other tests will be skipped.
     """
 
-    status = "SKIP"
-
 
 class OptionValidationError(Exception):
 
     """
     An invalid option was passed to the test runner
     """
-
-    status = "ERROR"
 
 
 class TestBaseException(Exception):
