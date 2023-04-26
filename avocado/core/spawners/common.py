@@ -1,8 +1,6 @@
 import enum
-import os
 
 from avocado.core.settings import settings
-from avocado.core.spawners.exceptions import SpawnerException
 
 
 class SpawnMethod(enum.Enum):
@@ -32,8 +30,4 @@ class SpawnerMixin:
         self._job = job
 
     def task_output_dir(self, runtime_task):
-        if self._job is None:
-            raise SpawnerException("Job wasn't set properly")
-        return os.path.join(
-            self._job.test_results_path, runtime_task.task.identifier.str_filesystem
-        )
+        return runtime_task.task.runnable.output_dir

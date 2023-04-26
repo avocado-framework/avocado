@@ -1,3 +1,5 @@
+import itertools
+import os
 from enum import Enum
 
 from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
@@ -35,6 +37,7 @@ class RuntimeTaskMixin:
         runnable,
         no_digits,
         index,
+        base_dir,
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
@@ -48,6 +51,8 @@ class RuntimeTaskMixin:
         :type no_digits: int
         :param index: index of tests inside test suite
         :type index: int
+        :param base_dir: Path to the job base directory.
+        :type base_dir: str
         :param test_suite_name: test suite name which this test is related to
         :type test_suite_name: str
         :param status_server_uri: the URIs for the status servers that this
@@ -75,6 +80,8 @@ class RuntimeTaskMixin:
 
         test_id = TestID(prefix, name, runnable.variant, no_digits)
 
+        if not runnable.output_dir:
+            runnable.output_dir = os.path.join(base_dir, test_id.str_filesystem)
         # handles the test task
         task = Task(
             runnable,
@@ -179,6 +186,7 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
         cls,
         test_task,
         no_digits,
+        base_dir,
         test_suite_name=None,
         status_server_uri=None,
         job_id=None,
@@ -190,6 +198,8 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
         :type test_task: :class:`avocado.core.task.runtime.RuntimeTask`
         :param no_digits: number of digits of the test uid
         :type no_digits: int
+        :param base_dir: Path to the job base directory.
+        :type base_dir: str
         :param test_suite_name: test suite name which this test is related to
         :type test_suite_name: str
         :param status_server_uri: the URIs for the status servers that this
@@ -221,6 +231,7 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
                     runnable,
                     no_digits,
                     prefix,
+                    base_dir,
                     test_suite_name,
                     status_server_uri,
                     job_id,
@@ -249,7 +260,13 @@ class RuntimeTaskGraph:
     """Graph representing dependencies between runtime tasks."""
 
     def __init__(
-        self, tests, test_suite_name, status_server_uri, job_id, suite_config=None
+        self,
+        tests,
+        test_suite_name,
+        status_server_uri,
+        job_id,
+        base_dir,
+        suite_config=None,
     ):
         """Instantiates a new RuntimeTaskGraph.
 
@@ -267,6 +284,8 @@ class RuntimeTaskGraph:
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
+        :param base_dir: Path to the job base directory.
+        :type base_dir: str
         :param suite_config: Configuration dict relevant for the whole suite.
         :type suite_config: dict
         """
@@ -278,6 +297,7 @@ class RuntimeTaskGraph:
                 runnable,
                 no_digits,
                 index,
+                base_dir,
                 test_suite_name,
                 status_server_uri,
                 job_id,
@@ -286,28 +306,31 @@ class RuntimeTaskGraph:
 
             # with --dry-run we don't want to run dependencies
             if runnable.kind != "dry-run":
-                tasks = PreRuntimeTask.get_tasks_from_test_task(
+                pre_tasks = PreRuntimeTask.get_tasks_from_test_task(
                     runtime_test,
                     no_digits,
+                    base_dir,
                     test_suite_name,
                     status_server_uri,
                     job_id,
                     suite_config,
                 )
-                tasks.append(runtime_test)
-                tasks = tasks + PostRuntimeTask.get_tasks_from_test_task(
+                post_tasks = PostRuntimeTask.get_tasks_from_test_task(
                     runtime_test,
                     no_digits,
+                    base_dir,
                     test_suite_name,
                     status_server_uri,
                     job_id,
                     suite_config,
                 )
-                if tasks:
-                    self._connect_tasks(tasks)
+                if pre_tasks or post_tasks:
+                    self._connect_tasks(pre_tasks, [runtime_test], post_tasks)
 
-    def _connect_tasks(self, tasks):
-        for dependency, task in zip(tasks, tasks[1:]):
+    def _connect_tasks(self, pre_tasks, tasks, post_tasks):
+        connections = list(itertools.product(pre_tasks, tasks))
+        connections += list(itertools.product(tasks, post_tasks))
+        for dependency, task in connections:
             self.graph[task] = task
             self.graph[dependency] = dependency
             task.dependencies.append(dependency)

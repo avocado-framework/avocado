@@ -286,6 +286,7 @@ class Runner(SuiteRunner):
             test_suite.name,
             self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,
+            job.test_results_path,
             test_suite.config,
         )
         # pylint: disable=W0201

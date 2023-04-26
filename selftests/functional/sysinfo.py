@@ -13,6 +13,11 @@ commands_timeout = %s
 commands = %s
 """
 
+PER_TEST_CONF = """
+[sysinfo.collect]
+per_test = True
+"""
+
 
 class SysInfoTest(TestCaseTmpDir):
     def test_sysinfo_enabled(self):
@@ -48,6 +53,88 @@ class SysInfoTest(TestCaseTmpDir):
             sysinfo_subdir = os.path.join(sysinfo_dir, hook)
             msg = f"The sysinfo/{hook} subdirectory does not exist:\n{result}"
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
+
+    def test_sysinfo_per_test_enabled(self):
+        config_path = os.path.join(self.tmpdir.name, "config.conf")
+        script.make_script(config_path, PER_TEST_CONF)
+        cmd_line = (
+            f"{AVOCADO} --config {config_path} run --job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        test_results_path = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "test-results",
+            "1-examples_tests_passtest.py_PassTest.test",
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "pre")),
+            "Avocado didn't create sysinfo-pre directorie",
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "post")),
+            "Avocado didn't create sysinfo-post directorie",
+        )
+
+        cmd_line = (
+            f"{AVOCADO} --config {config_path} run --job-results-dir {self.tmpdir.name} "
+            f"examples/tests/failtest.py"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        test_results_path = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "test-results",
+            "1-examples_tests_failtest.py_FailTest.test",
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "pre")),
+            "Avocado didn't create sysinfo-pre directorie",
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "post")),
+            "Avocado didn't create sysinfo-post directorie",
+        )
+
+    def test_sysinfoi_per_test_disabled(self):
+        cmd_line = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        test_results_path = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "test-results",
+            "1-examples_tests_passtest.py_PassTest.test",
+        )
+        self.assertFalse(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "pre")),
+            "Avocado create sysinfo-pre directorie",
+        )
+        self.assertFalse(
+            os.path.exists(os.path.join(test_results_path, "sysinfo", "post")),
+            "Avocado create sysinfo-post directorie",
+        )
 
     def test_sysinfo_disabled(self):
         cmd_line = (
