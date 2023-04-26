@@ -430,6 +430,26 @@ def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
+
+    # Remove default handlers from root
+    try:
+        stderr_root = logging.getLogger().handlers[0]
+        if (
+            stderr_root.stream is sys.stderr
+            and stderr_root.formatter._fmt == "{message}"
+            and stderr_root.level == logging.WARNING
+        ):
+            logging.getLogger().removeHandler(stderr_root)
+
+        stdout_root = logging.getLogger().handlers[0]
+        if (
+            stdout_root.stream is sys.stdout
+            and stdout_root.formatter._fmt == "{message}"
+            and stdout_root.level == logging.NOTSET
+        ):
+            logging.getLogger().removeHandler(stdout_root)
+    except (IndexError, AttributeError):
+        pass
     # Delete last configuration
     if len(CONFIG) != 0:
         last_configuration = CONFIG[-1]
@@ -438,7 +458,6 @@ def reconfigure(args):
 
     CONFIG.append({})
 
-    LOG_ROOT.propagate = False
     LOG_ROOT.setLevel(logging.DEBUG)
 
     # Reconfigure stream loggers

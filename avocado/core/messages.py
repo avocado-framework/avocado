@@ -367,7 +367,10 @@ class LogMessageHandler(BaseRunningMessageHandler):
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
             log_message = f"{task.identifier}: {message.get('log_message')}"
+            logger_level = logger.level
+            logger.setLevel(level)
             logger.log(level, log_message)
+            logger.setLevel(logger_level)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):

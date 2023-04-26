@@ -208,6 +208,7 @@ class Job:
 
     def __start_job_logging(self):
         # Enable test logger
+        full_log = os.path.join(self.logdir, "full.log")
         fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
         output.add_log_handler(
             LOG_JOB,
@@ -216,6 +217,9 @@ class Job:
             self.loglevel,
             fmt,
             handler_filter=output.FilterTestMessage(),
+        )
+        output.add_log_handler(
+            logging.getLogger(""), logging.FileHandler, full_log, self.loglevel, fmt
         )
 
     def __stop_job_logging(self):

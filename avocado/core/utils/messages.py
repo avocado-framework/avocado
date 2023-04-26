@@ -3,8 +3,6 @@ import logging
 import sys
 import time
 
-from avocado.core.streams import BUILTIN_STREAMS
-
 
 class GenericMessage:
     message_status = None
@@ -258,34 +256,19 @@ def start_logging(config, queue):
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
 
-    # main log = 'avocado'
-    logger = logging.getLogger("avocado")
+    # root log
+    logger = logging.getLogger("")
     logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-    logger.propagate = False
+    logger.setLevel(logging.NOTSET)
+
+    # main log = 'avocado'
+    logging.getLogger("avocado").setLevel(log_level)
 
     # 'avocado.test'
-    log = logging.getLogger("avocado.test")
-    log.addHandler(log_handler)
-    log.setLevel(log_level)
-    log.propagate = False
+    logging.getLogger("avocado.test").setLevel(log_level)
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
-
-    # output custom test loggers
-    enabled_loggers = config.get("core.show")
-    output_handler = RunnerLogHandler(queue, "output")
-    output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
-    user_streams = [
-        user_streams
-        for user_streams in enabled_loggers
-        if user_streams not in BUILTIN_STREAMS
-    ]
-    for user_stream, level in split_loggers_and_levels(user_streams, log_level):
-        custom_logger = logging.getLogger(user_stream)
-        custom_logger.addHandler(output_handler)
-        custom_logger.setLevel(level)
 
     # store custom test loggers
     enabled_loggers = config.get("job.run.store_logging_stream")

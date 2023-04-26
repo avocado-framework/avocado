@@ -96,7 +96,7 @@ from avocado import Test
 
 class My(Test):
     def test(self):
-        logging.getLogger("some.other.logger").info("SHOULD NOT BE ON debug.log")
+        logging.getLogger("some.other.logger").info("SHOULD BE ON debug.log")
 """
 
 
@@ -700,7 +700,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         ) as mytest:
 
             cmd_line = (
-                f"{AVOCADO} run --disable-sysinfo "
+                f"{AVOCADO} --show=some.other.logger run --disable-sysinfo "
                 f"--job-results-dir {self.tmpdir.name} -- {mytest}"
             )
             result = process.run(cmd_line, ignore_status=True)
@@ -710,13 +710,17 @@ class RunnerOperationTest(TestCaseTmpDir):
                 expected_rc,
                 (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
             )
+            self.assertRegex(
+                result.stdout_text,
+                r"^some\.other\.logger\: .* SHOULD BE ON debug\.log\s$",
+            )
 
             test_log_dir = glob.glob(
                 os.path.join(self.tmpdir.name, "job-*", "test-results", "1-*")
             )[0]
             test_log_path = os.path.join(test_log_dir, "debug.log")
             with open(test_log_path, "rb") as test_log:  # pylint: disable=W1514
-                self.assertNotIn(b"SHOULD NOT BE ON debug.log", test_log.read())
+                self.assertIn(b"SHOULD BE ON debug.log", test_log.read())
 
     def test_store_logging_stream(self):
         cmd = (
