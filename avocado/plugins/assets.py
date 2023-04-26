@@ -189,8 +189,11 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                 # otherwise, save the local variable name
                 if isinstance(node.targets[0], ast.Attribute):
                     name = node.targets[0].attr
-                else:
+                elif hasattr(node.targets[0], "id"):
                     name = node.targets[0].id
+                else:
+                    self.generic_visit(node)
+                    return
 
                 if isinstance(node.value, ast.Str):
                     self.asgmts[cur_klass][cur_method][name] = node.value.s
