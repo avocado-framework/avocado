@@ -265,7 +265,10 @@ class LXCSpawner(Spawner, SpawnerMixin):
 
     def create_task_output_dir(self, runtime_task):
         output_dir_path = self.task_output_dir(runtime_task)
-        runtime_task.task.setup_output_dir(output_dir_path)
+        output_lxc_path = "/tmp/.avocado_task_output_dir"
+
+        os.makedirs(output_dir_path, exist_ok=True)
+        runtime_task.task.setup_output_dir(output_lxc_path)
 
     async def wait_task(self, runtime_task):
         while True:
