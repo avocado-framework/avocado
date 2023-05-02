@@ -102,7 +102,9 @@ class DataDirTest(Base):
         self.assertNotEqual(None, logs_dir)
         unique_id = job_id.create_unique_job_id()
         # Expected job results dir
-        expected_jrd = data_dir.create_job_logs_dir(logs_dir, unique_id)
+        expected_jrd = os.path.realpath(
+            data_dir.create_job_logs_dir(logs_dir, unique_id)
+        )
 
         # Now let's test some cases
         #
@@ -122,7 +124,7 @@ class DataDirTest(Base):
 
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(expected_jrd, logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(expected_jrd, logs_dir)),
             "It should get from the path to the directory",
         )
 
@@ -137,20 +139,20 @@ class DataDirTest(Base):
         os.chdir(logs_dir)
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(results_dirname, logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(results_dirname, logs_dir)),
             "It should get from relative path to the directory",
         )
         os.chdir(pwd)
 
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(id_file_path, logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(id_file_path, logs_dir)),
             "It should get from the path to the id file",
         )
 
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(unique_id, logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(unique_id, logs_dir)),
             "It should get from the id",
         )
 
@@ -164,13 +166,13 @@ class DataDirTest(Base):
 
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(unique_id[:7], logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(unique_id[:7], logs_dir)),
             "It should get from partial id equals to 7 digits",
         )
 
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir(unique_id[:4], logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir(unique_id[:4], logs_dir)),
             "It should get from partial id less than 7 digits",
         )
 
@@ -185,7 +187,7 @@ class DataDirTest(Base):
         os.symlink(expected_jrd, os.path.join(logs_dir, "latest"))
         self.assertEqual(
             expected_jrd,
-            data_dir.get_job_results_dir("latest", logs_dir),
+            os.path.realpath(data_dir.get_job_results_dir("latest", logs_dir)),
             "It should get from the 'latest' id",
         )
 
@@ -199,7 +201,7 @@ class DataDirTest(Base):
         with unittest.mock.patch("avocado.core.data_dir.settings", stg):
             self.assertEqual(
                 expected_jrd,
-                data_dir.get_job_results_dir(unique_id),
+                os.path.realpath(data_dir.get_job_results_dir(unique_id)),
                 "It should use the default base logs directory",
             )
 
