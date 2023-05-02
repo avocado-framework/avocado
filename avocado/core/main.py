@@ -12,6 +12,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+import multiprocessing
 import os
 import sys
 import tempfile
@@ -65,6 +66,9 @@ def handle_exception(*exc_info):
 
 
 def main():
+    if sys.platform == "darwin":
+        multiprocessing.set_start_method("fork")
+
     sys.excepthook = handle_exception
     from avocado.core.app import AvocadoApp  # pylint: disable=E0611
 

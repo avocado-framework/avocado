@@ -1,6 +1,8 @@
+import multiprocessing
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import pkg_resources
@@ -205,6 +207,8 @@ class RunnerApp(BaseRunnerApp):
 
 
 def main():
+    if sys.platform == "darwin":
+        multiprocessing.set_start_method("fork")
     app = RunnerApp(print)
     app.run()
 
