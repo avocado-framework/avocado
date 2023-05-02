@@ -241,6 +241,7 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
                 satisfiable_deps_execution_statuses = None
                 if isinstance(runnable, tuple):
                     runnable, satisfiable_deps_execution_statuses = runnable
+                output_dir_not_exists = runnable.output_dir is None
                 task = cls.from_runnable(
                     runnable,
                     no_digits,
@@ -251,6 +252,17 @@ class PrePostRuntimeTaskMixin(RuntimeTask):
                     job_id,
                     satisfiable_deps_execution_statuses,
                 )
+                if output_dir_not_exists:
+                    runnable.output_dir = os.path.join(
+                        os.path.abspath(os.path.join(base_dir, os.pardir)),
+                        "dependencies",
+                        str(task.task.identifier),
+                    )
+                    task.task.metadata["symlink"] = os.path.join(
+                        test_task.task.runnable.output_dir,
+                        "dependencies",
+                        f'{runnable.kind}-{runnable.kwargs.get("name")}',
+                    )
                 task.is_cacheable = is_cacheable
                 tasks.append(task)
         return tasks

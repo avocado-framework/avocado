@@ -123,6 +123,12 @@ class StartMessageHandler(BaseMessageHandler):
         logfile = os.path.join(task_path, DEFAULT_LOG_FILE)
         os.makedirs(task_path, exist_ok=True)
         params = []
+        symlink_dir = task.metadata.get("symlink")
+        if symlink_dir:
+            os.makedirs(
+                os.path.abspath(os.path.join(symlink_dir, os.pardir)), exist_ok=True
+            )
+            os.symlink(task_path, symlink_dir, target_is_directory=True)
         if task.runnable.variant is not None:
             # convert variant into the list of parameters
             params = [

@@ -42,6 +42,15 @@ with `avocado cache list`.
         If such a change is made to the environment, it's recommended to clear 
         the dependencies cache with `$avocado cache clear`.
 
+Dependency logs
+---------------
+
+Each dependency will create its own log directory where you can find logs related to
+this dependence. Dependencies logs related to one job are stored in
+`{avocado_dir}/job-results/{job}/dependencies` and for each dependence logs the symlink
+to correct test logs directory is created. Therefore, if your test has dependencies,
+you can find dependency logs in `{avocado_dir}/job-results/{job}/test-results/{test_id}/dependencies`
+
 Defining a test dependency
 ---------------------------
 
