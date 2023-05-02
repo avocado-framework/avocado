@@ -41,7 +41,12 @@ class DependencyResolver(PreTest):
             uri = dependency_copy.pop("uri", None)
             args = dependency_copy.pop("args", ())
             dependency_runnable = Runnable(
-                kind, uri, *args, config=test_runnable.config, **dependency_copy
+                kind,
+                uri,
+                *args,
+                config=test_runnable.config,
+                output_dir=test_runnable.output_dir,
+                **dependency_copy
             )
             dependency_runnables.append(dependency_runnable)
         return dependency_runnables

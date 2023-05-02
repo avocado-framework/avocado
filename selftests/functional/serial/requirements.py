@@ -137,6 +137,12 @@ class BasicTest(Test):
                 "bash",
                 result.stdout_text,
             )
+            test_results_path = os.path.join(self.workdir, "latest", "test-results")
+            self.assertEqual(
+                len(os.listdir(test_results_path)),
+                2,
+                "DependencyResolver created unwanted result directories.",
+            )
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)
     def test_single_fail(self):
