@@ -93,6 +93,7 @@ class PackageRunner(BaseRunner):
                 "stderr": ("Package manager not supported or not available."),
             }
             queue.put(output)
+            return
 
         if cmd == "install":
             result, stdout, stderr = self._install(software_manager, cmd, package)
