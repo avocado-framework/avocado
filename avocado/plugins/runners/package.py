@@ -90,7 +90,7 @@ class PackageRunner(BaseRunner):
             output = {
                 "result": "error",
                 "stdout": "",
-                "stderr": ("Package manager not supported or not" " available."),
+                "stderr": ("Package manager not supported or not available."),
             }
             queue.put(output)
 
