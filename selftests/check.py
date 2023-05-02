@@ -650,6 +650,7 @@ def create_suites(args):  # pylint: disable=W0621
         "run.dict_variants": [
             {"spawner": "process"},
             {"spawner": "podman"},
+            {"spawner": "lxc"},
         ],
     }
 
