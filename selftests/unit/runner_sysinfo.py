@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 
 from avocado.core.nrunner.runnable import Runnable
@@ -6,6 +7,10 @@ from avocado.core.settings import settings
 from avocado.plugins.runners.sysinfo import SysinfoRunner
 
 
+@unittest.skipIf(
+    sys.platform.startswith("darwin"),
+    "Tests attempt to collect files not available under darwin",
+)
 class BasicTests(unittest.TestCase):
     """Basic unit tests for the RequirementPackageRunner class"""
 
