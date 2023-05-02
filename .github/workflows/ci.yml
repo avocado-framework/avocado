@@ -141,7 +141,7 @@ jobs:
       - name: List test
         run: python -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
       - name: Run a subset of avocado's selftests
-        run: PATH=~/Library/Python/3.11/bin:$PATH ./selftests/check.py --select=nrunner-interface,job-api,jobs,optional-plugins
+        run: PATH=~/Library/Python/3.11/bin:$PATH ./selftests/check.py --skip=static-checks
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
