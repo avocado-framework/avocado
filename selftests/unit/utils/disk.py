@@ -51,7 +51,14 @@ class Disk(unittest.TestCase):
         with unittest.mock.patch(
             "avocado.utils.disk.process.run", return_value=mock_result
         ):
-            self.assertEqual(disk.get_disks(), ["/dev/vda"])
+            expected_diskname = [
+                "/dev/vda",
+                "/dev/vda1",
+                "/dev/vda2",
+                "/dev/vda3",
+                "/dev/vda4",
+            ]
+            self.assertEqual(sorted(disk.get_disks()), sorted(expected_diskname))
 
     def test_get_filesystems(self):
         expected_fs = ["dax", "bpf", "pipefs", "hugetlbfs", "devpts", "ext3"]
