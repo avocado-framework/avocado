@@ -766,7 +766,7 @@ class NetworkInterface:
             return False
         for octect in netmask_list:
             num = int(octect)
-            if 0 <= num <= 255:
+            if not 0 <= num <= 255:
                 return False
         octet_bin = [format(int(i), "08b") for i in netmask_list]
         binary_netmask = ("").join(octet_bin)
