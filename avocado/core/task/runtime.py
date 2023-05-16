@@ -120,7 +120,7 @@ class RuntimeTask(RuntimeTaskMixin):
         #: :class:`avocado.core.task.runtime.RuntimeTaskStatus`
         self.status = None
         #: Information about task result when it is finished
-        self.result = None
+        self._result = None
         #: Timeout limit for the completion of the task execution
         self.execution_timeout = None
         #: A handle that may be set by a spawner, and that may be
@@ -131,9 +131,11 @@ class RuntimeTask(RuntimeTaskMixin):
         #: The result of the spawning of a Task
         self.spawning_result = None
         self.dependencies = []
-        self.satisfiable_deps_execution_statuses = (
-            satisfiable_deps_execution_statuses or ["pass"]
-        )
+        self._satisfiable_deps_execution_statuses = ["pass"]
+        if satisfiable_deps_execution_statuses:
+            self._satisfiable_deps_execution_statuses = [
+                status.lower() for status in satisfiable_deps_execution_statuses
+            ]
         #: Flag to detect if the task should be save to cache
         self.is_cacheable = False
 
@@ -153,6 +155,18 @@ class RuntimeTask(RuntimeTaskMixin):
         if isinstance(other, RuntimeTask):
             return hash(self) == hash(other)
         return False
+
+    @property
+    def result(self):
+        return self._result
+
+    @property
+    def satisfiable_deps_execution_statuses(self):
+        return self._satisfiable_deps_execution_statuses
+
+    @result.setter
+    def result(self, result):
+        self._result = result.lower()
 
     def are_dependencies_finished(self):
         for dependency in self.dependencies:
