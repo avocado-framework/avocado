@@ -461,9 +461,9 @@ class UnionTechProbe(Probe):
     """
 
     CHECK_FILE = "/etc/os-version"
-    CHECK_FILE_CONTAINS = "uos release"
+    CHECK_FILE_CONTAINS = "UnionTech OS"
     CHECK_FILE_DISTRO_NAME = "uos"
-    CHECK_VERSION_REGEX = re.compile(r"uos release (\d+)\.(\d+).*")
+    CHECK_VERSION_REGEX = re.compile(r"MinorVersion=(\d+)")
 
 
 #: the complete list of probes that have been registered
