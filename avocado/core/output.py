@@ -428,19 +428,14 @@ def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
-
-    def save_handler(logger_name, handler, configuration):
-        if logger_name not in configuration:
-            configuration[logger_name] = []
-        configuration[logger_name].append(handler)
-
     # Delete last configuration
     if len(CONFIG) != 0:
         last_configuration = CONFIG[-1]
         for logger_name in last_configuration:
             disable_log_handler(logger_name)
 
-    configuration = {}
+    CONFIG.append({})
+
     # Reconfigure stream loggers
     enabled = args.get("core.show")
     logging.getLogger("avocado.test").propagate = False
@@ -466,37 +461,36 @@ def reconfigure(args):
         STD_OUTPUT.enable_stderr()
     STD_OUTPUT.print_records()
     if "app" in enabled:
-        app_handler = ProgressStreamHandler()
-        app_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_handler.addFilter(FilterInfoAndLess())
-        app_handler.stream = STD_OUTPUT.stdout
-        LOG_UI.addHandler(app_handler)
-        LOG_UI.propagate = False
-        LOG_UI.level = logging.DEBUG
-        save_handler(LOG_UI.name, app_handler, configuration)
+        add_log_handler(
+            LOG_UI,
+            ProgressStreamHandler,
+            STD_OUTPUT.stdout,
+            logging.DEBUG,
+            "%(message)s",
+            FilterInfoAndLess(),
+        )
     else:
         disable_log_handler(LOG_UI)
-    app_err_handler = ProgressStreamHandler()
-    app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-    app_err_handler.addFilter(FilterWarnAndMore())
-    app_err_handler.stream = STD_OUTPUT.stderr
-    LOG_UI.addHandler(app_err_handler)
-    LOG_UI.propagate = False
-    save_handler(LOG_UI.name, app_err_handler, configuration)
+    add_log_handler(
+        LOG_UI,
+        ProgressStreamHandler,
+        STD_OUTPUT.stderr,
+        logging.DEBUG,
+        "%(message)s",
+        FilterWarnAndMore(),
+    )
     if not os.environ.get("AVOCADO_LOG_EARLY"):
         LOG_JOB.getChild("stdout").propagate = False
         LOG_JOB.getChild("stderr").propagate = False
-        if "early" in enabled:
-            handler = add_log_handler(
-                "avocado", logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
-            )
-            save_handler("avocado", handler, configuration)
-            handler = add_log_handler(
-                LOG_JOB, logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
-            )
-            save_handler(LOG_JOB.name, handler, configuration)
-        else:
-            disable_log_handler("avocado")
+    if "early" in enabled:
+        add_log_handler(
+            "avocado", logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
+        )
+        add_log_handler(
+            LOG_JOB, logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
+        )
+    else:
+        disable_log_handler("avocado")
 
     # Add custom loggers
     for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
@@ -511,10 +505,7 @@ def reconfigure(args):
                 else logging.getLevelName(stream_level[1].upper())
             )
         try:
-            handler = add_log_handler(
-                name, logging.StreamHandler, STD_OUTPUT.stdout, level
-            )
-            save_handler(name, handler, configuration)
+            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout, level)
         except ValueError as details:
             LOG_UI.error(
                 "Failed to set logger for --show %s:%s: %s.", name, level, details
@@ -528,8 +519,6 @@ def reconfigure(args):
     # Log early_messages
     for record in MemStreamHandler.log:
         logging.getLogger(record.name).handle(record)
-
-    CONFIG.append(configuration)
 
 
 class FilterWarnAndMore(logging.Filter):
@@ -635,8 +624,9 @@ def add_log_handler(
     logger,
     klass=logging.StreamHandler,
     stream=sys.stdout,
-    level=logging.INFO,
+    level=logging.DEBUG,
     fmt="%(name)s: %(message)s",
+    handler_filter=None,
 ):
     """
     Add handler to a logger.
@@ -648,16 +638,29 @@ def add_log_handler(
                    (defaults to ``sys.stdout``)
     :param level: Log level (defaults to `INFO``)
     :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
+    :param handler_filter: Logging filter class based on logging.Filter
     """
+
+    def save_handler(logger_name, handler):
+        if not CONFIG:
+            CONFIG.append({})
+        configuration = CONFIG[-1]
+        if logger_name not in configuration:
+            configuration[logger_name] = []
+        configuration[logger_name].append(handler)
+
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     handler = klass(stream)
     handler.setLevel(level)
     if isinstance(fmt, str):
         fmt = logging.Formatter(fmt=fmt)
+    if handler_filter:
+        handler.addFilter(handler_filter)
     handler.setFormatter(fmt)
     logger.addHandler(handler)
     logger.propagate = False
+    save_handler(logger.name, handler)
     return handler
 
 

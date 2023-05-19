@@ -142,7 +142,6 @@ class Job:
             self.config.update(config)
         self.log = LOG_UI
         self.loglevel = self.config.get("job.output.loglevel")
-        self.__logging_handlers = {}
         if self.config.get("run.dry_run.enabled"):  # Modify config for dry-run
             unique_id = self.config.get("run.unique_job_id")
             if unique_id is None:
@@ -210,13 +209,13 @@ class Job:
     def __start_job_logging(self):
         # Enable test logger
         fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
-        test_handler = output.add_log_handler(
+        output.add_log_handler(
             LOG_JOB, logging.FileHandler, self.logfile, self.loglevel, fmt
         )
-        main_logger = logging.getLogger("avocado")
-        main_logger.addHandler(test_handler)
-        main_logger.setLevel(self.loglevel)
-        self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
+        logging.getLogger("avocado").setLevel(self.loglevel)
+        output.add_log_handler(
+            "avocado", logging.FileHandler, self.logfile, self.loglevel, fmt
+        )
 
         # Enable console loggers
         enabled_logs = self.config.get("core.show")
@@ -225,22 +224,25 @@ class Job:
             # Enable std{out,err} but redirect both to stdout
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
-            test_handler = output.add_log_handler(
+            output.add_log_handler(
                 LOG_JOB,
                 logging.StreamHandler,
                 STD_OUTPUT.stdout,
                 logging.DEBUG,
                 fmt="%(message)s",
             )
-            main_logger.addHandler(test_handler)
-            self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
+            output.add_log_handler(
+                "avocado",
+                logging.StreamHandler,
+                STD_OUTPUT.stdout,
+                logging.DEBUG,
+                fmt="%(message)s",
+            )
 
     def __stop_job_logging(self):
         if self._stdout_stderr:
             sys.stdout, sys.stderr = self._stdout_stderr
-        for handler, loggers in self.__logging_handlers.items():
-            for logger in loggers:
-                logging.getLogger(logger).removeHandler(handler)
+        output.del_last_configuration()
 
     def _log_avocado_config(self):
         LOG_JOB.info("Avocado config:")
@@ -477,7 +479,6 @@ class Job:
         """
         Cleanup the temporary job handlers (dirs, global setting, ...)
         """
-        output.del_last_configuration()
         self.__stop_job_logging()
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
