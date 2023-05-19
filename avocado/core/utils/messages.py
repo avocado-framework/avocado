@@ -1,3 +1,4 @@
+import gc
 import logging
 import sys
 import time
@@ -207,7 +208,9 @@ class RunnerLogHandler(logging.Handler):
             kwargs.update(**self.kwargs)
         else:
             kwargs = self.kwargs
+        gc.disable()
         self.queue.put(self.message.get(msg, **kwargs))
+        gc.enable()
 
 
 class StreamToQueue:
@@ -224,7 +227,9 @@ class StreamToQueue:
         self.message = _supported_types[message_type]
 
     def write(self, buf):
+        gc.disable()
         self.queue.put(self.message.get(buf))
+        gc.enable()
 
     def flush(self):
         pass
