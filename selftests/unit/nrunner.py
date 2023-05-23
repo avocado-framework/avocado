@@ -470,6 +470,10 @@ class RunnerCommandSelection(unittest.TestCase):
     def setUp(self):
         self.kind = "mykind"
 
+    @unittest.skipIf(
+        sys.platform.startswith("darwin"),
+        "echo implementation under darwin lacks the -n feature",
+    )
     def test_is_task_kind_supported(self):
         cmd = [
             "sh",

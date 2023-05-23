@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import sys
 import tempfile
 import time
 import traceback
@@ -190,6 +191,8 @@ class RunnerApp(BaseRunnerApp):
 
 
 def main():
+    if sys.platform == "darwin":
+        multiprocessing.set_start_method("fork")
     app = RunnerApp(print)
     app.run()
 

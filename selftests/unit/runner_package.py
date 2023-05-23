@@ -3,6 +3,9 @@ from unittest.mock import patch
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.plugins.runners.package import PackageRunner
+from avocado.utils.software_manager.manager import SoftwareManager
+
+SOFTWARE_MANAGER_CAPABLE = SoftwareManager().is_capable()
 
 
 class BasicTests(unittest.TestCase):
@@ -39,6 +42,9 @@ class BasicTests(unittest.TestCase):
         self.assertIn(stderr, messages[-2]["log"])
 
 
+@unittest.skipUnless(
+    SOFTWARE_MANAGER_CAPABLE, "Not capable of a SoftwareManager backend"
+)
 class ActionTests(unittest.TestCase):
     """Unit tests for the actions on PackageRunner class"""
 

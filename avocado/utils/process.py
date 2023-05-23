@@ -102,7 +102,10 @@ def get_capabilities(pid=None):
     """
     if pid is None:
         pid = os.getpid()
-    result = run(f"getpcaps {int(pid)}", ignore_status=True)
+    try:
+        result = run(f"getpcaps {int(pid)}", ignore_status=True)
+    except FileNotFoundError:
+        return []
     if result.exit_status != 0:
         return []
     if result.stderr_text.startswith("Capabilities "):

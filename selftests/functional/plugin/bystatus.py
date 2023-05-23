@@ -11,7 +11,7 @@ class ByStatusTest(TestCaseTmpDir):
             f"{AVOCADO} run "
             f"--job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo --json - "
-            f"/bin/true /bin/false",
+            f"examples/tests/true examples/tests/false",
             ignore_status=True,
         )
         res = json.loads(result.stdout_text)

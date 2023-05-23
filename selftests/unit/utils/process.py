@@ -707,6 +707,10 @@ class GetCommandOutputPattern(unittest.TestCase):
         self.assertEqual(res, ["foo"])
 
     @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    @unittest.skipIf(
+        sys.platform.startswith("darwin"),
+        "Darwin implementation of echo lacks -e behavior",
+    )
     def test_matches_multiple(self):
         res = process.get_command_output_matching("echo -e 'foo\nfoo\n'", "foo")
         self.assertEqual(res, ["foo", "foo"])

@@ -495,14 +495,20 @@ class _MemInfoItem:
 class MemInfo:
     """
     Representation of /proc/meminfo
+
+    There will not be memory information on systems that do not have a
+    /proc/meminfo file accessible.
     """
 
     def __init__(self):
-        with open("/proc/meminfo", "r") as meminfo_file:  # pylint: disable=W1514
-            for line in meminfo_file.readlines():
-                name = line.strip().split()[0].strip(":")
-                safe_name = name.replace("(", "_").replace(")", "_")
-                setattr(self, safe_name, _MemInfoItem(name))
+        try:
+            with open("/proc/meminfo", "r") as meminfo_file:  # pylint: disable=W1514
+                for line in meminfo_file.readlines():
+                    name = line.strip().split()[0].strip(":")
+                    safe_name = name.replace("(", "_").replace(")", "_")
+                    setattr(self, safe_name, _MemInfoItem(name))
+        except FileNotFoundError:
+            pass
 
     def __iter__(self):
         for item in self.__dict__.items():
