@@ -102,10 +102,7 @@ def get_capabilities(pid=None):
     """
     if pid is None:
         pid = os.getpid()
-    try:
-        result = run(f"getpcaps {int(pid)}", ignore_status=True)
-    except FileNotFoundError:
-        return []
+    result = run(f"getpcaps {int(pid)}", ignore_status=True)
     if result.exit_status != 0:
         return []
     if result.stderr_text.startswith("Capabilities "):
@@ -1303,3 +1300,24 @@ def get_command_output_matching(command, pattern):
     :rtype: list of str
     """
     return [line for line in run(command).stdout_text.splitlines() if pattern in line]
+
+
+def get_ping_process_pid(interface="", peer_ip="", ping_count=""):
+    """
+    Funtion to get the process ID of ping flood.
+
+    :returns : Process PID number that initated by ping flood.
+    :rtype : int
+    """
+    cmd = (
+        f"ps -ef | grep '[p]ing -I {interface} {peer_ip} -c {ping_count} -f' "
+        f"| awk '{{print $2}}' | head -1"
+    )
+    process_pid = system_output(cmd, shell=True, ignore_status=True, sudo=True).decode(
+        "utf-8"
+    )
+    if not process_pid:
+        LOG.debug(f"No process PID avaialable for ping flood,Please check logs")
+        return False
+    else:
+        return process_pid
