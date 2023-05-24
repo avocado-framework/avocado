@@ -11,7 +11,7 @@ jobs:
       - centos-stream-9
       - epel-8
       - epel-9
-      - fedora-36-aarch64
-      - fedora-36-ppc64le
-      - fedora-36-s390x
+      - fedora-38-aarch64
+      - fedora-38-ppc64le
+      - fedora-38-s390x
       enable_net: False
