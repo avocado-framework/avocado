@@ -86,6 +86,40 @@ class PassTest(Test):
         pass
 """
 
+AVOCADO_TEST_TAGS_INHERITANCE = """import avocado
+
+
+class Base(avocado.Test):
+    '''
+    :avocado: tags=foo
+    '''
+    def test_one(self):
+        pass
+
+    def test_two(self):
+        '''
+        :avocado: tags=boo
+        '''
+        pass
+
+
+class Derived(Base):
+    '''
+    :avocado: tags=moo
+    '''
+
+    def test_two(self):
+        pass
+
+    def test_three(self):
+        pass
+
+class DerivedTwo(Derived):
+    '''
+    :avocado: tags=noo
+    '''
+"""
+
 
 class TagFilter(unittest.TestCase):
     def setUp(self):
@@ -347,6 +381,52 @@ class TagFilter2(unittest.TestCase):
             tags.filter_tags_on_runnables(self.result, [], True, False),
             self.result[0].resolutions,
         )
+
+
+class TagInheritance(unittest.TestCase):
+    def setUp(self):
+        with script.TemporaryScript(
+            "passtest.py",
+            AVOCADO_TEST_TAGS_INHERITANCE,
+            "avocado_resolver_tag_unittest",
+            DEFAULT_NON_EXEC_MODE,
+        ) as test_script:
+            self.result = resolver.resolve([test_script.path])
+            self.input_file_path = test_script.path
+
+    def test_filter_tags_inheritance(self):
+        """
+        Checks if tags from parent class are respected.
+        """
+        foo_tag = tags.filter_tags_on_runnables(self.result, ["foo"], False, False)
+        self.assertEqual(len(foo_tag), 8)
+        self.assertEqual(foo_tag[0].uri, f"{self.input_file_path}:Base.test_one")
+        self.assertEqual(foo_tag[1].uri, f"{self.input_file_path}:Base.test_two")
+        self.assertEqual(foo_tag[2].uri, f"{self.input_file_path}:Derived.test_two")
+        self.assertEqual(foo_tag[3].uri, f"{self.input_file_path}:Derived.test_three")
+        self.assertEqual(foo_tag[4].uri, f"{self.input_file_path}:Derived.test_one")
+        self.assertEqual(foo_tag[5].uri, f"{self.input_file_path}:DerivedTwo.test_two")
+        self.assertEqual(
+            foo_tag[6].uri, f"{self.input_file_path}:DerivedTwo.test_three"
+        )
+        self.assertEqual(foo_tag[7].uri, f"{self.input_file_path}:DerivedTwo.test_one")
+
+        moo_tag = tags.filter_tags_on_runnables(self.result, ["moo"], False, False)
+        self.assertEqual(len(moo_tag), 6)
+        self.assertEqual(moo_tag[0].uri, f"{self.input_file_path}:Derived.test_two")
+        self.assertEqual(moo_tag[1].uri, f"{self.input_file_path}:Derived.test_three")
+        self.assertEqual(moo_tag[2].uri, f"{self.input_file_path}:Derived.test_one")
+        self.assertEqual(moo_tag[3].uri, f"{self.input_file_path}:DerivedTwo.test_two")
+        self.assertEqual(
+            moo_tag[4].uri, f"{self.input_file_path}:DerivedTwo.test_three"
+        )
+        self.assertEqual(moo_tag[5].uri, f"{self.input_file_path}:DerivedTwo.test_one")
+
+        boo_tag = tags.filter_tags_on_runnables(self.result, ["boo"], False, False)
+        self.assertEqual(len(boo_tag), 3)
+        self.assertEqual(boo_tag[0].uri, f"{self.input_file_path}:Base.test_two")
+        self.assertEqual(boo_tag[1].uri, f"{self.input_file_path}:Derived.test_two")
+        self.assertEqual(boo_tag[2].uri, f"{self.input_file_path}:DerivedTwo.test_two")
 
 
 class ParseFilterByTags(unittest.TestCase):

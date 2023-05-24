@@ -262,11 +262,34 @@ class FindClassAndMethods(UnlimitedDiff):
             "Child": [
                 (
                     "test_maybe_replaced_by_child",
-                    {"child-tag": None, "child.tag": None},
+                    {
+                        "child-tag": None,
+                        "child.tag": None,
+                        "base-tag": None,
+                        "base.tag": None,
+                    },
                     [],
                 ),
-                ("test_child", {"child-tag": None, "child.tag": None}, []),
-                ("test_basic", {"base-tag": None, "base.tag": None}, []),
+                (
+                    "test_child",
+                    {
+                        "child-tag": None,
+                        "child.tag": None,
+                        "base-tag": None,
+                        "base.tag": None,
+                    },
+                    [],
+                ),
+                (
+                    "test_basic",
+                    {
+                        "base-tag": None,
+                        "base.tag": None,
+                        "child-tag": None,
+                        "child.tag": None,
+                    },
+                    [],
+                ),
             ],
         }
         self.assertEqual(expected, tests)
