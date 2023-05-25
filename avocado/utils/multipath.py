@@ -213,6 +213,32 @@ def get_path_status(disk_path):
                     return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
 
 
+def get_mpath_paths_status(wwid):
+    """
+    Return the status of all paths of mpath device.
+
+    :param wwid: wwid or user friedly name of mpath.
+                 Example: mpatha or 360050768108001b3a800000000000296
+    :return: Dict in the format of {path: (dm status, dev status, checker status)}
+    """
+    mpath_op = get_multipath_details()
+    if not mpath_op:
+        return
+    wwid_paths = {}
+    for maps in mpath_op["maps"]:
+        if maps["name"] == wwid or maps["uuid"] == wwid:
+            for path_groups in maps["path_groups"]:
+                for paths in path_groups["paths"]:
+                    wwid_paths[paths["dev"]] = (
+                        paths["dm_st"],
+                        paths["dev_st"],
+                        paths["chk_st"],
+                    )
+    if len(wwid_paths) != 0:
+        return wwid_paths
+    return
+
+
 def fail_path(path):
     """
     Fail the individual paths.
