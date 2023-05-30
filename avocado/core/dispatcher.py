@@ -20,7 +20,36 @@ dispatcher that these depend upon:
 :class:`avocado.core.settings_dispatcher.SettingsDispatcher`
 """
 
+import inspect
+import sys
+
 from avocado.core.enabled_extension_manager import EnabledExtensionManager
+
+
+def get_dispatchers(module_name):
+    """Returns the classes that implement plugin dispatching
+
+    These should inherit from the *ExtensionManager base classes
+    and contain suitable descriptions.
+
+    The produced values are tuples that contain the dispatcher class
+    and two booleans that indicates wether the configuration and job
+    is needed to instantiate the class.
+    """
+    module = sys.modules[module_name]
+    for _, klass in inspect.getmembers(module):
+        if (
+            inspect.isclass(klass)
+            and issubclass(klass, EnabledExtensionManager)
+            and hasattr(klass, "PLUGIN_DESCRIPTION")
+        ):
+            params = list(inspect.signature(klass.__init__).parameters)
+            if len(params) == 1:
+                yield (klass, False, False)
+            elif len(params) == 2 and params[1] == "config":
+                yield (klass, True, False)
+            elif len(params) == 3 and params[1] == "config" and params[2] == "job":
+                yield (klass, True, True)
 
 
 class CLIDispatcher(EnabledExtensionManager):
@@ -31,6 +60,8 @@ class CLIDispatcher(EnabledExtensionManager):
     Automatically adds all the extension with entry points registered under
     'avocado.plugins.cli'
     """
+
+    PLUGIN_DESCRIPTION = "Plugins that add new options to commands (cli)"
 
     def __init__(self):
         super().__init__("avocado.plugins.cli")
@@ -45,6 +76,8 @@ class CLICmdDispatcher(EnabledExtensionManager):
     'avocado.plugins.cli.cmd'
     """
 
+    PLUGIN_DESCRIPTION = "Plugins that add new commands (cli.cmd)"
+
     def __init__(self):
         super().__init__("avocado.plugins.cli.cmd")
 
@@ -57,6 +90,10 @@ class JobPrePostDispatcher(EnabledExtensionManager):
     Automatically adds all the extension with entry points registered under
     'avocado.plugins.job.prepost'
     """
+
+    PLUGIN_DESCRIPTION = (
+        "Plugins that run before/after the execution of jobs (job.prepost)"
+    )
 
     def __init__(self):
         super().__init__("avocado.plugins.job.prepost")
@@ -71,6 +108,8 @@ class TestPreDispatcher(EnabledExtensionManager):
     'avocado.plugins.test.pre'
     """
 
+    PLUGIN_DESCRIPTION = "Plugins that run before the execution of each test (test.pre)"
+
     def __init__(self):
         super().__init__("avocado.plugins.test.pre")
 
@@ -84,16 +123,28 @@ class TestPostDispatcher(EnabledExtensionManager):
     'avocado.plugins.test.post'
     """
 
+    PLUGIN_DESCRIPTION = "Plugins that run after the execution of each test (test.post)"
+
     def __init__(self):
         super().__init__("avocado.plugins.test.post")
 
 
 class ResultDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = (
+        "Plugins that generate job result in different formats (result)"
+    )
+
     def __init__(self):
         super().__init__("avocado.plugins.result")
 
 
 class ResultEventsDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = (
+        "Plugins that generate job result based on job/test events (result_events)"
+    )
+
     def __init__(self, config):
         super().__init__(
             "avocado.plugins.result_events", invoke_kwds={"config": config}
@@ -101,6 +152,9 @@ class ResultEventsDispatcher(EnabledExtensionManager):
 
 
 class VarianterDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = "Plugins that generate test variants (varianter)"
+
     def __init__(self):
         super().__init__("avocado.plugins.varianter")
 
@@ -138,16 +192,27 @@ class VarianterDispatcher(EnabledExtensionManager):
 
 
 class SuiteRunnerDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = "Plugins that run test suites on a job (suite.runner)"
+
     def __init__(self):
         super().__init__("avocado.plugins.suite.runner")
 
 
 class InitDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = "Plugins that always need to be initialized (init)"
+
     def __init__(self):
         super().__init__("avocado.plugins.init")
 
 
 class SpawnerDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = (
+        "Plugins that spawn tasks and know about their status (spawner)"
+    )
+
     def __init__(self, config=None, job=None):
         super().__init__(
             "avocado.plugins.spawner", invoke_kwds={"job": job, "config": config}
@@ -155,10 +220,18 @@ class SpawnerDispatcher(EnabledExtensionManager):
 
 
 class RunnableRunnerDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = (
+        "Plugins that run runnables (under a task and spawner) (runnable.runner)"
+    )
+
     def __init__(self):
         super().__init__("avocado.plugins.runnable.runner")
 
 
 class CacheDispatcher(EnabledExtensionManager):
+
+    PLUGIN_DESCRIPTION = "Plugins that manipulates with avocado cache (cache)"
+
     def __init__(self):
         super().__init__("avocado.plugins.cache")

@@ -14,10 +14,11 @@
 """
 Plugins information plugin
 """
+import itertools
+
 from avocado.core import dispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.resolver import Resolver
 from avocado.core.settings import settings
 from avocado.utils import astring
 
@@ -47,62 +48,18 @@ class Plugins(CLICmd):
         )
 
     def run(self, config):
-        plugin_types = [
-            (
-                dispatcher.InitDispatcher(),
-                "Plugins that always need to be initialized (init): ",
-            ),
-            (dispatcher.CLICmdDispatcher(), "Plugins that add new commands (cli.cmd):"),
-            (
-                dispatcher.CLIDispatcher(),
-                "Plugins that add new options to commands (cli):",
-            ),
-            (
-                dispatcher.JobPrePostDispatcher(),
-                "Plugins that run before/after the execution of jobs (job.prepost):",
-            ),
-            (
-                dispatcher.TestPreDispatcher(),
-                "Plugins that run before the execution of each test (test.pre):",
-            ),
-            (
-                dispatcher.TestPostDispatcher(),
-                "Plugins that run after the execution of each test (test.post):",
-            ),
-            (
-                dispatcher.ResultDispatcher(),
-                "Plugins that generate job result in different formats (result):",
-            ),
-            (
-                dispatcher.ResultEventsDispatcher(config),
-                (
-                    "Plugins that generate job result based on job/test events "
-                    "(result_events):"
-                ),
-            ),
-            (
-                dispatcher.VarianterDispatcher(),
-                "Plugins that generate test variants (varianter): ",
-            ),
-            (Resolver(), "Plugins that resolve test references (resolver): "),
-            (
-                dispatcher.SuiteRunnerDispatcher(),
-                "Plugins that run test suites on a job (suite.runner): ",
-            ),
-            (
-                dispatcher.SpawnerDispatcher(),
-                "Plugins that spawn tasks and know about their status (spawner): ",
-            ),
-            (
-                dispatcher.RunnableRunnerDispatcher(),
-                "Plugins that run runnables (under a task and spawner) (runnable.runner): ",
-            ),
-            (
-                dispatcher.CacheDispatcher(),
-                "Plugins that manipulates with avocado cache: ",
-            ),
-        ]
-        for plugins_active, msg in plugin_types:
+        for plugin_dispatcher, config_needed, job_needed in itertools.chain(
+            dispatcher.get_dispatchers("avocado.core.dispatcher"),
+            dispatcher.get_dispatchers("avocado.core.resolver"),
+        ):
+            if not config_needed:
+                plugins_active = plugin_dispatcher()
+            elif config_needed and not job_needed:
+                plugins_active = plugin_dispatcher(config)
+            else:
+                plugins_active = plugin_dispatcher(config, None)
+            msg = f"{plugins_active.PLUGIN_DESCRIPTION}:"
+
             LOG_UI.info(msg)
             plugin_matrix = []
             if config.get("plugins.ordered_list"):
