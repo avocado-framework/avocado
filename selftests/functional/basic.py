@@ -563,7 +563,11 @@ class RunnerOperationTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
         self.assertEqual(result.stdout, b"")
-        self.assertEqual(result.stderr, b"Could not resolve references: sbrubles\n")
+        self.assertEqual(
+            result.stderr,
+            b"No tests found for given test references: sbrubles\n"
+            b"Try 'avocado -V list sbrubles' for details\n",
+        )
 
     def test_invalid_unique_id(self):
         cmd_line = (
