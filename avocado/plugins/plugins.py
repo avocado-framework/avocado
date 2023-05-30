@@ -117,4 +117,4 @@ class Plugins(CLICmd):
             else:
                 for line in astring.iter_tabular_output(plugin_matrix):
                     LOG_UI.debug(line)
-                LOG_UI.debug("")
+            LOG_UI.debug("")
