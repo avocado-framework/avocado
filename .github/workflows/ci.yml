@@ -26,6 +26,8 @@ jobs:
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Run static checks
+        env:
+          COMMIT_COUNT: ${{ github.event.pull_request.commits  }}
         run: python3 setup.py test --select=static-checks
       - name: Archive failed tests logs
         if: failure()
