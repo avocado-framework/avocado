@@ -3,10 +3,10 @@ Optional plugins
 ================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    optional/golang
-   optional/results
+   optional/results/index
    optional/robot
    optional/varianter_cit
    optional/varianter_pict
