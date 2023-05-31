@@ -13,6 +13,8 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
+import os
+
 from setuptools import setup
 
 # Handle systems with setuptools < 40
@@ -23,12 +25,23 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=["avocado_golang"])
 
-VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
+BASE_PATH = os.path.dirname(__file__)
+with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
+    VERSION = version_file.read().strip()
+
+
+def get_long_description():
+    with open(os.path.join(BASE_PATH, "README.rst"), "rt", encoding="utf-8") as readme:
+        readme_contents = readme.read()
+    return readme_contents
+
 
 setup(
     name="avocado-framework-plugin-golang",
-    description="Avocado Plugin for Execution of Golang tests",
     version=VERSION,
+    description="Avocado Plugin for Execution of Golang tests",
+    long_description=get_long_description(),
+    long_description_content_type="text/x-rst",
     author="Avocado Developers",
     author_email="avocado-devel@redhat.com",
     url="http://avocado-framework.github.io/",
