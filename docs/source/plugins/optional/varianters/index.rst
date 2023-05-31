@@ -9,3 +9,4 @@ that will allow the same test to cover different scenarios.
    :maxdepth: 2
 
    cit
+   pict
