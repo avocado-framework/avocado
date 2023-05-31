@@ -10,3 +10,4 @@ that will allow the same test to cover different scenarios.
 
    cit
    pict
+   yaml_to_mux
