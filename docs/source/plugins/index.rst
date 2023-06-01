@@ -1,6 +1,25 @@
 ================
+Standard plugins
+================
+
+Avocado is highly modular, and a lot of its functionality is
+implemented as "plugins".  On this section, you'll find documentation
+for plugins that come standard with Avocado.
+
+Please note that this is not a fully comprehensive list.
+
+.. tip:: Running ``avocado plugins`` will show the full list of
+         plugins installed and available on your system.
+
+================
 Optional plugins
 ================
+
+The plugins listed here are not automatically available on every
+Avocado installation.  Depending on the installation method, it may
+require additional steps or packages to be installed.
+
+Some of these plugins may have extra dependencies of their own.
 
 .. toctree::
    :maxdepth: 2
