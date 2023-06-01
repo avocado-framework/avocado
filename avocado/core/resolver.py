@@ -276,7 +276,10 @@ def resolve(references, hint=None, ignore_missing=True, config=None):
         # resolution process
         missing = [_ for _ in missing if not os.path.isdir(_)]
         if missing:
-            msg = f"Could not resolve references: {','.join(missing)}"
+            msg = (
+                f"No tests found for given test references: {', '.join(missing)}\n"
+                f"Try 'avocado -V list {' '.join(missing)}' for details"
+            )
             raise JobTestSuiteReferenceResolutionError(msg)
 
     return resolutions
