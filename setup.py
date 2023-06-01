@@ -319,6 +319,7 @@ if __name__ == "__main__":
         version=VERSION,
         description="Avocado Test Framework",
         long_description=get_long_description(),
+        long_description_content_type="text/x-rst",
         author="Avocado Developers",
         author_email="avocado-devel@redhat.com",
         url="https://avocado-framework.github.io/",
