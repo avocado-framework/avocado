@@ -11,6 +11,12 @@ Please note that this is not a fully comprehensive list.
 .. tip:: Running ``avocado plugins`` will show the full list of
          plugins installed and available on your system.
 
+
+.. toctree::
+   :maxdepth: 3
+
+   standard/teststmpdir
+
 ================
 Optional plugins
 ================

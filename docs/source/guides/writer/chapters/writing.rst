@@ -1303,9 +1303,9 @@ tests:
 | AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu_/1-Env.test                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_cp07qzd9                                                                           |
-|                             | `teststmpdir` plugin. The directory   |                                                                                                     |
-|                             | is persistent throughout the tests    |                                                                                                     |
-|                             | in the same Job                       |                                                                                                     |
+|                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
+|                             | directory is persistent throughout the|                                                                                                     |
+|                             | tests in the same Job                 |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_LOGDIR         | Log directory for the test            | /var/tmp/.avocado-task_5t_srpn/test-results/1-Env.test                                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
@@ -1329,9 +1329,9 @@ tests:
 | AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-task-_4qquwyq/workdir                                                             |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
-|                             | `teststmpdir` plugin. The directory   |                                                                                                     |
-|                             | is persistent throughout the tests    |                                                                                                     |
-|                             | in the same Job                       |                                                                                                     |
+|                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
+|                             | directory is persistent throughout the|                                                                                                     |
+|                             | tests in the same Job                 |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_OUTPUTDIR      | Output directory for the test         | /var/tmp/.avocado-task-_4qquwyq                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
