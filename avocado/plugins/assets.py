@@ -39,7 +39,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
     PATTERN = "fetch_asset"
 
-    def __init__(self, file_name, klass=None, method=None):
+    def __init__(self, file_name, test_file_parse_cache, klass=None, method=None):
         self.file_name = file_name
         # fetch assets from specific test using klass and method
         self.klass = klass
@@ -57,7 +57,11 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
         # check if we have valid instrumented tests
         # discards disabled tests
-        self.tests = safeloader.find_avocado_tests(self.file_name)[0]
+        if file_name not in test_file_parse_cache:
+            test_file_parse_cache[file_name] = safeloader.find_avocado_tests(
+                self.file_name
+            )[0]
+        self.tests = test_file_parse_cache[file_name]
 
         # create Abstract Syntax Tree from test source file
         with open(self.file_name, encoding="utf-8") as source_file:
@@ -212,7 +216,9 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                         self.calls.append(call)
 
 
-def fetch_assets(test_file, klass=None, method=None, logger=None):
+def fetch_assets(
+    test_file, test_file_parse_cache, klass=None, method=None, logger=None
+):
     """Fetches the assets based on keywords listed on FetchAssetHandler.calls.
 
     :param test_file: File name of instrumented test to be evaluated
@@ -224,7 +230,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     timeout = settings.as_dict().get("assets.fetch.timeout")
     success = []
     fail = []
-    handler = FetchAssetHandler(test_file, klass, method)
+    handler = FetchAssetHandler(test_file, test_file_parse_cache, klass, method)
     for call in handler.calls:
         expire = call.pop("expire", None)
         if expire is not None:
@@ -275,8 +281,11 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
                         if candidate not in candidates:
                             candidates.append(candidate)
 
+        test_file_parse_cache = {}
         for candidate in candidates:
-            fetch_assets(*candidate, logger)
+            fetch_assets(
+                candidate[0], test_file_parse_cache, candidate[1], candidate[2], logger
+            )
 
 
 class Assets(CLICmd):
@@ -530,10 +539,11 @@ class Assets(CLICmd):
     def handle_fetch(config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
+        cache = {}
         for test_file in config.get("assets.fetch.references"):
             if os.path.isfile(test_file) and test_file.endswith(".py"):
                 LOG_UI.debug("Fetching assets from %s.", test_file)
-                success, fail = fetch_assets(test_file)
+                success, fail = fetch_assets(test_file, cache)
 
                 for asset_file in success:
                     LOG_UI.debug("  File %s fetched or already on cache.", asset_file)
