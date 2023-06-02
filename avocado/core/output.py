@@ -30,10 +30,12 @@ from avocado.utils import path as utils_path
 #: Handle cases of logging exceptions which will lead to recursion error
 logging.raiseExceptions = False
 
+#: Pre-defined Avocado root logger
+LOG_ROOT = logging.getLogger("avocado")
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
 #: Pre-defined Avocado job/test logger
-LOG_JOB = logging.getLogger("avocado.test")
+LOG_JOB = logging.getLogger("avocado.job")
 
 
 class TermSupport:
@@ -400,12 +402,12 @@ def early_start():
     Replace all outputs with in-memory handlers
     """
     if os.environ.get("AVOCADO_LOG_EARLY"):
-        add_log_handler("avocado", logging.StreamHandler, sys.stdout, logging.DEBUG)
-        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout, logging.DEBUG)
+        add_log_handler(LOG_ROOT, logging.StreamHandler, sys.stdout)
+        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout)
     else:
         STD_OUTPUT.fake_outputs()
-        add_log_handler("avocado", MemStreamHandler, None, logging.DEBUG)
-    logging.getLogger("avocado").level = logging.DEBUG
+        add_log_handler(LOG_ROOT, MemStreamHandler, None)
+    LOG_ROOT.level = logging.DEBUG
 
 
 CONFIG = []
@@ -424,23 +426,62 @@ def del_last_configuration():
             logger.addHandler(handler)
 
 
+def split_loggers_and_levels(loggers):
+    """Separates logger names and legger levels.
+
+    :param loggers: Logger names with or without levels
+    :type loggers: List of strings in format STREAM[:LEVEL][,STREAM[:LEVEL][,...]]
+    :yields: Logger name and level
+    :rtype: tuple(logger_name, logger_level)
+    """
+    for stream_name in loggers:
+        stream_level = re.split(r"(?<!\\):", stream_name, maxsplit=1)
+        name = stream_level[0]
+        if len(stream_level) == 1:
+            yield name, None
+        else:
+            level = (
+                int(stream_level[1])
+                if stream_level[1].isdigit()
+                else logging.getLevelName(stream_level[1].upper())
+            )
+            yield name, level
+
+
 def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
 
-    def save_handler(logger_name, handler, configuration):
-        if logger_name not in configuration:
-            configuration[logger_name] = []
-        configuration[logger_name].append(handler)
+    # Remove default handlers from root
+    try:
+        stderr_root = logging.getLogger().handlers[0]
+        if (
+            stderr_root.stream is sys.stderr
+            and stderr_root.formatter._fmt == "{message}"
+            and stderr_root.level == logging.WARNING
+        ):
+            logging.getLogger().removeHandler(stderr_root)
 
+        stdout_root = logging.getLogger().handlers[0]
+        if (
+            stdout_root.stream is sys.stdout
+            and stdout_root.formatter._fmt == "{message}"
+            and stdout_root.level == logging.NOTSET
+        ):
+            logging.getLogger().removeHandler(stdout_root)
+    except (IndexError, AttributeError):
+        pass
     # Delete last configuration
     if len(CONFIG) != 0:
         last_configuration = CONFIG[-1]
         for logger_name in last_configuration:
             disable_log_handler(logger_name)
 
-    configuration = {}
+    CONFIG.append({})
+
+    LOG_ROOT.setLevel(logging.DEBUG)
+
     # Reconfigure stream loggers
     enabled = args.get("core.show")
     if isinstance(enabled, list):
@@ -463,71 +504,52 @@ def reconfigure(args):
     else:
         STD_OUTPUT.enable_stderr()
     STD_OUTPUT.print_records()
-    if "app" in enabled:
-        app_handler = ProgressStreamHandler()
-        app_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_handler.addFilter(FilterInfoAndLess())
-        app_handler.stream = STD_OUTPUT.stdout
-        LOG_UI.addHandler(app_handler)
-        LOG_UI.propagate = False
-        LOG_UI.level = logging.DEBUG
-        save_handler(LOG_UI.name, app_handler, configuration)
-    else:
-        disable_log_handler(LOG_UI)
-    app_err_handler = ProgressStreamHandler()
-    app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-    app_err_handler.addFilter(FilterWarnAndMore())
-    app_err_handler.stream = STD_OUTPUT.stderr
-    LOG_UI.addHandler(app_err_handler)
-    LOG_UI.propagate = False
-    save_handler(LOG_UI.name, app_err_handler, configuration)
-    if not os.environ.get("AVOCADO_LOG_EARLY"):
-        LOG_JOB.getChild("stdout").propagate = False
-        LOG_JOB.getChild("stderr").propagate = False
-        if "early" in enabled:
-            handler = add_log_handler(
-                "avocado", logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
+
+    for logger_name, logger in BUILTIN_STREAMS.items():
+        if logger_name in enabled:
+            kwargs = {}
+            if logger_name == "app":
+                kwargs = {
+                    "fmt": logging.Formatter("%(message)s"),
+                    "handler_filter": FilterInfoAndLess(),
+                }
+            add_log_handler(
+                logger,
+                ProgressStreamHandler,
+                STD_OUTPUT.stdout,
+                **kwargs,
             )
-            save_handler("avocado", handler, configuration)
-            handler = add_log_handler(
-                LOG_JOB, logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
-            )
-            save_handler(LOG_JOB.name, handler, configuration)
-        else:
-            disable_log_handler("avocado")
+
+    # Error handler
+    add_log_handler(
+        LOG_UI,
+        ProgressStreamHandler,
+        STD_OUTPUT.stderr,
+        logging.DEBUG,
+        "%(message)s",
+        FilterWarnAndMore(),
+    )
 
     # Add custom loggers
-    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
-        stream_level = re.split(r"(?<!\\):", name, maxsplit=1)
-        name = stream_level[0]
-        if len(stream_level) == 1:
-            level = logging.DEBUG
-        else:
-            level = (
-                int(stream_level[1])
-                if stream_level[1].isdigit()
-                else logging.getLevelName(stream_level[1].upper())
-            )
+    for name, level in split_loggers_and_levels(
+        [_ for _ in enabled if _ not in BUILTIN_STREAMS]
+    ):
         try:
-            handler = add_log_handler(
-                name, logging.StreamHandler, STD_OUTPUT.stdout, level
-            )
-            save_handler(name, handler, configuration)
+            if not level:
+                level = logging.DEBUG
+            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout, level)
         except ValueError as details:
             LOG_UI.error(
                 "Failed to set logger for --show %s:%s: %s.", name, level, details
             )
             sys.exit(exit_codes.AVOCADO_FAIL)
-    # Remove the in-memory handlers
-    for handler in logging.getLogger("avocado").handlers:
-        if isinstance(handler, MemStreamHandler):
-            logging.getLogger("avocado").handlers.remove(handler)
 
     # Log early_messages
+    for handler in LOG_ROOT.handlers:
+        if isinstance(handler, MemStreamHandler):
+            LOG_ROOT.removeHandler(handler)
     for record in MemStreamHandler.log:
         logging.getLogger(record.name).handle(record)
-
-    CONFIG.append(configuration)
 
 
 class FilterWarnAndMore(logging.Filter):
@@ -538,6 +560,11 @@ class FilterWarnAndMore(logging.Filter):
 class FilterInfoAndLess(logging.Filter):
     def filter(self, record):
         return record.levelno <= logging.INFO
+
+
+class FilterTestMessage(logging.Filter):
+    def filter(self, record):
+        return record.module != "messages" and record.funcName != "handle"
 
 
 class ProgressStreamHandler(logging.StreamHandler):
@@ -633,8 +660,9 @@ def add_log_handler(
     logger,
     klass=logging.StreamHandler,
     stream=sys.stdout,
-    level=logging.INFO,
+    level=logging.DEBUG,
     fmt="%(name)s: %(message)s",
+    handler_filter=None,
 ):
     """
     Add handler to a logger.
@@ -646,16 +674,31 @@ def add_log_handler(
                    (defaults to ``sys.stdout``)
     :param level: Log level (defaults to `INFO``)
     :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
+    :param handler_filter: Logging filter class based on logging.Filter
     """
+
+    def save_handler(logger_name, handler):
+        if not CONFIG:
+            CONFIG.append({})
+        configuration = CONFIG[-1]
+        if logger_name not in configuration:
+            configuration[logger_name] = []
+        configuration[logger_name].append(handler)
+
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     handler = klass(stream)
     handler.setLevel(level)
     if isinstance(fmt, str):
         fmt = logging.Formatter(fmt=fmt)
+    if handler_filter:
+        handler.addFilter(handler_filter)
     handler.setFormatter(fmt)
+    if handler_filter:
+        handler.addFilter(handler_filter)
+
     logger.addHandler(handler)
-    logger.propagate = False
+    save_handler(logger.name, handler)
     return handler
 
 
@@ -668,70 +711,6 @@ def disable_log_handler(logger):
     while logger.handlers:
         logger.handlers.pop()
     logger.handlers.append(logging.NullHandler())
-    logger.propagate = False
-
-
-class LoggingFile:
-
-    """
-    File-like object that will receive messages pass them to logging.
-    """
-
-    def __init__(self, prefixes=None, level=logging.DEBUG, loggers=None):
-        """
-        Constructor. Sets prefixes and which loggers are going to be used.
-
-        :param prefixes: Prefix per logger to be prefixed to each line.
-        :param level: Log level to be used when writing messages.
-        :param loggers: Loggers into which write should be issued. (list)
-        """
-        if not loggers:
-            loggers = [logging.getLogger()]
-        self._level = level
-        self._loggers = loggers
-        if prefixes is None:
-            prefixes = [""] * len(loggers)
-        self._prefixes = prefixes
-
-    def write(self, data):
-        """ "
-        Splits the line to individual lines and forwards them into loggers
-        with expected prefixes. It includes the tailing newline <lf> as well
-        as the last partial message. Do configure your logging to not to add
-        newline <lf> automatically.
-        :param data - Raw data (a string) that will be processed.
-        """
-        # splitlines() discards a trailing blank line, so use split() instead
-        data_lines = data.split("\n")
-        if len(data_lines) > 1:  # when not last line, contains \n
-            self._log_line(f"{data_lines[0]}\n")
-        for line in data_lines[1:-1]:
-            self._log_line(f"{line}\n")
-        if data_lines[-1]:  # Last line does not contain \n
-            self._log_line(data_lines[-1])
-
-    def _log_line(self, line):
-        """
-        Forwards line to all the expected loggers along with expected prefix
-        """
-        for logger, prefix in zip(self._loggers, self._prefixes):
-            logger.log(self._level, prefix + line)
-
-    def flush(self):
-        pass
-
-    @staticmethod
-    def isatty():
-        return False
-
-    def add_logger(self, logger, prefix=""):
-        self._loggers.append(logger)
-        self._prefixes.append(prefix)
-
-    def rm_logger(self, logger):
-        idx = self._loggers.index(logger)
-        self._loggers.remove(logger)
-        self._prefixes = self._prefixes[:idx] + self._prefixes[idx + 1 :]
 
 
 class Throbber:

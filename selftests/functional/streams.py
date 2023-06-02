@@ -53,7 +53,7 @@ class StreamsTest(TestCaseTmpDir):
             cmd_in_log = os.path.join(BASEDIR, "avocado", "__main__.py")
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn(
-                f"avocado.test: Command line: {cmd_in_log}", result.stdout_text
+                f"avocado.job: Command line: {cmd_in_log}", result.stdout_text
             )
 
     def test_test(self):
@@ -61,7 +61,7 @@ class StreamsTest(TestCaseTmpDir):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = (
-            f"{AVOCADO} --show=test run --disable-sysinfo "
+            f"{AVOCADO} --show=job run --disable-sysinfo "
             f"--job-results-dir {self.tmpdir.name} "
             f"examples/tests/passtest.py"
         )
@@ -71,10 +71,12 @@ class StreamsTest(TestCaseTmpDir):
         cmd_in_log = os.path.join(BASEDIR, "avocado", "__main__.py")
         self.assertIn(f"Command line: {cmd_in_log}", result.stdout_text)
         self.assertIn(
-            b"\nexamples/tests/passtest.py:PassTest.test: STARTED\n", result.stdout
+            b"\navocado.job: examples/tests/passtest.py:PassTest.test: STARTED\n",
+            result.stdout,
         )
         self.assertIn(
-            b"\nexamples/tests/passtest.py:PassTest.test: PASS\n", result.stdout
+            b"\navocado.job: examples/tests/passtest.py:PassTest.test: PASS\n",
+            result.stdout,
         )
 
     def test_none_success(self):
@@ -135,6 +137,73 @@ class StreamsTest(TestCaseTmpDir):
         run("avocado.app:20", 1)
         run("avocado.app:wARn", 0)
         run("avocado.app:30", 0)
+
+    def test_job_log_separation(self):
+        """
+        Checks that job.log doesn't have logs from other streams.
+        """
+        cmd = (
+            f"{AVOCADO} --show none run --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd)
+        job_log_path = os.path.join(self.tmpdir.name, "latest", "job.log")
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        with open(job_log_path, "rb") as job_log_file:
+            wrong_lines = list(
+                filter(lambda x: b"avocado.job" not in x, job_log_file.readlines())
+            )
+            self.assertEqual(
+                len(wrong_lines),
+                0,
+                "job.log has different logging streams that avocado.job",
+            )
+
+    def test_logs_duplication(self):
+        """
+        Checks that job.log doesn't have duplicated lines.
+        """
+        cmd = (
+            f"{AVOCADO} --show none run --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"examples/tests/passtest.py"
+        )
+        result = process.run(cmd)
+        job_log_path = os.path.join(self.tmpdir.name, "latest", "job.log")
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        with open(job_log_path, "rt", encoding="utf-8") as job_log:
+            lines = [line.split("|", 1)[1] for line in job_log.readlines()]
+            lines = list(filter(lambda x: (x.replace(" ", "") != "\n"), lines))
+            self.assertEqual(
+                len(lines), len(set(lines)), "job_log has duplicated lines."
+            )
+
+    def test_default_streams(self):
+        """
+        Checks that avocado default streams are properly handled.
+        """
+        cmd = (
+            f"{AVOCADO} run --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd)
+        job_dir = os.path.join(self.tmpdir.name, "latest")
+        job_log_path = os.path.join(job_dir, "job.log")
+        test_log_path = os.path.join(
+            job_dir,
+            "test-results",
+            "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
+            "debug.log",
+        )
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        with open(job_log_path, "rb") as log:
+            self.assertNotIn(b"Seeds have been palanted.", log.read())
+        with open(test_log_path, "rb") as log:
+            result = log.read()
+            self.assertIn(b"waiting for Avocados to grow", result)
+            self.assertIn(b"Seeds have been palanted.", result)
 
 
 if __name__ == "__main__":
