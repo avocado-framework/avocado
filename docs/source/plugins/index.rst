@@ -28,12 +28,12 @@ require additional steps or packages to be installed.
 Some of these plugins may have extra dependencies of their own.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    optional/golang
-   optional/results
+   optional/results/index
    optional/robot
-   optional/varianter_cit
+   optional/varianters/index
    optional/varianter_pict
    optional/multiplexer
    optional/varianter_yaml_to_mux
