@@ -50,6 +50,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     def create_task_output_dir(self, runtime_task):
         output_dir_path = self.task_output_dir(runtime_task)
         os.makedirs(output_dir_path, exist_ok=True)
+        with open(os.path.join(output_dir_path, "debug.log"), mode="ba"):
+            pass
         runtime_task.task.setup_output_dir(output_dir_path)
 
     @staticmethod
