@@ -10,7 +10,7 @@ jobs:
     name: Static checks
     runs-on: ubuntu-20.04
     container:
-      image: quay.io/avocado-framework/avocado-ci-fedora-36
+      image: quay.io/avocado-framework/avocado-ci-fedora-38
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -281,10 +281,10 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:35",
-                    "fedora:36",
-                    "registry.access.redhat.com/ubi8/ubi",
-                    "registry.access.redhat.com/ubi9-beta/ubi",
+        container: ["fedora:37",
+                    "fedora:38",
+                    "registry.access.redhat.com/ubi8/ubi:8.8",
+                    "registry.access.redhat.com/ubi9/ubi:9.2",
                     "debian:10.10",
                     "debian:11.0",
                     "ubuntu:21.10",
@@ -310,10 +310,10 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:35",
-                    "fedora:36",
-                    "registry.access.redhat.com/ubi8/ubi",
-                    "registry.access.redhat.com/ubi9-beta/ubi",
+        container: ["fedora:37",
+                    "fedora:38",
+                    "registry.access.redhat.com/ubi8/ubi:8.8",
+                    "registry.access.redhat.com/ubi9/ubi:9.2",
                     "debian:10.10",
                     "debian:11.0",
                     "ubuntu:21.10",

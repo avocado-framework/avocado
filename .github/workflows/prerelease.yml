@@ -68,7 +68,7 @@ jobs:
     name: Avocado deployment
     runs-on: ubuntu-latest
     container:
-      image: fedora:36
+      image: fedora:38
     env:
       GIT_URL: 'https://github.com/avocado-framework/avocado'
       INVENTORY: 'selftests/deployment/inventory'

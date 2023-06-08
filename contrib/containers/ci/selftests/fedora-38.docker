@@ -1,4 +1,4 @@
-FROM fedora:36
+FROM fedora:38
 LABEL description "Fedora image used on integration checks"
 RUN dnf -y module enable avocado:latest
 RUN dnf -y install dnf-plugins-core git findutils make which
