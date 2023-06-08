@@ -199,6 +199,7 @@ class ExitSetup(Test):
     def setUp(self):
         self.log.info("setup pre")
         sys.exit(-1)
+        # pylint: disable=W0101
         self.log.info("setup post")
 
     def test(self):
@@ -219,6 +220,7 @@ class ExitTest(Test):
     def test(self):
         self.log.info("test pre")
         sys.exit(-1)
+        # pylint: disable=W0101
         self.log.info("test post")
 
     def tearDown(self):
@@ -240,6 +242,7 @@ class ExitTeardown(Test):
         self.log.info("teardown pre")
         self.log.info("teardown status: %s", self.status)
         sys.exit(-1)
+        # pylint: disable=W0101
         self.log.info("teardown post")
 
 

@@ -107,7 +107,7 @@ def make(
     :returns: exit status of the make process
     """
 
-    kwargs = dict(env=env, ignore_status=ignore_status)
+    kwargs = {"env": env, "ignore_status": ignore_status}
     if process_kwargs is not None:
         kwargs.update(process_kwargs)
     result = run_make(path, make, extra_args, kwargs)
