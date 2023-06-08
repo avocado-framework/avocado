@@ -40,11 +40,11 @@ requirements-dev: pip
 	- $(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
 
 smokecheck: clean uninstall develop
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado run examples/tests/passtest.py
+	$(PYTHON) -m avocado run examples/tests/passtest.py
 
 check: clean uninstall develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) selftests/check.py
+	$(PYTHON) selftests/check.py
 	selftests/check_tmp_dirs
 
 develop:
