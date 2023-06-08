@@ -263,7 +263,6 @@ jobs:
           fetch-depth: 0
       - name: Run Codespell Check
         run: make -f Makefile.gh codespell
-        continue-on-error: True
       - name: Run bandit check
         run: make -f Makefile.gh bandit
         continue-on-error: True

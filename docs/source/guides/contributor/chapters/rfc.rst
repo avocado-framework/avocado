@@ -6,8 +6,8 @@ What is a RFC?
 
 .. warning:: TODO: Better describe our RFC model here.
 
-Submiting a RFC
----------------
+Submitting a RFC
+----------------
 
 .. warning:: TODO: Better describe our RFC model here.
 

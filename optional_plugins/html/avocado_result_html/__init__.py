@@ -205,7 +205,7 @@ class HTMLResult(Result):
         setsid = getattr(os, "setsid", None)
         if not setsid:
             setsid = getattr(os, "setpgrp", None)
-        inout = open(os.devnull, "r+", encoding="utf-8")
+        in_out = open(os.devnull, "r+", encoding="utf-8")
         if "macOS" in platform.platform():
             open_path = find_command("open", default=None)
         else:
@@ -216,9 +216,9 @@ class HTMLResult(Result):
             subprocess.Popen(
                 cmd,
                 close_fds=True,
-                stdin=inout,
-                stdout=inout,
-                stderr=inout,
+                stdin=in_out,
+                stdout=in_out,
+                stderr=in_out,
                 preexec_fn=setsid,
             )
 

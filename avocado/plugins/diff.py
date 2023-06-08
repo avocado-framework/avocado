@@ -311,14 +311,14 @@ class Diff(CLICmd):
             setsid = getattr(os, "setsid", None)
             if not setsid:
                 setsid = getattr(os, "setpgrp", None)
-            with open(os.devnull, "r+", encoding="utf-8") as inout:
+            with open(os.devnull, "r+", encoding="utf-8") as in_out:
                 cmd = ["xdg-open", html_file]
                 subprocess.Popen(  # pylint: disable=W1509
                     cmd,
                     close_fds=True,
-                    stdin=inout,
-                    stdout=inout,
-                    stderr=inout,
+                    stdin=in_out,
+                    stdout=in_out,
+                    stderr=in_out,
                     preexec_fn=setsid,
                 )
 

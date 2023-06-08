@@ -52,7 +52,7 @@ Bug Fixes
 
 * The CIT Varianter plugin was returning variants in an invalid form
   to the runner.  This caused the plugin to fail when actually used to
-  run tests.  A functional test has also been aded to avoid a
+  run tests.  A functional test has also been added to avoid a
   regression here.
 
 * The :mod:`avocado.utils.distro` module now properly detects RHEL 8

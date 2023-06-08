@@ -90,7 +90,7 @@ def main():
     software_manager = SoftwareManager()
     if not software_manager.is_capable():
         log.error(
-            "ERROR: There is no backend implementation for this sytem. No "
+            "ERROR: There is no backend implementation for this system. No "
             "action will be performed."
         )
         return exit_codes.UTILITY_FAIL

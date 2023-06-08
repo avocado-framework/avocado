@@ -11,7 +11,7 @@
 # /virt (use -m /virt:examples/mux-selftest.py). When it's injected into
 # a different location those filters should not affect the result (produces
 # all variants.
-# !filter-only: All root childern are specified in different levels. They
+# !filter-only: All root children are specified in different levels. They
 #               should be combined and together enable all variants. On the
 #               other hand they should not enable other-level filter-only
 #               filters like /hw/disk/virtio.

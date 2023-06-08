@@ -33,7 +33,7 @@ def get_dispatchers(module_name):
     and contain suitable descriptions.
 
     The produced values are tuples that contain the dispatcher class
-    and two booleans that indicates wether the configuration and job
+    and two booleans that indicates whether the configuration and job
     is needed to instantiate the class.
     """
     module = sys.modules[module_name]

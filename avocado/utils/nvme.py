@@ -177,7 +177,7 @@ def is_ns_exists(controller_name, ns_id):
     Returns if that particular namespace exists on the controller or not
 
     :param controller_name: name of the controller on which we want to check
-                            ns existance
+                            ns existence
 
     :returns: True if exists else False
     :rtype: boolean
@@ -206,7 +206,7 @@ def get_lba(namespace):
 
 def ns_rescan(controller_name):
     """
-    re-scans all the names spaces on the given contrller
+    re-scans all the names spaces on the given controller
 
     :param controller_name: controller name on which re-scan is applied
     """
@@ -219,7 +219,7 @@ def ns_rescan(controller_name):
 
 def detach_ns(controller_name, ns_id, cont_id):
     """
-    dettach the namespace_id to specified controller
+    detach the namespace_id to specified controller
 
     :param ns_id: namespace ID
     :param controller_name: controller name
@@ -268,7 +268,7 @@ def create_one_ns(ns_id, controller_name, ns_size):
 
     :param ns_id: Namespace ID
     :param controller_name: name of the controller like nvme0/nvme1 etc..
-    :param ns_size: Size of the namespace that is goin to be created
+    :param ns_size: Size of the namespace that is going to be created
     """
     cmd = f"nvme create-ns /dev/{controller_name} --nsze={ns_size} --ncap={ns_size} --flbas=0 --dps=0"
     if process.system(cmd, shell=True, ignore_status=True):
@@ -298,7 +298,7 @@ def get_equal_ns_size(controller_name, ns_count):
     more than one namespace with equal sizes
 
     :param controller_name: name of the controller like nvme0/nvme1 etc...
-    :param ns_count: Number of namspaces you want to create with equal sixe
+    :param ns_count: Number of namespaces you want to create with equal sixe
                      it should be less thans or eaqual to max ns supported
                      on the controller
     :rtype: integer
