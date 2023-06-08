@@ -47,7 +47,7 @@ def get_controller_name(pci_addr):
     """
     if pci_addr in pci.get_pci_addresses():
         path = f"/sys/bus/pci/devices/{pci_addr}/nvme/"
-        return os.listdir(path)
+        return "".join(os.listdir(path))
     raise NvmeException("Unable to list as wrong pci_addr")
 
 
