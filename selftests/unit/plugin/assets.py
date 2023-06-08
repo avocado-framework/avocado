@@ -40,7 +40,7 @@ class AssetsPlugin(unittest.TestCase):
                 True,
                 OSError("Failed to fetch fail.tar.gz."),
             ]
-            success, fail = assets.fetch_assets("test.py")
+            success, fail = assets.fetch_assets("test.py", {})
         expected_success = ["success.tar.gz"]
         expected_fail_exception = OSError
         self.assertEqual(expected_success, success)
@@ -62,7 +62,7 @@ class AssetsPlugin(unittest.TestCase):
         ]
         with patch("avocado.plugins.assets.Asset") as mocked_asset:
             mocked_asset.return_value.fetch.side_effect = [True]
-            success, fail = assets.fetch_assets("test.py")
+            success, fail = assets.fetch_assets("test.py", {})
         expected_success = ["success.tar.gz"]
         expected_fail = []
         self.assertEqual(expected_success, success)
@@ -86,7 +86,7 @@ class AssetsPlugin(unittest.TestCase):
             mocked_asset.return_value.fetch.side_effect = [
                 OSError("Failed to fetch fail.tar.gz.")
             ]
-            success, fail = assets.fetch_assets("test.py")
+            success, fail = assets.fetch_assets("test.py", {})
         expected_success = []
         expected_fail_exception = OSError
         self.assertEqual(expected_success, success)
@@ -98,7 +98,7 @@ class AssetsPlugin(unittest.TestCase):
         Exercise a normal fetch_assets for an empty `calls` variable.
         """
         mocked_fetch_asset_handler.return_value.calls = []
-        success, fail = assets.fetch_assets("test.py")
+        success, fail = assets.fetch_assets("test.py", {})
         expected_success = []
         expected_fail = []
         self.assertEqual(expected_success, success)
@@ -139,7 +139,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_ClassDef(node)
                         self.assertEqual(handler.current_klass, "FetchAssets")
 
@@ -155,7 +155,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_ClassDef(node)
                         self.assertTrue((handler.current_klass is None))
 
@@ -173,7 +173,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_ClassDef(node_class)
                         handler.visit_FunctionDef(node_function)
                         self.assertEqual(handler.current_method, expected_method)
@@ -190,7 +190,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_FunctionDef(node)
                         self.assertTrue((handler.current_method is None))
 
@@ -209,7 +209,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_ClassDef(node_class)
                         handler.visit_FunctionDef(node_function)
                         handler.visit_Assign(node_assign)
@@ -234,7 +234,7 @@ class AssetsClass(unittest.TestCase):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler, "generic_visit"):
-                        handler = assets.FetchAssetHandler("fake_file.py")
+                        handler = assets.FetchAssetHandler("fake_file.py", {})
                         handler.visit_Assign(node)
                         self.assertTrue((handler.current_method is None))
 
