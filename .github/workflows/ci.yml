@@ -134,11 +134,11 @@ jobs:
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
-# OS X smokecheck on latest Python
+# macOS check on latest Python
 
-  smokecheck-osx:
+  check-macos:
 
-    name: OS X with Python ${{ matrix.python-version }}
+    name: macOS with Python ${{ matrix.python-version }}
     runs-on: macos-12
 
     strategy:
