@@ -1,10 +1,3 @@
-include Makefile.include
-
-DESTDIR=/
-AVOCADO_DIRNAME=$(shell basename ${PWD})
-AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
-
-
 all:
 	@echo
 	@echo "Development related targets:"
@@ -26,6 +19,13 @@ all:
 	@echo "man:          Generate the avocado man page"
 	@echo "pip:          Auxiliary target to install pip. (It's not recommended to run this directly)"
 	@echo
+
+include Makefile.include
+
+DESTDIR=/
+AVOCADO_DIRNAME=$(shell basename ${PWD})
+AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+
 
 clean:
 	$(PYTHON) setup.py clean --all
