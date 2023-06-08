@@ -291,6 +291,36 @@ class Worker:
                         return
 
                     if is_task_in_cache:
+                        task_id = str(runtime_task.task.identifier)
+                        job_id = runtime_task.task.job_id
+                        encoding = "utf-8"
+                        start_message = {
+                            "status": "started",
+                            "time": time.monotonic(),
+                            "output_dir": runtime_task.task.runnable.output_dir,
+                            "id": task_id,
+                            "job_id": job_id,
+                        }
+                        log_message = {
+                            "status": "running",
+                            "type": "log",
+                            "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
+                            f"Dependency fulfilled from cache.".encode(encoding),
+                            "encoding": encoding,
+                            "time": time.monotonic(),
+                            "id": task_id,
+                            "job_id": job_id,
+                        }
+                        finish_message = {
+                            "status": "finished",
+                            "result": "pass",
+                            "time": time.monotonic(),
+                            "id": task_id,
+                            "job_id": job_id,
+                        }
+                        self._state_machine._status_repo.process_message(start_message)
+                        self._state_machine._status_repo.process_message(log_message)
+                        self._state_machine._status_repo.process_message(finish_message)
                         await self._state_machine.finish_task(
                             runtime_task, RuntimeTaskStatus.IN_CACHE
                         )
