@@ -1,10 +1,3 @@
-include Makefile.include
-
-DESTDIR=/
-AVOCADO_DIRNAME=$(shell basename ${PWD})
-AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
-
-
 all:
 	@echo
 	@echo "Development related targets:"
@@ -27,6 +20,13 @@ all:
 	@echo "pip:          Auxiliary target to install pip. (It's not recommended to run this directly)"
 	@echo
 
+include Makefile.include
+
+DESTDIR=/
+AVOCADO_DIRNAME=$(shell basename ${PWD})
+AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+
+
 clean:
 	$(PYTHON) setup.py clean --all
 
@@ -40,11 +40,11 @@ requirements-dev: pip
 	- $(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
 
 smokecheck: clean uninstall develop
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado run passtest.py
+	$(PYTHON) -m avocado run examples/tests/passtest.py
 
 check: clean uninstall develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) selftests/check.py
+	$(PYTHON) selftests/check.py
 	selftests/check_tmp_dirs
 
 develop:

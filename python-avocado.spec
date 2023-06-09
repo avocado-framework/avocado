@@ -326,7 +326,7 @@ Requires: python3-avocado == %{version}-%{release}
 Requires: ansible-core
 
 %description -n python3-avocado-plugins-ansible
-Adds to Avocado the ability to use ansible modules as dependecies for
+Adds to Avocado the ability to use ansible modules as dependencies for
 tests.
 
 %files -n python3-avocado-plugins-ansible

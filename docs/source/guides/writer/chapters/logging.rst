@@ -122,7 +122,7 @@ During the test run, one could watch the progress with::
     2023-04-19 11:52:12,478 avocado.test.progress INFO | harvesting organic avocados on row 2
     2023-04-19 11:52:12,478 avocado.test.progress ERROR| Avocados are Gone
 
-Or to see progres from all tests::
+Or to see progress from all tests::
 
     $ tail -f ~/avocado/job-results/latest/avocado.test.progress.log
     2023-04-13 17:49:08,687 avocado.test.progress INFO | 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 0

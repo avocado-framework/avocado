@@ -59,7 +59,7 @@ Bug Fixes
   and now works properly when added to directories and SIMPLE tests.
 
 * The :class:`avocado.utils.process.FDDrainer` now properly flushes its
-  contents and the once ocurring data loss (last line read) is now
+  contents and the once occurring data loss (last line read) is now
   fixed.
 
 Internal Changes

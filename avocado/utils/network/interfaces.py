@@ -764,8 +764,8 @@ class NetworkInterface:
         netmask_list = netmask.split(".")
         if len(netmask_list) != 4:
             return False
-        for octect in netmask_list:
-            num = int(octect)
+        for octet in netmask_list:
+            num = int(octet)
             if not 0 <= num <= 255:
                 return False
         octet_bin = [format(int(i), "08b") for i in netmask_list]

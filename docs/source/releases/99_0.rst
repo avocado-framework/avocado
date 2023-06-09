@@ -20,14 +20,14 @@ Users/Test Writers
   instead of writing all that code, the test writer can describe that
   dependency using the ``service`` ansible module.
 
-* A Podman image can now be treated as a dependecy.  This is currently
+* A Podman image can now be treated as a dependency.  This is currently
   mostly useful to tests that will manually create containers, but
   it's expected to also be leveraged by the podman spawner and suite
   and job level dependencies in the near future.
 
 * A new type of plugin, ``Cache``, has been introduced and is
   responsible for manipulating with cache, and it's representation
-  through the Avocado interface. It is currrently implemented for
+  through the Avocado interface. It is currently implemented for
   the ``vmimage`` and ``requirements`` cache.
 
 * All nrunner functionality that is activated through the command line

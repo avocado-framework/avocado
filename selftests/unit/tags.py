@@ -116,7 +116,7 @@ class Derived(Base):
 
 class DerivedTwo(Derived):
     '''
-    :avocado: tags=noo
+    :avocado: tags=zoo
     '''
 """
 

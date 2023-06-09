@@ -24,7 +24,7 @@ test writers efforts in the features to be tested, and away from debugging and
 troubleshooting those libraries. While this repository initially targets
 Avocado users writing tests, it should be generic enough for consumption by
 third-party developers outside of the Avocado community.  It presents a glimpse
-of the infrastructure that will guarantee quality criterias and will ease the
+of the infrastructure that will guarantee quality criteria and will ease the
 onboarding and maintenance of such libraries.
 
 Besides the plan, with the migration steps for the current libraries, this

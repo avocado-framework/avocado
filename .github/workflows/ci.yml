@@ -10,7 +10,7 @@ jobs:
     name: Static checks
     runs-on: ubuntu-20.04
     container:
-      image: quay.io/avocado-framework/avocado-ci-fedora-36
+      image: quay.io/avocado-framework/avocado-ci-fedora-38
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -38,10 +38,34 @@ jobs:
           retention-days: 1
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
-  full-smokecheck-linux:
+  smokecheck-linux:
+
+    name: Smokecheck on Linux with Python ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, 3.10.0, 3.11]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Avocado smokecheck
+        run: make smokecheck
+
+  check-linux:
 
     name: Linux with Python ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
+    needs: smokecheck-linux
 
     strategy:
       matrix:
@@ -66,8 +90,6 @@ jobs:
         run: python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
-      - name: Avocado smoketest
-        run: python -m avocado run examples/tests/passtest.py
       - name: Unittests and fast functional tests
         run: python3 setup.py test --skip=static-checks
       - name: Archive failed tests logs
@@ -112,11 +134,11 @@ jobs:
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
-# OS X smokecheck on latest Python
+# macOS check on latest Python
 
-  smokecheck-osx:
+  check-macos:
 
-    name: OS X with Python ${{ matrix.python-version }}
+    name: macOS with Python ${{ matrix.python-version }}
     runs-on: macos-12
 
     strategy:
@@ -241,7 +263,6 @@ jobs:
           fetch-depth: 0
       - name: Run Codespell Check
         run: make -f Makefile.gh codespell
-        continue-on-error: True
       - name: Run bandit check
         run: make -f Makefile.gh bandit
         continue-on-error: True
@@ -260,10 +281,10 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:35",
-                    "fedora:36",
-                    "registry.access.redhat.com/ubi8/ubi",
-                    "registry.access.redhat.com/ubi9-beta/ubi",
+        container: ["fedora:37",
+                    "fedora:38",
+                    "registry.access.redhat.com/ubi8/ubi:8.8",
+                    "registry.access.redhat.com/ubi9/ubi:9.2",
                     "debian:10.10",
                     "debian:11.0",
                     "ubuntu:21.10",
@@ -289,10 +310,10 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:35",
-                    "fedora:36",
-                    "registry.access.redhat.com/ubi8/ubi",
-                    "registry.access.redhat.com/ubi9-beta/ubi",
+        container: ["fedora:37",
+                    "fedora:38",
+                    "registry.access.redhat.com/ubi8/ubi:8.8",
+                    "registry.access.redhat.com/ubi9/ubi:9.2",
                     "debian:10.10",
                     "debian:11.0",
                     "ubuntu:21.10",
