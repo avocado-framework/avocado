@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 echo "** Running signedoff-check..."
 if [ -z "$COMMIT_COUNT" ]; then
