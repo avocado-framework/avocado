@@ -168,9 +168,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 )
                 return False
 
-        status, output = await RemoteSpawner.run_remote_cmd_async(
-            session, shlex.join(entry_point_args), self.config.get("spawner.remote.test_timeout")
-        )
+        cmd = shlex.join(entry_point_args) + " > /dev/null"
+        timeout = self.config.get("spawner.remote.test_timeout")
+        status, output = await RemoteSpawner.run_remote_cmd_async(session, cmd, timeout)
         LOG.debug(f"Command exited with code {status}")
         if status != 0:
             LOG.error(
