@@ -94,7 +94,7 @@ class FailTest(Test):
 '''
 
 
-class BasicTest(Test, TestCaseTmpDir):
+class BasicTest(TestCaseTmpDir, Test):
 
     """
     :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
