@@ -22,6 +22,7 @@ Nvme utilities
 """
 
 
+import json
 import logging
 import os
 import time
@@ -326,3 +327,63 @@ def get_free_space(controller_name):
         if line.split(":")[0].strip() == "unvmcap":
             return int(line.split(":")[-1].strip())
     return 0
+
+
+def create_namespaces(controller_name, ns_count):
+    """
+    creates eaqual n number of namespaces on the specified controller
+
+    :param controller_name: name of the controller like nvme0
+    :param ns_count: number of namespaces to be created
+    """
+    namespaces = get_current_ns_ids(controller_name)
+    if namespaces:
+        delete_all_ns(controller_name)
+    blk_size = get_total_capacity(controller_name) // get_block_size(controller_name)
+    ns_size = blk_size // (ns_count + 1)
+    for ns_id in range(1, ns_count + 1):
+        create_one_ns(ns_id, controller_name, ns_size)
+
+
+def get_ns_status(controller_name, ns_id):
+    """
+    Returns the status of namespaces on the specified controller
+
+    :param controller_name: name of the controller like nvme0
+    :param ns_id: ID of namespace for which we need the status
+
+    :rtype: list
+    """
+    stat = []
+    cmd = f"nvme show-topology /dev/{controller_name} -o json"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    json_data = json.loads(data)
+    for data in json_data:
+        for subsystem in data["Subsystems"]:
+            for namespace in subsystem["Namespaces"]:
+                nsid = namespace["NSID"]
+                for paths in namespace["Paths"]:
+                    if nsid == ns_id and paths["Name"] == controller_name:
+                        stat.extend([paths["State"], paths["ANAState"]])
+    return stat
+
+
+def get_nslist_with_pci(pci_address):
+    """
+    Fetches and returns list of namespaces for specified pci_address
+
+    :param pci_address: pci_address of any nvme adapter
+
+    :rtype: list
+    """
+    ns_list = []
+    cmd = "nvme show-topology -o json"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    json_data = json.loads(data)
+    for data in json_data:
+        for subsystem in data["Subsystems"]:
+            for namespace in subsystem["Namespaces"]:
+                for paths in namespace["Paths"]:
+                    if paths["Address"] == pci_address:
+                        ns_list.append(namespace["NSID"])
+    return ns_list
