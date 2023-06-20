@@ -13,6 +13,7 @@ from avocado import Test
 from avocado.core import exit_codes
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
+from avocado.utils import process
 from selftests.utils import python_module_available
 
 
@@ -808,6 +809,9 @@ def main(args):  # pylint: disable=W0621
             print("check.py didn't clean test results.")
             print("uncleaned directories:")
             print(post_job_test_result_dirs.difference(pre_job_test_result_dirs))
+
+    # tmp dirs clean up check
+    process.run(f"{sys.executable} selftests/check_tmp_dirs")
     return exit_code
 
 

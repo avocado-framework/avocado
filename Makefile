@@ -45,7 +45,6 @@ smokecheck: clean uninstall develop
 check: clean uninstall develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	$(PYTHON) selftests/check.py
-	selftests/check_tmp_dirs
 
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
