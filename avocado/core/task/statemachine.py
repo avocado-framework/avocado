@@ -24,6 +24,7 @@ class TaskStateMachine:
         self._finished = []
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
+        self._task_size = len(tasks)
 
         self._tasks_by_id = {
             str(runtime_task.task.identifier): runtime_task.task
@@ -61,6 +62,10 @@ class TaskStateMachine:
     @property
     def cache_lock(self):
         return self._cache_lock
+
+    @property
+    def task_size(self):
+        return self._task_size
 
     @property
     async def complete(self):
@@ -441,15 +446,17 @@ class Worker:
         await self._state_machine.abort(task_status)
         terminated = []
         while True:
-            is_complete = await self._state_machine.complete
             async with self._state_machine.lock:
                 try:
                     runtime_task = self._state_machine.monitored.pop(0)
+                    await self._terminate_task(runtime_task, task_status)
+                    terminated.append(runtime_task)
                 except IndexError:
-                    if is_complete:
+                    if (
+                        len(self._state_machine.finished) + len(terminated)
+                        == self._state_machine.task_size
+                    ):
                         break
-                await self._terminate_task(runtime_task, task_status)
-                terminated.append(runtime_task)
         return terminated
 
     async def terminate_tasks_timeout(self):
