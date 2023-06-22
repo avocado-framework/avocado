@@ -30,4 +30,4 @@ class MultipleTests(Test):
         """
         This method should never execute
         """
-        raise Exception("This action method should never be executed.")
+        raise RuntimeError("This action method should never be executed.")

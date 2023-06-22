@@ -14,4 +14,4 @@ class ErrorTest(Test):
         """
         This should end with ERROR.
         """
-        raise Exception("This is a generic exception")
+        raise Exception("This is a generic exception")  # pylint: disable=W0719

@@ -119,7 +119,7 @@ class KernelBuild:
             LOG.info("Uncompressing tarball")
             archive.extract(self.asset_path, self.work_dir)
         else:
-            raise Exception("Unable to find the tarball")
+            raise RuntimeError("Unable to find the tarball")
 
     def configure(self, targets=("defconfig"), extra_configs=None):
         """
