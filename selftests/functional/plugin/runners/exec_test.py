@@ -7,7 +7,7 @@ from avocado.utils import script
 from selftests.utils import TestCaseTmpDir
 
 
-class ExecTestRunnerTest(Test, TestCaseTmpDir):
+class ExecTestRunnerTest(TestCaseTmpDir, Test):
     def test_env_variables(self):
         commands_path = os.path.join(self.tmpdir.name, "commands")
         script.make_script(commands_path, "uname -a")

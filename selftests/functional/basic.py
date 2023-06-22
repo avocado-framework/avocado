@@ -8,6 +8,7 @@ import unittest
 import xml.dom.minidom
 import zipfile
 
+from avocado import Test
 from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
@@ -883,15 +884,14 @@ class RunnerOperationTest(TestCaseTmpDir):
             )
 
 
-class DryRunTest(TestCaseTmpDir):
+class DryRunTest(Test):
     def test_dry_run(self):
         examples_path = os.path.join("examples", "tests")
         passtest = os.path.join(examples_path, "passtest.py")
         failtest = os.path.join(examples_path, "failtest.py")
         gendata = os.path.join(examples_path, "gendata.py")
         cmd = (
-            f"{AVOCADO} run --disable-sysinfo --dry-run "
-            f"--dry-run-no-cleanup --json - "
+            f"{AVOCADO} run --disable-sysinfo --dry-run --json - "
             f"-- {passtest} {failtest} {gendata}"
         )
         number_of_tests = 3
