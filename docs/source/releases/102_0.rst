@@ -1,0 +1,123 @@
+======================
+102.0 - 102 Dalmatians
+======================
+
+The Avocado team is proud to present another release: Avocado 102.0,
+AKA "102 Dalmatians", is now available!
+
+Release documentation: `Avocado 102.0
+<http://avocado-framework.readthedocs.io/en/102.0/>`_
+
+.. note:: Before getting into the 102.0 release itself, users should
+          be advised that release 103.0 (the next Avocado release)
+          will be a LTS release.  The next development cycle will focus
+          on bug fixes and usability enhancements, and not on new features.
+          This is a good opportunity for teams using and deploying Avocado
+          to consider an upgrade from 92.X LTS (or other non-LTS version).
+          For more information on what a LTS release means, please
+          read :ref:`rfc-long-term-stability`.
+
+Users/Test Writers
+==================
+
+* There were major changes to the Avocado logging behavior, most of them
+  to address feedback from users since the previous logging changes:
+
+  * The root logger handler was restored. This enables all loggers out
+    of ``avocado.*`` namespace by default.  If a test, either directly
+    or indirectly through 3rd party libraries, logs into any namespace
+    (say ``logging.getLogger('my-library')``) it will show up in the
+    Avocado's test logs.
+  * The ``job.log`` file continues to contain logs for the
+    ``avocado.job`` namespace, but a new file called ``full.log``
+    contains all generated logs for a job, including logs from all
+    tests.
+
+* The Avocado Resolver now allows tests that are implemented in files
+  (by far the most common scenario) and that may also access test data
+  files (see :ref:`accessing-test-data-files`) to pass that
+  information along to spawners.  The effect of that is that when
+  running such tests on "remote" spawner environments (such as
+  "podman") the test file and the data files can be made available in
+  the remote environment.  This is currently enabled in
+  ``avocado-instrumented``, ``python-unittest``, ``exec-test`` and
+  ``tap`` tests.
+
+* User of macOS will have a better experience when using Avocado.  The
+  full set of Avocado's selftests are now run under macOS on CI.
+  Please be advised that macOS is not currently supported at the same
+  level of Linux-based operating systems due to the lack of
+  contributors/maintainers with access to the needed hardware.  If you
+  are a user/developer and are willing to contribute to this, please
+  let the Avocado team know.
+
+* :ref:`sysinfo-collection` is now fully supported in nrunner,
+  including per-test collection of system information.
+
+* A new plugin interface called :class:`PostTest
+  <avocado.core.plugin_interfaces.PostTest>` allow actions to be
+  executed right after the execution of a test, in the same spawner
+  environment as the test itself.  This complements the :class:`PreTest
+  <avocado.core.plugin_interfaces.PreTest>` introduced on version 101.0.
+
+* Environment variables such as ``AVOCADO_TEST_BASEDIR``,
+  ``AVOCADO_TEST_LOGDIR`` and ``AVOCADO_TEST_LOGFILE`` are now
+  made available to ``exec-test``.
+
+Utility Modules
+===============
+
+* New functions were added to :mod:`avocado.utils.nvme`, such as
+  :func:`avocado.utils.nvme.create_namespaces`,
+  :func:`avocado.utils.nvme.get_ns_status` and
+  :func:`avocado.utils.nvme.get_nslist_with_pci`.
+
+* A new :func:`avocado.utils.multipath.get_mpath_paths_status` that
+  returns the status of all paths of a mpath device was introduced.
+
+* :mod:`avocado.utils.distro` received updates to support more recent
+  versions of the UnionTech OS.
+
+Bug Fixes
+=========
+
+* Avocado now presents the correct message when it's interrupted with
+  a "CTRL+C" (AKA ``SIGNINT``, AKA ``KeyboardInterrupt``).
+
+* The ``fetchasset`` plugin would fail when parsing some Python test
+  files (in search of assets) and would produce a hard to follow error
+  message (``AttributeError: 'Subscript' object has no attribute 'id'``).
+
+* When tests were implemented in base classes (without tags), but then
+  the derived classes added tags, the resulting tests in the derived
+  class would not have the derived class tags applied to them.
+
+Internal Changes
+================
+
+* The ``avocado.app.debug`` and controlling environment variable
+  ``AVOCADO_LOG_DEBUG`` have been removed to simplify the logging
+  code.
+
+* The documentation for the optional plugins were previously hosted in
+  the main Avocado "directory", but are now integral part of each
+  individual plugin.  This makes the documentation available as each
+  individual package metadata too (which will now show on PyPI).
+
+* The plugin information given as the output to ``avocado plugins``
+  command is now much more dynamic (instead of hard coded).  That
+  also fixes a plugin section that used to be missing.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/101.0...102.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/28?closed=1>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0211181>`_.
