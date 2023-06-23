@@ -471,10 +471,10 @@ That's basically the only rule, and a sane one, that you need to follow.
   terminals, basically pipes the colored output to ``less`` to simplify
   browsing of the produced output. You an enable it with ``--enable-paginator``.
 
+.. _sysinfo-collection:
+
 Sysinfo collection
 ------------------
-
-.. note:: This feature is not fully supported on nrunner runner yet.
 
 Avocado comes with a ``sysinfo`` plugin, which automatically gathers some
 system information per each job or even between tests. This is very useful
