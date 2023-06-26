@@ -146,21 +146,13 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             time_started = time.monotonic()
 
             timeout = float(self.DEFAULT_TIMEOUT)
-            most_current_execution_state_time = None
+            next_status_time = None
             while True:
                 time.sleep(RUNNER_RUN_CHECK_INTERVAL)
                 now = time.monotonic()
                 if queue.empty():
-                    if most_current_execution_state_time is not None:
-                        next_execution_state_mark = (
-                            most_current_execution_state_time
-                            + RUNNER_RUN_STATUS_INTERVAL
-                        )
-                    if (
-                        most_current_execution_state_time is None
-                        or now > next_execution_state_mark
-                    ):
-                        most_current_execution_state_time = now
+                    if next_status_time is None or now > next_status_time:
+                        next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
                         yield messages.RunningMessage.get()
                     if (now - time_started) > timeout:
                         process.terminate()
