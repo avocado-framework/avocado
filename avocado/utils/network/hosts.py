@@ -48,7 +48,7 @@ class Host:
     """
 
     def __init__(self, host):
-        if isinstance(self, Host):
+        if type(self) == Host:  # pylint: disable=C0123
             raise TypeError("Host class should not be instantiated")
         self.host = host
 
