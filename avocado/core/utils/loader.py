@@ -37,10 +37,7 @@ def load_test(test_factory):
             inspect.isclass(obj)
             and obj.__name__ == test_class
             and inspect.getmodule(obj) == test_module
+            and issubclass(obj, test.Test)
         ):
-            if issubclass(obj, test.Test):
-                test_class = obj
-                break
-    test_instance = test_class(**test_parameters)
-
-    return test_instance
+            return obj(**test_parameters)
+    raise ImportError(f'Failed to find/load class "{test_class}" in "{test_path}"')
