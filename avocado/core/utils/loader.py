@@ -17,11 +17,12 @@ def load_test(test_factory):
     test_class, test_parameters = test_factory
     if "run.results_dir" in test_parameters:
         test_parameters["base_logdir"] = test_parameters.pop("run.results_dir")
-    if "modulePath" in test_parameters:
-        test_path = test_parameters.pop("modulePath")
-    else:
-        test_path = None
+    if "modulePath" not in test_parameters:
+        raise RuntimeError(
+            'Test factory parameters is missing the module\'s path ("modulePath")'
+        )
 
+    test_path = test_parameters.pop("modulePath")
     module_name = os.path.basename(test_path).split(".")[0]
     test_module_dir = os.path.abspath(os.path.dirname(test_path))
     # Tests with local dir imports need this
