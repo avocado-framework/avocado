@@ -16,11 +16,17 @@ import hashlib
 import io
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
+
 
 LOG = logging.getLogger(__name__)
 
+def calculate_hash(data, algorithm):
+    hash_obj = hashlib.new(algorithm)
+    hash_obj.update(data)
+    return hash_obj.hexdigest()
 
-def hash_file(filename, size=None, algorithm="md5"):
+def hash_file(filename, size=None, algorithm="md5", buffer_size=65536, num_threads=1):
     """
     Calculate the hash value of filename.
 
@@ -33,9 +39,10 @@ def hash_file(filename, size=None, algorithm="md5"):
     :param filename: Path of the file that will have its hash calculated.
     :param algorithm: Method used to calculate the hash (default is md5).
     :param size: If provided, hash only the first size bytes of the file.
+    :param buffer_size: Buffer size for reading file data.
+    :param num_threads: Number of threads to use for parallel processing.
     :return: Hash of the file, if something goes wrong, return None.
     """
-    chunksize = io.DEFAULT_BUFFER_SIZE
     fsize = os.path.getsize(filename)
 
     if not size or size > fsize:
@@ -50,14 +57,27 @@ def hash_file(filename, size=None, algorithm="md5"):
         return None
 
     with open(filename, "rb") as file_to_hash:
-        while size > 0:
-            if chunksize > size:
-                chunksize = size
-            data = file_to_hash.read(chunksize)
-            if len(data) == 0:
-                LOG.debug("Nothing left to read but size=%d", size)
-                break
-            hash_obj.update(data)
-            size -= len(data)
+        if num_threads > 1:
+            executor = ThreadPoolExecutor(max_workers=num_threads)
+            futures = []
+            while size > 0:
+                chunksize = min(buffer_size, size)
+                data = file_to_hash.read(chunksize)
+                if len(data) == 0:
+                    LOG.debug("Nothing left to read but size=%d", size)
+                    break
+                futures.append(executor.submit(calculate_hash, data, algorithm))
+                size -= len(data)
+            for future in futures:
+                hash_obj.update(future.result())
+        else:
+            while size > 0:
+                chunksize = min(buffer_size, size)
+                data = file_to_hash.read(chunksize)
+                if len(data) == 0:
+                    LOG.debug("Nothing left to read but size=%d", size)
+                    break
+                hash_obj.update(data)
+                size -= len(data)
 
     return hash_obj.hexdigest()
