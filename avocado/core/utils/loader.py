@@ -25,10 +25,13 @@ def load_test(test_factory):
     test_path = test_parameters.pop("modulePath")
     module_name = os.path.basename(test_path).split(".")[0]
     test_module_dir = os.path.abspath(os.path.dirname(test_path))
-    # Tests with local dir imports need this
+    spec = importlib.util.spec_from_file_location(module_name, test_path)
+    test_module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = test_module
     try:
+        # Tests with local dir imports need this
         sys.path.insert(0, test_module_dir)
-        test_module = importlib.import_module(module_name)
+        spec.loader.exec_module(test_module)
     finally:
         if test_module_dir in sys.path:
             sys.path.remove(test_module_dir)
