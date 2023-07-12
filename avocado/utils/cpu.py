@@ -134,13 +134,13 @@ def get_version():
     }
     cpu_info = _get_info()
     arch = get_arch()
-    try:
-        version_pattern[arch]
-    except KeyError as Err:
-        LOG.warning("No pattern string for arch: %s\n Error: %s", arch, Err)
-        return None
+    pattern = version_pattern.get(arch)
+    if not pattern:
+        LOG.warning("No pattern string for arch: %s", arch)
+        return ""
+
     for line in cpu_info:
-        version_out = re.findall(version_pattern[arch], line)
+        version_out = re.findall(pattern, line)
         if version_out:
             return version_out[0].decode("utf-8")
     return ""
