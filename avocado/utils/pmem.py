@@ -28,9 +28,8 @@ class PMemException(Exception):
     """
 
     def __init__(self, additional_text=None):  # pylint: disable=W0231
-        super().__init__()
+        super().__init__()  # add
         self.additional_text = additional_text
-
 
     def __str__(self):
         return f"Command failed.\ninfo: {self.additional_text}"
