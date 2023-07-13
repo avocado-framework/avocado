@@ -150,9 +150,7 @@ class PhoneHomeServerHandler(BaseHTTPRequestHandler):
 
         Respond with status 200 if the instance phoned back.
         """
-        path = self.path[1:]
-        if path[-1] == "/":
-            path = path[:-1]
+        path = self.path[1:].rstrip("/")
         if path == self.server.instance_id:
             self.server.instance_phoned_back = True
         self.send_response(200)
