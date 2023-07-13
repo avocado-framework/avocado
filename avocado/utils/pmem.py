@@ -31,6 +31,7 @@ class PMemException(Exception):
         super().__init__()
         self.additional_text = additional_text
 
+
     def __str__(self):
         return f"Command failed.\ninfo: {self.additional_text}"
 
@@ -161,7 +162,7 @@ class PMem:
         return True
 
     def reconfigure_dax_device(
-        self, device, mode="devdax", region=None, no_online=False, no_movable=False
+            self, device, mode="devdax", region=None, no_online=False, no_movable=False
     ):
         """Reconfigure devdax device into devdax or system-ram mode
 
@@ -244,7 +245,7 @@ class PMem:
         :raise: :class:`PMemException`, if command fails.
         """
         if process.system(
-            f"{self.ndctl} disable-region {name}", shell=True, ignore_status=True
+                f"{self.ndctl} disable-region {name}", shell=True, ignore_status=True
         ):
             raise PMemException(f"Failed to disable {name} region(s)")
         return True
@@ -258,7 +259,7 @@ class PMem:
         :raise: :class:`PMemException`, if command fails.
         """
         if process.system(
-            f"{self.ndctl} enable-region {name}", shell=True, ignore_status=True
+                f"{self.ndctl} enable-region {name}", shell=True, ignore_status=True
         ):
             raise PMemException(f"Failed to enable {name} region(s)")
         return True
@@ -284,7 +285,7 @@ class PMem:
             args = f"{args} -v"
 
         if process.system(
-            f"{self.ndctl} disable-namespace {args}", shell=True, ignore_status=True
+                f"{self.ndctl} disable-namespace {args}", shell=True, ignore_status=True
         ):
             raise PMemException(f"Namespace disable failed for {namespace}")
         return True
@@ -310,26 +311,26 @@ class PMem:
             args = f"{args} -v"
 
         if process.system(
-            f"{self.ndctl} enable-namespace {args}", shell=True, ignore_status=True
+                f"{self.ndctl} enable-namespace {args}", shell=True, ignore_status=True
         ):
             raise PMemException(f'Namespace enable failed for "{namespace}"')
         return True
 
     def create_namespace(
-        self,
-        region="",
-        bus="",
-        n_type="pmem",
-        mode="fsdax",
-        memmap="dev",
-        name="",
-        size="",
-        uuid="",
-        sector_size="",
-        align="",
-        reconfig="",
-        force=False,
-        autolabel=False,
+            self,
+            region="",
+            bus="",
+            n_type="pmem",
+            mode="fsdax",
+            memmap="dev",
+            name="",
+            size="",
+            uuid="",
+            sector_size="",
+            align="",
+            reconfig="",
+            force=False,
+            autolabel=False,
     ):
         """
         Creates namespace with specified options
@@ -378,7 +379,7 @@ class PMem:
             args += " -f -e " + namespace
 
         if process.system(
-            f"{self.ndctl} create-namespace {args}", shell=True, ignore_status=True
+                f"{self.ndctl} create-namespace {args}", shell=True, ignore_status=True
         ):
             raise PMemException("Namespace create command failed")
         return True
@@ -407,7 +408,7 @@ class PMem:
             args += " -f"
 
         if process.system(
-            f"{self.ndctl} destroy-namespace {args}", shell=True, ignore_status=True
+                f"{self.ndctl} destroy-namespace {args}", shell=True, ignore_status=True
         ):
             raise PMemException("Namespace destroy command failed")
         return True
