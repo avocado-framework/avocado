@@ -1,0 +1,52 @@
+name: PR announcement
+
+on:
+  pull_request_target:
+    types:
+      - opened
+
+jobs:
+  commnet-to-pr:
+    name: Do an announcement to PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@021a2405c7f990db57f5eae5397423dcc554159c
+        with:
+          app_id: ${{ secrets.MR_AVOCADO_ID }}
+          installation_id: ${{ secrets.MR_AVOCADO_INSTALLATION_ID }}
+          private_key: ${{ secrets.MR_AVOCADO_PRIVATE_KEY }}
+      - name: Get PR ID
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          pr_data=$(gh api graphql -f query='query {
+                  repository(owner:"avocado-framework", name:"avocado") {
+                          pullRequest(number:${{ github.event.number }}) {
+                                  id
+                          }
+                  }
+          }')
+          echo 'PR_ID='$(echo $pr_data | jq .data.repository.pullRequest.id) >> $GITHUB_ENV
+      - name: comment on PR
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api graphql -f query='mutation {
+                  addComment(input: {
+                          subjectId: ${{ env.PR_ID }},
+                          body: """Dear contributor,
+                                  Avocado is currently under sprint #103, which is due to release an LTS (Long Term Stability) release. 
+                                  Please avoid merging changes that do not fall into these categories:
+                                  * Bug fixes
+                                  * Usability Improvements
+                                  * Documentation updates
+
+                                  As for the Avocado utility modules (“avocado.utils”) it is OK to introduce new functionality, 
+                                  but changes to the existing APIs (including interface and behavior) should be avoided. 
+                                  These kind of changes should wait until sprint #104."""}) {
+
+                                  clientMutationId
+                  }
+          }'
