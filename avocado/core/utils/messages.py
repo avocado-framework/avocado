@@ -60,6 +60,7 @@ class FinishedMessage(GenericMessage):
         class_name=None,
         fail_class=None,
         traceback=None,
+        **kwargs,
     ):  # pylint: disable=W0221
         """Creates finished message with all necessary information.
 
@@ -79,14 +80,13 @@ class FinishedMessage(GenericMessage):
         :return: finished message
         :rtype: dict
         """
-        return super().get(
-            result=result,
-            fail_reason=fail_reason,
-            returncode=returncode,
-            class_name=class_name,
-            fail_class=fail_class,
-            traceback=traceback,
-        )
+        kwargs["result"] = result
+        kwargs["fail_reason"] = fail_reason
+        kwargs["returncode"] = returncode
+        kwargs["class_name"] = class_name
+        kwargs["fail_class"] = fail_class
+        kwargs["traceback"] = traceback
+        return super().get(**kwargs)
 
 
 class GenericRunningMessage(GenericMessage):
