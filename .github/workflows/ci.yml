@@ -30,6 +30,9 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      - name: Install Python 3.6 compatible urllib3
+        if: ${{ matrix.python-version == 3.6 }}
+        run: python3 -m pip install urllib3==1.26.16
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version
