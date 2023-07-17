@@ -209,7 +209,9 @@ class Job:
     def __start_job_logging(self):
         # Enable test logger
         full_log = os.path.join(self.logdir, "full.log")
-        fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
+        fmt = (
+            "%(asctime)s %(module)-16.16s L%(lineno)-.4d %(levelname)-5.5s| %(message)s"
+        )
         output.add_log_handler(
             LOG_JOB,
             logging.FileHandler,

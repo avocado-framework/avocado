@@ -152,12 +152,15 @@ class StreamsTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         with open(job_log_path, "rb") as job_log_file:
             wrong_lines = list(
-                filter(lambda x: b"avocado.job" not in x, job_log_file.readlines())
+                filter(
+                    lambda x: b"job" not in x and b"testlogs" not in x,
+                    job_log_file.readlines(),
+                )
             )
             self.assertEqual(
                 len(wrong_lines),
                 0,
-                "job.log has different logging streams that avocado.job",
+                "job.log has different logging streams than avocado.job",
             )
 
     def test_logs_duplication(self):
