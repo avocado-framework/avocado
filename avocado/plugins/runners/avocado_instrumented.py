@@ -42,8 +42,6 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
         "job.run.store_logging_stream",
     ]
 
-    DEFAULT_TIMEOUT = 86400
-
     @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
@@ -145,7 +143,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
             time_started = time.monotonic()
 
-            timeout = float(self.DEFAULT_TIMEOUT)
+            timeout = float("inf")
             next_status_time = None
             while True:
                 time.sleep(RUNNER_RUN_CHECK_INTERVAL)
@@ -161,7 +159,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 else:
                     message = queue.get()
                     if message.get("type") == "early_state":
-                        timeout = float(message.get("timeout") or self.DEFAULT_TIMEOUT)
+                        timeout = float(message.get("timeout") or float("inf"))
                     else:
                         yield message
                     if message.get("status") == "finished":
