@@ -176,6 +176,10 @@ class BasicTest(TestCaseTmpDir, Test):
                 "SKIP 1",
                 result.stdout_text,
             )
+            self.assertIn(
+                "SKIP: Dependency was not fulfilled.",
+                result.stdout_text,
+            )
             self.assertNotIn(
                 "-foo-bar-",
                 result.stdout_text,

@@ -266,6 +266,25 @@ class Worker:
                 LOG.debug(
                     'Task "%s" has failed dependencies', runtime_task.task.identifier
                 )
+                task_id = str(runtime_task.task.identifier)
+                job_id = runtime_task.task.job_id
+                reason = "Dependency was not fulfilled."
+                start_message = messages.StartedMessage.get(
+                    output_dir=runtime_task.task.runnable.output_dir,
+                    id=task_id,
+                    job_id=job_id,
+                )
+                log_message = messages.LogMessage.get(
+                    f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | {reason}",
+                    id=task_id,
+                    job_id=job_id,
+                )
+                finish_message = messages.FinishedMessage.get(
+                    "skip", reason, id=task_id, job_id=job_id
+                )
+                self._state_machine._status_repo.process_message(start_message)
+                self._state_machine._status_repo.process_message(log_message)
+                self._state_machine._status_repo.process_message(finish_message)
                 runtime_task.result = "fail"
                 await self._state_machine.finish_task(
                     runtime_task, RuntimeTaskStatus.FAIL_TRIAGE
