@@ -7,6 +7,7 @@ import time
 from avocado.core.exceptions import JobFailFast
 from avocado.core.task.runtime import RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
+from avocado.core.utils import messages
 
 LOG = logging.getLogger(__name__)
 
@@ -192,25 +193,14 @@ class Worker:
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
-            encoding = "utf-8"
-            log_message = {
-                "status": "running",
-                "type": "log",
-                "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
-                f"Runner error occurred: {reason}".encode(encoding),
-                "encoding": encoding,
-                "time": time.monotonic(),
-                "id": task_id,
-                "job_id": job_id,
-            }
-            finish_message = {
-                "status": "finished",
-                "result": "interrupted",
-                "fail_reason": f"Test interrupted: {reason}",
-                "time": time.monotonic(),
-                "id": task_id,
-                "job_id": job_id,
-            }
+            log_message = messages.LogMessage.get(
+                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Runner error occurred: {reason}",
+                id=task_id,
+                job_id=job_id,
+            )
+            finish_message = messages.FinishedMessage.get(
+                "interrupted", f"Test interrupted: {reason}", id=task_id, job_id=job_id
+            )
             try:
                 current_status, _ = self._state_machine._status_repo._status[task_id]
             except KeyError:
@@ -276,6 +266,25 @@ class Worker:
                 LOG.debug(
                     'Task "%s" has failed dependencies', runtime_task.task.identifier
                 )
+                task_id = str(runtime_task.task.identifier)
+                job_id = runtime_task.task.job_id
+                reason = "Dependency was not fulfilled."
+                start_message = messages.StartedMessage.get(
+                    output_dir=runtime_task.task.runnable.output_dir,
+                    id=task_id,
+                    job_id=job_id,
+                )
+                log_message = messages.LogMessage.get(
+                    f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | {reason}",
+                    id=task_id,
+                    job_id=job_id,
+                )
+                finish_message = messages.FinishedMessage.get(
+                    "skip", reason, id=task_id, job_id=job_id
+                )
+                self._state_machine._status_repo.process_message(start_message)
+                self._state_machine._status_repo.process_message(log_message)
+                self._state_machine._status_repo.process_message(finish_message)
                 runtime_task.result = "fail"
                 await self._state_machine.finish_task(
                     runtime_task, RuntimeTaskStatus.FAIL_TRIAGE
@@ -298,31 +307,20 @@ class Worker:
                     if is_task_in_cache:
                         task_id = str(runtime_task.task.identifier)
                         job_id = runtime_task.task.job_id
-                        encoding = "utf-8"
-                        start_message = {
-                            "status": "started",
-                            "time": time.monotonic(),
-                            "output_dir": runtime_task.task.runnable.output_dir,
-                            "id": task_id,
-                            "job_id": job_id,
-                        }
-                        log_message = {
-                            "status": "running",
-                            "type": "log",
-                            "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
-                            f"Dependency fulfilled from cache.".encode(encoding),
-                            "encoding": encoding,
-                            "time": time.monotonic(),
-                            "id": task_id,
-                            "job_id": job_id,
-                        }
-                        finish_message = {
-                            "status": "finished",
-                            "result": "pass",
-                            "time": time.monotonic(),
-                            "id": task_id,
-                            "job_id": job_id,
-                        }
+                        start_message = messages.StartedMessage.get(
+                            output_dir=runtime_task.task.runnable.output_dir,
+                            id=task_id,
+                            job_id=job_id,
+                        )
+                        log_message = messages.LogMessage.get(
+                            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
+                            f"Dependency fulfilled from cache.",
+                            id=task_id,
+                            job_id=job_id,
+                        )
+                        finish_message = messages.FinishedMessage.get(
+                            "pass", id=task_id, job_id=job_id
+                        )
                         self._state_machine._status_repo.process_message(start_message)
                         self._state_machine._status_repo.process_message(log_message)
                         self._state_machine._status_repo.process_message(finish_message)
