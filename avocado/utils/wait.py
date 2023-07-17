@@ -18,10 +18,9 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=No
     :param args: Positional arguments to func
     :param kwargs: Keyword arguments to func
     """
-    if args is None:
-        args = []
-    if kwargs is None:
-        kwargs = {}
+    args = args or []
+    kwargs = kwargs or {}
+
     start_time = time.monotonic()
     end_time = start_time + timeout
 
