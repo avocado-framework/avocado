@@ -30,6 +30,9 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      - name: Install Python 3.6 compatible urllib3
+        if: ${{ matrix.python-version == 3.6 }}
+        run: python3 -m pip install urllib3==1.26.16
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version
@@ -94,11 +97,11 @@ jobs:
   smokecheck-osx:
 
     name: OS X with Python ${{ matrix.python-version }}
-    runs-on: macos-10.15
+    runs-on: macos-12
 
     strategy:
       matrix:
-        python-version: [3.9, 3.10.0]
+        python-version: [3.11.1]
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"

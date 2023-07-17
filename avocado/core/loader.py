@@ -17,7 +17,7 @@
 Test loader module.
 """
 
-import imp
+import importlib
 import inspect
 import os
 import re
@@ -281,11 +281,13 @@ class TestLoaderProxy:
         if isinstance(test_class, str):
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.abspath(os.path.dirname(test_path))
-            # Tests with local dir imports need this
             try:
+                spec = importlib.util.spec_from_file_location(module_name, test_path)
+                test_module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = test_module
+                # Tests with local dir imports need this
                 sys.path.insert(0, test_module_dir)
-                f, p, d = imp.find_module(module_name, [test_module_dir])
-                test_module = imp.load_module(module_name, f, p, d)
+                spec.loader.exec_module(test_module)
             except:  # pylint: disable=W0702
                 # On load_module exception we fake the test class and pass
                 # the exc_info as parameter to be logged.
