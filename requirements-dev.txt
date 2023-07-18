@@ -20,7 +20,6 @@ pycdlib==1.13.0
 netifaces==0.11.0
 
 # For tests that validate the produced XUnit output
-elementpath==2.3.2
 xmlschema==1.7.0
 
 # For building the manpage
