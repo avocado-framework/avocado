@@ -223,11 +223,13 @@ class Session:
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
+        if timeout:
+            command_argument = f"timeout --foreground {timeout} {command}"
+        else:
+            command_argument = command
         try:
             return process.run(
-                self.get_raw_ssh_command(command),
-                ignore_status=ignore_status,
-                timeout=timeout,
+                self.get_raw_ssh_command(command_argument), ignore_status=ignore_status
             )
         except process.CmdError as exc:
             if exc.result.exit_status == 255:

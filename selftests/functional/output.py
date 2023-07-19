@@ -301,6 +301,19 @@ class OutputTest(TestCaseTmpDir):
             self.assertEqual(expected_job_id_number, job_id_number)
             self.assertEqual(expected_bin_true_number, bin_true_number)
 
+    def test_fail_output(self):
+        """
+        Checks if the test fail messages are not printed to the console.
+        """
+        cmd = f"{AVOCADO} run --disable-sysinfo --job-results-dir {self.tmpdir.name} -- examples/tests/failtest.py"
+        result = process.run(cmd, ignore_status=True)
+        self.assertIn(
+            "(1/1) examples/tests/failtest.py:FailTest.test: STARTED\n "
+            "(1/1) examples/tests/failtest.py:FailTest.test:  FAIL: This "
+            "test is supposed to fail",
+            result.stdout_text,
+        )
+
     def tearDown(self):
         self.tmpdir.cleanup()
 
@@ -420,7 +433,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_show_test(self):
         cmd_line = (
-            f"{AVOCADO} --show=test run "
+            f"{AVOCADO} --show=job run "
             f"--job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo examples/tests/passtest.py"
         )
@@ -463,6 +476,7 @@ class OutputPluginTest(TestCaseTmpDir):
                 "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0\n"
                 "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1\n"
                 "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2\n"
+                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: Avocados are Gone\n"
             ),
         )
 

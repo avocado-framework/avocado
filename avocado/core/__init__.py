@@ -19,15 +19,17 @@ import pkg_resources
 
 from avocado.core.dispatcher import InitDispatcher
 from avocado.core.settings import settings as stgs
-from avocado.core.streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
+from avocado.core.streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS_DESCRIPTION
 from avocado.core.utils.path import prepend_base_path
 
 
 def register_core_options():
     streams = [
-        '"%s": %s' % _ for _ in BUILTIN_STREAMS.items()  # pylint: disable=C0209
+        f'"{stream}": {description}'
+        for stream, description in BUILTIN_STREAMS_DESCRIPTION.items()
     ] + [
-        '"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()  # pylint: disable=C0209
+        f'"{stream}": {description}'
+        for stream, description in BUILTIN_STREAM_SETS.items()
     ]
     streams = "; ".join(streams)
     help_msg = (

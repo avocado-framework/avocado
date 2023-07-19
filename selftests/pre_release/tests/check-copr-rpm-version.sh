@@ -15,7 +15,7 @@ VERSION=$(python setup.py --version 2>/dev/null)
 COMMIT_DATE=$(git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1 $ORIGIN/master)
 SHORT_COMMIT=$(git rev-parse --short=9 $ORIGIN/master)
 RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
-DISTRO_VERSION=36
+DISTRO_VERSION=38
 
 DEFAULT_RPM_NVR="python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${DISTRO_VERSION}"
 RPM_NVR="${1:-$DEFAULT_RPM_NVR}"

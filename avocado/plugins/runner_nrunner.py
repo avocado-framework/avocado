@@ -24,7 +24,7 @@ import random
 import tempfile
 
 from avocado.core.dispatcher import SpawnerDispatcher
-from avocado.core.exceptions import JobError, TestFailFast
+from avocado.core.exceptions import JobError, JobFailFast
 from avocado.core.messages import MessageHandler
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
@@ -286,6 +286,7 @@ class Runner(SuiteRunner):
             test_suite.name,
             self._determine_status_server(test_suite, "run.status_server_uri"),
             job.unique_id,
+            job.test_results_path,
             test_suite.config,
         )
         # pylint: disable=W0201
@@ -354,7 +355,7 @@ class Runner(SuiteRunner):
                     )
                 )
                 raise
-        except (KeyboardInterrupt, asyncio.TimeoutError, TestFailFast) as ex:
+        except (KeyboardInterrupt, asyncio.TimeoutError, JobFailFast) as ex:
             LOG_JOB.info(str(ex))
             job.interrupted_reason = str(ex)
             summary.add("INTERRUPTED")

@@ -319,6 +319,7 @@ if __name__ == "__main__":
         version=VERSION,
         description="Avocado Test Framework",
         long_description=get_long_description(),
+        long_description_content_type="text/x-rst",
         author="Avocado Developers",
         author_email="avocado-devel@redhat.com",
         url="https://avocado-framework.github.io/",
@@ -366,6 +367,7 @@ if __name__ == "__main__":
                 "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
                 "run = avocado.plugins.run:RunInit",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
+                "lxc = avocado.plugins.spawners.lxc:LXCSpawnerInit",
                 "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
                 "testlogsui = avocado.plugins.testlogs:TestLogsUIInit",
                 "human = avocado.plugins.human:HumanInit",
@@ -404,6 +406,10 @@ if __name__ == "__main__":
             ],
             "avocado.plugins.test.pre": [
                 "dependency = avocado.plugins.dependency:DependencyResolver",
+                "sysinfo = avocado.plugins.sysinfo:SysInfoTest",
+            ],
+            "avocado.plugins.test.post": [
+                "sysinfo = avocado.plugins.sysinfo:SysInfoTest",
             ],
             "avocado.plugins.result": [
                 "xunit = avocado.plugins.xunit:XUnitResult",
@@ -451,6 +457,7 @@ if __name__ == "__main__":
             "avocado.plugins.spawner": [
                 "process = avocado.plugins.spawners.process:ProcessSpawner",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawner",
+                "lxc = avocado.plugins.spawners.lxc:LXCSpawner",
             ],
             "avocado.plugins.cache": [
                 "requirement = avocado.plugins.requirement_cache:RequirementCache",

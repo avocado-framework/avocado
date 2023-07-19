@@ -12,7 +12,7 @@ Users/Test Writers
 ==================
 
 * Avocado's :ref:`requirement management <managing-requirements>`
-  has been extended in a number of ways detailed bellow.  In short,
+  has been extended in a number of ways detailed below.  In short,
   Avocado is now able to install requirements declared for a test in
   an isolated container if the ``--nrunner-spawner=podman`` is chosen
   (with a base image defined by ``--spawner-podman-image``).  That

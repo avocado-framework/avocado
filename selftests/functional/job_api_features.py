@@ -56,6 +56,35 @@ class Test(TestCaseTmpDir):
             test_runtime, 1, "SleepTest runtime was longer than parameter enforced."
         )
 
+    def test_runnable_output_dir(self):
+        """It checks if Runnable is able to set its own output_dir."""
+
+        test_dir = os.path.join(self.tmpdir.name, "latest", "test-results")
+        output_dir = os.path.join(test_dir, "test")
+        tests = [
+            Runnable(
+                "avocado-instrumented",
+                "examples/tests/passtest.py:PassTest.test",
+                output_dir=output_dir,
+            ),
+            Runnable(
+                "avocado-instrumented",
+                "examples/tests/failtest.py:FailTest.test",
+                output_dir=output_dir,
+            ),
+        ]
+
+        suite = TestSuite("suite_1", tests=tests, config=self.base_config)
+        with Job(self.base_config, [suite]) as j:
+            j.run()
+        self.assertTrue(os.path.exists(os.path.join(test_dir, "test")))
+        self.assertEqual(len(os.listdir(test_dir)), 2)
+        test_logfile = os.path.join(output_dir, "debug.log")
+        with open(test_logfile, "r", encoding="utf-8") as debug_file:
+            logs = debug_file.read()
+            self.assertIn("INIT 1-examples/tests/failtest.py:FailTest.test", logs)
+            self.assertIn("INIT 1-examples/tests/passtest.py:PassTest.test", logs)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -18,8 +18,8 @@ all:
 	@echo
 
 codespell:
-	pip install codespell
-	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/cpu.py.data/*"
+	pip install codespell==2.2.4
+	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/cpu.py.data/*,./avocado/utils/pmem.py,./avocado/utils/cpu.py,./avocado/utils/linux_modules.py,./selftests/functional/output.py,./selftests/unit/utils/vmimage.py"
 
 bandit:
 	pip install bandit

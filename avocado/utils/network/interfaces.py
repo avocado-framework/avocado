@@ -19,9 +19,12 @@
 import json
 import logging
 import os
+import re
 import shutil
+import subprocess
 from ipaddress import IPv4Address, ip_interface
 
+from avocado.utils import process
 from avocado.utils.distro import detect as distro_detect
 from avocado.utils.network.common import run_command
 from avocado.utils.network.exceptions import NWException
@@ -764,9 +767,9 @@ class NetworkInterface:
         netmask_list = netmask.split(".")
         if len(netmask_list) != 4:
             return False
-        for octect in netmask_list:
-            num = int(octect)
-            if 0 <= num <= 255:
+        for octet in netmask_list:
+            num = int(octet)
+            if not 0 <= num <= 255:
                 return False
         octet_bin = [format(int(i), "08b") for i in netmask_list]
         binary_netmask = ("").join(octet_bin)
@@ -781,3 +784,65 @@ class NetworkInterface:
                 return False
             first_bit = False
         return True
+
+    def ping_flood(self, int_name, peer_ip, ping_count):
+        """
+        Function to start ping to remote machine with "-f" [ flood ] option,
+        on given interface.
+
+        Also this function enables to track the live data to determine the
+        ping flood failure, in case of failure the program will exit.
+
+        :param int_name: source interface name.
+        :param peer_ip: Peer IP address (IPv4 or IPv6)
+        :param ping_count: How many ICMP echo packets to send.
+        :return : returns True on successful ping flood.
+                  returns False on ping flood failure.
+        :rtype : boolean
+        """
+        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
+        ping_process = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
+        pattern = r"\.{10}"
+        while True:
+            char = ping_process.stdout.read(100)
+            match = re.search(pattern, char)
+            if match:
+                ping_process.terminate()
+                msg = "ping flood failed to remote machine, Please check the logs"
+                LOG.debug(msg)
+                return False
+            return True
+        ping_process.stdout.close()
+        ping_process.wait()
+
+    def get_device_IPI_name(self):
+        """
+        Function to convert IO device name to device_ipi names according to
+        "/proc/interrupts" context.
+        Ex: vnic@30000009 to vnic-30000009
+
+        :return : A converted Network device according to device_ipi name.
+        :rtype : string
+        """
+
+        if self.is_vnic():
+            cmd = (
+                f"cat /sys/class/net/{self.name}/device/devspec | "
+                f"awk -F/ '{{print $3}}'"
+            )
+            interface_type = process.run(cmd, shell=True, ignore_status=True).decode(
+                "utf-8"
+            )
+            cmd = f"echo {interface_type} | sed 's/@/-/' "
+            interface_type = process.system_output(
+                cmd, shell=True, ignore_status=True
+            ).decode("utf-8")
+            return interface_type
+        elif self.is_veth():
+            return self.name

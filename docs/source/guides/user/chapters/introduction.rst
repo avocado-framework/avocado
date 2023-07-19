@@ -392,9 +392,9 @@ Using the option --show
 Probably, you frequently want to look straight at the job log, without
 switching screens or having to "tail" the job log.
 
-In order to do that, you can use ``avocado --show=test run ...``::
+In order to do that, you can use ``avocado --show=job run ...``::
 
-    $ avocado --show=test run examples/tests/sleeptest.py
+    $ avocado --show=job run examples/tests/sleeptest.py
     ...
     Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
 
@@ -471,10 +471,10 @@ That's basically the only rule, and a sane one, that you need to follow.
   terminals, basically pipes the colored output to ``less`` to simplify
   browsing of the produced output. You an enable it with ``--enable-paginator``.
 
+.. _sysinfo-collection:
+
 Sysinfo collection
 ------------------
-
-.. note:: This feature is not fully supported on nrunner runner yet.
 
 Avocado comes with a ``sysinfo`` plugin, which automatically gathers some
 system information per each job or even between tests. This is very useful

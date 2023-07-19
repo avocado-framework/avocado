@@ -28,10 +28,10 @@ During the execution look for::
 
 .. note::
    If you are running a test with Avocado, and want to measure the duration
-   of a method/function, make sure to enable the `debug` logging stream.
-   Example::
+   of a method/function, make sure to enable the `avocado.utils.debug`
+   logging stream. Example::
 
-    avocado --show avocado.app.debug run examples/tests/assets.py
+    avocado --show avocado.utils.debug run examples/tests/assets.py
 
 Line-profiler
 -------------

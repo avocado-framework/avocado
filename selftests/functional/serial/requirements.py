@@ -1,10 +1,11 @@
+import glob
 import os
 import unittest
 
 from avocado import Test, skipUnless
 from avocado.core import exit_codes
 from avocado.utils import process, script
-from selftests.utils import AVOCADO
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 SINGLE_SUCCESS_CHECK = '''#!/usr/bin/env python3
 
@@ -93,7 +94,7 @@ class FailTest(Test):
 '''
 
 
-class BasicTest(Test):
+class BasicTest(TestCaseTmpDir, Test):
 
     """
     :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
@@ -117,14 +118,13 @@ class BasicTest(Test):
         spawner_command = ""
         if spawner == "podman":
             spawner_command = "--spawner=podman --spawner-podman-image=fedora:36"
-        return (
-            f"{AVOCADO} run {spawner_command} --job-results-dir {self.workdir} {path}"
-        )
+        return f"{AVOCADO} run {spawner_command} --job-results-dir {self.tmpdir.name} {path}"
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)
     def test_single_success(self):
         with script.Script(
-            os.path.join(self.workdir, "test_single_success.py"), SINGLE_SUCCESS_CHECK
+            os.path.join(self.tmpdir.name, "test_single_success.py"),
+            SINGLE_SUCCESS_CHECK,
         ) as test:
             command = self.get_command(test.path)
             result = process.run(command, ignore_status=True)
@@ -137,11 +137,33 @@ class BasicTest(Test):
                 "bash",
                 result.stdout_text,
             )
+            test_results_path = os.path.join(self.tmpdir.name, "latest", "test-results")
+            self.assertEqual(
+                len(os.listdir(test_results_path)),
+                2,
+                "DependencyResolver created unwanted result directories.",
+            )
+            test_dependency_dir = glob.glob(
+                os.path.join(test_results_path, "1-*", "dependencies")
+            )[0]
+            self.assertEqual(
+                len(os.listdir(test_dependency_dir)),
+                1,
+                "Dependency directories is missing.",
+            )
+            job_dependency_dir = os.path.join(
+                self.tmpdir.name, "latest", "dependencies"
+            )
+            self.assertEqual(
+                len(os.listdir(job_dependency_dir)),
+                1,
+                "Dependency symlink wasn't created.",
+            )
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)
     def test_single_fail(self):
         with script.Script(
-            os.path.join(self.workdir, "test_single_fail.py"), SINGLE_FAIL_CHECK
+            os.path.join(self.tmpdir.name, "test_single_fail.py"), SINGLE_FAIL_CHECK
         ) as test:
             command = self.get_command(test.path)
             result = process.run(command, ignore_status=True)
@@ -154,6 +176,10 @@ class BasicTest(Test):
                 "SKIP 1",
                 result.stdout_text,
             )
+            self.assertIn(
+                "SKIP: Dependency was not fulfilled.",
+                result.stdout_text,
+            )
             self.assertNotIn(
                 "-foo-bar-",
                 result.stdout_text,
@@ -162,7 +188,7 @@ class BasicTest(Test):
     @skipUnless(os.getenv("CI"), skip_install_message)
     def test_multiple_success(self):
         with script.Script(
-            os.path.join(self.workdir, "test_multiple_success.py"), MULTIPLE_SUCCESS
+            os.path.join(self.tmpdir.name, "test_multiple_success.py"), MULTIPLE_SUCCESS
         ) as test:
             command = self.get_command(test.path)
             result = process.run(command, ignore_status=True)
@@ -179,7 +205,7 @@ class BasicTest(Test):
     @skipUnless(os.getenv("CI"), skip_install_message)
     def test_multiple_fails(self):
         with script.Script(
-            os.path.join(self.workdir, "test_multiple_fail.py"), MULTIPLE_FAIL
+            os.path.join(self.tmpdir.name, "test_multiple_fail.py"), MULTIPLE_FAIL
         ) as test:
             command = self.get_command(test.path)
             result = process.run(command, ignore_status=True)

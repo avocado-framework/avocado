@@ -62,6 +62,23 @@ def url_open(url, data=None, timeout=5):
     return result
 
 
+def _url_download(url, filename, data):
+    src_file = url_open(url, data=data)
+    if not src_file:
+        msg = (
+            "Failed to get file. Probably timeout was reached when "
+            "connecting to the server.\n"
+        )
+        sys.stderr.write(msg)
+        sys.exit(1)
+
+    try:
+        with open(filename, "wb") as dest_file:
+            shutil.copyfileobj(src_file, dest_file)
+    finally:
+        src_file.close()
+
+
 def url_download(url, filename, data=None, timeout=300):
     """
     Retrieve a file from given url.
@@ -72,24 +89,7 @@ def url_download(url, filename, data=None, timeout=300):
     :param timeout: (optional) default timeout in seconds.
     :return: `None`.
     """
-
-    def download():
-        src_file = url_open(url, data=data)
-        if not src_file:
-            msg = (
-                "Failed to get file. Probably timeout was reached when "
-                "connecting to the server.\n"
-            )
-            sys.stderr.write(msg)
-            sys.exit(1)
-
-        try:
-            with open(filename, "wb") as dest_file:
-                shutil.copyfileobj(src_file, dest_file)
-        finally:
-            src_file.close()
-
-    process = Process(target=download)
+    process = Process(target=_url_download, args=(url, filename, data))
     log.info("Fetching %s -> %s", url, filename)
     process.start()
     process.join(timeout)

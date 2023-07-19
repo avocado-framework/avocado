@@ -1,7 +1,8 @@
 import io
+import sys
 import unittest.mock
 
-from avocado import Test
+from avocado import Test, skipIf
 from avocado.utils import linux_modules
 
 
@@ -54,6 +55,7 @@ class Modules(Test):
         file_mock.__exit__ = unittest.mock.Mock()
         return file_mock
 
+    @skipIf(sys.platform.startswith("darwin"), "macOS does not support Linux Modules")
     def test_is_module_loaded(self):
         with unittest.mock.patch(
             "builtins.open", return_value=self._get_data_mock("proc_modules")

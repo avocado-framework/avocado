@@ -1,9 +1,9 @@
+import gc
 import logging
 import sys
 import time
 
-from avocado.core import output
-from avocado.core.streams import BUILTIN_STREAMS
+from avocado.core.output import split_loggers_and_levels
 
 
 class GenericMessage:
@@ -60,6 +60,7 @@ class FinishedMessage(GenericMessage):
         class_name=None,
         fail_class=None,
         traceback=None,
+        **kwargs,
     ):  # pylint: disable=W0221
         """Creates finished message with all necessary information.
 
@@ -79,14 +80,13 @@ class FinishedMessage(GenericMessage):
         :return: finished message
         :rtype: dict
         """
-        return super().get(
-            result=result,
-            fail_reason=fail_reason,
-            returncode=returncode,
-            class_name=class_name,
-            fail_class=fail_class,
-            traceback=traceback,
-        )
+        kwargs["result"] = result
+        kwargs["fail_reason"] = fail_reason
+        kwargs["returncode"] = returncode
+        kwargs["class_name"] = class_name
+        kwargs["fail_class"] = fail_class
+        kwargs["traceback"] = traceback
+        return super().get(**kwargs)
 
 
 class GenericRunningMessage(GenericMessage):
@@ -207,7 +207,9 @@ class RunnerLogHandler(logging.Handler):
             kwargs.update(**self.kwargs)
         else:
             kwargs = self.kwargs
+        gc.disable()
         self.queue.put(self.message.get(msg, **kwargs))
+        gc.enable()
 
 
 class StreamToQueue:
@@ -224,7 +226,9 @@ class StreamToQueue:
         self.message = _supported_types[message_type]
 
     def write(self, buf):
+        gc.disable()
         self.queue.put(self.message.get(buf))
+        gc.enable()
 
     def flush(self):
         pass
@@ -243,50 +247,34 @@ def start_logging(config, queue):
     :type queue: multiprocessing.SimpleQueue
     """
 
-    def split_loggers_and_levels(enabled_loggers, default_level):
-        for logger_level_split in map(lambda x: x.split(":"), enabled_loggers):
-            logger_name, *level = logger_level_split
-            yield logger_name, level[0] if len(level) > 0 else default_level
-
     log_level = config.get("job.output.loglevel", logging.DEBUG)
     log_handler = RunnerLogHandler(queue, "log")
     fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
 
-    # main log = 'avocado'
-    logger = logging.getLogger("avocado")
+    # root log
+    logger = logging.getLogger("")
     logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-    logger.propagate = False
+    logger.setLevel(logging.NOTSET)
 
-    # LOG_JOB = 'avocado.test'
-    log = output.LOG_JOB
-    log.addHandler(log_handler)
-    log.setLevel(log_level)
-    log.propagate = False
+    # main log = 'avocado'
+    logging.getLogger("avocado").setLevel(log_level)
+
+    # 'avocado.test'
+    logging.getLogger("avocado.test").setLevel(log_level)
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
 
-    # output custom test loggers
-    enabled_loggers = config.get("core.show")
-    output_handler = RunnerLogHandler(queue, "output")
-    output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
-    user_streams = [
-        user_streams
-        for user_streams in enabled_loggers
-        if user_streams not in BUILTIN_STREAMS
-    ]
-    for user_stream, level in split_loggers_and_levels(user_streams, log_level):
-        custom_logger = logging.getLogger(user_stream)
-        custom_logger.addHandler(output_handler)
-        custom_logger.setLevel(level)
-
     # store custom test loggers
     enabled_loggers = config.get("job.run.store_logging_stream")
-    for enabled_logger, level in split_loggers_and_levels(enabled_loggers, log_level):
-        store_stream_handler = RunnerLogHandler(queue, "file", {"path": enabled_logger})
+    for enabled_logger, level in split_loggers_and_levels(enabled_loggers):
+        log_path = f"{enabled_logger}.{logging.getLevelName(level)}.log"
+        if not level:
+            level = log_level
+            log_path = f"{enabled_logger}.log"
+        store_stream_handler = RunnerLogHandler(queue, "file", {"path": log_path})
         store_stream_handler.setFormatter(formatter)
         output_logger = logging.getLogger(enabled_logger)
         output_logger.addHandler(store_stream_handler)

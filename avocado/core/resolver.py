@@ -104,6 +104,8 @@ class Resolver(EnabledExtensionManager):
     resolver plugins and a resolution policy.
     """
 
+    PLUGIN_DESCRIPTION = "Plugins that resolve test references (resolver)"
+
     DEFAULT_POLICY = {
         ReferenceResolutionResult.SUCCESS: ReferenceResolutionAction.RETURN,
         ReferenceResolutionResult.NOTFOUND: ReferenceResolutionAction.CONTINUE,
@@ -144,6 +146,8 @@ class Discoverer(EnabledExtensionManager):
     When the user didn't provide any test references, Discoverer will discover
     tests from different data according to active discoverer plugins.
     """
+
+    PLUGIN_DESCRIPTION = "Plugins that discover tests without references (discoverer)"
 
     def __init__(self, config=None):
         super().__init__("avocado.plugins.discoverer", invoke_kwds={"config": config})
@@ -276,7 +280,10 @@ def resolve(references, hint=None, ignore_missing=True, config=None):
         # resolution process
         missing = [_ for _ in missing if not os.path.isdir(_)]
         if missing:
-            msg = f"Could not resolve references: {','.join(missing)}"
+            msg = (
+                f"No tests found for given test references: {', '.join(missing)}\n"
+                f"Try 'avocado -V list {' '.join(missing)}' for details"
+            )
             raise JobTestSuiteReferenceResolutionError(msg)
 
     return resolutions

@@ -1,6 +1,8 @@
+import multiprocessing
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import pkg_resources
@@ -96,9 +98,14 @@ class ExecTestRunner(BaseRunner):
         avocado_test_env_variables = {
             "AVOCADO_VERSION": self._get_avocado_version(),
             "AVOCADO_TEST_WORKDIR": workdir,
+            "AVOCADO_TEST_BASEDIR": os.path.dirname(os.path.abspath(runnable.uri)),
         }
         if runnable.output_dir:
+            avocado_test_env_variables["AVOCADO_TEST_LOGDIR"] = runnable.output_dir
             avocado_test_env_variables["AVOCADO_TEST_OUTPUTDIR"] = runnable.output_dir
+            avocado_test_env_variables["AVOCADO_TEST_LOGFILE"] = os.path.join(
+                runnable.output_dir, "debug.log"
+            )
         return avocado_test_env_variables
 
     @staticmethod
@@ -205,6 +212,8 @@ class RunnerApp(BaseRunnerApp):
 
 
 def main():
+    if sys.platform == "darwin":
+        multiprocessing.set_start_method("fork")
     app = RunnerApp(print)
     app.run()
 

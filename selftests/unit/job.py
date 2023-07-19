@@ -8,7 +8,7 @@ from avocado.core.exceptions import JobBaseException, JobTestSuiteDuplicateNameE
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.suite import TestSuite, TestSuiteStatus
 from avocado.utils import path as utils_path
-from selftests.utils import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import BASEDIR, setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 
@@ -96,7 +96,13 @@ class JobTest(unittest.TestCase):
         self.assertEqual(suite.status, TestSuiteStatus.RESOLUTION_NOT_STARTED)
 
     def test_suite_tests_found(self):
-        suite = TestSuite.from_config({"resolver.references": ["/bin/true"]})
+        suite = TestSuite.from_config(
+            {
+                "resolver.references": [
+                    os.path.join(BASEDIR, "examples", "tests", "true")
+                ]
+            }
+        )
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_FOUND)
 
     def test_suite_tests_not_found(self):
@@ -271,13 +277,18 @@ class JobTest(unittest.TestCase):
         config = {
             "run.results_dir": self.tmpdir.name,
             "core.show": ["none"],
-            "resolver.references": ["/bin/true"],
+            "resolver.references": [os.path.join(BASEDIR, "examples", "tests", "true")],
         }
 
-        suite_config = {"resolver.references": ["/bin/false"]}
+        suite_config = {
+            "resolver.references": [os.path.join(BASEDIR, "examples", "tests", "false")]
+        }
         self.job = job.Job.from_config(config, [suite_config])
         self.job.setup()
-        self.assertEqual(self.job.config.get("resolver.references"), ["/bin/true"])
+        self.assertEqual(
+            self.job.config.get("resolver.references"),
+            [os.path.join(BASEDIR, "examples", "tests", "true")],
+        )
 
     def test_job_dryrun_no_unique_job_id(self):
         config = {
@@ -304,7 +315,9 @@ class JobTest(unittest.TestCase):
         """This will test if test suites are inheriting configs from job."""
         config = {"core.show": ["none"], "run.results_dir": self.tmpdir.name}
 
-        suite_config = {"resolver.references": ["/bin/true"]}
+        suite_config = {
+            "resolver.references": [os.path.join(BASEDIR, "examples", "tests", "true")]
+        }
 
         # Manual/Custom method
         suite = TestSuite("foo-test", config=suite_config, job_config=config)
@@ -320,7 +333,13 @@ class JobTest(unittest.TestCase):
         )
 
         # Automatic method passing only one config
-        config.update({"resolver.references": ["/bin/true"]})
+        config.update(
+            {
+                "resolver.references": [
+                    os.path.join(BASEDIR, "examples", "tests", "true")
+                ]
+            }
+        )
         self.job = job.Job.from_config(job_config=config)
         self.assertEqual(
             self.job.test_suites[0].config.get("run.results_dir"), self.tmpdir.name
@@ -349,7 +368,10 @@ class JobTest(unittest.TestCase):
 
     def test_job_get_failed_tests(self):
         config = {
-            "resolver.references": ["/bin/true", "/bin/false"],
+            "resolver.references": [
+                os.path.join(BASEDIR, "examples", "tests", "true"),
+                os.path.join(BASEDIR, "examples", "tests", "false"),
+            ],
             "run.results_dir": self.tmpdir.name,
             "core.show": ["none"],
         }
@@ -361,7 +383,10 @@ class JobTest(unittest.TestCase):
 
     def test_job_dryrun(self):
         config = {
-            "resolver.references": ["/bin/true", "/bin/false"],
+            "resolver.references": [
+                os.path.join(BASEDIR, "examples", "tests", "true"),
+                os.path.join(BASEDIR, "examples", "tests", "false"),
+            ],
             "run.results_dir": self.tmpdir.name,
             "run.dry_run.enabled": True,
             "core.show": ["none"],
@@ -374,7 +399,9 @@ class JobTest(unittest.TestCase):
 
     def test_job_duplicate_suite_names(self):
         config = {"core.show": ["none"], "run.results_dir": self.tmpdir.name}
-        suite_config = {"resolver.references": ["/bin/true"]}
+        suite_config = {
+            "resolver.references": [os.path.join(BASEDIR, "examples", "tests", "true")]
+        }
         suite_1 = TestSuite("suite", config=suite_config)
         suite_2 = TestSuite("suite", config=suite_config)
         with self.assertRaises(JobTestSuiteDuplicateNameError):

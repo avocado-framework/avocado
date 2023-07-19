@@ -119,10 +119,16 @@ class StartMessageHandler(BaseMessageHandler):
         """
         task_id = TestID.from_identifier(task.identifier)
         base_path = job.test_results_path
-        task_path = os.path.join(base_path, task_id.str_filesystem)
+        task_path = task.runnable.output_dir
         logfile = os.path.join(task_path, DEFAULT_LOG_FILE)
         os.makedirs(task_path, exist_ok=True)
         params = []
+        symlink_dir = task.metadata.get("symlink")
+        if symlink_dir:
+            os.makedirs(
+                os.path.abspath(os.path.join(symlink_dir, os.pardir)), exist_ok=True
+            )
+            os.symlink(task_path, symlink_dir, target_is_directory=True)
         if task.runnable.variant is not None:
             # convert variant into the list of parameters
             params = [
@@ -131,7 +137,6 @@ class StartMessageHandler(BaseMessageHandler):
                 for param in params[1]
             ]
 
-        open(logfile, "w", encoding="utf-8").close()
         metadata = {
             "job_logdir": job.logdir,
             "job_unique_id": job.unique_id,
@@ -364,10 +369,14 @@ class LogMessageHandler(BaseRunningMessageHandler):
         # and levels so that they are handled appropriately based on
         # the Avocado job logging configuration
         log_name = message.get("log_name")
-        if log_name is not None:
+        if log_name is not None and log_name != "avocado.app":
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
-            logger.log(level, message.get("log_message"))
+            log_message = f"{task.identifier}: {message.get('log_message')}"
+            logger_level = logger.level
+            logger.setLevel(level)
+            logger.log(level, log_message)
+            logger.setLevel(logger_level)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):

@@ -1,8 +1,15 @@
 #: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {
+    "app": "avocado.app",
+    "test": "avocado.test",
+    "job": "avocado.job",
+    "early": "avocado",
+}
+
+BUILTIN_STREAMS_DESCRIPTION = {
     "app": "application output",
     "test": "test output",
-    "debug": "tracebacks and other debugging info",
+    "job": "job output",
     "early": ("early logging of other streams, including test " "(very verbose)"),
 }
 

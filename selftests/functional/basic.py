@@ -8,6 +8,7 @@ import unittest
 import xml.dom.minidom
 import zipfile
 
+from avocado import Test
 from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
@@ -96,7 +97,7 @@ from avocado import Test
 
 class My(Test):
     def test(self):
-        logging.getLogger("some.other.logger").info("SHOULD NOT BE ON debug.log")
+        logging.getLogger("some.other.logger").info("SHOULD BE ON debug.log")
 """
 
 
@@ -476,7 +477,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         mytest.save()
         result = process.run(
-            f"{AVOCADO} --show test run --disable-sysinfo "
+            f"{AVOCADO} --show avocado.core run --disable-sysinfo "
             f"--job-results-dir {self.tmpdir.name} {mytest}"
         )
         self.assertIn(
@@ -531,6 +532,10 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertIn(
             b"Plant.test_plant_organic: preparing soil on row 0", result.stdout
         )
+        lines = result.stdout.split(b"\n")
+        self.assertEqual(
+            len(lines), len(set(lines)), "The --show option has duplicities"
+        )
 
     def test_empty_args_list(self):
         cmd_line = AVOCADO
@@ -563,7 +568,11 @@ class RunnerOperationTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
         self.assertEqual(result.stdout, b"")
-        self.assertEqual(result.stderr, b"Could not resolve references: sbrubles\n")
+        self.assertEqual(
+            result.stderr,
+            b"No tests found for given test references: sbrubles\n"
+            b"Try 'avocado -V list sbrubles' for details\n",
+        )
 
     def test_invalid_unique_id(self):
         cmd_line = (
@@ -696,7 +705,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         ) as mytest:
 
             cmd_line = (
-                f"{AVOCADO} run --disable-sysinfo "
+                f"{AVOCADO} --show=some.other.logger run --disable-sysinfo "
                 f"--job-results-dir {self.tmpdir.name} -- {mytest}"
             )
             result = process.run(cmd_line, ignore_status=True)
@@ -706,13 +715,17 @@ class RunnerOperationTest(TestCaseTmpDir):
                 expected_rc,
                 (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
             )
+            self.assertRegex(
+                result.stdout_text,
+                r"^some\.other\.logger\: .* SHOULD BE ON debug\.log\s$",
+            )
 
             test_log_dir = glob.glob(
                 os.path.join(self.tmpdir.name, "job-*", "test-results", "1-*")
             )[0]
             test_log_path = os.path.join(test_log_dir, "debug.log")
             with open(test_log_path, "rb") as test_log:  # pylint: disable=W1514
-                self.assertNotIn(b"SHOULD NOT BE ON debug.log", test_log.read())
+                self.assertIn(b"SHOULD BE ON debug.log", test_log.read())
 
     def test_store_logging_stream(self):
         cmd = (
@@ -728,27 +741,157 @@ class RunnerOperationTest(TestCaseTmpDir):
             "latest",
             "test-results",
             "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
-            "avocado.test.progress",
+            "avocado.test.progress.log",
         )
         self.assertTrue(os.path.exists(progress_info))
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "INFO | 1-examples/tests/logging_streams.py:"
-                "Plant.test_plant_organic: preparing soil on row 0",
+                "INFO | preparing soil on row 0",
+                stream_line,
+            )
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "avocado.test.progress.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress INFO | "
+                "1-examples/tests/logging_streams.py:Plant.test_plant_organic: "
+                "preparing soil on row 0",
+                stream_line,
+            )
+
+    def test_full_log(self):
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo -- examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "full.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream = file.read()
+            self.assertIn("avocado.job", stream)
+            self.assertIn("avocado.core", stream)
+            self.assertIn("avocado.test", stream)
+            self.assertIn("avocado.app", stream)
+
+    @unittest.skipUnless(
+        os.getenv("CI"),
+        "This test runs on CI environments only as it depends on the system package "
+        "manager, and some environments don't have it available.",
+    )
+    def test_store_logging_stream_external(self):
+        """
+        :avocado: dependency={"type": "ansible-module", "uri": "pip", "name": "matplotlib"}
+        """
+
+        def check_matplotlib_logs(file_path):
+            self.assertTrue(os.path.exists(file_path))
+            with open(file_path, encoding="utf-8") as file:
+                stream = file.read()
+                self.assertIn("matplotlib DEBUG|", stream)
+
+        log_dir = os.path.join(self.tmpdir.name, "latest")
+        test_log_dir = os.path.join(
+            log_dir,
+            "test-results",
+            "1-examples_tests_external_logging_stream.py_MatplotlibTest.test",
+        )
+
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo -- examples/tests/external_logging_stream.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        check_matplotlib_logs(os.path.join(log_dir, "full.log"))
+        check_matplotlib_logs(os.path.join(test_log_dir, "debug.log"))
+
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--store-logging-stream=matplotlib "
+            f"--disable-sysinfo -- examples/tests/external_logging_stream.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        check_matplotlib_logs(os.path.join(log_dir, "full.log"))
+        check_matplotlib_logs(os.path.join(log_dir, "matplotlib.log"))
+        check_matplotlib_logs(os.path.join(test_log_dir, "matplotlib.log"))
+        check_matplotlib_logs(os.path.join(test_log_dir, "debug.log"))
+
+    @unittest.skipUnless(
+        os.getenv("CI"),
+        "This test runs on CI environments only as it depends on the system package "
+        "manager, and some environments don't have it available.",
+    )
+    def test_show_external_log(self):
+        """
+        :avocado: dependency={"type": "ansible-module", "uri": "pip", "name": "matplotlib"}
+        """
+        cmd = (
+            f"{AVOCADO} --show=matplotlib run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo -- examples/tests/external_logging_stream.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertIn("matplotlib: ", result.stdout_text)
+
+    def test_store_logging_stream_level(self):
+        cmd = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--store-logging-stream=avocado.test.progress:error "
+            f"--disable-sysinfo -- examples/tests/logging_streams.py"
+        )
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "test-results",
+            "1-examples_tests_logging_streams.py_Plant.test_plant_organic",
+            "avocado.test.progress.ERROR.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress ERROR| Avocados are Gone",
+                stream_line,
+            )
+        progress_info = os.path.join(
+            self.tmpdir.name,
+            "latest",
+            "avocado.test.progress.ERROR.log",
+        )
+        self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info, encoding="utf-8") as file:
+            stream_line = file.readline()
+            self.assertIn(
+                "avocado.test.progress ERROR| 1-examples/tests/logging_streams.py:Plant.test_plant_organic: Avocados are Gone",
                 stream_line,
             )
 
 
-class DryRunTest(TestCaseTmpDir):
+class DryRunTest(Test):
     def test_dry_run(self):
         examples_path = os.path.join("examples", "tests")
         passtest = os.path.join(examples_path, "passtest.py")
         failtest = os.path.join(examples_path, "failtest.py")
         gendata = os.path.join(examples_path, "gendata.py")
         cmd = (
-            f"{AVOCADO} run --disable-sysinfo --dry-run "
-            f"--dry-run-no-cleanup --json - "
+            f"{AVOCADO} run --disable-sysinfo --dry-run --json - "
             f"-- {passtest} {failtest} {gendata}"
         )
         number_of_tests = 3

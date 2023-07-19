@@ -27,8 +27,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 101.0
-Release: 1%{?gitrel}%{?dist}
+Version: 102.0
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -66,7 +66,6 @@ BuildRequires: python3-yaml
 BuildRequires: python3-netifaces
 %if ! 0%{?rhel}
 BuildRequires: perl-Test-Harness
-BuildRequires: python3-elementpath
 BuildRequires: python3-xmlschema
 %endif
 BuildRequires: zstd
@@ -326,7 +325,7 @@ Requires: python3-avocado == %{version}-%{release}
 Requires: ansible-core
 
 %description -n python3-avocado-plugins-ansible
-Adds to Avocado the ability to use ansible modules as dependecies for
+Adds to Avocado the ability to use ansible modules as dependencies for
 tests.
 
 %files -n python3-avocado-plugins-ansible
@@ -409,6 +408,12 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jul 18 2023 Cleber Rosa <crosa@redhat.com> - 102.0-2
+- Removed python3-elementpath build requirement
+
+* Fri Jun 23 2023 Cleber Rosa <crosa@redhat.com> - 102.0-1
+- New release
+
 * Fri Mar 10 2023 Cleber Rosa <crosa@redhat.com> - 101.0-1
 - New release
 

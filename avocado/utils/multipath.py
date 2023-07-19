@@ -97,6 +97,24 @@ def get_mpath_name(wwid):
         return process.run(cmd, sudo=True).stdout_text.split()[0]
 
 
+def get_mpath_from_dm(dm_id):
+    """
+    Get the mpath name for given device mapper id
+
+    :param dev_mapper: Input device mapper dm-x
+    :return: mpath name like mpathx
+    :rtype: str
+    """
+    cmd = "multipathd show maps format '%d %n'"
+    try:
+        mpaths = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    except process.CmdError as ex:
+        raise MPException(f"Multipathd Command Failed : {ex} ")
+    for mpath in mpaths.splitlines():
+        if dm_id in mpath:
+            return mpath.split()[1]
+
+
 def get_multipath_wwids():
     """
     Get list of multipath wwids.
@@ -211,6 +229,32 @@ def get_path_status(disk_path):
             for paths in path_groups["paths"]:
                 if paths["dev"] == disk_path:
                     return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
+
+
+def get_mpath_paths_status(wwid):
+    """
+    Return the status of all paths of mpath device.
+
+    :param wwid: wwid or user friedly name of mpath.
+                 Example: mpatha or 360050768108001b3a800000000000296
+    :return: Dict in the format of {path: (dm status, dev status, checker status)}
+    """
+    mpath_op = get_multipath_details()
+    if not mpath_op:
+        return
+    wwid_paths = {}
+    for maps in mpath_op["maps"]:
+        if maps["name"] == wwid or maps["uuid"] == wwid:
+            for path_groups in maps["path_groups"]:
+                for paths in path_groups["paths"]:
+                    wwid_paths[paths["dev"]] = (
+                        paths["dm_st"],
+                        paths["dev_st"],
+                        paths["chk_st"],
+                    )
+    if len(wwid_paths) != 0:
+        return wwid_paths
+    return
 
 
 def fail_path(path):

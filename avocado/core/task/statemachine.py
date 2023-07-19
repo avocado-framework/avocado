@@ -4,9 +4,10 @@ import logging
 import multiprocessing
 import time
 
-from avocado.core.exceptions import TestFailFast
+from avocado.core.exceptions import JobFailFast
 from avocado.core.task.runtime import RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
+from avocado.core.utils import messages
 
 LOG = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class TaskStateMachine:
         self._finished = []
         self._lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
+        self._task_size = len(tasks)
 
         self._tasks_by_id = {
             str(runtime_task.task.identifier): runtime_task.task
@@ -61,6 +63,10 @@ class TaskStateMachine:
     @property
     def cache_lock(self):
         return self._cache_lock
+
+    @property
+    def task_size(self):
+        return self._task_size
 
     @property
     async def complete(self):
@@ -176,36 +182,36 @@ class Worker:
         )
 
     async def _send_finished_tasks_message(self, terminate_tasks, reason):
-        """Sends messages related to timeout to status repository.
-        When the task is terminated, it is necessary to send a finish message to status
-        repository to close logging. This method will send log message with timeout
-        information and finish message with right fail reason.
+        """Sends messages related to tasks being terminated to status repository.
 
-        :param terminate_tasks: runtime_tasks which were terminated
+        On normal conditions, the "avocado-runner-*" will produce messages
+        finishing each task.  But, under some conditions (such as timeouts,
+        interruptions requested by users, etc), it's necessary to do this on
+        the runner's behalf.
+
+        When a task is terminated, it is necessary to send a "finish" message
+        with the correct fail reason to the status repository, which will close
+        logging.  This method will also send a "log" message with the reason
+        (timeout, user interruption, etc).
+
+        :param terminate_tasks: runtime_tasks which were terminated and need
+                                to have messages sent on their behalf
         :type terminate_tasks: list
+        :param reason: a description of what caused the task interruption (timeout, user
+                       requested interruption, etc).
+        :type reason: str
         """
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
-            encoding = "utf-8"
-            log_message = {
-                "status": "running",
-                "type": "log",
-                "log": f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
-                f"Runner error occurred: {reason}".encode(encoding),
-                "encoding": encoding,
-                "time": time.monotonic(),
-                "id": task_id,
-                "job_id": job_id,
-            }
-            finish_message = {
-                "status": "finished",
-                "result": "interrupted",
-                "fail_reason": f"Test interrupted: {reason}",
-                "time": time.monotonic(),
-                "id": task_id,
-                "job_id": job_id,
-            }
+            log_message = messages.LogMessage.get(
+                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Runner error occurred: {reason}",
+                id=task_id,
+                job_id=job_id,
+            )
+            finish_message = messages.FinishedMessage.get(
+                "interrupted", f"Test interrupted: {reason}", id=task_id, job_id=job_id
+            )
             try:
                 current_status, _ = self._state_machine._status_repo._status[task_id]
             except KeyError:
@@ -271,6 +277,25 @@ class Worker:
                 LOG.debug(
                     'Task "%s" has failed dependencies', runtime_task.task.identifier
                 )
+                task_id = str(runtime_task.task.identifier)
+                job_id = runtime_task.task.job_id
+                reason = "Dependency was not fulfilled."
+                start_message = messages.StartedMessage.get(
+                    output_dir=runtime_task.task.runnable.output_dir,
+                    id=task_id,
+                    job_id=job_id,
+                )
+                log_message = messages.LogMessage.get(
+                    f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | {reason}",
+                    id=task_id,
+                    job_id=job_id,
+                )
+                finish_message = messages.FinishedMessage.get(
+                    "skip", reason, id=task_id, job_id=job_id
+                )
+                self._state_machine._status_repo.process_message(start_message)
+                self._state_machine._status_repo.process_message(log_message)
+                self._state_machine._status_repo.process_message(finish_message)
                 runtime_task.result = "fail"
                 await self._state_machine.finish_task(
                     runtime_task, RuntimeTaskStatus.FAIL_TRIAGE
@@ -291,6 +316,25 @@ class Worker:
                         return
 
                     if is_task_in_cache:
+                        task_id = str(runtime_task.task.identifier)
+                        job_id = runtime_task.task.job_id
+                        start_message = messages.StartedMessage.get(
+                            output_dir=runtime_task.task.runnable.output_dir,
+                            id=task_id,
+                            job_id=job_id,
+                        )
+                        log_message = messages.LogMessage.get(
+                            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | "
+                            f"Dependency fulfilled from cache.",
+                            id=task_id,
+                            job_id=job_id,
+                        )
+                        finish_message = messages.FinishedMessage.get(
+                            "pass", id=task_id, job_id=job_id
+                        )
+                        self._state_machine._status_repo.process_message(start_message)
+                        self._state_machine._status_repo.process_message(log_message)
+                        self._state_machine._status_repo.process_message(finish_message)
                         await self._state_machine.finish_task(
                             runtime_task, RuntimeTaskStatus.IN_CACHE
                         )
@@ -399,7 +443,7 @@ class Worker:
         )
         if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
             await self._state_machine.abort(RuntimeTaskStatus.FAILFAST)
-            raise TestFailFast("Interrupting job (failfast).")
+            raise JobFailFast("Interrupting job (failfast).")
 
         await self._state_machine.finish_task(runtime_task, RuntimeTaskStatus.FINISHED)
 
@@ -411,15 +455,17 @@ class Worker:
         await self._state_machine.abort(task_status)
         terminated = []
         while True:
-            is_complete = await self._state_machine.complete
             async with self._state_machine.lock:
                 try:
                     runtime_task = self._state_machine.monitored.pop(0)
+                    await self._terminate_task(runtime_task, task_status)
+                    terminated.append(runtime_task)
                 except IndexError:
-                    if is_complete:
+                    if (
+                        len(self._state_machine.finished) + len(terminated)
+                        == self._state_machine.task_size
+                    ):
                         break
-                await self._terminate_task(runtime_task, task_status)
-                terminated.append(runtime_task)
         return terminated
 
     async def terminate_tasks_timeout(self):

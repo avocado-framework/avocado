@@ -12,6 +12,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+import multiprocessing
 import os
 import sys
 import tempfile
@@ -42,32 +43,32 @@ def get_crash_dir():
 
 
 def handle_exception(*exc_info):
-    # Print traceback if AVOCADO_LOG_DEBUG environment variable is set
-    msg = "Avocado crashed:\n" + "".join(traceback.format_exception(*exc_info))
-    msg += "\n"
-    if os.environ.get("AVOCADO_LOG_DEBUG"):
-        os.write(2, msg.encode("utf-8"))
+    tb = "".join(traceback.format_exception(*exc_info))
     # Store traceback in data_dir or TMPDIR
     prefix = "avocado-traceback-"
     prefix += time.strftime("%F_%T") + "-"
     tmp, name = tempfile.mkstemp(".log", prefix, get_crash_dir())
-    os.write(tmp, msg.encode("utf-8"))
+    os.write(tmp, tb.encode("utf-8"))
     os.close(tmp)
     if exc_info[0] is KeyboardInterrupt:
-        msg = f"{exc_info[0].__doc__}\nYou can find details in {name}\n"
+        os.write(
+            2,
+            f"{exc_info[0].__doc__}\nYou can find details in {name}\n".encode("utf-8"),
+        )
         exit_code = exit_codes.AVOCADO_JOB_INTERRUPTED
     else:
-        # Print friendly message in console-like output
-        msg = (
-            f"Avocado crashed unexpectedly: {exc_info[1]}\n"
-            f"You can find details in {name}\n"
-        )
+        # Print friendly message and traceback in console-like output
+        os.write(2, f"Avocado crashed unexpectedly: {exc_info[1]}\n".encode("utf-8"))
+        os.write(2, tb.encode("utf-8"))
+        os.write(2, f"\nYou can also find details in {name}\n".encode("utf-8"))
         exit_code = exit_codes.AVOCADO_GENERIC_CRASH
-    os.write(2, msg.encode("utf-8"))
     sys.exit(exit_code)
 
 
 def main():
+    if sys.platform == "darwin":
+        multiprocessing.set_start_method("fork")
+
     sys.excepthook = handle_exception
     from avocado.core.app import AvocadoApp  # pylint: disable=E0611
 

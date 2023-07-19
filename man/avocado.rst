@@ -766,7 +766,7 @@ Avocado is released under GPLv2 (explicit version)
 https://gnu.org/licenses/gpl-2.0.html. Even though most of the current
 code is licensed under a "and any later version" clause, some parts are
 specifically bound to the version 2 of the license and therefore that's
-the official license of the prject itself. For more details, please see
+the official license of the project itself. For more details, please see
 the LICENSE file in the project source code directory.
 
 MORE INFORMATION

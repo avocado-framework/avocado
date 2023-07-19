@@ -13,6 +13,8 @@
 # Copyright: Virtuozzo Inc. 2017
 # Authors: Dmitry Monakhov <dmonakhov@openvz.org>
 
+import os
+
 from setuptools import setup
 
 # Handle systems with setuptools < 40
@@ -23,12 +25,23 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=["avocado_result_upload"])
 
-VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
+BASE_PATH = os.path.dirname(__file__)
+with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
+    VERSION = version_file.read().strip()
+
+
+def get_long_description():
+    with open(os.path.join(BASE_PATH, "README.rst"), "rt", encoding="utf-8") as readme:
+        readme_contents = readme.read()
+    return readme_contents
+
 
 setup(
     name="avocado-framework-plugin-result-upload",
-    description="Avocado Plugin to propagate Job results to remote host",
     version=VERSION,
+    description="Avocado Plugin to propagate Job results to remote host",
+    long_description=get_long_description(),
+    long_description_content_type="text/x-rst",
     author="Avocado Developers",
     author_email="avocado-devel@redhat.com",
     url="http://avocado-framework.github.io/",

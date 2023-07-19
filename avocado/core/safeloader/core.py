@@ -53,12 +53,35 @@ def get_methods_info(statement_body, class_tags, class_dependencies):
 def _extend_test_list(current, new):
     for test in new:
         test_method_name = test[0]
-        if test_method_name not in [_[0] for _ in current]:
+        found = False
+        for current_test in current:
+            if test_method_name == current_test[0]:
+                _exted_tests_tags([current_test], test[1])
+                found = True
+                break
+        if not found:
             current.append(test)
 
 
+def _exted_tests_tags(tests, tags, force_update=False):
+    for test in tests:
+        for tag, value in tags.items():
+            if force_update:
+                test[1][tag] = value
+            else:
+                test[1].setdefault(tag, value)
+
+
 def _examine_same_module(
-    parents, info, disabled, match, module, target_module, target_class, determine_match
+    parents,
+    info,
+    disabled,
+    match,
+    module,
+    target_module,
+    target_class,
+    determine_match,
+    info_class_tags,
 ):
     # Searching the parents in the same module
     for parent in parents[:]:
@@ -72,7 +95,7 @@ def _examine_same_module(
         # From this point we use `_$variable` to name temporary returns
         # from method calls that are to-be-assigned/combined with the
         # existing `$variable`.
-        _info, _disable, _match = _examine_class(
+        _info, _disable, parent_tags, _match = _examine_class(
             target_module,
             target_class,
             determine_match,
@@ -82,6 +105,8 @@ def _examine_same_module(
         )
         if _info:
             parents.remove(parent)
+            _exted_tests_tags(info, parent_tags)
+            _exted_tests_tags(_info, info_class_tags, True)
             _extend_test_list(info, _info)
             disabled.update(_disable)
         if _match is not match:
@@ -213,11 +238,13 @@ def _examine_class(
     :type match: bool
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
-              look like avocado tests but are force-disabled.
+              look like avocado tests but are force-disabled;
+              third is dict of class tags.
     :rtype: tuple
     """
     module = PythonModule(path, target_module, target_class)
     info = []
+    class_tags = {}
     disabled = set()
 
     for klass in module.iter_classes(class_name):
@@ -229,9 +256,10 @@ def _examine_class(
         if match is False:
             match = module.is_matching_klass(klass)
 
+        class_tags = get_docstring_directives_tags(docstring)
         info = get_methods_info(
             klass.body,
-            get_docstring_directives_tags(docstring),
+            class_tags,
             get_docstring_directives_dependencies(docstring),
         )
 
@@ -247,6 +275,7 @@ def _examine_class(
             target_module,
             target_class,
             determine_match,
+            class_tags,
         )
 
         # If there are parents left to be discovered, they
@@ -266,7 +295,7 @@ def _examine_class(
             except ClassNotSuitable:
                 continue
 
-            _info, _disabled, _match = _examine_class(
+            _info, _disabled, parent_tags, _match = _examine_class(
                 target_module,
                 target_class,
                 determine_match,
@@ -275,6 +304,8 @@ def _examine_class(
                 match,
             )
             if _info:
+                _exted_tests_tags(info, parent_tags)
+                _exted_tests_tags(_info, class_tags, True)
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
             if _match is not match:
@@ -285,7 +316,7 @@ def _examine_class(
         if imported_symbol:
             found_spec = imported_symbol.get_importable_spec()
             if found_spec:
-                _info, _disabled, _match = _examine_class(
+                _info, _disabled, _class_tags, _match = _examine_class(
                     target_module,
                     target_class,
                     determine_match,
@@ -294,12 +325,17 @@ def _examine_class(
                     match,
                 )
                 if _info:
+                    _exted_tests_tags(info, _class_tags)
+                    _exted_tests_tags(_info, class_tags, True)
                     _extend_test_list(info, _info)
+                    _class_tags.update(class_tags)
+                    class_tags = _class_tags
                     disabled.update(_disabled)
+
                 if _match is not match:
                     match = _match
 
-    return info, disabled, match
+    return info, disabled, class_tags, match
 
 
 def find_python_tests(target_module, target_class, determine_match, path):
@@ -364,9 +400,10 @@ def find_python_tests(target_module, target_class, determine_match, path):
             match = True
         else:
             match = module.is_matching_klass(klass)
+        class_tags = get_docstring_directives_tags(docstring)
         info = get_methods_info(
             klass.body,
-            get_docstring_directives_tags(docstring),
+            class_tags,
             get_docstring_directives_dependencies(docstring),
         )
         # Getting the list of parents of the current class
@@ -381,6 +418,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
             target_module,
             target_class,
             determine_match,
+            class_tags,
         )
 
         # If there are parents left to be discovered, they
@@ -400,7 +438,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
             except ClassNotSuitable:
                 continue
 
-            _info, _dis, _match = _examine_class(
+            _info, _dis, parent_tags, _match = _examine_class(
                 target_module,
                 target_class,
                 determine_match,
@@ -409,7 +447,9 @@ def find_python_tests(target_module, target_class, determine_match, path):
                 match,
             )
             if _info:
-                info.extend(_info)
+                _exted_tests_tags(info, parent_tags)
+                _exted_tests_tags(_info, class_tags, True)
+                _extend_test_list(info, _info)
                 disabled.update(_dis)
             if _match is not match:
                 match = _match

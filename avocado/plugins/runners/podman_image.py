@@ -1,7 +1,8 @@
 import asyncio
 import logging
+import sys
 import time
-from multiprocessing import Process, SimpleQueue
+from multiprocessing import Process, SimpleQueue, set_start_method
 
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
@@ -68,6 +69,8 @@ class RunnerApp(BaseRunnerApp):
 
 
 def main():
+    if sys.platform == "darwin":
+        set_start_method("fork")
     app = RunnerApp(print)
     app.run()
 

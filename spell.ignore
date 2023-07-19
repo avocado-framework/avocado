@@ -757,3 +757,5 @@ fedoraproject
 ansible
 ansible-module
 environ
+LXC
+rootfs

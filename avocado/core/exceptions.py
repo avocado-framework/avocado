@@ -22,11 +22,8 @@ class JobBaseException(Exception):
     """
     The parent of all job exceptions.
 
-    You should be never raising this, but just in case, we'll set its
-    status' as FAIL.
+    It should never be raised directly.
     """
-
-    status = "FAIL"
 
 
 class JobError(JobBaseException):
@@ -35,16 +32,12 @@ class JobError(JobBaseException):
     A generic error happened during a job execution.
     """
 
-    status = "ERROR"
-
 
 class JobTestSuiteError(JobBaseException):
 
     """
     Generic error happened during the creation of a job's test suite
     """
-
-    status = "ERROR"
 
 
 class JobTestSuiteEmptyError(JobTestSuiteError):
@@ -53,16 +46,12 @@ class JobTestSuiteEmptyError(JobTestSuiteError):
     Error raised when the creation of a test suite results in an empty suite
     """
 
-    status = "ERROR"
-
 
 class JobTestSuiteDuplicateNameError(JobTestSuiteError):
 
     """
     Error raised when a test suite name is not unique in a job
     """
-
-    status = "ERROR"
 
 
 class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
@@ -71,7 +60,15 @@ class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
     Test References did not produce a valid reference by any resolver
     """
 
-    status = "ERROR"
+
+class JobFailFast(JobBaseException):
+
+    """
+    Indicates that the test has failed because failfast is enabled.
+
+    Should be thrown when a test has failed and failfast is enabled. This will
+    indicate that other tests will be skipped.
+    """
 
 
 class OptionValidationError(Exception):
@@ -79,8 +76,6 @@ class OptionValidationError(Exception):
     """
     An invalid option was passed to the test runner
     """
-
-    status = "ERROR"
 
 
 class TestBaseException(Exception):
@@ -117,33 +112,6 @@ class TestError(TestBaseException):
     status = "ERROR"
 
 
-class TestNotFoundError(TestBaseException):
-
-    """
-    Indicates that the test was not found in the test directory.
-    """
-
-    status = "ERROR"
-
-
-class TestTimeoutInterrupted(TestBaseException):
-
-    """
-    Indicates that the test did not finish before the timeout specified.
-    """
-
-    status = "INTERRUPTED"
-
-
-class TestInterruptedError(TestBaseException):
-
-    """
-    Indicates that the test was interrupted by the user (Ctrl+C)
-    """
-
-    status = "INTERRUPTED"
-
-
 class TestAbortError(TestBaseException):
 
     """
@@ -177,18 +145,6 @@ class TestFail(TestBaseException, AssertionError):
     """
 
     status = "FAIL"
-
-
-class TestFailFast(TestBaseException):
-
-    """
-    Indicates that the test has failed because failfast is enabled.
-
-    Should be thrown when a test has failed and failfast is enabled. This will
-    indicate that other tests will be skipped.
-    """
-
-    status = "SKIP"
 
 
 class TestWarn(TestBaseException):

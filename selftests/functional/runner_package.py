@@ -3,7 +3,10 @@ import sys
 import unittest
 
 from avocado.utils import process
+from avocado.utils.software_manager.manager import SoftwareManager
 from selftests.utils import BASEDIR
+
+SOFTWARE_MANAGER_CAPABLE = SoftwareManager().is_capable()
 
 RUNNER = f"{sys.executable} -m avocado.plugins.runners.package"
 
@@ -27,6 +30,9 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'log': b'Package name should be passed as kwargs", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
+    @unittest.skipUnless(
+        SOFTWARE_MANAGER_CAPABLE, "Not capable of a SoftwareManager backend"
+    )
     @unittest.skipUnless(
         os.getenv("CI"),
         "This test runs on CI environments"
