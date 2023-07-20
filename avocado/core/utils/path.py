@@ -29,10 +29,8 @@ def system_wide_or_base_path(file_path):
     :type file_path: str
     :rtype: str
     """
-    if os.path.isabs(file_path):
-        abs_path = file_path
-    else:
-        abs_path = os.path.join(os.path.sep, file_path)
-    if os.path.exists(abs_path):
-        return abs_path
-    return prepend_base_path(file_path)
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(os.path.sep, file_path)
+    if not os.path.exists(file_path):
+        return prepend_base_path(file_path)
+    return file_path
