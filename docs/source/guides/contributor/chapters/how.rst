@@ -128,13 +128,7 @@ the code based on some review and, if not, why. Feel free to disagree with the
 reviewer, they probably have different use cases and opinions, which is
 expected. Try describing yours and suggest other solutions, if necessary.
 
-New versions of your code should not be force-updated (unless explicitly
-requested by the code reviewer). Instead, you should:
-
-- Create a new branch out of your previous branch::
-
-    $ git checkout my_new_local_branch
-    $ git checkout -b my_new_local_branch_v2
+Then, proceed to make the changes.  This is a typical workflow:
 
 - Code, and amend the commit(s) and/or create new commits. If you have
   more than one commit in the PR, you will probably need to rebase
@@ -149,13 +143,13 @@ requested by the code reviewer). Instead, you should:
 
 - Push your changes::
 
-    $ git push origin my_new_local_branch_v2
+    $ git push --force origin my_new_local_branch
 
-- Create a new Pull Request for this new branch. In the Pull Request
-  description, point the previous Pull Request and the changes the current Pull
-  Request introduced when compared to the previous Pull Request(s).
-
-- Close the previous Pull Request on GitHub.
+Please communicate to the reviewers what the summary of changes are.
+Also, make use of GitHub's features to ease the reviewers' life, such
+as marking comments as "resolved".  Reviewers should make use of
+GitHub's "compare" feature to more easily verify the changes since the
+last iteration.
 
 After your PR gets merged, you can sync the master branch on your local
 repository propagate the sync to the master branch in your fork repository on
