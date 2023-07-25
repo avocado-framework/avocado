@@ -337,9 +337,6 @@ class LogMessageHandler(BaseRunningMessageHandler):
     :param log_levelname: level of the logger, such as "INFO", required
                           if "log_name" is set
     :type log_levelname: string
-    :param log_message: message formatted as message only (no name, level
-                        or timestamp), require if "log_name" is set
-    :type log_message: string
 
     example: {'status': 'running', 'type': 'log', 'log': 'log message',
               'time': 18405.55351474}
@@ -348,7 +345,7 @@ class LogMessageHandler(BaseRunningMessageHandler):
 
     example: {'status': 'running', 'type': 'log', 'log': 'log message',
               'time': 18405.55351474, 'log_name': 'avocado.test.foo',
-              'log_levelname': 'INFO', 'log_message': 'foo content'}
+              'log_levelname': 'INFO'}
     """
 
     _tag = b"[stdlog] "
@@ -372,7 +369,7 @@ class LogMessageHandler(BaseRunningMessageHandler):
         if log_name is not None and log_name != "avocado.app":
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
-            log_message = f"{task.identifier}: {message.get('log_message')}"
+            log_message = f"{task.identifier}: {message.get('log').decode(message.get('encoding'))}"
             logger_level = logger.level
             logger.setLevel(level)
             logger.log(level, log_message)

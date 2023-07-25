@@ -198,11 +198,9 @@ class RunnerLogHandler(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         if self.message is LogMessage:
-            formatted_msg = self.message_only_formatter.format(record)
             kwargs = {
                 "log_name": record.name,
                 "log_levelname": record.levelname,
-                "log_message": formatted_msg,
             }
             kwargs.update(**self.kwargs)
         else:

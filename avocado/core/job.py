@@ -221,7 +221,20 @@ class Job:
             handler_filter=output.FilterTestMessage(),
         )
         output.add_log_handler(
-            logging.getLogger(""), logging.FileHandler, full_log, self.loglevel, fmt
+            logging.getLogger(""),
+            logging.FileHandler,
+            full_log,
+            self.loglevel,
+            fmt,
+            handler_filter=output.FilterTestMessage(),
+        )
+        output.add_log_handler(
+            logging.getLogger(""),
+            logging.FileHandler,
+            full_log,
+            self.loglevel,
+            "",
+            handler_filter=output.FilterTestMessageOnly(),
         )
 
         # --store-logging-stream files
@@ -235,7 +248,20 @@ class Job:
                 level = logging.DEBUG
                 logfile = os.path.join(self.logdir, f"{enabled_logger}.log")
             output.add_log_handler(
-                enabled_logger, logging.FileHandler, logfile, level, fmt
+                enabled_logger,
+                logging.FileHandler,
+                logfile,
+                level,
+                fmt,
+                handler_filter=output.FilterTestMessage(),
+            )
+            output.add_log_handler(
+                enabled_logger,
+                logging.FileHandler,
+                logfile,
+                level,
+                "",
+                handler_filter=output.FilterTestMessageOnly(),
             )
 
     def __stop_job_logging(self):

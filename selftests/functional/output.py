@@ -462,23 +462,22 @@ class OutputPluginTest(TestCaseTmpDir):
             expected_rc,
             (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
         )
-        self.assertEqual(
-            result.stdout_text,
-            (
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 0\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 1\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: preparing soil on row 2\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2\n"
-                "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic: Avocados are Gone\n"
-            ),
-        )
+        expected_tesult = [
+            "avocado.test.progress: 1-examples/tests/logging_streams.py:Plant.test_plant_organic:",
+            "logging_streams  L0017 INFO | preparing soil on row 0",
+            "logging_streams  L0017 INFO | preparing soil on row 1",
+            "logging_streams  L0017 INFO | preparing soil on row 2",
+            "logging_streams  L0021 INFO | letting soil rest before throwing seeds",
+            "logging_streams  L0026 INFO | throwing seeds on row 0",
+            "logging_streams  L0026 INFO | throwing seeds on row 1",
+            "logging_streams  L0026 INFO | throwing seeds on row 2",
+            "logging_streams  L0030 INFO | waiting for Avocados to grow",
+            "logging_streams  L0035 INFO | harvesting organic avocados on row 0",
+            "logging_streams  L0035 INFO | harvesting organic avocados on row 1",
+            "logging_streams  L0035 INFO | harvesting organic avocados on row 2",
+            "logging_streams  L0037 ERROR| Avocados are Gone",
+        ]
+        self.assertTrue(all([x in result.stdout_text for x in expected_tesult]))
 
     def test_silent_trumps_test(self):
         # Also verify --show=none can be supplied as run option

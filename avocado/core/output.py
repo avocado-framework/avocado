@@ -567,6 +567,11 @@ class FilterTestMessage(logging.Filter):
         return record.module != "messages" and record.funcName != "handle"
 
 
+class FilterTestMessageOnly(logging.Filter):
+    def filter(self, record):
+        return record.module == "messages" and record.funcName == "handle"
+
+
 class ProgressStreamHandler(logging.StreamHandler):
 
     """
