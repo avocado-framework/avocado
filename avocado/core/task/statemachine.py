@@ -182,13 +182,24 @@ class Worker:
         )
 
     async def _send_finished_tasks_message(self, terminate_tasks, reason):
-        """Sends messages related to timeout to status repository.
-        When the task is terminated, it is necessary to send a finish message to status
-        repository to close logging. This method will send log message with timeout
-        information and finish message with right fail reason.
+        """Sends messages related to tasks being terminated to status repository.
 
-        :param terminate_tasks: runtime_tasks which were terminated
+        On normal conditions, the "avocado-runner-*" will produce messages
+        finishing each task.  But, under some conditions (such as timeouts,
+        interruptions requested by users, etc), it's necessary to do this on
+        the runner's behalf.
+
+        When a task is terminated, it is necessary to send a "finish" message
+        with the correct fail reason to the status repository, which will close
+        logging.  This method will also send a "log" message with the reason
+        (timeout, user interruption, etc).
+
+        :param terminate_tasks: runtime_tasks which were terminated and need
+                                to have messages sent on their behalf
         :type terminate_tasks: list
+        :param reason: a description of what caused the task interruption (timeout, user
+                       requested interruption, etc).
+        :type reason: str
         """
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
