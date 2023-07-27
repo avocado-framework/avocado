@@ -154,7 +154,7 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
     :param signal: Signal number.
     """
     if get_owner_id(int(pid)) == 0:
-        kill_cmd = f"kill -{int(int(signal))} {int(int(pid))}"
+        kill_cmd = f"kill -{int(signal)} {int(pid)}"
         try:
             run(kill_cmd, sudo=True)
             return True
@@ -304,7 +304,7 @@ def process_in_ptree_is_defunct(ppid):
     except CmdError:  # Process doesn't exist
         return True
     for pid in pids:
-        cmd = f"ps --no-headers -o cmd {int(int(pid))}"
+        cmd = f"ps --no-headers -o cmd {int(pid)}"
         proc_name = system_output(cmd, ignore_status=True, verbose=False)
         if "<defunct>" in proc_name:
             defunct = True
@@ -795,7 +795,7 @@ class SubProcess:
             pids = get_children_pids(self.get_pid())
             pids.append(self.get_pid())
             for pid in pids:
-                kill_cmd = f"kill -{int(int(sig))} {int(pid)}"
+                kill_cmd = f"kill -{int(sig)} {int(pid)}"
                 with contextlib.suppress(Exception):
                     run(kill_cmd, sudo=True)
         else:
