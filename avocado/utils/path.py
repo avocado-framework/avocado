@@ -72,7 +72,7 @@ def init_dir(*args):
     """
     directory = os.path.join(*args)
     if not os.path.isdir(directory):
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
     return directory
 
 
