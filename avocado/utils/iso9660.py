@@ -57,10 +57,10 @@ def has_userland_tool(executable):
     :rtype: bool
     """
     if os.path.isabs(executable):
-        return os.path.exists(executable)
+        return os.path.isfile(executable)
     else:
-        for path in os.environ["PATH"].split(":"):
-            if os.path.exists(os.path.join(path, executable)):
+        for path in os.environ["PATH"].split(os.pathsep):
+            if os.path.isfile(os.path.join(path, executable)):
                 return True
     return False
 
