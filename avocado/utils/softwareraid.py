@@ -48,10 +48,7 @@ class SoftwareRaid:
         self.metadata = metadata
         self.disks = disks
         self.remadd = ""
-        if not spare_disks:
-            self.spare_disks = []
-        else:
-            self.spare_disks = spare_disks
+        self.spare_disks = spare_disks or []
 
     def _run_command(self, cmd, log_details=True, check_recovery=False):
         if process.system(cmd, ignore_status=True, shell=True) != 0:
