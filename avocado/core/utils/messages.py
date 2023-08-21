@@ -198,11 +198,9 @@ class RunnerLogHandler(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         if self.message is LogMessage:
-            formatted_msg = self.message_only_formatter.format(record)
             kwargs = {
                 "log_name": record.name,
                 "log_levelname": record.levelname,
-                "log_message": formatted_msg,
             }
             kwargs.update(**self.kwargs)
         else:
@@ -249,7 +247,7 @@ def start_logging(config, queue):
 
     log_level = config.get("job.output.loglevel", logging.DEBUG)
     log_handler = RunnerLogHandler(queue, "log")
-    fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
+    fmt = "%(asctime)s %(module)-16.16s L%(lineno)-.4d %(levelname)-5.5s| %(message)s"
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
 
