@@ -77,6 +77,19 @@ class Host:
             if mac in interface.get_hwaddr():
                 return interface
 
+    def get_all_hwaddr(self):
+        """Get a list of all mac address in the host
+
+        :return: list of mac addresses
+        """
+        cmd = "ip -j address"
+        output = run_command(cmd, self)
+        try:
+            result = json.loads(output)
+            return [str(item["address"]) for item in result]
+        except Exception as ex:
+            raise NWException(f"could not get mac addresses:" f" {ex}")
+
     def validate_mac_addr(self, mac_id):
         """Check if mac address is valid.
         This method checks if the mac address is 12 digit hexadecimal number.
