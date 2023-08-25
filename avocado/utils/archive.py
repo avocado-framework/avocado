@@ -280,7 +280,6 @@ class ArchiveFile:
                 return
             attr = info.external_attr >> 16
             if attr & stat.S_IFLNK == stat.S_IFLNK:
-                dst = os.path.join(dst_dir, path)
                 if not os.path.islink(dst):
                     # Link created as an ordinary file containing the dst path
                     with open(dst, "r") as dst_path:  # pylint: disable=W1514
@@ -289,12 +288,19 @@ class ArchiveFile:
                     # Link is already there and could be outdated. Let's read
                     # the original destination from the zip file.
                     src = self._engine.read(path)
-                os.remove(dst)
-                os.symlink(src, dst)
+                try:
+                    os.remove(dst)
+                    os.symlink(src, dst)
+                except Exception as e:
+                    LOG.warning(f"Failed to update symlink '{dst}': {str(e)}")
+                    continue
                 continue  # Don't override any other attributes on links
             mode = attr & 511  # Mask only permissions
             if mode and mode != 436:  # If mode is stored and is not default
-                os.chmod(dst, mode)
+                try:
+                    os.chmod(dst, mode)
+                except Exception as e:
+                    LOG.warning(f"Failed to update permissions for '{dst}': {str(e)}")
 
     def close(self):
         """
