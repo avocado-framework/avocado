@@ -176,15 +176,12 @@ class KernelBuild:
         make_args = []
         LOG.info("Starting build the kernel")
 
-        if njobs is None:
-            make_args.append("-j")
-        elif njobs > 0:
-            make_args.extend(["-j", str(njobs)])
+        if njobs is not None and njobs > 0:
+            make_args.append("-j" + str(njobs))
         make_args.extend(["-C", self._build_dir])
 
-        if binary_package is True:
-            if self.distro.name == "Ubuntu":
-                make_args.append("deb-pkg")
+        if binary_package and self.distro.name == "Ubuntu":
+            make_args.append("deb-pkg")
 
         build.make(self._build_dir, extra_args=" ".join(make_args))
 
