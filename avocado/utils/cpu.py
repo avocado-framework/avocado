@@ -163,6 +163,22 @@ def get_vendor():
     return None
 
 
+def get_revision():
+    """
+    Get revision from /proc/cpuinfo
+
+    :return: revision entry from /proc/cpuinfo file
+             e.g.:- '0080' for IBM POWER10 machine
+    :rtype: str
+    """
+    rev = None
+    proc_cpuinfo = genio.read_file("/proc/cpuinfo")
+    for line in proc_cpuinfo.splitlines():
+        if "revision" in line:
+            rev = line.split(" ")[3].strip()
+    return rev
+
+
 def get_arch():
     """Work out which CPU architecture we're running on."""
     cpu_table = [
