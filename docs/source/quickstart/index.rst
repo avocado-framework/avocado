@@ -20,14 +20,16 @@ test reference, which could be either a path to the file, or a recognizable
 name::
 
     $ avocado run /bin/true
-    JOB ID     : 3a5c4c51ceb5369f23702efb10b4209b111141b2
-    JOB LOG    : $HOME/avocado/job-results/job-2019-10-31T10.34-3a5c4c5/job.log
-     (1/1) /bin/true: PASS (0.04 s)
+    JOB ID     : e0134e010afa18b55d93276ac2a790dc38db7948
+    JOB LOG    : $HOME/avocado/job-results/job-2023-09-06T10.55-e0134e0/job.log
+      (1/1) /bin/true: STARTED
+      (1/1) /bin/true: PASS (0.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.15 s
+    JOB HTML   : $HOME/avocado/job-results/job-2023-09-06T10.55-e0134e0/results.html
+    JOB TIME   : 1.52 s
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance
-with our expectations, it passed! These are known as **simple tests**, but there
+with our expectations, it passed! These are known as **exec-test**, but there
 is also another type of test, which we call **instrumented tests**.
 
 .. tip:: See more at the `Test types`_ section on the `Avocado User's Guide`_.
