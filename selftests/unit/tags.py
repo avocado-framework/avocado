@@ -1,82 +1,15 @@
+import os
 import stat
 import unittest
 
 from avocado.core import resolver, tags
 from avocado.utils import script
+from selftests.utils import BASEDIR
 
 #: What is commonly known as "0664" or "u=rw,g=rw,o=r"
 DEFAULT_NON_EXEC_MODE = (
     stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH
 )
-
-
-AVOCADO_TEST_TAGS = """from avocado import Test
-
-import time
-
-class DisabledTest(Test):
-    '''
-    :avocado: disable
-    :avocado: tags=fast,net
-    '''
-    def test_disabled(self):
-        pass
-
-class FastTest(Test):
-    '''
-    :avocado: tags=fast
-    '''
-    def test_fast(self):
-        '''
-        :avocado: tags=net
-        '''
-        pass
-
-    def test_fast_other(self):
-        '''
-        :avocado: tags=net
-        '''
-        pass
-
-class SlowTest(Test):
-    '''
-    :avocado: tags=slow,disk
-    '''
-    def test_slow(self):
-        time.sleep(1)
-
-class SlowUnsafeTest(Test):
-    '''
-    :avocado: tags=slow,disk,unsafe
-    '''
-    def test_slow_unsafe(self):
-        time.sleep(1)
-
-class SafeTest(Test):
-    '''
-    :avocado: tags=safe
-    '''
-    def test_safe(self):
-        pass
-
-class SafeX86Test(Test):
-    '''
-    :avocado: tags=safe,arch:x86_64
-    '''
-    def test_safe_x86(self):
-        pass
-
-class NoTagsTest(Test):
-    def test_no_tags(self):
-        pass
-
-class SafeAarch64Test(Test):
-    '''
-    :avocado: tags=safe,arch:aarch64
-    '''
-    def test_safe_aarch64(self):
-        pass
-"""
 
 
 AVOCADO_TEST_OK = """from avocado import Test
@@ -123,14 +56,9 @@ class DerivedTwo(Derived):
 
 class TagFilter(unittest.TestCase):
     def setUp(self):
-        with script.TemporaryScript(
-            "tags.py",
-            AVOCADO_TEST_TAGS,
-            "avocado_resolver_tag_unittest",
-            DEFAULT_NON_EXEC_MODE,
-        ) as test_script:
-            self.result = resolver.resolve([test_script.path])
-            self.input_file_path = test_script.path
+        tags_example = os.path.join(BASEDIR, "examples", "tests", "tags.py")
+        self.result = resolver.resolve([tags_example])
+        self.input_file_path = tags_example
 
     def test_no_tag_filter(self):
         self.assertEqual(len(self.result), 1)
