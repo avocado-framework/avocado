@@ -13,11 +13,13 @@ test reference, which could be either a path to the file, or a recognizable
 name::
 
     $ avocado run /bin/true
-    JOB ID     : 3a5c4c51ceb5369f23702efb10b4209b111141b2
-    JOB LOG    : $HOME/avocado/job-results/job-2019-10-31T10.34-3a5c4c5/job.log
-     (1/1) /bin/true: PASS (0.04 s)
+    JOB ID     : 89b5d609d4832c784f04cf14f4ec2d17917d419a
+    JOB LOG    : $HOME/avocado/job-results/job-2023-09-06T15.52-89b5d60/job.log
+     (1/1) /bin/true: STARTED
+     (1/1) /bin/true: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.15 s
+    JOB HTML   : $HOME/avocado/job-results/job-2023-09-06T15.52-89b5d60/results.html
+    JOB TIME   : 1.49 s
 
 You probably noticed that we used ``/bin/true`` as a test, and in
 accordance with our expectations, it passed! These are known as
@@ -57,19 +59,19 @@ instrumented and executable tests::
 Using a different runner
 ------------------------
 
-Currently Avocado has two test runners: ``nrunner`` (the new runner) and
-``runner`` (legacy).  You can find a list of current runners installed with the
+Currently Avocado has only one runner: ``nrunner`` (the new runner)
+But some plugins may use their own runners.
+You can find a list of current runners installed with the
 ``avocado plugins`` command::
 
   $ avocado plugins
   Plugins that run test suites on a job (runners):
   nrunner nrunner based implementation of job compliant runner
-  runner  The conventional test runner
 
 During the test execution, you can select the runner using the option
-``--test-runner``, where the default is the nrunner one::
+``--suite-runner``, where the default is the nrunner one::
 
-  $ avocado run --test-runner='runner' /bin/true
+  $ avocado run --suite-runner='runner' /bin/true
 
 
 Interrupting tests
@@ -170,7 +172,8 @@ them to tests. If one or more test references can not be resolved to tests, the
 Job will not be created. Example::
 
     $ avocado run examples/tests/passtest.py badtest.py
-    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', try running 'avocado -V list badtest.py' to see the details.
+    No tests found for given test references: badtest.py
+    Try 'avocado -V list badtest.py' for details
 
 But if you want to execute the Job anyway, with the tests that could be
 resolved, you can use ``--ignore-missing-references``, a boolean command-line
@@ -366,7 +369,7 @@ Avocado features. A reasonable effort will be made to not break backwards
 compatibility with applications that parse the current form of its JSON result.
 
 
- **3. TAP:**
+**3. TAP:**
 
 Provides the basic `TAP <https://testanything.org/>`__ (Test Anything Protocol)
 results, currently in v12. Unlike most existing Avocado machine readable
@@ -377,7 +380,7 @@ outputs this one is streamlined (per test results)::
     ok 1 examples/tests/sleeptest.py:SleepTest.test
 
 
- **4. Beaker:**
+**4. Beaker:**
 
 When avocaodo finds itself running inside a beaker task the
 beaker_report plugin will send the test results and log files to the
@@ -396,16 +399,14 @@ In order to do that, you can use ``avocado --show=job run ...``::
 
     $ avocado --show=job run examples/tests/sleeptest.py
     ...
-    Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
+    
+    avocado.job: Job ID: c9ca6a96d34fd0355f5f121af7fa87eef734a196
+    avocado.job:
+    avocado.job: examples/tests/sleeptest.py:SleepTest.test: STARTED
+    avocado.job: examples/tests/sleeptest.py:SleepTest.test: PASS
+    avocado.job: More information in $HOME/avocado/job-results/job-2023-09-08T15.27-c9ca6a9/test-results/1-examples_tests_sleeptest.py_SleepTest.test
+    avocado.job: Test results available in $HOME/avocado/job-results/job-2023-09-08T15.27-c9ca6a9
 
-    START 1-sleeptest.py:SleepTest.test
-
-    PARAMS (key=timeout, path=*, default=None) => None
-    PARAMS (key=sleep_length, path=*, default=1) => 1
-    Sleeping for 1.00 seconds
-    PASS 1-sleeptest.py:SleepTest.test
-
-    Test results available in $HOME/avocado/job-results/job-2015-06-02T10.45-f9ea174
 
 As you can see, the UI output is suppressed and only the job log is shown,
 making this a useful feature for test development and debugging.

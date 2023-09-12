@@ -158,5 +158,5 @@ could use::
 
 
 .. seealso:: If you would like to understand how write plugins and how describe
-  tags inside a plugin, please visit the section: `Writing Tests` on Avocado Test
+  tags inside a plugin, please visit the :ref:`writing_tests` on Avocado Test
   Writer's Guide.

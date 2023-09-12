@@ -3,8 +3,6 @@
 Managing Dependencies
 =====================
 
-.. note:: Test dependencies are supported only on the nrunner runner.
-
 A test's dependency can be fulfilled by the Dependencies Resolver feature.
 
 Test's dependencies are specified in the test definition and are fulfilled

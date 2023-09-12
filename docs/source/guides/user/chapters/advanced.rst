@@ -8,18 +8,15 @@ In some cases, you might have a wrapper as an entry point for the tests, so
 Avocado will use only the wrapper as test id. For instance, imagine a Makefile
 with some targets ('foo', 'bar') and each target is one test. Having a single
 test suite with a test calling `foo`, it will make Avocado print something like
-this:
+this::
 
-
-```
-JOB ID     : b6e5bdf2c891382bbde7f24e906a168af351154a
-JOB LOG    : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/job.log
- (1/1) make: STARTED
- (1/1) make: PASS (2.72 s)
-RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-JOB HTML   : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/results.html
-JOB TIME   : 5.49 s
-```
+ JOB ID     : b6e5bdf2c891382bbde7f24e906a168af351154a
+ JOB LOG    : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/job.log
+  (1/1) make: STARTED
+  (1/1) make: PASS (2.72 s)
+ RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+ JOB HTML   : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/results.html
+ JOB TIME   : 5.49 s
 
 This is happening because Avocado is using the 'uri' as identifier with in the
 current Runnables.
@@ -33,17 +30,15 @@ identifier_format = "{uri}-{args[0]}"
 ```
 
 With the above adjustment, running the same suite it will produce something
-like this:
+like this::
 
-```
-JOB ID     : 577b70b079e9a6f325ff3e73fd9b93f80ee7f221
-JOB LOG    : /home/local/avocado/job-results/job-2021-11-23T13.12-577b70b/job.log
- (1/1) "/usr/bin/make-foo": STARTED
- (1/1) "/usr/bin/make-foo": PASS (0.01 s)
-RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-JOB HTML   : ~/avocado/job-results/job-2021-11-23T13.12-577b70b/results.html
-JOB TIME   : 0.97 s
-```
+ JOB ID     : 577b70b079e9a6f325ff3e73fd9b93f80ee7f221
+ JOB LOG    : /home/local/avocado/job-results/job-2021-11-23T13.12-577b70b/job.log
+  (1/1) "/usr/bin/make-foo": STARTED
+  (1/1) "/usr/bin/make-foo": PASS (0.01 s)
+ RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+ JOB HTML   : ~/avocado/job-results/job-2021-11-23T13.12-577b70b/results.html
+ JOB TIME   : 0.97 s
 
 For the `identifier_format` you can use any f-string that it will use `{uri}`,
 `{args}` or `{kwargs}`. By default it will use `{uri}`.

@@ -81,7 +81,7 @@ So the file parsing order is:
   * ``avocado.plugins.settings`` plugins (but they can insert to any location)
 
         - For more information about this, visit the "Contributor's Guide"
-          section named "Writing an Avocado plugin"
+          section named :ref:`writing_plugin`
 
   * ``~/.config/avocado/avocado.conf``
 
@@ -228,10 +228,6 @@ Example using the command-line:
 .. code-block:: bash
 
   $ avocado run --verbose /bin/true
-
-.. note:: Currently we still have some "old style boolean" options where you
-  should pass "on" or "off" on the command-line. i.e: ``--json-job-result=off``.
-  Those options are going to be replaced soon.
 
 Lists
 ~~~~~
