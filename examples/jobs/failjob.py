@@ -6,5 +6,5 @@ from avocado.core.job import Job
 
 config = {"resolver.references": ["examples/tests/failtest.py:FailTest.test"]}
 
-with Job(config) as j:
+with Job.from_config(job_config=config) as j:
     sys.exit(j.run())
