@@ -32,4 +32,4 @@ jsonschema==3.2.0
 setuptools_rust==1.1.2
 
 # For ansible plugin nested dep
-cryptography==41.0.2
+cryptography==41.0.4
