@@ -355,30 +355,29 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
     :type setstate: dict
     """
     cpus_list = online_list()
-    if not setstate:
-        states = []
-        if state_number == "all":
-            states = list(
-                range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
-            )
-        else:
-            states.append(state_number)
-        disable = _bool_to_binary(disable)
-        for cpu in cpus_list:
-            for state_no in states:
-                state_file = (
-                    f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
-                )
-                try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
-                except IOError as err:
-                    LOG.warning(
-                        "Failed to set idle state on cpu %s for state %s:\n%s",
-                        cpu,
-                        state_no,
-                        err,
-                    )
+    states = []
+
+    if state_number == "all":
+        states = list(
+            range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+        )
     else:
+        states.append(state_number)
+
+    disable = _bool_to_binary(disable)
+    failed_states = []
+
+    for cpu in cpus_list:
+        for state_no in states:
+            state_file = (
+                f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
+            )
+            try:
+                open(state_file, "wb").write(disable)  # pylint: disable=W1514
+            except IOError:
+                failed_states.append((cpu, state_no))
+
+    if setstate is not None:
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
                 state_file = (
@@ -387,13 +386,13 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 disable = _bool_to_binary(value)
                 try:
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
-                except IOError as err:
-                    LOG.warning(
-                        "Failed to set idle state on cpu %s for state %s:\n%s",
-                        cpu,
-                        state_no,
-                        err,
-                    )
+                except IOError:
+                    failed_states.append((cpu, state_no))
+
+    if failed_states:
+        LOG.warning("Failed to set idle state for CPU in the following state：")
+        for cpu, state_no in failed_states:
+            LOG.warning(f"CPU: {cpu}，status: {state_no}")
 
 
 def set_freq_governor(governor="random"):
