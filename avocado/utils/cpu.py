@@ -27,7 +27,7 @@ import random
 import re
 import warnings
 
-from avocado.utils import genio
+from avocado.utils import genio, process
 
 #: Map vendor's name with expected string in /proc/cpuinfo.
 VENDORS_MAP = {
@@ -548,6 +548,31 @@ def _deprecated(newfunc, oldfuncname):
         return newfunc(*args, **kwargs)
 
     return wrap
+
+
+def lscpu():
+    """
+    Get Cores per socket, Physical sockets and Physical chips
+    by executing 'lscpu' command.
+
+    :rtype: `dict_obj` with the following details
+    :cores per socket:
+    :physical sockets:
+    :physical chips:
+    :chips: physical sockets * physical chips
+    """
+    output = process.run("lscpu")
+    res = {}
+    for line in output.stdout.decode("utf-8").split("\n"):
+        if "Core(s) per socket:" in line:
+            res["cores"] = int(line.split(":")[1].strip())
+        if "Physical sockets:" in line:
+            res["physical_sockets"] = int(line.split(":")[1].strip())
+        if "Physical chips:" in line:
+            res["physical_chips"] = int(line.split(":")[1].strip())
+    if "physical_sockets" in res and "physical_chips" in res:
+        res["chips"] = res["physical_sockets"] * res["physical_chips"]
+    return res
 
 
 total_cpus_count = _deprecated(total_count, "total_cpus_count")
