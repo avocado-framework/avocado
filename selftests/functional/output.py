@@ -525,6 +525,12 @@ class OutputPluginTest(TestCaseTmpDir):
                 os.path.exists(whiteboard_path),
                 f"Missing whiteboard file {whiteboard_path}",
             )
+            with open(whiteboard_path, "r", encoding="utf-8") as whiteboard_file:
+                self.assertEqual(
+                    whiteboard_file.read(),
+                    "TXkgbWVzc2FnZSBlbmNvZGVkIGluIGJhc2U2NA==\n",
+                    "Whiteboard message is wrong.",
+                )
 
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
