@@ -72,7 +72,7 @@ class RunnerInit(Init):
         help_msg = (
             'URI where status server will listen on. Usually a "HOST:PORT" '
             'string. This is only effective if "status_server_auto" is disabled. '
-            'If "status_server_uri" is not set. Value from "status_server_listen " '
+            'If "status_server_uri" is not set, the value from "status_server_listen " '
             "will be used."
         )
         settings.register_option(
