@@ -36,6 +36,8 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 
+DEFAULT_SERVER_URI = "127.0.0.1:8888"
+
 
 class RunnerInit(Init):
 
@@ -69,12 +71,14 @@ class RunnerInit(Init):
 
         help_msg = (
             'URI where status server will listen on. Usually a "HOST:PORT" '
-            'string. This is only effective if "status_server_auto" is disabled'
+            'string. This is only effective if "status_server_auto" is disabled. '
+            'If "status_server_uri" is not set. Value from "status_server_listen " '
+            "will be used."
         )
         settings.register_option(
             section=section,
             key="status_server_listen",
-            default="127.0.0.1:8888",
+            default=DEFAULT_SERVER_URI,
             metavar="HOST:PORT",
             help_msg=help_msg,
         )
@@ -84,11 +88,13 @@ class RunnerInit(Init):
             'a "HOST:PORT" string. Use this if your status server '
             "is in another host, or different port. This is only "
             'effective if "status_server_auto" is disabled'
+            'If "status_server_listen" is not set. Value from "status_server_uri" '
+            "will be used."
         )
         settings.register_option(
             section=section,
             key="status_server_uri",
-            default="127.0.0.1:8888",
+            default=DEFAULT_SERVER_URI,
             metavar="HOST:PORT",
             help_msg=help_msg,
         )
@@ -229,7 +235,23 @@ class Runner(SuiteRunner):
                 return os.path.join(self.status_server_dir.name, ".status_server.sock")
         return test_suite.config.get(config_key)
 
+    def _sync_status_server_urls(self, config):
+        server_listen = config.get("run.status_server_listen")
+        server_uri = config.get("run.status_server_uri")
+        if not config.get("run.status_server_auto"):
+            if (
+                server_uri is not DEFAULT_SERVER_URI
+                and server_listen is DEFAULT_SERVER_URI
+            ):
+                config["run.status_server_listen"] = server_uri
+            if (
+                server_uri is DEFAULT_SERVER_URI
+                and server_listen is not DEFAULT_SERVER_URI
+            ):
+                config["run.status_server_uri"] = server_listen
+
     def _create_status_server(self, test_suite, job):
+        self._sync_status_server_urls(test_suite.config)
         listen = self._determine_status_server(test_suite, "run.status_server_listen")
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
