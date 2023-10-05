@@ -35,7 +35,7 @@ from avocado.core.settings import settings
 from avocado.core.test_id import TestID
 from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.version import VERSION
-from avocado.utils import asset, astring, data_structures, genio
+from avocado.utils import asset, astring, data_structures
 from avocado.utils import path as utils_path
 from avocado.utils import stacktrace
 
@@ -719,8 +719,6 @@ class Test(unittest.TestCase, TestData):
         self._setup_environment_variables()
         self._catch_test_status(self._run_test)
         self._catch_test_status(self._tearDown)
-        whiteboard_file = os.path.join(self.logdir, "whiteboard")
-        genio.write_file(whiteboard_file, self.whiteboard)
         self.__phase = "FINISHED"
         self._tag_end()
         self._report()

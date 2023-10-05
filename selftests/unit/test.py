@@ -162,13 +162,6 @@ class TestClassTest(unittest.TestCase):
     def test_class_attributes_time_elapsed(self):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
 
-    def test_whiteboard_save(self):
-        whiteboard_file = os.path.join(self.tst_instance_pass.logdir, "whiteboard")
-        self.assertTrue(os.path.isfile(whiteboard_file))
-        with open(whiteboard_file, "r", encoding="utf-8") as whiteboard_file_obj:
-            whiteboard_contents = whiteboard_file_obj.read().strip()
-            self.assertTrue(whiteboard_contents, "foo")
-
     def tearDown(self):
         self.base_logdir.cleanup()
 
