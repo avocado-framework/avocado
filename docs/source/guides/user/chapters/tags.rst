@@ -1,9 +1,6 @@
 Filtering tests by tags
 =======================
 
-.. warning:: The example perf.py is not distributed with avocado anymore.
-             This is an old example that needs to be updated.
-
 Avocado allows tests to be given tags, which can be used to create test
 categories. With tags set, users can select a subset of the tests found by the
 test resolver.
@@ -11,18 +8,22 @@ test resolver.
 Usually, listing and executing tests with the Avocado test runner
 would reveal all three tests::
 
-  $ avocado list perf.py
-  avocado-instrumented perf.py:Disk.test_device
-  avocado-instrumented perf.py:Network.test_latency
-  avocado-instrumented perf.py:Network.test_throughput
-  avocado-instrumented perf.py:Idle.test_idle
+  $ avocado list examples/tests/tags.py
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast_other
+  avocado-instrumented examples/tests/tags.py:SlowTest.test_slow
+  avocado-instrumented examples/tests/tags.py:SlowUnsafeTest.test_slow_unsafe
+  avocado-instrumented examples/tests/tags.py:SafeTest.test_safe
+  avocado-instrumented examples/tests/tags.py:SafeX86Test.test_safe_x86
+  avocado-instrumented examples/tests/tags.py:NoTagsTest.test_no_tags
+  avocado-instrumented examples/tests/tags.py:SafeAarch64Test.test_safe_aarch64
 
 If you want to list or run only the network based tests, you can do so
 by requesting only tests that are tagged with ``net``::
 
-  $ avocado list perf.py --filter-by-tags=net
-  avocado-instrumented perf.py:Network.test_latency
-  avocado-instrumented perf.py:Network.test_throughput
+  $ avocado list examples/tests/tags.py --filter-by-tags=net
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast_other
 
 Now, suppose you're not in an environment where you're comfortable
 running a test that will write to your raw disk devices (such as your
@@ -30,16 +31,21 @@ development workstation).  You know that some tests are tagged
 with ``safe`` while others are tagged with ``unsafe``.  To only
 select the "safe" tests you can run::
 
-  $ avocado list perf.py --filter-by-tags=safe
-  avocado-instrumented perf.py:Network.test_latency
-  avocado-instrumented perf.py:Network.test_throughput
+  $ avocado list examples/tests/tags.py --filter-by-tags=safe
+  avocado-instrumented examples/tests/tags.py:SafeTest.test_safe
+  avocado-instrumented examples/tests/tags.py:SafeX86Test.test_safe_x86
+  avocado-instrumented examples/tests/tags.py:SafeAarch64Test.test_safe_aarch64
 
 But you could also say that you do **not** want the "unsafe" tests
 (note the *minus* sign before the tag)::
 
-  $ avocado list perf.py --filter-by-tags=-unsafe
-  avocado-instrumented perf.py:Network.test_latency
-  avocado-instrumented perf.py:Network.test_throughput
+  $ avocado list examples/tests/tags.py --filter-by-tags=-unsafe
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast_other
+  avocado-instrumented examples/tests/tags.py:SlowTest.test_slow
+  avocado-instrumented examples/tests/tags.py:SafeTest.test_safe
+  avocado-instrumented examples/tests/tags.py:SafeX86Test.test_safe_x86
+  avocado-instrumented examples/tests/tags.py:SafeAarch64Test.test_safe_aarch64
 
 
 .. tip:: The ``-`` sign may cause issues with some shells.  One know
@@ -52,13 +58,13 @@ But you could also say that you do **not** want the "unsafe" tests
 If you require tests to be tagged with **multiple** tags, just add
 them separate by commas.  Example::
 
-  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,unsafe
-  avocado-instrumented perf.py:Disk.test_device
+  $ avocado list examples/tests/tags.py --filter-by-tags=disk,slow,unsafe
+  avocado-instrumented examples/tests/tags.py:SlowUnsafeTest.test_slow_unsafe
 
 If no test contains **all tags** given on a single ``--filter-by-tags``
 parameter, no test will be included::
 
-  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
+  $ avocado list examples/tests/tags.py --filter-by-tags=disk,slow,safe | wc -l
   0
 
 Multiple tags (AND vs OR)
@@ -72,10 +78,11 @@ operation).
 For instance To include all tests that have the ``disk`` tag and all
 tests that have the ``net`` tag, you can run::
 
-  $ avocado list perf.py --filter-by-tags=disk --filter-by-tags=net
-  avocado-instrumented perf.py:Disk.test_device
-  avocado-instrumented perf.py:Network.test_latency
-  avocado-instrumented perf.py:Network.test_throughput
+  $ avocado list examples/tests/tags.py --filter-by-tags=disk --filter-by-tags=net
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast
+  avocado-instrumented examples/tests/tags.py:FastTest.test_fast_other
+  avocado-instrumented examples/tests/tags.py:SlowTest.test_slow
+  avocado-instrumented examples/tests/tags.py:SlowUnsafeTest.test_slow_unsafe
 
 Including tests without tags
 ----------------------------
@@ -88,17 +95,19 @@ For instance, you may want to include tests of certain types that do
 not have support for tags (such as executable tests) or tests that have
 not (yet) received tags.  Consider this command::
 
-  $ avocado list perf.py /bin/true --filter-by-tags=disk
-  avocado-instrumented perf.py:Disk.test_device
+  $ avocado list examples/tests/tags.py /bin/true --filter-by-tags=disk
+  avocado-instrumented examples/tests/tags.py:SlowTest.test_slow
+  avocado-instrumented examples/tests/tags.py:SlowUnsafeTest.test_slow_unsafe
 
 Since it requires the ``disk`` tag, only one test was returned.  By
 using the ``--filter-by-tags-include-empty`` option, you can force the
 inclusion of tests without tags::
 
-  $ avocado list perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
-  exec-test /bin/true
-  avocado-instrumented perf.py:Idle.test_idle
-  avocado-instrumented perf.py:Disk.test_device
+  $ avocado list examples/tests/tags.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
+  avocado-instrumented examples/tests/tags.py:SlowTest.test_slow
+  avocado-instrumented examples/tests/tags.py:SlowUnsafeTest.test_slow_unsafe
+  avocado-instrumented examples/tests/tags.py:NoTagsTest.test_no_tags
+  exec-test            /bin/true
 
 Using further categorization with keys and values
 -------------------------------------------------
@@ -149,5 +158,5 @@ could use::
 
 
 .. seealso:: If you would like to understand how write plugins and how describe
-  tags inside a plugin, please visit the section: `Writing Tests` on Avocado Test
+  tags inside a plugin, please visit the :ref:`writing_tests` on Avocado Test
   Writer's Guide.

@@ -15,8 +15,10 @@ from the command line, such as::
   $ avocado run /bin/true /bin/false
   JOB ID     : 42c60bea72e6d55756bfc784eb2b354f788541cf
   JOB LOG    : $HOME/avocado/job-results/job-2020-08-13T11.23-42c60be/job.log
+   (1/2) /bin/true: STARTED
+   (2/2) /bin/false: STARTED
    (1/2) /bin/true: PASS (0.01 s)
-   (2/2) /bin/false: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.08 s)
+   (2/2) /bin/false: FAIL (0.01 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB HTML   : $HOME/avocado/job-results/job-2020-08-13T11.23-42c60be/results.html
   JOB TIME   : 0.41 s
@@ -31,8 +33,10 @@ Resulting in::
   JOB ID     : f3139826f1b169a0b456e0e880ffb83ed26d9858
   SRC JOB ID : latest
   JOB LOG    : $HOME/avocado/job-results/job-2020-08-13T11.24-f313982/job.log
-   (1/2) /bin/true: PASS (0.01 s)
-   (2/2) /bin/false: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.07 s)
+   (1-2/2) /bin/false: STARTED
+   (1-1/2) /bin/true: STARTED
+   (1-2/2) /bin/false: FAIL (0.01 s)
+   (1-1/2) /bin/true: PASS (0.01 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB HTML   : $HOME/avocado/job-results/job-2020-08-13T11.24-f313982/results.html
   JOB TIME   : 0.39 s
@@ -159,7 +163,8 @@ using the ``--dry-run`` argument::
     $ avocado run /bin/true --dry-run
     JOB ID     : 0000000000000000000000000000000000000000
     JOB LOG    : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/job.log
-     (1/1) /bin/true: CANCEL: Test cancelled due to --dry-run (0.01 s)
+     (1/1) /bin/true: STARTED
+     (1/1) /bin/true: CANCEL: Test cancelled due to --dry-run (0.00 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
     JOB HTML   : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/results.html
     JOB TIME   : 0.29 s
@@ -205,4 +210,4 @@ tests::
 Notice that the verbose flag also adds summary information.
 
 .. seealso:: To read more about test discovery, visit the section
-  "Understanding the test discovery (Avocado Loaders)".
+  :ref:`finding_tests`.

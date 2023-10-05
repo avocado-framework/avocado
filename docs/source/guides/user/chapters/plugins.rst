@@ -92,7 +92,7 @@ developers to make execution more effective. To list the plugins in execution
 order, you can use ``avocado plugins --ordered``.
 
 .. note:: For more information about how the execution order is set, please
-   visit visit the Plugin section on Contributor's Guide.
+   visit the :ref:`writing_plugin` section on Contributor's Guide.
 
 Changing the plugin execution order
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +109,7 @@ That configuration sets the ``job.prepost.myplugin`` plugin to execute before
 the standard Avocado ``job.prepost.jobscripts`` does.
 
 .. note:: If you are interested on how plugins works and how to create your own
-  plugin, visit the Plugin section on Contributor's Guide.
+  plugin, visit the :ref:`writing_plugin` section on Contributor's Guide.
 
 Pre and post plugins
 --------------------

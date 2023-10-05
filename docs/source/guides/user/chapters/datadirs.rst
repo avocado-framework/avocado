@@ -49,6 +49,3 @@ place temporary files used by tests. That directory will be in normal circumstan
 ``/var/tmp/avocado_XXXXX``, (where ``XXXXX`` is in actuality a random string) securely
 created on ``/var/tmp/``, unless the user has the ``$TMPDIR`` environment variable set,
 since that is customary among unix programs.
-
-The next section of the documentation explains how you can see and set config
-values that modify the behavior for the Avocado utilities and plugins.

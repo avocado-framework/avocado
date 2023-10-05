@@ -81,6 +81,8 @@ doing::
 To be able to complete such a command, Avocado needs to find the tests, and
 then to execute them.  Those two major steps are described next.
 
+.. _finding_tests:
+
 Finding tests
 ~~~~~~~~~~~~~
 

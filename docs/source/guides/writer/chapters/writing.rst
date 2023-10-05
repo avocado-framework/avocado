@@ -1,3 +1,5 @@
+.. _writing_tests:
+
 Writing Avocado Tests with Python
 =================================
 

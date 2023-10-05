@@ -19,7 +19,7 @@ Installing from PyPI
 --------------------
 
 The simplest installation method is through ``pip``.  On most POSIX systems
-with Python 3.4 (or later) and ``pip`` available, installation can be performed
+with Python 3.7 (or later) and ``pip`` available, installation can be performed
 with a single command::
 
   $ pip3 install --user avocado-framework
@@ -56,7 +56,7 @@ version 29.  To subscribe to the latest version stream, run::
 
 Or, to use the LTS (Long Term Stability) version stream, run::
 
-  $ dnf module enable avocado:82lts
+  $ dnf module enable avocado:103lts
 
 Then proceed to install a module profile or individual packages.  If you're
 unsure about what to do, simply run::
@@ -127,7 +127,7 @@ Then to install Avocado from the git repository run::
     $ cd avocado
     $ python3 setup.py install --user
 
-Optionally, to install the plugins run:
+Optionally, to install the plugins run::
 
     $ python3 setup.py plugin --install=golang --user
     $ python3 setup.py plugin --install=html --user

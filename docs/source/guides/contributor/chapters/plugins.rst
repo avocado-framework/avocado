@@ -1,3 +1,5 @@
+.. _writing_plugin:
+
 *************************
 Writing an Avocado plugin
 *************************

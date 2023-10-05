@@ -154,9 +154,9 @@ class ListTestFunctional(TestCaseTmpDir):
         )
         stdout_lines = result.stdout_text.splitlines()
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
-        self.assertIn("avocado-instrumented: 2", stdout_lines)
+        self.assertIn("avocado-instrumented: 4", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
-        self.assertIn("fast: 2", stdout_lines)
+        self.assertIn("fast: 4", stdout_lines)
 
     @skipOnLevelsInferiorThan(2)
     def test_sleep_a_lot(self):
