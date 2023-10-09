@@ -51,7 +51,10 @@ def url_open(url, data=None, timeout=5):
         log.error(msg)
         return None
 
-    msg = 'Retrieved URL "%s": content-length %s, date: "%s", last-modified: "%s"'
+    msg = (
+        'Opened URL "%s" and received response with headers including: '
+        'content-length %s, date: "%s", last-modified: "%s"'
+    )
     log.debug(
         msg,
         url,
