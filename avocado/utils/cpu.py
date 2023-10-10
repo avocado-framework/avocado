@@ -74,7 +74,7 @@ def _get_info():
     cpuinfo = []
     with open("/proc/cpuinfo", "rb") as proc_cpuinfo:  # pylint: disable=W1514
         for line in proc_cpuinfo:
-            if line == b"\n":
+            if line == b"\n" and len(cpuinfo) > 0:
                 break
             cpuinfo.append(line)
     return cpuinfo
