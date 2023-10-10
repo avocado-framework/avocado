@@ -218,7 +218,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build tarballs and wheels
-      run: make -f Makefile.gh build-wheel
+      run: make -f Makefile.gh build-wheel check-wheel
     - name: Save tarballs and wheels as artifacts
       uses: actions/upload-artifact@v3
       with:

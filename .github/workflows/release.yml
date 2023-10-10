@@ -62,7 +62,7 @@ jobs:
           github_token: ${{ secrets.RELEASE_TOKEN }}
           branch: ${{ github.ref }}
       - name: Build wheel
-        run: make -f Makefile.gh build-wheel
+        run: make -f Makefile.gh build-wheel check-wheel
       - name: Save wheel as artifact
         uses: actions/upload-artifact@v3
         with:
