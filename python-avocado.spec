@@ -46,6 +46,7 @@ BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-setuptools
+BuildRequires: python3-aexpect
 
 %if ! 0%{?rhel}
 %if ! 0%{?fedora} > 35
@@ -131,6 +132,9 @@ popd
 pushd optional_plugins/result_upload
 %py3_build
 popd
+pushd optional_plugins/spawner_remote
+%py3_build
+popd
 rst2man man/avocado.rst man/avocado.1
 
 %install
@@ -164,6 +168,9 @@ pushd optional_plugins/varianter_cit
 %py3_install
 popd
 pushd optional_plugins/result_upload
+%py3_install
+popd
+pushd optional_plugins/spawner_remote
 %py3_install
 popd
 mkdir -p %{buildroot}%{_mandir}/man1
@@ -230,6 +237,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_ansible*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
+%exclude %{python3_sitelib}/avocado_framework_plugin_spawner_remote*
 %exclude %{python3_sitelib}/tests*
 
 %package -n python3-avocado-common
@@ -373,6 +381,18 @@ a dedicated sever.
 %files -n python3-avocado-plugins-result-upload
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
+
+%package -n python3-avocado-plugins-spawner-remote
+Summary: Avocado Plugin to spawn tests on a remote host
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
+
+%description -n python3-avocado-plugins-spawner-remote
+This optional plugin is intended to spawn tests on a remote host.
+
+%files -n python3-avocado-plugins-spawner-remote
+%{python3_sitelib}/avocado_spawner_remote*
+%{python3_sitelib}/avocado_framework_plugin_spawner_remote*
 
 %package -n python3-avocado-examples
 Summary: Avocado Test Framework Example Tests
