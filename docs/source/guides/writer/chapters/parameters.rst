@@ -11,7 +11,7 @@ Test parameters
 Avocado allows passing parameters to tests, which effectively results in
 several different variants of each test. These parameters are available in
 (test's) ``self.params`` and are of
-:class:`avocado.core.varianter.AvocadoParams` type. You can also access
+:class:`avocado.core.parameters.AvocadoParams` type. You can also access
 these parameters via the configuration dict at `run.test_parameters`
 namespace.
 
@@ -87,12 +87,12 @@ environment represents all the values of the tree.
 AvocadoParams
 ~~~~~~~~~~~~~
 
-:class:`avocado.core.varianter.AvocadoParams`
+:class:`avocado.core.parameters.AvocadoParams`
 
 Is a "database" of params present in every (instrumented) Avocado
 test.  It's produced during :class:`avocado.core.test.Test`'s
 ``__init__`` from a `variant`_. It accepts a list of `TreeNode`_
-objects; test name :class:`avocado.core.test.TestID` (for logging
+objects; test name :class:`avocado.core.test_id.TestID` (for logging
 purposes) and a list of default paths (`Parameter Paths`_).
 
 In test it allows querying for data by using::
@@ -135,10 +135,10 @@ in :ref:`yaml-to-mux-resolution-order` section.
 Variant
 ~~~~~~~
 
-Variant is a set of params produced by `Varianter`_s and passed to the
+Variant is a set of params produced by `Varianter`_ and passed to the
 test by the test runner as ``params`` argument. The simplest variant
 is ``None``, which still produces an empty `AvocadoParams`_. Also, the
-`Variant`_ can also be a ``tuple(list, paths)`` or just the
+Variant can also be a ``tuple(list, paths)`` or just the
 ``list`` of :class:`avocado.core.tree.TreeNode` with the params.
 
 Dumping/Loading Variants
@@ -226,27 +226,6 @@ Example workflow of `avocado run passtest.py -m example.yaml` is::
      |
      + runner._iter_variants -> Varianter.itertests  // Yields variants
 
-In order to allow force-updating the `Varianter`_ it supports
-``ignore_new_data``, which can be used to ignore new data. This is used
-by `Replay` to replace the current run `Varianter`_ with the one
-loaded from the replayed job. The workflow with ``ignore_new_data`` could
-look like this::
-
-   avocado run --replay latest -m example.yaml
-     |
-     + replay.run -> Varianter.is_parsed
-     |
-     + replay.run  // Varianter object is replaced with the replay job's one
-     |             // Varianter.ignore_new_data is set
-     |
-     + job.run_tests -> Varianter.is_parsed
-     |
-     + job._log_variants -> Varianter.to_str
-     |
-     + runner.run_suite -> Varianter.get_number_of_tests
-     |
-     + runner._iter_variants -> Varianter.itertests
-
 The `Varianter`_ itself can only produce an empty variant, but it invokes all 
 `Varianter plugins`_ and if any of them reports variants it yields them 
 instead of the default variant.
@@ -274,7 +253,7 @@ string, and convert it to the appropriate type.
    used with different, or none, varianter plugins, it's safer if
    the test does an explicit check or type conversion.
 
-Because the :class:`avocado.core.varianter.AvocadoParams` mandates the
+Because the :class:`avocado.core.parameters.AvocadoParams` mandates the
 concept of a parameter path (a legacy of the tree based Multiplexer)
 and these test parameters are flat, those test parameters are placed
 in the ``/`` path.  This is to ensure maximum compatibility with tests

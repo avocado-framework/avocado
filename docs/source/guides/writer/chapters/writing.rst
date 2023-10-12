@@ -56,11 +56,11 @@ Note that the test class provides you with a number of convenience attributes:
 * A parameter passing system (and fetching system) that can be accessed by
   means of ``self.params``. This is hooked to the Varianter, about which
   you can find that more information at :ref:`test-parameter`.
-* And many more (see `avocado.core.test.Test`)
+* And many more (see :mod:`avocado.core.test.Test`)
 
 To minimize the accidental clashes we define the public ones as properties
 so if you see something like ``AttributeError: can't set attribute`` double
-you are not overriding these.
+check you are not overriding these.
 
 .. _Test statuses:
 
@@ -456,7 +456,7 @@ The code example below uses :meth:`assertEqual
             self.assertTrue(variable)
 
             self.log.debug("Verifying if this test is an instance of test.Test")
-            self.assertIsInstance(self, test.Test)
+            self.assertIsInstance(self, Test)
 
 Running tests under other :mod:`unittest` runners
 -------------------------------------------------
@@ -752,16 +752,16 @@ log.
 You may log something into the test logs using the methods in
 :mod:`avocado.Test.log` class attributes. Consider the example::
 
-    class output_test(Test):
+    class OutputTest(Test):
 
         def test(self):
-            self.log.info('This goes to the log and it is only informational')
-            self.log.warn('Oh, something unexpected, non-critical happened, '
-                          'but we can continue.')
-            self.log.error('Describe the error here and don't forget to raise '
-                           'an exception yourself. Writing to self.log.error '
-                           'won't do that for you.')
-            self.log.debug('Everybody look, I had a good lunch today...')
+            self.log.info("This goes to the log and it is only informational")
+            self.log.warn("Oh, something unexpected, non-critical happened, "
+                          "but we can continue.")
+            self.log.error("Describe the error here and don't forget to raise "
+                           "an exception yourself. Writing to self.log.error "
+                           "won't do that for you.")
+            self.log.debug("Everybody look, I had a good lunch today...")
 
 If you need to write directly to the test stdout and stderr streams,
 Avocado makes two preconfigured loggers available for that purpose,
@@ -770,7 +770,9 @@ Python's standard logging API to write to them. Example::
 
     import logging
 
-    class output_test(Test):
+    from avocado import Test
+
+    class OutputTest(Test):
 
         def test(self):
             stdout = logging.getLogger('avocado.test.stdout')
@@ -784,11 +786,6 @@ into a ``stdout`` file, to be found at the test results directory. The same
 applies to anything a test generates on STDERR, that is, it will be saved
 into a ``stderr`` file at the same location.
 
-Additionally, when using the runner's output recording features,
-namely the ``--output-check-record`` argument with values ``stdout``,
-``stderr`` or ``all``, everything given to those loggers will be saved
-to the files ``stdout.expected`` and ``stderr.expected`` at the test's
-data directory (which is different from the job/test results directory).
 
 Setting a Test Timeout
 ----------------------
@@ -1302,7 +1299,7 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu_/1-Env.test                              |
+| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_cp07qzd9                                                                           |
 |                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
@@ -1328,7 +1325,7 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu_/1-Env.test                              |
+| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
 |                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
@@ -1344,8 +1341,6 @@ tests:
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. note:: The same variables listed for the avocado-instrumented tests above are
-   available to all the test types when using the legacy runner.
 
 SIMPLE Tests BASH extensions
 ----------------------------
