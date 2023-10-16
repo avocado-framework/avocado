@@ -56,7 +56,8 @@ class Jobs(CLICmd):
         for test in tests:
             status = test.get("status")
             decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
-            end = datetime.fromtimestamp(test.get("end"))
+            # Retrieve "end" for backward compatibility
+            end = datetime.fromtimestamp(test.get("actual_end", test.get("end")))
             test_matrix.append(
                 (
                     test.get("id"),
