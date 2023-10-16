@@ -174,7 +174,11 @@ class Jobs(CLICmd):
         results = {}
 
         jobs_dir = get_logs_dir()
-        for result in glob(os.path.join(jobs_dir, "*/results.json")):
+        for result in sorted(
+            glob(os.path.join(jobs_dir, "*/results.json")),
+            key=os.path.getmtime,
+            reverse=True,
+        ):
             with open(result, "r", encoding="utf-8") as fp:
                 job = json.load(fp)
                 results[job["job_id"]] = result
