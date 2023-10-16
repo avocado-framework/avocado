@@ -184,7 +184,7 @@ class LXCSpawner(Spawner, SpawnerMixin):
             return False
 
         status, _, _ = LXCSpawner.run_container_cmd(
-            container, ["pgrep", "-r", "R,S", "-f", "task-run"]
+            container, ["pgrep", "-r", "R,S", "-f", runtime_task.task.identifier]
         )
         return status == 0
 

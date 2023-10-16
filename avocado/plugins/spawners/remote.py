@@ -132,7 +132,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         # NOTE: since this is called at the end of each test, it is reasonable
         # to reuse the same session with a new command
         session = runtime_task.spawner_handle
-        status, _ = session.cmd_status_output("pgrep -r R,S -f task-run")
+        status, _ = session.cmd_status_output(
+            f"pgrep -r R,S -f {runtime_task.task.identifier}"
+        )
         return status == 0
 
     @with_slot_reservation
