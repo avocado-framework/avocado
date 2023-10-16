@@ -56,7 +56,8 @@ class Jobs(CLICmd):
         for test in tests:
             status = test.get("status")
             decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
-            end = datetime.fromtimestamp(test.get("end"))
+            # Retrieve "end" for backward compatibility
+            end = datetime.fromtimestamp(test.get("actual_end", test.get("end")))
             test_matrix.append(
                 (
                     test.get("id"),
@@ -174,7 +175,11 @@ class Jobs(CLICmd):
         results = {}
 
         jobs_dir = get_logs_dir()
-        for result in glob(os.path.join(jobs_dir, "*/results.json")):
+        for result in sorted(
+            glob(os.path.join(jobs_dir, "*/results.json")),
+            key=os.path.getmtime,
+            reverse=True,
+        ):
             with open(result, "r", encoding="utf-8") as fp:
                 job = json.load(fp)
                 results[job["job_id"]] = result
