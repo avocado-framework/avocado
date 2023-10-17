@@ -70,6 +70,10 @@ build-wheel: pip
 		fi;\
 	done
 
+check-wheel: build-wheel
+	$(PYTHON) -m pip install twine
+	twine check ./PYPI_UPLOAD/*
+
 build-egg:
 	if test ! -d EGG_UPLOAD; then mkdir EGG_UPLOAD; fi
 	$(PYTHON) setup.py bdist_egg -d EGG_UPLOAD

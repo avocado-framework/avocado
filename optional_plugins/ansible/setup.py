@@ -28,6 +28,8 @@ VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 setup(
     name="avocado-framework-plugin-ansible",
     description="Adds to Avocado the ability to use ansible modules as dependencies for tests",
+    long_description="Adds to Avocado the ability to use ansible modules as dependencies for tests",
+    long_description_content_type="text/x-rst",
     version=VERSION,
     author="Avocado Developers",
     author_email="avocado-devel@redhat.com",
