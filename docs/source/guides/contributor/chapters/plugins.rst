@@ -357,32 +357,35 @@ Resolving magic tests
 ---------------------
 
 Resolving the "pass" and "fail" references that the magic plugin knows about
-can be seen by running ``avocado list pass fail``::
+can be seen by running ``avocado list magic:pass magic:fail``::
 
-  magic pass
-  magic fail
+  magic magic:pass
+  magic magic:fail
 
 And you may get more insight into the resolution results, by adding a
 verbose parameter and another reference.  Try running ``avocado -V
-list pass fail something-else``::
+list magic:pass magic:fail magic:foo something-else``::
 
-  Type  Test Tag(s)
-  magic pass
-  magic fail
+  Reference magic:foo might be resolved by magic resolver, but the file is corrupted: Word "magic:foo" is magic type but the foo is not a valid magic word
+  Type  Test       Tag(s)
+  magic magic:pass
+  magic magic:fail
 
   Resolver             Reference      Info
-  avocado-instrumented pass           File "pass" does not end with ".py"
-  exec-test            pass           File "pass" does not exist or is not a executable file
-  golang               pass
-  avocado-instrumented fail           File "fail" does not end with ".py"
-  exec-test            fail           File "fail" does not exist or is not a executable file
-  golang               fail
+  avocado-instrumented magic:pass     File "magic" does not end with ".py"
+  golang               magic:pass     go binary not found
+  avocado-instrumented magic:fail     File "magic" does not end with ".py"
+  golang               magic:fail     go binary not found
+  avocado-instrumented magic:foo    File "magic" does not end with ".py"
+  golang               magic:foo    go binary not found
+  magic                magic:foo    Word "magic:foo" is magic type but the foo is not a valid magic word
   avocado-instrumented something-else File "something-else" does not end with ".py"
-  exec-test            something-else File "something-else" does not exist or is not a executable file
-  golang               something-else
+  golang               something-else go binary not found
   magic                something-else Word "something-else" is not a valid magic word
   python-unittest      something-else File "something-else" does not end with ".py"
   robot                something-else File "something-else" does not end with ".robot"
+  rogue                something-else Word "something-else" is not the magic word
+  exec-test            something-else File "something-else" does not exist or is not a executable file
   tap                  something-else File "something-else" does not exist or is not a executable file
 
   TEST TYPES SUMMARY
@@ -390,27 +393,34 @@ list pass fail something-else``::
   magic: 2
 
 It's worth realizing that magic (and other plugins) were asked to
-resolve the ``something-else`` reference, but couldn't::
+resolve the ``magic:foo`` and ``something-else`` references, but couldn't::
 
   Resolver             Reference      Info
   ...
+  magic                magic:foo    Word "magic:foo" is magic type but the foo is not a valid magic word
+  ...
   magic                something-else Word "something-else" is not a valid magic word
   ...
+
+We can see that the reference "magic:foo" resembles the magic words by type but it is not magic words ``pass`` or ``fail``.
+Consequently, the resolver can provide the user with information about potentially corrupted references.
+This can assist the user in identifying typos or reference mistakes. As the creator of the resolver,
+you can use the "ReferenceResolutionResult.CORRUPT" variable to notify the user of such a situation.
 
 Running magic tests
 -------------------
 
 The common way of running Avocado tests is to run them through
 ``avocado run``.  To run both the ``pass`` and ``fail`` magic tests,
-you'd run ``avocado run -- pass fail``::
+you'd run ``avocado run -- magic:pass magic:fail``::
 
-  $ avocado run -- pass fail
+  $ avocado run -- magic:pass magic:fail
   JOB ID     : 86fd45f8c1f2fe766c252eefbcac2704c2106db9
   JOB LOG    : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/job.log
-   (1/2) pass: STARTED
-   (1/2) pass: PASS (0.00 s)
-   (2/2) fail: STARTED
-   (2/2) fail: FAIL (0.00 s)
+   (1/2) magic:pass: STARTED
+   (1/2) magic:pass: PASS (0.00 s)
+   (2/2) magic:fail: STARTED
+   (2/2) magic:fail: FAIL (0.00 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB HTML   : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/results.html
   JOB TIME   : 1.83 s

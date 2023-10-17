@@ -376,12 +376,12 @@ jobs:
          cd examples/plugins/tests/magic
          python3 setup.py develop --user
          cd ../../../../
-         python3 -m avocado -V list -- pass fail | grep "magic: 2"
+         python3 -m avocado -V list -- magic:pass magic:fail | grep "magic: 2"
          podman pull quay.io/avocado-framework/avocado-ci-magic
-         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- pass
-         tail -n1 ~/avocado/job-results/latest/results.tap | grep "ok 1 pass"
-         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- fail || true
-         tail -n1 ~/avocado/job-results/latest/results.tap | grep "not ok 1 fail"
+         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- magic:pass
+         tail -n1 ~/avocado/job-results/latest/results.tap | grep "ok 1 magic:pass"
+         python3 -m avocado run --spawner=podman --spawner-podman-image=quay.io/avocado-framework/avocado-ci-magic -- magic:fail || true
+         tail -n1 ~/avocado/job-results/latest/results.tap | grep "not ok 1 magic:fail"
 
   fedora_develop_install_uninstall_task:
     name: Fedora develop install/uninstall task
