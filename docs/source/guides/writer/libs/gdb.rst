@@ -6,12 +6,6 @@ GDB, including setting a executable to be run, setting breakpoints
 or any other types of commands. This requires a test written with
 that approach and API in mind.
 
-.. tip:: Even though this section describes the use of the Avocado GDB
-   features, it's also possible to debug some application offline by
-   using tools such as `rr <http://rr-project.org>`_.  Avocado ships
-   with an example wrapper script (to be used with ``--wrapper``) for
-   that purpose.
-
 APIs
 ----
 

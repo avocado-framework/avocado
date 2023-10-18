@@ -35,7 +35,7 @@ in `log_dir` directory. This file contains all logs which were generated during
 job run. It is very verbose, and it contains even avocado internal logs.
 If the parallel run is enabled (default behavior) the logs are not sorted and
 logs from multiple tests might be mixed together. Therefore, some
-post-processing of this test might be needed for full understanding of these logs. 
+post-processing of this file might be needed for full understanding of these logs.
 The format of logs is::
 
         <date> <time> <namespace> <log level> | <testname>: <log>
@@ -196,6 +196,7 @@ Again you could watch the progress with::
     2023-04-13 17:54:18,916 avocado.job INFO |  'config.datadir': False,
     2023-04-13 17:54:18,916 avocado.job INFO |  'core.paginator': False,
     2023-04-13 17:54:18,916 avocado.job INFO |  'core.show': {'app'},
+    ...
 
 External logs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,4 +235,4 @@ You can check the logs by::
         [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/STIXGeneralBolIta.ttf', name='STIXGeneral', style='italic', variant='normal', weight=700, stretch='normal', size='scalable')) = 11.335
         [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSansMono-Bold.ttf', name='DejaVu Sans Mono', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 10.335
         [stdlog] 2023-04-20 10:07:03,998 matplotlib.font_manager DEBUG| findfont: score(FontEntry(fname='/home/janrichter/.pyenv/versions/avocado/lib/python3.10/site-packages/matplotlib/mpl-data/fonts/ttf/STIXNonUniBol.ttf', name='STIXNonUnicode', style='normal', variant='normal', weight=700, stretch='normal', size='scalable')) = 10.335
-
+        ...

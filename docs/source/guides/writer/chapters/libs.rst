@@ -17,7 +17,7 @@ What this means is that upon updating to later minor versions of Avocado, you
 should look at the Avocado Release Notes for changes that may impact your
 tests.
 
-.. seealso:: If you would like a detailed API reference of this libraries,
+.. seealso:: If you would like a detailed API reference of these libraries,
   please visit the "Reference API" section on the left menu.
 
 The following pages are the documentation for some of the Avocado utilities:
