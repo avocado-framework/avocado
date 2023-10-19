@@ -396,6 +396,9 @@ class Worker:
             return
 
         if self._spawner.is_task_alive(runtime_task):
+            LOG.debug(
+                'Task "%s" is alive at monitor phase', runtime_task.task.identifier
+            )
             async with self._state_machine.lock:
                 self._state_machine._monitored.append(runtime_task)
             try:
@@ -414,6 +417,13 @@ class Worker:
                     self._state_machine.monitored.remove(runtime_task)
                 except ValueError:
                     pass
+        else:
+            LOG.debug(
+                'Task "%s" was very short lived, this may be '
+                "completely normal depending on the task itself. "
+                "Please check the task logs",
+                runtime_task.task.identifier,
+            )
 
         # from here, this `task` ran, so, let's check
         # the its latest data in the status repo
