@@ -426,14 +426,14 @@ class Worker:
             )
 
         # from here, this `task` ran, so, let's check
-        # the its latest data in the status repo
+        # its latest data in the status repo
         latest_task_data = (
             self._state_machine._status_repo.get_latest_task_data(
                 str(runtime_task.task.identifier)
             )
             or {}
         )
-        # maybe, the results are not available yet
+        # or maybe its results are not available yet
         while latest_task_data.get("result") is None:
             await asyncio.sleep(0.1)
             latest_task_data = (
