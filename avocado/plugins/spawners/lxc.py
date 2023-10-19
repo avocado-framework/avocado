@@ -291,6 +291,7 @@ class LXCSpawner(Spawner, SpawnerMixin):
         # if not container.destroy():
         #     LOG.error("Failed to destroy the container.")
         #     return False
+        return True
 
     @staticmethod
     async def check_task_requirements(runtime_task):

@@ -371,6 +371,8 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         except PodmanException as ex:
             LOG.error("Could not stop container: %s", ex)
             return False
+        info = await self.podman.get_container_info(runtime_task.spawner_handle)
+        return info.get("Exited", False)
 
     @staticmethod
     async def check_task_requirements(runtime_task):

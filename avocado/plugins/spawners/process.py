@@ -76,6 +76,14 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     @staticmethod
     async def terminate_task(runtime_task):  # pylint: disable=W0221
         runtime_task.spawner_handle.process.terminate()
+        returncode = None
+        try:
+            returncode = await asyncio.wait_for(
+                runtime_task.spawner_handle.process.wait(), 1
+            )
+        except asyncio.TimeoutError:
+            pass
+        return returncode is not None
 
     @staticmethod
     async def check_task_requirements(runtime_task):
