@@ -112,6 +112,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
         self._podman_version = (None, None, None)
+        self._podman = None
 
     def _get_podman_version(self):
         podman_bin = self.config.get("spawner.podman.bin")
@@ -141,6 +142,16 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if self._podman_version == (None, None, None):
             self._podman_version = self._get_podman_version()
         return self._podman_version
+
+    @property
+    def podman(self):
+        if self._podman is None:
+            podman_bin = self.config.get("spawner.podman.bin")
+            try:
+                self._podman = Podman(podman_bin)
+            except PodmanException as ex:
+                LOG.error(ex)
+        return self._podman
 
     def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
@@ -299,13 +310,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
-        podman_bin = self.config.get("spawner.podman.bin")
-        try:
-            # pylint: disable=W0201
-            self.podman = Podman(podman_bin)
-        except PodmanException as ex:
-            LOG.error(ex)
-            return False
 
         major, minor, _ = await self.python_version
         # Return only the "to" location
