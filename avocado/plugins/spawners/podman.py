@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import subprocess
+import time
 import uuid
 
 from avocado.core.dependencies.requirements import cache
@@ -153,7 +154,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 LOG.error(ex)
         return self._podman
 
-    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
+    def _get_podman_state(self, runtime_task):
         if runtime_task.spawner_handle is None:
             return False
         podman_bin = self.config.get("spawner.podman.bin")
@@ -171,8 +172,21 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             stderr=subprocess.DEVNULL,
         )
         out, _ = process.communicate()
-        # FIXME: check how podman 2.x is reporting valid "OK" states
-        return out.startswith(b"Up ")
+        return out
+
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
+        out = self._get_podman_state(runtime_task)
+        if self.podman_version[0] < 4:
+            return out.startswith(b"Up ")
+
+        if out == b"running\n":
+            return True
+        if out == b"created\n":
+            # give the container a chance to transition to running
+            time.sleep(0.1)
+            out = self._get_podman_state(runtime_task)
+            return out == b"running\n"
+        return False
 
     def _fetch_asset(self, url):
         cachedirs = self.config.get("datadir.paths.cache_dirs")
