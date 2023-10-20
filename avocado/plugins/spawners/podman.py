@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import subprocess
 import uuid
 
@@ -110,6 +111,36 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     def __init__(self, config=None, job=None):  # pylint: disable=W0231
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
+        self._podman_version = (None, None, None)
+
+    def _get_podman_version(self):
+        podman_bin = self.config.get("spawner.podman.bin")
+        try:
+            cmd = [podman_bin, "--version"]
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+            out, _ = process.communicate()
+        except subprocess.SubprocessError as ex:
+            raise PodmanException("Failed to get podman version information") from ex
+
+        match = re.match(rb"podman version (\d+)\.(\d+).(\d+)\n", out)
+        if match:
+            major, minor, release = match.groups()
+            return (int(major), int(minor), int(release))
+        raise PodmanException(
+            f"Failed to get podman version information: "
+            f'output received "{out}" does not match expected output'
+        )
+
+    @property
+    def podman_version(self):
+        if self._podman_version == (None, None, None):
+            self._podman_version = self._get_podman_version()
+        return self._podman_version
 
     def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
