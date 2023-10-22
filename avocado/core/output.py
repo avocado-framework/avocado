@@ -86,6 +86,7 @@ class TermSupport:
             "linux",
             "xterm",
             "xterm-256color",
+            "xterm-kitty",
             "vt100",
             "screen",
             "screen-256color",
