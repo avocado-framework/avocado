@@ -22,6 +22,8 @@ class MagicRunner(BaseRunner):
                            uri='pass')
     """
 
+    description = "Runner for magic words"
+
     def run(self, runnable):
         yield StartedMessage.get()
         if runnable.uri in ["pass", "fail"]:
