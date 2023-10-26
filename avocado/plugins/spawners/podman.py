@@ -2,7 +2,9 @@ import asyncio
 import json
 import logging
 import os
+import re
 import subprocess
+import time
 import uuid
 
 from avocado.core.dependencies.requirements import cache
@@ -110,8 +112,49 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     def __init__(self, config=None, job=None):  # pylint: disable=W0231
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
+        self._podman_version = (None, None, None)
+        self._podman = None
 
-    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
+    def _get_podman_version(self):
+        podman_bin = self.config.get("spawner.podman.bin")
+        try:
+            cmd = [podman_bin, "--version"]
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+            out, _ = process.communicate()
+        except subprocess.SubprocessError as ex:
+            raise PodmanException("Failed to get podman version information") from ex
+
+        match = re.match(rb"podman version (\d+)\.(\d+).(\d+)\n", out)
+        if match:
+            major, minor, release = match.groups()
+            return (int(major), int(minor), int(release))
+        raise PodmanException(
+            f"Failed to get podman version information: "
+            f'output received "{out}" does not match expected output'
+        )
+
+    @property
+    def podman_version(self):
+        if self._podman_version == (None, None, None):
+            self._podman_version = self._get_podman_version()
+        return self._podman_version
+
+    @property
+    def podman(self):
+        if self._podman is None:
+            podman_bin = self.config.get("spawner.podman.bin")
+            try:
+                self._podman = Podman(podman_bin)
+            except PodmanException as ex:
+                LOG.error(ex)
+        return self._podman
+
+    def _get_podman_state(self, runtime_task):
         if runtime_task.spawner_handle is None:
             return False
         podman_bin = self.config.get("spawner.podman.bin")
@@ -129,8 +172,21 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             stderr=subprocess.DEVNULL,
         )
         out, _ = process.communicate()
-        # FIXME: check how podman 2.x is reporting valid "OK" states
-        return out.startswith(b"Up ")
+        return out
+
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
+        out = self._get_podman_state(runtime_task)
+        if self.podman_version[0] < 4:
+            return out.startswith(b"Up ")
+
+        if out == b"running\n":
+            return True
+        if out == b"created\n":
+            # give the container a chance to transition to running
+            time.sleep(0.1)
+            out = self._get_podman_state(runtime_task)
+            return out == b"running\n"
+        return False
 
     def _fetch_asset(self, url):
         cachedirs = self.config.get("datadir.paths.cache_dirs")
@@ -268,13 +324,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
-        podman_bin = self.config.get("spawner.podman.bin")
-        try:
-            # pylint: disable=W0201
-            self.podman = Podman(podman_bin)
-        except PodmanException as ex:
-            LOG.error(ex)
-            return False
 
         major, minor, _ = await self.python_version
         # Return only the "to" location
