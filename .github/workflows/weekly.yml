@@ -80,7 +80,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user --skip-optional-plugins
+        run: python3 setup.py develop --user --skip-optional-plugins --skip-examples-plugins-tests
       - name: Avocado version
         run: avocado --version
       - name: Tree static check, unittests and fast functional tests without plugins

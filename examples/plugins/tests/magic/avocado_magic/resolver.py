@@ -17,8 +17,9 @@ Test resolver for magic test words
 """
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.plugin_interfaces import Discoverer, Resolver
+from avocado.core.plugin_interfaces import Discoverer, Init, Resolver
 from avocado.core.resolver import ReferenceResolution, ReferenceResolutionResult
+from avocado.core.settings import settings
 
 VALID_MAGIC_WORDS = ["pass", "fail"]
 
@@ -42,14 +43,28 @@ class MagicResolver(Resolver):
         )
 
 
+class MagicInit(Init):
+
+    description = "Initialization for magic words plugin"
+
+    def initialize(self):
+        settings.register_option(
+            section="examples.plugins.magic.discover",
+            key="enabled",
+            key_type=bool,
+            help_msg="Whether to enable the discovery of pass and fail",
+            default=False,
+        )
+
+
 class MagicDiscoverer(Discoverer):
 
     name = "magic-discoverer"
     description = "Test discoverer for magic words"
 
-    @staticmethod
-    def discover():  # pylint: disable=W0221
+    def discover(self):  # pylint: disable=W0221
         resolutions = []
-        for reference in VALID_MAGIC_WORDS:
-            resolutions.append(MagicResolver.resolve(reference))
+        if self.config.get("examples.plugins.magic.discover.enabled"):
+            for reference in VALID_MAGIC_WORDS:
+                resolutions.append(MagicResolver.resolve(reference))
         return resolutions

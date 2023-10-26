@@ -31,6 +31,8 @@ from setuptools import Command, find_packages, setup
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
+OPTIONAL_PLUGINS_PATH = os.path.join(BASE_PATH, "optional_plugins")
+EXAMPLES_PLUGINS_TESTS_PATH = os.path.join(BASE_PATH, "examples", "plugins", "tests")
 
 
 def get_long_description():
@@ -39,9 +41,7 @@ def get_long_description():
     return readme_contents
 
 
-def walk_plugins_setup_py(
-    action, action_name=None, directory=os.path.join(BASE_PATH, "optional_plugins")
-):
+def walk_plugins_setup_py(action, action_name=None, directory=OPTIONAL_PLUGINS_PATH):
 
     if action_name is None:
         action_name = action[0].upper()
@@ -87,7 +87,8 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        walk_plugins_setup_py(["clean", "--all"])
+        walk_plugins_setup_py(["clean", "--all"], directory=OPTIONAL_PLUGINS_PATH)
+        walk_plugins_setup_py(["clean", "--all"], directory=EXAMPLES_PLUGINS_TESTS_PATH)
 
 
 class Develop(setuptools.command.develop.develop):
@@ -100,17 +101,31 @@ class Develop(setuptools.command.develop.develop):
             None,
             "Do not include in-tree optional plugins in development mode",
         ),
+        (
+            "skip-examples-plugins-tests",
+            None,
+            "Do not include in-tree example plugins for test types in development mode",
+        ),
     ]
 
     boolean_options = setuptools.command.develop.develop.boolean_options + [
         "external",
         "skip-optional-plugins",
+        "skip-examples-plugins-tests",
     ]
 
     def _walk_develop_plugins(self):
         if not self.skip_optional_plugins:
             walk_plugins_setup_py(
-                action=["develop"] + self.action_options, action_name=self.action_name
+                ["develop"] + self.action_options,
+                self.action_name,
+                OPTIONAL_PLUGINS_PATH,
+            )
+        if not self.skip_examples_plugins_tests:
+            walk_plugins_setup_py(
+                ["develop"] + self.action_options,
+                self.action_name,
+                EXAMPLES_PLUGINS_TESTS_PATH,
             )
 
     @property
@@ -143,6 +158,7 @@ class Develop(setuptools.command.develop.develop):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
         self.skip_optional_plugins = 0  # pylint: disable=W0201
+        self.skip_examples_plugins_tests = 0  # pylint: disable=W0201
 
     def handle_uninstall(self):
         """When uninstalling, we remove the plugins before Avocado."""
