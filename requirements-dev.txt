@@ -20,7 +20,8 @@ pycdlib==1.13.0
 netifaces==0.11.0
 
 # For tests that validate the produced XUnit output
-xmlschema==1.7.0
+xmlschema==1.7.0; python_version < '3.12'
+xmlschema==2.5.0; python_version >= '3.12'
 
 # For building the manpage
 docutils==0.17.1
