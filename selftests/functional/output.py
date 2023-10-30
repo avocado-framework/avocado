@@ -55,13 +55,16 @@ PERL_TAP_PARSER_FAILFAST_SNIPPET = PERL_TAP_PARSER_FAILFAST_SNIPPET % AVOCADO_QU
 
 OUTPUT_TEST_CONTENT = """#!/bin/env python
 import sys
+import logging
 
 from avocado import Test
 from avocado.utils import process
 
 print("top_print")
 sys.stdout.write("top_stdout\\n")
+logging.getLogger("avocado.test.stdout").info("top_avocado_stdout")
 sys.stderr.write("top_stderr\\n")
+logging.getLogger("avocado.test.stderr").info("top_avocado_stderr")
 process.run("/bin/echo top_process")
 
 class OutputTest(Test):
@@ -69,13 +72,17 @@ class OutputTest(Test):
         super(OutputTest, self).__init__(*args, **kwargs)
         print("init_print")
         sys.stdout.write("init_stdout\\n")
+        logging.getLogger("avocado.test.stdout").info("init_avocado_stdout")
         sys.stderr.write("init_stderr\\n")
+        logging.getLogger("avocado.test.stderr").info("init_avocado_stderr")
         process.run("/bin/echo init_process")
 
     def test(self):
         print("test_print")
         sys.stdout.write("test_stdout\\n")
+        logging.getLogger("avocado.test.stdout").info("test_avocado_stdout")
         sys.stderr.write("test_stderr\\n")
+        logging.getLogger("avocado.test.stderr").info("test_avocado_stderr")
         process.run("/bin/echo -n test_process > /dev/stdout",
                     shell=True)
         process.run("/bin/echo -n __test_stderr__ > /dev/stderr",
@@ -86,7 +93,9 @@ class OutputTest(Test):
     def __del__(self):
         print("del_print")
         sys.stdout.write("del_stdout\\n")
+        logging.getLogger("avocado.test.stdout").info("del_avocado_stdout")
         sys.stderr.write("del_stderr\\n")
+        logging.getLogger("avocado.test.stderr").info("del_avocado_stderr")
         process.run("/bin/echo -n del_process")
 """
 
@@ -225,62 +234,47 @@ class OutputTest(TestCaseTmpDir):
             f"--disable-sysinfo --json - -- {test}"
         )
         res = json.loads(result.stdout_text)
-        logfile = res["tests"][0]["logfile"]
-        exps = [
+        testdir = res["tests"][0]["logdir"]
+        exps_full = [
             b"[stdout] top_print",
             b"[stdout] top_stdout",
+            b"top_avocado_stdout",
             b"[stderr] top_stderr",
+            b"top_avocado_stderr",
             b"[stdout] init_print",
             b"[stdout] init_stdout",
+            b"init_avocado_stdout",
             b"[stderr] init_stderr",
+            b"init_avocado_stderr",
             b"[stdout] test_print",
             b"[stdout] test_stdout",
+            b"test_avocado_stdout",
             b"[stderr] test_stderr",
+            b"test_avocado_stderr",
         ]
 
-        self._check_output(logfile, exps)
-        testdir = res["tests"][0]["logdir"]
-        with open(
-            os.path.join(testdir, "stdout"), "rb"
-        ) as stdout_file:  # pylint: disable=W1514
-            expected = b"top_print\n\ntop_stdout\ninit_print\n\ninit_stdout\ntest_print\n\ntest_stdout\n"
-            self.assertEqual(expected, stdout_file.read())
-        with open(
-            os.path.join(testdir, "stderr"), "rb"
-        ) as stderr_file:  # pylint: disable=W1514
-            expected = b"top_stderr\ninit_stderr\ntest_stderr\n"
-            self.assertEqual(expected, stderr_file.read())
-
-        # With the nrunner, output combined result are inside job.log
-        result = process.run(
-            f"{AVOCADO} run "
-            f"--job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo --json - -- {test}"
-        )
-        res = json.loads(result.stdout_text)
-        with open(logfile, "rb") as output_file:  # pylint: disable=W1514
-            expected = [
-                b"[stdout] top_print\n",
-                b"[stdout] \n",
-                b"[stdout] top_stdout\n",
-                b"[stderr] top_stderr\n",
-                b"[stdout] init_print\n",
-                b"[stdout] \n",
-                b"[stdout] init_stdout\n",
-                b"[stderr] init_stderr\n",
-                b"[stdout] test_print\n",
-                b"[stdout] \n",
-                b"[stdout] test_stdout\n",
-                b"[stderr] test_stderr\n",
-            ]
-
-            result = list(
-                filter(
-                    lambda x: x.startswith((b"[stdout]", b"[stderr]")),
-                    output_file.readlines(),
-                )
-            )
-            self.assertEqual(expected, result)
+        exps_stdout = [
+            b"top_print",
+            b"top_stdout",
+            b"top_avocado_stdout",
+            b"init_print",
+            b"init_stdout",
+            b"init_avocado_stdout",
+            b"test_print",
+            b"test_stdout",
+            b"test_avocado_stdout",
+        ]
+        exps_stderr = [
+            b"top_stderr",
+            b"top_avocado_stderr",
+            b"init_stderr",
+            b"init_avocado_stderr",
+            b"test_stderr",
+            b"test_avocado_stderr",
+        ]
+        self._check_output(os.path.join(testdir, "debug.log"), exps_full)
+        self._check_output(os.path.join(testdir, "stdout"), exps_stdout)
+        self._check_output(os.path.join(testdir, "stderr"), exps_stderr)
 
     @skipUnlessPathExists("/bin/true")
     def test_show(self):

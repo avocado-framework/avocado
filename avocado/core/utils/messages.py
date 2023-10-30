@@ -247,9 +247,13 @@ def start_logging(config, queue):
 
     log_level = config.get("job.output.loglevel", logging.DEBUG)
     log_handler = RunnerLogHandler(queue, "log")
+    stdout_handler = RunnerLogHandler(queue, "stdout")
+    stderr_handler = RunnerLogHandler(queue, "stderr")
     fmt = "%(asctime)s %(module)-16.16s L%(lineno)-.4d %(levelname)-5.5s| %(message)s"
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
+    stdout_handler.setFormatter(formatter)
+    stderr_handler.setFormatter(formatter)
 
     # root log
     logger = logging.getLogger("")
@@ -264,6 +268,13 @@ def start_logging(config, queue):
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
+
+    stdout_logger = logging.getLogger("avocado.test.stdout")
+    stdout_logger.addHandler(stdout_handler)
+    stdout_logger.propagate = False
+    stderr_logger = logging.getLogger("avocado.test.stderr")
+    stderr_logger.addHandler(stderr_handler)
+    stderr_logger.propagate = False
 
     # store custom test loggers
     enabled_loggers = config.get("job.run.store_logging_stream")
