@@ -48,6 +48,7 @@ setup(
     packages=packages,
     include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}"],
+    zip_safe=False,
     entry_points={
         "avocado.plugins.cli": [
             "results_upload = avocado_result_upload.result_upload:ResultUploadCLI",
