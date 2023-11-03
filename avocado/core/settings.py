@@ -29,10 +29,10 @@ options from many sources, in the following order:
      default value as argument. Developers only need to register the default
      value once, here when calling this methods.
 
-  2. User/System configuration files (/etc/avocado or ~/.avocado/): This is
-     configured by the user, on a more "permanent way".
+  2. System/User configuration files (/etc/avocado or ~/.config/avocado/): This
+     is configured by the user, in a more "permanent way".
 
-  3. Command-line options parsed in runtime. This is configured by the user, on
+  3. Command-line options parsed in runtime. This is configured by the user, in
      a more "temporary way";
 """
 

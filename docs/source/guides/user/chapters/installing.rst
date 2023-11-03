@@ -125,19 +125,18 @@ Then to install Avocado from the git repository run::
 
     $ git clone git://github.com/avocado-framework/avocado.git
     $ cd avocado
-    $ python3 setup.py install --user
+    $ pip install . --user
 
-Optionally, to install the plugins run::
+To install an optional plugin run::
 
-    $ python3 setup.py plugin --install=golang --user
-    $ python3 setup.py plugin --install=html --user
-    $ python3 setup.py plugin --install=result_upload --user
-    $ python3 setup.py plugin --install=resultsdb --user
-    $ python3 setup.py plugin --install=robot --user
-    $ python3 setup.py plugin --install=varianter_cit --user
-    $ python3 setup.py plugin --install=varianter_pict --user
-    $ python3 setup.py plugin --install=varianter_yaml_to_mux --user
+    $ pip install optional_plugins/<plugin_name> --user
 
+I.e. for the HTML plugin::
+
+    $ pip install optional_plugins/html --user
+
+Check the directory ``optional_plugins`` for additional features you might be
+interested in.
 
 .. _Virtualization:Tests project in OpenSUSE build service: https://build.opensuse.org/project/show/Virtualization:Tests
 .. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt

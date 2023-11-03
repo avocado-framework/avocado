@@ -526,6 +526,6 @@ sysinfo on ``pre``, but saves only changed ones on ``post``. It is set to
 False by default.
 
 .. warning:: If you are using Avocado from sources, you need to manually place
-   the ``commands``/``fail_commands``/``fail_files``/``files``/``profilers``
-   into the ``/etc/avocado/sysinfo`` directories or adjust the paths in
-   ``$AVOCADO_SRC/etc/avocado/avocado.conf``.
+    ``commands``/``fail_commands``/``fail_files``/``files``/``profilers`` into
+    the ``/etc/avocado/sysinfo`` directory or adjust the paths in your
+    ``avocado.conf``.
