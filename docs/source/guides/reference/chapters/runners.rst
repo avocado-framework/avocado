@@ -407,42 +407,6 @@ runnables.  A runner should implement a ``capabilities`` command
 that returns, among other info, a list of runnable kinds that it
 can (to the best of its knowledge) run.  Example::
 
-  python3 -m avocado.core.nrunner capabilities | python3 -m json.tool
-  {
-      "runnables": [
-          "avocado-instrumented",
-          "dry-run",
-          "exec-test",
-          "noop",
-          "python-unittest",
-          "asset",
-          "package",
-          "sysinfo",
-          "tap"
-      ],
-      "commands": [
-          "capabilities",
-          "runnable-run",
-          "runnable-run-recipe",
-          "task-run",
-          "task-run-recipe"
-      ],
-      "configuration_used": [
-          "sysinfo.collect.locale",
-          "run.test_parameters",
-          "job.run.store_logging_stream",
-          "runner.exectest.exitcodes.skip",
-          "sysinfo.collect.installed_packages",
-          "sysinfo.collect.commands_timeout",
-          "run.keep_tmp",
-          "job.output.loglevel",
-          "datadir.paths.cache_dirs",
-          "core.show"
-      ]
-  }
-
-Or for a specific runner::
-
   python3 -m avocado.plugins.runners.exec_test capabilities | python -m json.tool
   {
       "runnables": [
@@ -464,11 +428,7 @@ Or for a specific runner::
 Runner scripts
 --------------
 
-The primary runner implementation is a Python module that can be run,
-as shown before, with the ``avocado.core.nrunner`` module name.
-Additionally it's also available as the ``avocado-runner`` script.
-
-Specific runners are also available as ``avocado-runner-$kind``.  For
+Specific runners are available as ``avocado-runner-$kind``.  For
 instance, the runner for ``exec-test`` is available as
 ``avocado-runner-exec-test``.  When using specific runners, the
 ``-k|--kind`` parameter can be omitted.
@@ -498,34 +458,34 @@ Runnables from parameters
 
 You can run a "noop" runner with::
 
-  avocado-runner runnable-run -k noop
+  avocado-runner-noop runnable-run -k noop
 
 You can run an "exec" runner with::
 
-  avocado-runner runnable-run -k exec-test -u /bin/sleep -a 3.0
+  avocado-runner-exec-test runnable-run -k exec-test -u /bin/sleep -a 3.0
 
 You can run an "exec-test" runner with::
 
-  avocado-runner runnable-run -k exec-test -u /bin/true
+  avocado-runner-exec-test runnable-run -k exec-test -u /bin/true
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
+  avocado-runner-python-unittest runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
 
 Runnables from recipes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 You can run a "noop" recipe with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
+  avocado-runner-noop runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
 
 You can run an "exec-test" runner with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
+  avocado-runner-exec-test runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
+  avocado-runner-python-unittest runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
 
 Writing new runner scripts
 --------------------------
