@@ -165,3 +165,13 @@ class TestCancel(TestBaseException):
     """
 
     status = "CANCEL"
+
+
+class TestInterrupt(TestBaseException):
+    """
+    Indicates that a test was interrupted.
+
+    Should be thrown when the test method is interrupted by user or timeout.
+    """
+
+    status = "INTERRUPTED"
