@@ -387,8 +387,9 @@ This status updates are in a format similar to those received from a
 runner, but will add more information to them, such as its unique
 identifier.
 
-A different agreggate structure should be used to keep track of the
-execution of tasks.
+A different agreggate structure,
+:class:`avocado.core.task.runtime.RuntimeTask`, is used to keep track
+of the extra information while the task is being run.
 
 Recipe
 ~~~~~~
