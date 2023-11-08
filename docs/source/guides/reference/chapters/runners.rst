@@ -315,20 +315,24 @@ That type of relationship (Runner is capable of running kind "foo"
 and Runnable is of the same kind "foo") is the expected mechanism that
 will be employed when selecting a Runner.
 
-A Runner can take different forms, depending on which layer one is
-interacting with.  At the lowest layer, a Runner may be a Python class
-that inherits from :class:`avocado.core.nrunner.BaseRunner`, and
-implements at least a matching constructor method, and a ``run()``
-method that should yield dictionary(ies) as result(s).
-
-At a different level, a runner can take the form of an executable that
+It's recommended that a runner takes the form of an executable that
 follows the ``avocado-runner-$KIND`` naming pattern and conforms to a
 given interface/behavior, including accepting standardized command
-line arguments and producing standardized output.
+line arguments and producing standardized output.  This gives the
+runner the highest probability of working with different spawners,
+including ones that would run on isolated or remote environments.
 
 .. tip:: for a very basic example of the interface expected, refer to
          ``selftests/functional/nrunner_interface.py`` on the
          Avocado source code tree.
+
+A Runner can also be, at the lowest layer, a Python class that
+inherits from :class:`avocado.core.nrunner.BaseRunner`, and implements
+at least a matching constructor method, and a ``run()`` method that
+should yield dictionary(ies) as result(s).  Avocado may support in the
+future the usage of such runners directly, which can speed up
+execution, but limits where those can be run to pretty much the same
+machine.
 
 Runner output
 +++++++++++++
