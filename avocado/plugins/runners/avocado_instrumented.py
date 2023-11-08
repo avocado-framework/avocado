@@ -129,6 +129,28 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 )
             )
 
+    @staticmethod
+    def _monitor(proc, time_started, queue):
+        timeout = float("inf")
+        next_status_time = None
+        while True:
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            now = time.monotonic()
+            if queue.empty():
+                if next_status_time is None or now > next_status_time:
+                    next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
+                    yield messages.RunningMessage.get()
+                if (now - time_started) > timeout:
+                    proc.terminate()
+            else:
+                message = queue.get()
+                if message.get("type") == "early_state":
+                    timeout = float(message.get("timeout") or float("inf"))
+                else:
+                    yield message
+                if message.get("status") == "finished":
+                    break
+
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
@@ -142,28 +164,9 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             process.start()
 
             time_started = time.monotonic()
+            for message in self._monitor(process, time_started, queue):
+                yield message
 
-            timeout = float("inf")
-            next_status_time = None
-            while True:
-                time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-                now = time.monotonic()
-                if queue.empty():
-                    if next_status_time is None or now > next_status_time:
-                        next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
-                        yield messages.RunningMessage.get()
-                    if (now - time_started) > timeout:
-                        process.terminate()
-                        yield messages.FinishedMessage.get("interrupted", "timeout")
-                        break
-                else:
-                    message = queue.get()
-                    if message.get("type") == "early_state":
-                        timeout = float(message.get("timeout") or float("inf"))
-                    else:
-                        yield message
-                    if message.get("status") == "finished":
-                        break
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
             yield messages.FinishedMessage.get(
