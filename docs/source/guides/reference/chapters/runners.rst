@@ -279,7 +279,7 @@ internal) API.  Still, it serves as an example::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable('exec', '/bin/true')
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 The second way is through a JSON based file, which, for the lack of a
 better term, we're calling a (Runnable) "recipe".  The recipe file
@@ -292,7 +292,7 @@ And example the code to create it::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable.from_recipe("/path/to/recipe.json")
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 The third way to create a Runnable, is even more internal.  Its usage
 is **discouraged**, unless you are creating a tool that needs to
@@ -301,7 +301,7 @@ create Runnables based on the user's input from the command line::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable.from_args({'kind': 'exec', 'uri': '/bin/true'})
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 Runner
 ~~~~~~
