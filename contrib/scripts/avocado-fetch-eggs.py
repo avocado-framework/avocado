@@ -51,6 +51,17 @@ def main():
         url = get_egg_url(python_version=version)
         asset = Asset(url, cache_dirs=CACHE_DIRS)
         asset.fetch()
+    # for version 3.12, it'll only be available after 103.0 is released
+    # TODO: remove after 103.0 is released
+    url = get_egg_url(python_version="3.12")
+    try:
+        asset = Asset(url, cache_dirs=CACHE_DIRS)
+        asset.fetch()
+    except OSError:
+        LOG.warning(
+            "Failed to fetch eggs for Python 3.12: these will only "
+            "be available after the release of Avocado 103.0"
+        )
     return True
 
 
