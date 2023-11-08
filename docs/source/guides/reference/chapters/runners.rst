@@ -213,8 +213,9 @@ execute itself and can not produce results itself.
 This description of a runnable is abstract on purpose.  While the most
 common use case for a Runnable is to describe how to execute a
 test, there seems to be no reason to bind that concept to a
-test. Other Avocado subsystems, such as ``sysinfo``, could very well
-leverage the same concept to describe say, commands to be executed.
+test. Other Avocado subsystems, leverage the same concept. One example is
+the :ref:`sysinfo-collection` which describes what kind of system
+information collection is to be performed in a ``Runnable``.
 
 A Runnable's ``kind``
 +++++++++++++++++++++
