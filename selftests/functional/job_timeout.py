@@ -105,10 +105,10 @@ class JobTimeOutTest(TestCaseTmpDir):
         debug_log_paths = glob.glob(os.path.join(res_dir, f"{idx}-*", "debug.log"))
         debug_log = genio.read_file(debug_log_paths[0])
         self.assertIn(
-            "Runner error occurred: Timeout reached",
+            "Test interrupted: Timeout reached",
             debug_log,
             (
-                f"Runner error occurred: Timeout reached message not "
+                f"Test interrupted: Timeout reached message not "
                 f"in the {idx}st test's debug.log:\n{debug_log}"
             ),
         )
