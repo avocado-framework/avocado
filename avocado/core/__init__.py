@@ -101,18 +101,6 @@ def register_core_options():
         help_msg=help_msg,
     )
 
-    help_msg = (
-        "The amount of time to give to the test process after "
-        "it it has been interrupted (such as with CTRL+C)"
-    )
-    stgs.register_option(
-        section="runner.timeout",
-        key="after_interrupted",
-        key_type=int,
-        help_msg=help_msg,
-        default=60,
-    )
-
     # Let's assume that by default, cache will be located under the user's
     # umbrella. This will make it easy for our deployments and it is a common
     # place for other applications too.
@@ -164,30 +152,6 @@ def register_core_options():
         key_type=prepend_base_path,
         default=default,
         help_msg=help_msg,
-    )
-
-    help_msg = (
-        "The amount of time to wait after a test has reported "
-        "status but the test process has not finished"
-    )
-    stgs.register_option(
-        section="runner.timeout",
-        key="process_alive",
-        key_type=int,
-        help_msg=help_msg,
-        default=60,
-    )
-
-    help_msg = (
-        "The amount of to wait for a test status after the "
-        "process has been noticed to be dead"
-    )
-    stgs.register_option(
-        section="runner.timeout",
-        key="process_died",
-        key_type=int,
-        help_msg=help_msg,
-        default=10,
     )
 
     help_msg = "Whether to display colored output in terminals that support it"
