@@ -1,22 +1,29 @@
 .. _nrunner:
 
-The "nrunner" test runner
-=========================
+The Avocado default runner (nrunner)
+====================================
 
-This section details a test runner called "nrunner", also known as
-N(ext) Runner, and the architecture around.
+This section details the default Avocado suite runner called
+"nrunner", also previously known as N(ext) Runner, and the
+architecture around it.
 
-At its essence, this new architecture is about making Avocado more
-capable and flexible, and even though it starts with a major internal
-paradigm change within the test runner, it will also affect users and
-test writers.
+.. tip:: a suite runner is an implementation of the
+         :class:`avocado.core.plugin_interfaces.SuiteRunner`
+         interface.  It's the component that runs one or more tests
+         that are contained in a
+         :class:`avocado.core.suite.TestSuite`.
+
+At its essence, the nrunner architecture, when compared to the
+previous runner architecture (now referred to as the "legacy runner")
+is about making Avocado more capable and flexible.  Even though it
+started with a major internal paradigm change within the test runner,
+it also affects users and test writers used to the legacy runner.
 
 The :mod:`avocado.core.nrunner` module was initially responsible for
-most of the N(ext)Runner code, but as development continues, it's
-spreading around to other places in the Avocado source tree.  Other
-components with different and seemingly unrelated names, say the
-"resolvers" or the "spawners", are also pretty much about the
-nrunner architecture.
+most of the nrunner code.  As development continued, it spread around
+to other places in the Avocado source tree.  Other components with
+different and seemingly unrelated names, say the "resolvers" or the
+"spawners", are also pretty much about the nrunner architecture.
 
 Motivation
 ----------
@@ -57,7 +64,7 @@ implemented under a different architecture and implementation:
 * Simplified and automated deployment of the runner component into
   execution environments such as containers and virtual machines
 
-NRunner components of Avocado
+nrunner components of Avocado
 -----------------------------
 
 Whenever we mention the **current** architecture or implementation,
