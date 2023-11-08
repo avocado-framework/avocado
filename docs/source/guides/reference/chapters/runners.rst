@@ -371,7 +371,7 @@ receiving no information at all.
 For instance, if a Runner fails to produce any information within a
 given amount of time, it may be considered faulty and be completely
 discarded.  This would probably end up being represented as a
-``TIMED_OUT`` kind of status on a higher layer (say at the "Job"
+``INTERRUPTED`` kind of status on a higher layer (say at the "Job"
 layer).
 
 Task
