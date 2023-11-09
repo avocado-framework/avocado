@@ -372,6 +372,8 @@ class Spawner(Plugin):
         :param runtime_task: wrapper for a Task with additional runtime
                              information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :returns: whether the task has been fully terminated or not
+        :rtype: bool
         """
 
     @staticmethod

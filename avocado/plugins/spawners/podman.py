@@ -367,10 +367,27 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     async def terminate_task(self, runtime_task):
         try:
+            await self.podman.execute(
+                "kill", "--signal=TERM", runtime_task.spawner_handle
+            )
+        except PodmanException as ex:
+            LOG.error("Could not signal termination to task on container: %s", ex)
+            return False
+        soft_interval = self.config.get(
+            "runner.task.interval.from_soft_to_hard_termination"
+        )
+        await asyncio.sleep(soft_interval)
+        try:
             await self.podman.stop(runtime_task.spawner_handle)
         except PodmanException as ex:
             LOG.error("Could not stop container: %s", ex)
             return False
+        hard_interval = self.config.get(
+            "runner.task.interval.from_hard_termination_to_verification"
+        )
+        await asyncio.sleep(hard_interval)
+        info = await self.podman.get_container_info(runtime_task.spawner_handle)
+        return info.get("Exited", False)
 
     @staticmethod
     async def check_task_requirements(runtime_task):

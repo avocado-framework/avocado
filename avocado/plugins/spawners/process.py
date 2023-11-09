@@ -12,19 +12,34 @@ ENVIRONMENT_TYPE = "local"
 ENVIRONMENT = socket.gethostname()
 
 
+class ProcessSpawnerHandle:
+    def __init__(self, process):
+        self.process = process
+        self._wait_task = None
+
+    def create_wait_task(self):
+        if self._wait_task is None:
+            loop = asyncio.get_event_loop()
+            self._wait_task = loop.create_task(self.process.wait())
+
+    @property
+    def wait_task(self):
+        self.create_wait_task()
+        return self._wait_task
+
+
 class ProcessSpawner(Spawner, SpawnerMixin):
 
     description = "Process based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
-    async def _collect_task(self, task_handle):
-        await task_handle.wait()
-
     @staticmethod
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:
             return False
-        return runtime_task.spawner_handle.returncode is None
+        if runtime_task.spawner_handle.wait_task.done():
+            return False
+        return True
 
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
@@ -35,7 +50,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
 
         # pylint: disable=E1133
         try:
-            runtime_task.spawner_handle = await asyncio.create_subprocess_exec(
+            proc = await asyncio.create_subprocess_exec(
                 runner,
                 *args,
                 stdout=asyncio.subprocess.DEVNULL,
@@ -44,7 +59,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             )
         except (FileNotFoundError, PermissionError):
             return False
-        asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
+        runtime_task.spawner_handle = ProcessSpawnerHandle(proc)
         return True
 
     def create_task_output_dir(self, runtime_task):
@@ -56,11 +71,30 @@ class ProcessSpawner(Spawner, SpawnerMixin):
 
     @staticmethod
     async def wait_task(runtime_task):  # pylint: disable=W0221
-        await runtime_task.spawner_handle.wait()
+        await runtime_task.spawner_handle.wait_task
 
-    @staticmethod
-    async def terminate_task(runtime_task):  # pylint: disable=W0221
-        runtime_task.spawner_handle.terminate()
+    async def terminate_task(self, runtime_task):
+        runtime_task.spawner_handle.process.terminate()
+        soft_interval = self.config.get(
+            "runner.task.interval.from_soft_to_hard_termination"
+        )
+        returncode = None
+        try:
+            returncode = await asyncio.wait_for(
+                runtime_task.spawner_handle.process.wait(), soft_interval
+            )
+        except asyncio.TimeoutError:
+            runtime_task.spawner_handle.process.kill()
+            hard_interval = self.config.get(
+                "runner.task.interval.from_hard_termination_to_verification"
+            )
+            try:
+                returncode = await asyncio.wait_for(
+                    runtime_task.spawner_handle.process.wait(), hard_interval
+                )
+            except asyncio.TimeoutError:
+                pass
+        return returncode is not None
 
     @staticmethod
     async def check_task_requirements(runtime_task):

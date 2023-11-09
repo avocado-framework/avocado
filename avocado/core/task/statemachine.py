@@ -459,7 +459,9 @@ class Worker:
 
     async def _terminate_task(self, runtime_task, task_status):
         runtime_task.status = task_status
-        await self._spawner.terminate_task(runtime_task)
+        terminate_result = await self._spawner.terminate_task(runtime_task)
+        if not terminate_result:
+            LOG.error('Could not terminate task "%s"', runtime_task.task.identifier)
 
     async def _terminate_tasks(self, task_status):
         await self._state_machine.abort(task_status)
