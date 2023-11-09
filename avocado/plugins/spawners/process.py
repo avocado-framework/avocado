@@ -73,16 +73,27 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     async def wait_task(runtime_task):  # pylint: disable=W0221
         await runtime_task.spawner_handle.wait_task
 
-    @staticmethod
-    async def terminate_task(runtime_task):  # pylint: disable=W0221
+    async def terminate_task(self, runtime_task):
         runtime_task.spawner_handle.process.terminate()
+        soft_interval = self.config.get(
+            "runner.task.interval.from_soft_to_hard_termination"
+        )
         returncode = None
         try:
             returncode = await asyncio.wait_for(
-                runtime_task.spawner_handle.process.wait(), 1
+                runtime_task.spawner_handle.process.wait(), soft_interval
             )
         except asyncio.TimeoutError:
-            pass
+            runtime_task.spawner_handle.process.kill()
+            hard_interval = self.config.get(
+                "runner.task.interval.from_hard_termination_to_verification"
+            )
+            try:
+                returncode = await asyncio.wait_for(
+                    runtime_task.spawner_handle.process.wait(), hard_interval
+                )
+            except asyncio.TimeoutError:
+                pass
         return returncode is not None
 
     @staticmethod

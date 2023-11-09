@@ -101,6 +101,39 @@ def register_core_options():
         help_msg=help_msg,
     )
 
+    help_msg = (
+        "The amount of time to wait between asking nicely for a task "
+        "to be terminated (say sending a signal) and proceeding with "
+        "a more forceful termination. This may allow runners within "
+        "tasks to perform clean ups. Spawners are free to implement "
+        "a behavior that is suitable to their isolation model, "
+        "including ignoring this configuration."
+    )
+    stgs.register_option(
+        section="runner.task.interval",
+        key="from_soft_to_hard_termination",
+        key_type=int,
+        help_msg=help_msg,
+        default=1,
+    )
+
+    help_msg = (
+        "The amount of time to wait between executing a more forceful "
+        "termination of a task, and the verification of the actual "
+        "termination. This may allow spawners to give the necessary "
+        "time for their isolation models to fully terminate a task. "
+        "Spawners are free to implement a behavior that is suitable "
+        "to their isolation model, including ignoring this "
+        "configuration."
+    )
+    stgs.register_option(
+        section="runner.task.interval",
+        key="from_hard_termination_to_verification",
+        key_type=int,
+        help_msg=help_msg,
+        default=0,
+    )
+
     # Let's assume that by default, cache will be located under the user's
     # umbrella. This will make it easy for our deployments and it is a common
     # place for other applications too.
