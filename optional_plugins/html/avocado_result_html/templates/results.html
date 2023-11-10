@@ -50,8 +50,9 @@
             <tr>
               <td>Stats</td>
               <td>From {{ data.result.tests_total }} tests executed,
-                {{ data.result.passed }} passed and
-                {{ data.result.warned }} warned - success rate of
+                <span class="pass">{{ data.result.passed }} passed</span>,
+                <span class="fail">{{ data.result.failed + data.result.errors + data.result.interrupted }} did not pass</span>, and
+                <span class="warn">{{ data.result.warned }} warned</span> - success rate of
                 {{ '%.2f'|format(data.result.rate) }}% (excluding SKIP and CANCEL)</td>
             </tr>
           </table>
@@ -106,7 +107,17 @@
             </div>
           </td>
           <td><div>{{ test.variant }}</div></td>
-          <td><div>{{ test.status }}</div></td>
+          <td>
+          {% if test.status == 'PASS' %}
+            <div class="pass">
+          {% elif test.status == 'WARN' or test.status == 'SKIP' or test.status == 'CANCEL' %}
+            <div class="warn">
+          {% else %}
+            <div class="fail">
+          {% endif %}
+              {{ test.status }}
+            </div>
+          </td>
           <td><div>{{ test.time }}</div></td>
           <td data-toggle="popover"
               data-container="body"
