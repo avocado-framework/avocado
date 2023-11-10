@@ -13,6 +13,6 @@ class AvocadoInstrumentedRunnerTest(TestCaseTmpDir, Test):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, AVOCADO_JOB_INTERRUPTED)
         self.assertIn(
-            "examples/tests/timeouttest.py:TimeoutTest.test:  INTERRUPTED: timeout",
+            "examples/tests/timeouttest.py:TimeoutTest.test:  INTERRUPTED: Test interrupted: Timeout reached",
             result.stdout_text,
         )

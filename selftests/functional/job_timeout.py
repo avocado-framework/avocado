@@ -1,5 +1,6 @@
 import glob
 import os
+import tempfile
 import unittest
 import xml.dom.minidom
 
@@ -26,6 +27,22 @@ class Dummy(Test):
         pass
     def test02pass(self):
         pass
+
+    def tearDown(self):
+        self.log.info("tearDown")
+"""
+
+PYTHON_LONG_CONTENT = """#!/usr/bin/env python
+import time
+from avocado import Test
+
+class Dummy(Test):
+    def test00sleep(self):
+        time.sleep(10)
+
+    def tearDown(self):
+        time.sleep(5)
+        self.log.info("tearDown")
 """
 
 
@@ -48,6 +65,10 @@ class JobTimeOutTest(TestCaseTmpDir):
             "sleep_test.py", PYTHON_CONTENT, "avocado_timeout_functional"
         )
         self.py.save()
+        self.long_py = script.TemporaryScript(
+            "sleep_long.py", PYTHON_LONG_CONTENT, "avocado_timeout_functional"
+        )
+        self.long_py.save()
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, terminated_tests):
         os.chdir(BASEDIR)
@@ -100,18 +121,22 @@ class JobTimeOutTest(TestCaseTmpDir):
                 f"Test {terminated_test} was not in {output}.",
             )
 
-    def _check_timeout_msg(self, idx):
+    def _check_timeout_msg(self, idx, message, negation=False):
         res_dir = os.path.join(self.tmpdir.name, "latest", "test-results")
         debug_log_paths = glob.glob(os.path.join(res_dir, f"{idx}-*", "debug.log"))
         debug_log = genio.read_file(debug_log_paths[0])
-        self.assertIn(
-            "Runner error occurred: Timeout reached",
-            debug_log,
-            (
-                f"Runner error occurred: Timeout reached message not "
-                f"in the {idx}st test's debug.log:\n{debug_log}"
-            ),
-        )
+        if not negation:
+            self.assertIn(
+                message,
+                debug_log,
+                f"{message} message not in the {idx}st test's debug.log:\n{debug_log}",
+            )
+        else:
+            self.assertNotIn(
+                message,
+                debug_log,
+                f"{message} message is in the {idx}st test's debug.log:\n{debug_log}",
+            )
 
     def test_sleep_short_timeout(self):
         cmd_line = (
@@ -132,7 +157,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         self.run_and_check(
             cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, [self.script_long.path]
         )
-        self._check_timeout_msg(1)
+        self._check_timeout_msg(1, "Test interrupted: Timeout reached")
 
     def test_sleep_longer_timeout_all_ok(self):
         cmd_line = (
@@ -155,7 +180,7 @@ class JobTimeOutTest(TestCaseTmpDir):
             3,
             [f"{self.py.path}:Dummy.test00sleep"],
         )
-        self._check_timeout_msg(1)
+        self._check_timeout_msg(1, "Test interrupted: Timeout reached")
 
     def test_invalid_values(self):
         cmd_line = (
@@ -205,11 +230,62 @@ class JobTimeOutTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
+    def test_timout_with_tear_down(self):
+        cmd_line = (
+            f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo "
+            f"--job-timeout=5 {self.py.path}"
+        )
+        self.run_and_check(
+            cmd_line,
+            exit_codes.AVOCADO_JOB_INTERRUPTED,
+            3,
+            [f"{self.py.path}:Dummy.test00sleep"],
+        )
+        self._check_timeout_msg(1, "tearDown")
+
+    def test_timeout_with_long_tear_down(self):
+        config = "[runner.task.interval]\nfrom_soft_to_hard_termination=10\n"
+        fd, config_file = tempfile.mkstemp(dir=self.tmpdir.name)
+        os.write(fd, config.encode())
+        os.close(fd)
+        cmd_line = (
+            f"{AVOCADO} --config {config_file} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo "
+            f"--job-timeout=5 {self.long_py.path}"
+        )
+        self.run_and_check(
+            cmd_line,
+            exit_codes.AVOCADO_JOB_INTERRUPTED,
+            1,
+            [f"{self.long_py.path}:Dummy.test00sleep"],
+        )
+        self._check_timeout_msg(1, "tearDown")
+
+    def test_timeout_with_long_tear_down_interupted(self):
+        config = "[runner.task.interval]\nfrom_soft_to_hard_termination=3\n"
+        fd, config_file = tempfile.mkstemp(dir=self.tmpdir.name)
+        os.write(fd, config.encode())
+        os.close(fd)
+        cmd_line = (
+            f"{AVOCADO} --config {config_file} run --job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo "
+            f"--job-timeout=5 {self.long_py.path}"
+        )
+        self.run_and_check(
+            cmd_line,
+            exit_codes.AVOCADO_JOB_INTERRUPTED,
+            1,
+            [f"{self.long_py.path}:Dummy.test00sleep"],
+        )
+        self._check_timeout_msg(1, "tearDown", True)
+
     def tearDown(self):
         super().tearDown()
         self.script_short.remove()
         self.script_long.remove()
         self.py.remove()
+        self.long_py.remove()
 
 
 if __name__ == "__main__":

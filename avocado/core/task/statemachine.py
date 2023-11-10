@@ -205,7 +205,7 @@ class Worker:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
             log_message = messages.LogMessage.get(
-                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Runner error occurred: {reason}",
+                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Test interrupted: {reason}",
                 id=task_id,
                 job_id=job_id,
             )

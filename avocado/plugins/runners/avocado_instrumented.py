@@ -1,10 +1,12 @@
 import multiprocessing
 import os
+import signal
 import sys
 import tempfile
 import time
 import traceback
 
+from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import (
     RUNNER_RUN_CHECK_INTERVAL,
@@ -43,6 +45,11 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
     ]
 
     @staticmethod
+    def signal_handler(signum, frame):  # pylint: disable=W0613
+        if signum == signal.SIGTERM.value:
+            raise TestInterrupt("Test interrupted: Timeout reached")
+
+    @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
         if runnable.variant is None:
@@ -69,6 +76,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             #
             # To be defined: if the resolution uri should be composed like
             # this, or broken down and stored into other data fields
+            signal.signal(signal.SIGTERM, AvocadoInstrumentedTestRunner.signal_handler)
             module_path, klass_method = runnable.uri.split(":", 1)
 
             klass, method = klass_method.split(".", 1)
@@ -129,8 +137,31 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 )
             )
 
+    @staticmethod
+    def _monitor(proc, time_started, queue):
+        timeout = float("inf")
+        next_status_time = None
+        while True:
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            now = time.monotonic()
+            if queue.empty():
+                if next_status_time is None or now > next_status_time:
+                    next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
+                    yield messages.RunningMessage.get()
+                if (now - time_started) > timeout:
+                    proc.terminate()
+            else:
+                message = queue.get()
+                if message.get("type") == "early_state":
+                    timeout = float(message.get("timeout") or float("inf"))
+                else:
+                    yield message
+                if message.get("status") == "finished":
+                    break
+
     def run(self, runnable):
         # pylint: disable=W0201
+        signal.signal(signal.SIGTERM, AvocadoInstrumentedTestRunner.signal_handler)
         self.runnable = runnable
         yield messages.StartedMessage.get()
         try:
@@ -142,28 +173,13 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             process.start()
 
             time_started = time.monotonic()
+            for message in self._monitor(process, time_started, queue):
+                yield message
 
-            timeout = float("inf")
-            next_status_time = None
-            while True:
-                time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-                now = time.monotonic()
-                if queue.empty():
-                    if next_status_time is None or now > next_status_time:
-                        next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
-                        yield messages.RunningMessage.get()
-                    if (now - time_started) > timeout:
-                        process.terminate()
-                        yield messages.FinishedMessage.get("interrupted", "timeout")
-                        break
-                else:
-                    message = queue.get()
-                    if message.get("type") == "early_state":
-                        timeout = float(message.get("timeout") or float("inf"))
-                    else:
-                        yield message
-                    if message.get("status") == "finished":
-                        break
+        except TestInterrupt:
+            process.terminate()
+            for message in self._monitor(process, time_started, queue):
+                yield message
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
             yield messages.FinishedMessage.get(
