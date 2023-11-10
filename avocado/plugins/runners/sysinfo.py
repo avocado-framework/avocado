@@ -154,7 +154,7 @@ class SysinfoRunner(BaseRunner):
         test_fail = self.runnable.kwargs.get("test_fail", False)
         if self.runnable.uri not in ["pre", "post"]:
             yield messages.StderrMessage.get(
-                f"Unsupported uri"
+                f"Unsupported uri "
                 f"{self.runnable.uri}. "
                 f"Possible values, 'pre', 'post'"
             )

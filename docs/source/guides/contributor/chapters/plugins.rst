@@ -233,7 +233,7 @@ have to set plugin variable `is_cacheable` to `True`, like this:
 New test type plugin example
 ============================
 
-For a new test type to be recognized and executed by Avocado's NRunner
+For a new test type to be recognized and executed by Avocado's nrunner
 architecture, there needs to be two types of plugins and one optional:
 
  * resolvers: they resolve references into proper test descriptions

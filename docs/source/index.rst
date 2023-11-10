@@ -15,6 +15,7 @@ Contents:
    guides/user/index
    guides/writer/index
    guides/contributor/index
+   guides/reference/index
 
 .. toctree::
    :caption: Avocado Plugins

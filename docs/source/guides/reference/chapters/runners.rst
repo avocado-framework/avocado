@@ -1,22 +1,29 @@
 .. _nrunner:
 
-The "nrunner" test runner
-=========================
+The Avocado default runner (nrunner)
+====================================
 
-This section details a test runner called "nrunner", also known as
-N(ext) Runner, and the architecture around.
+This section details the default Avocado suite runner called
+"nrunner", also previously known as N(ext) Runner, and the
+architecture around it.
 
-At its essence, this new architecture is about making Avocado more
-capable and flexible, and even though it starts with a major internal
-paradigm change within the test runner, it will also affect users and
-test writers.
+.. tip:: a suite runner is an implementation of the
+         :class:`avocado.core.plugin_interfaces.SuiteRunner`
+         interface.  It's the component that runs one or more tests
+         that are contained in a
+         :class:`avocado.core.suite.TestSuite`.
+
+At its essence, the nrunner architecture, when compared to the
+previous runner architecture (now referred to as the "legacy runner")
+is about making Avocado more capable and flexible.  Even though it
+started with a major internal paradigm change within the test runner,
+it also affects users and test writers used to the legacy runner.
 
 The :mod:`avocado.core.nrunner` module was initially responsible for
-most of the N(ext)Runner code, but as development continues, it's
-spreading around to other places in the Avocado source tree.  Other
-components with different and seemingly unrelated names, say the
-"resolvers" or the "spawners", are also pretty much about the
-nrunner architecture.
+most of the nrunner code.  As development continued, it spread around
+to other places in the Avocado source tree.  Other components with
+different and seemingly unrelated names, say the "resolvers" or the
+"spawners", are also pretty much about the nrunner architecture.
 
 Motivation
 ----------
@@ -57,7 +64,7 @@ implemented under a different architecture and implementation:
 * Simplified and automated deployment of the runner component into
   execution environments such as containers and virtual machines
 
-NRunner components of Avocado
+nrunner components of Avocado
 -----------------------------
 
 Whenever we mention the **current** architecture or implementation,
@@ -103,8 +110,8 @@ described in the following section.  Overall, the process looks like::
   +--------------------+    +-----------------------+
   | avocado list | run | -> | avocado.core.resolver | ---+
   +--------------------+    +-----------------------+    |
-                                                              |
-    +---------------------------------------------------------+
+                                                         |
+    +----------------------------------------------------+
     |
     v
   +--------------------------------------+
@@ -206,8 +213,9 @@ execute itself and can not produce results itself.
 This description of a runnable is abstract on purpose.  While the most
 common use case for a Runnable is to describe how to execute a
 test, there seems to be no reason to bind that concept to a
-test. Other Avocado subsystems, such as ``sysinfo``, could very well
-leverage the same concept to describe say, commands to be executed.
+test. Other Avocado subsystems, leverage the same concept. One example is
+the :ref:`sysinfo-collection` which describes what kind of system
+information collection is to be performed in a ``Runnable``.
 
 A Runnable's ``kind``
 +++++++++++++++++++++
@@ -271,7 +279,7 @@ internal) API.  Still, it serves as an example::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable('exec', '/bin/true')
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 The second way is through a JSON based file, which, for the lack of a
 better term, we're calling a (Runnable) "recipe".  The recipe file
@@ -284,7 +292,7 @@ And example the code to create it::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable.from_recipe("/path/to/recipe.json")
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 The third way to create a Runnable, is even more internal.  Its usage
 is **discouraged**, unless you are creating a tool that needs to
@@ -293,7 +301,7 @@ create Runnables based on the user's input from the command line::
   >>> from avocado.core.nrunner.runnable import Runnable
   >>> runnable = Runnable.from_args({'kind': 'exec', 'uri': '/bin/true'})
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
+  <Runnable kind="exec" uri="/bin/true" config="{}" args="()" kwargs="{}" tags="None" dependencies="None" variant="None">
 
 Runner
 ~~~~~~
@@ -307,20 +315,24 @@ That type of relationship (Runner is capable of running kind "foo"
 and Runnable is of the same kind "foo") is the expected mechanism that
 will be employed when selecting a Runner.
 
-A Runner can take different forms, depending on which layer one is
-interacting with.  At the lowest layer, a Runner may be a Python class
-that inherits from :class:`avocado.core.nrunner.BaseRunner`, and
-implements at least a matching constructor method, and a ``run()``
-method that should yield dictionary(ies) as result(s).
-
-At a different level, a runner can take the form of an executable that
+It's recommended that a runner takes the form of an executable that
 follows the ``avocado-runner-$KIND`` naming pattern and conforms to a
 given interface/behavior, including accepting standardized command
-line arguments and producing standardized output.
+line arguments and producing standardized output.  This gives the
+runner the highest probability of working with different spawners,
+including ones that would run on isolated or remote environments.
 
 .. tip:: for a very basic example of the interface expected, refer to
          ``selftests/functional/nrunner_interface.py`` on the
          Avocado source code tree.
+
+A Runner can also be, at the lowest layer, a Python class that
+inherits from :class:`avocado.core.nrunner.BaseRunner`, and implements
+at least a matching constructor method, and a ``run()`` method that
+should yield dictionary(ies) as result(s).  Avocado may support in the
+future the usage of such runners directly, which can speed up
+execution, but limits where those can be run to pretty much the same
+machine.
 
 Runner output
 +++++++++++++
@@ -359,7 +371,7 @@ receiving no information at all.
 For instance, if a Runner fails to produce any information within a
 given amount of time, it may be considered faulty and be completely
 discarded.  This would probably end up being represented as a
-``TIMED_OUT`` kind of status on a higher layer (say at the "Job"
+``INTERRUPTED`` kind of status on a higher layer (say at the "Job"
 layer).
 
 Task
@@ -375,8 +387,9 @@ This status updates are in a format similar to those received from a
 runner, but will add more information to them, such as its unique
 identifier.
 
-A different agreggate structure should be used to keep track of the
-execution of tasks.
+A different agreggate structure,
+:class:`avocado.core.task.runtime.RuntimeTask`, is used to keep track
+of the extra information while the task is being run.
 
 Recipe
 ~~~~~~
@@ -393,42 +406,6 @@ A runner can be capable of running one or many different kinds of
 runnables.  A runner should implement a ``capabilities`` command
 that returns, among other info, a list of runnable kinds that it
 can (to the best of its knowledge) run.  Example::
-
-  python3 -m avocado.core.nrunner capabilities | python3 -m json.tool
-  {
-      "runnables": [
-          "avocado-instrumented",
-          "dry-run",
-          "exec-test",
-          "noop",
-          "python-unittest",
-          "asset",
-          "package",
-          "sysinfo",
-          "tap"
-      ],
-      "commands": [
-          "capabilities",
-          "runnable-run",
-          "runnable-run-recipe",
-          "task-run",
-          "task-run-recipe"
-      ],
-      "configuration_used": [
-          "sysinfo.collect.locale",
-          "run.test_parameters",
-          "job.run.store_logging_stream",
-          "runner.exectest.exitcodes.skip",
-          "sysinfo.collect.installed_packages",
-          "sysinfo.collect.commands_timeout",
-          "run.keep_tmp",
-          "job.output.loglevel",
-          "datadir.paths.cache_dirs",
-          "core.show"
-      ]
-  }
-
-Or for a specific runner::
 
   python3 -m avocado.plugins.runners.exec_test capabilities | python -m json.tool
   {
@@ -451,11 +428,7 @@ Or for a specific runner::
 Runner scripts
 --------------
 
-The primary runner implementation is a Python module that can be run,
-as shown before, with the ``avocado.core.nrunner`` module name.
-Additionally it's also available as the ``avocado-runner`` script.
-
-Specific runners are also available as ``avocado-runner-$kind``.  For
+Specific runners are available as ``avocado-runner-$kind``.  For
 instance, the runner for ``exec-test`` is available as
 ``avocado-runner-exec-test``.  When using specific runners, the
 ``-k|--kind`` parameter can be omitted.
@@ -485,34 +458,34 @@ Runnables from parameters
 
 You can run a "noop" runner with::
 
-  avocado-runner runnable-run -k noop
+  avocado-runner-noop runnable-run -k noop
 
 You can run an "exec" runner with::
 
-  avocado-runner runnable-run -k exec-test -u /bin/sleep -a 3.0
+  avocado-runner-exec-test runnable-run -k exec-test -u /bin/sleep -a 3.0
 
 You can run an "exec-test" runner with::
 
-  avocado-runner runnable-run -k exec-test -u /bin/true
+  avocado-runner-exec-test runnable-run -k exec-test -u /bin/true
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
+  avocado-runner-python-unittest runnable-run -k python-unittest -u selftests/unit/test_test.py:TestClassTestUnit.test_long_name
 
 Runnables from recipes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 You can run a "noop" recipe with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
+  avocado-runner-noop runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
 
 You can run an "exec-test" runner with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
+  avocado-runner-exec-test runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
+  avocado-runner-python-unittest runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
 
 Writing new runner scripts
 --------------------------

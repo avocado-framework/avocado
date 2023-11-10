@@ -96,7 +96,7 @@ class Runnable:
     def __repr__(self):
         fmt = (
             '<Runnable kind="{}" uri="{}" config="{}" args="{}" '
-            'kwargs="{}" tags="{}" dependencies="{}"> variant="{}"'
+            'kwargs="{}" tags="{}" dependencies="{}" variant="{}">'
         )
         return fmt.format(
             self.kind,

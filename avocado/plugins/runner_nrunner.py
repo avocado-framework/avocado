@@ -13,7 +13,7 @@
 # Authors: Cleber Rosa <crosa@redhat.com>
 
 """
-NRunner based implementation of job compliant runner
+nrunner based implementation of job compliant runner
 """
 
 import asyncio
