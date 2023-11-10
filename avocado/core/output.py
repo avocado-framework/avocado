@@ -84,13 +84,15 @@ class TermSupport:
         self.enabled = True
         allowed_terms = [
             "linux",
-            "xterm",
-            "xterm-256color",
-            "xterm-kitty",
-            "vt100",
+            "rxvt-unicode",
+            "rxvt-unicode-256color",
             "screen",
             "screen-256color",
             "screen.xterm-256color",
+            "vt100",
+            "xterm",
+            "xterm-256color",
+            "xterm-kitty",
         ]
         term = os.environ.get("TERM")
         config = settings.as_dict()
