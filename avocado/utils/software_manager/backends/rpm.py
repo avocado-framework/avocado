@@ -185,7 +185,7 @@ class RpmBackend(BaseBackend):
         Rpmbuild the spec path and return build dir
 
         :param spec_path: spec path to install
-        :param  build_option : rpmbuild option
+        :param  build_option: rpmbuild option
         :return path: build directory
         """
 

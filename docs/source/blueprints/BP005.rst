@@ -202,11 +202,11 @@ potential need for a new release:
 * If the number of commits since last release has reached a threshold; AND
 * There is no open discussion with the tag “release-decision”:
   * Creates a new discussion (with the "release-decision" tag) to run a poll
-    between all the MAINTAINERS, so they will have the opportunity to thumbs
-    up if there is a need for a new release;
+  between all the MAINTAINERS, so they will have the opportunity to thumbs
+  up if there is a need for a new release;
   * The link to the new discussion should be sent to all MAINTAINERS;
   * If the decision is positive, a round-robin selected maintainer should be
-    responsible for coordinating the release it self;
+  responsible for coordinating the release it self;
   * And the discussion should be closed
 * If there is any existing open discussion, the bot job should comment on the
   same discussion with the updated list of commits and ping again the
