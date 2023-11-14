@@ -57,6 +57,18 @@
     width: 8px;
 }
 
+.pass {
+    color: green;
+}
+
+.fail {
+    color: red;
+}
+
+.warn {
+    color: darkorange;
+}
+
 /* Basic metadata for svg */
 .icon {
     width: 22px;
