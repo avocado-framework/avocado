@@ -14,6 +14,7 @@
 # Author: Amador Pahim <apahim@redhat.com>
 
 import os
+import sys
 
 from setuptools import setup
 
@@ -36,6 +37,14 @@ def get_long_description():
     return readme_contents
 
 
+def get_robot_framework_version():
+    """robot framevork > 6.1.1 is not compatible with python3.7"""
+
+    if sys.version_info < (3, 8):
+        return "robotframework>=4.1, <=6.1.1"
+    return "robotframework>=4.1"
+
+
 setup(
     name="avocado-framework-plugin-robot",
     version=VERSION,
@@ -47,7 +56,7 @@ setup(
     url="http://avocado-framework.github.io/",
     packages=packages,
     include_package_data=True,
-    install_requires=[f"avocado-framework=={VERSION}", "robotframework>=4.1"],
+    install_requires=[f"avocado-framework=={VERSION}", get_robot_framework_version()],
     test_suite="tests",
     entry_points={
         "console_scripts": [
