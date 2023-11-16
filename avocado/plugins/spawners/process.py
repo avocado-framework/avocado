@@ -74,7 +74,10 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         await runtime_task.spawner_handle.wait_task
 
     async def terminate_task(self, runtime_task):
-        runtime_task.spawner_handle.process.terminate()
+        try:
+            runtime_task.spawner_handle.process.terminate()
+        except ProcessLookupError:
+            return True
         soft_interval = self.config.get(
             "runner.task.interval.from_soft_to_hard_termination"
         )
@@ -84,7 +87,10 @@ class ProcessSpawner(Spawner, SpawnerMixin):
                 runtime_task.spawner_handle.process.wait(), soft_interval
             )
         except asyncio.TimeoutError:
-            runtime_task.spawner_handle.process.kill()
+            try:
+                runtime_task.spawner_handle.process.kill()
+            except ProcessLookupError:
+                return True
             hard_interval = self.config.get(
                 "runner.task.interval.from_hard_termination_to_verification"
             )
