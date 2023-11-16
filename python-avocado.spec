@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 102.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -131,6 +131,9 @@ popd
 pushd optional_plugins/result_upload
 %py3_build
 popd
+pushd optional_plugins/avocado_classless
+%py3_build
+popd
 rst2man man/avocado.rst man/avocado.1
 
 %install
@@ -164,6 +167,9 @@ pushd optional_plugins/varianter_cit
 %py3_install
 popd
 pushd optional_plugins/result_upload
+%py3_install
+popd
+pushd optional_plugins/avocado_classless
 %py3_install
 popd
 mkdir -p %{buildroot}%{_mandir}/man1
@@ -222,6 +228,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_varianter_pict*
 %exclude %{python3_sitelib}/avocado_varianter_cit*
 %exclude %{python3_sitelib}/avocado_result_upload*
+%exclude %{python3_sitelib}/avocado_classless*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
@@ -230,6 +237,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_ansible*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
+%exclude %{python3_sitelib}/avocado_framework_plugin_avocado_classless*
 %exclude %{python3_sitelib}/tests*
 
 %package -n python3-avocado-common
@@ -374,6 +382,19 @@ a dedicated sever.
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 
+%package -n python3-avocado-plugins-avocado-classless
+Summary: Avocado Plugin for Execution of Classless tests
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
+
+%description -n python3-avocado-plugins-avocado-classless
+Allows Avocado to list and run Classless tests.
+
+%files -n python3-avocado-plugins-avocado-classless
+%{python3_sitelib}/avocado_classless*
+%{python3_sitelib}/avocado_framework_plugin_avocado_classless*
+%{_bindir}/avocado-runner-avocado-classless
+
 %package -n python3-avocado-examples
 Summary: Avocado Test Framework Example Tests
 License: GPLv2+
@@ -408,6 +429,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Nov 16 2023 Cleber Rosa <crosa@redhat.com> - 102.0-3
+- Introduced avocado_classless plugin subpackage
+
 * Tue Jul 18 2023 Cleber Rosa <crosa@redhat.com> - 102.0-2
 - Removed python3-elementpath build requirement
 

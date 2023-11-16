@@ -637,6 +637,16 @@ def create_suites(args):  # pylint: disable=W0621
             }
         )
 
+    if (
+        python_module_available("avocado-framework-plugin-avocado-classless")
+        and "avocado-classless" not in args.disable_plugin_checks
+    ):
+        config_nrunner_interface["run.dict_variants"].append(
+            {
+                "runner": "avocado-runner-avocado-classless",
+            }
+        )
+
     if args.dict_tests["nrunner-interface"]:
         suites.append(
             TestSuite.from_config(config_nrunner_interface, "nrunner-interface")
