@@ -161,7 +161,7 @@ class Jobs(CLICmd):
         )
         results %= (
             results_data.get("pass", 0),
-            results_data.get("error", 0),
+            results_data.get("errors", 0),
             results_data.get("failures", 0),
             results_data.get("skip", 0),
             results_data.get("warn", 0),
