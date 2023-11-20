@@ -219,7 +219,8 @@ def get_family():
     elif arch == 's390':
         zfamily_map = {'2964': 'z13',
                        '3906': 'z14',
-                       '8561': 'z15'
+                       '8561': 'z15',
+                       '3931': 'z16'
                        }
         try:
             family = zfamily_map[get_version()].lower()
