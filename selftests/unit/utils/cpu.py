@@ -30,6 +30,14 @@ class Cpu(Test):
                 "builtins.open", return_value=self._get_data_mock("s390x_2")
             ):
                 self.assertEqual(len(cpu.online_list()), 4)
+            with unittest.mock.patch(
+                "builtins.open", return_value=self._get_data_mock("s390x_3")
+            ):
+                self.assertEqual(len(cpu.online_list()), 6)
+            with unittest.mock.patch(
+                "builtins.open", return_value=self._get_data_mock("s390x_4")
+            ):
+                self.assertEqual(len(cpu.online_list()), 16)
 
     def test_x86_64_cpu_online(self):
         with unittest.mock.patch(
