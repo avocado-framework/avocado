@@ -23,8 +23,8 @@ import inspect
 import io
 import logging
 import os
-import pipes
 import re
+import shlex
 import shutil
 import sys
 import tempfile
@@ -1119,7 +1119,7 @@ class SimpleTest(Test):
                                       "file": [lambda: file_datadir]}
         self._command = None
         if self.filename is not None:
-            self._command = pipes.quote(self.filename)
+            self._command = shlex.quote(self.filename)
 
     @property
     def filename(self):
