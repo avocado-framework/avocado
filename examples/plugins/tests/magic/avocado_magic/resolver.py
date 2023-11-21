@@ -31,11 +31,24 @@ class MagicResolver(Resolver):
 
     @staticmethod
     def resolve(reference):  # pylint: disable=W0221
-        if reference not in VALID_MAGIC_WORDS:
+        try:
+            key_word, magic_word = reference.split(":", 1)
+        except (ValueError):
+            key_word = None
+            magic_word = reference
+        if key_word != "magic":
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
                 info=f'Word "{reference}" is not a valid magic word',
+            )
+
+        if magic_word not in VALID_MAGIC_WORDS:
+            return ReferenceResolution(
+                reference,
+                ReferenceResolutionResult.CORRUPT,
+                [Runnable("magic", reference)],
+                info=f'Word "{reference}" is magic type but the {magic_word} is not a valid magic word',
             )
 
         return ReferenceResolution(

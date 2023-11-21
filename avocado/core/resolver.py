@@ -22,6 +22,7 @@ from enum import Enum
 
 from avocado.core.enabled_extension_manager import EnabledExtensionManager
 from avocado.core.exceptions import JobTestSuiteReferenceResolutionError
+from avocado.core.output import LOG_UI
 
 
 class ReferenceResolutionAssetType(Enum):
@@ -38,6 +39,8 @@ class ReferenceResolutionAssetType(Enum):
 class ReferenceResolutionResult(Enum):
     #: Given test reference was properly resolved
     SUCCESS = object()
+    #: Given test reference might be resolved, but it is corrupted.
+    CORRUPT = object()
     #: Given test reference was not properly resolved
     NOTFOUND = object()
     #: Internal error in the resolution process
@@ -108,6 +111,7 @@ class Resolver(EnabledExtensionManager):
 
     DEFAULT_POLICY = {
         ReferenceResolutionResult.SUCCESS: ReferenceResolutionAction.RETURN,
+        ReferenceResolutionResult.CORRUPT: ReferenceResolutionAction.RETURN,
         ReferenceResolutionResult.NOTFOUND: ReferenceResolutionAction.CONTINUE,
         ReferenceResolutionResult.ERROR: ReferenceResolutionAction.CONTINUE,
     }
@@ -267,6 +271,14 @@ def resolve(references, hint=None, ignore_missing=True, config=None):
         discoverer = Discoverer(config)
         resolutions.extend(discoverer.discover())
 
+    for res in resolutions:
+        if res.result == ReferenceResolutionResult.CORRUPT:
+            LOG_UI.warning(
+                "Reference %s might be resolved by %s resolver, but the file is corrupted: %s",
+                res.reference,
+                res.origin,
+                res.info or "",
+            )
     # This came up from a previous method and can be refactored to improve
     # performance since that we could merge with the loop above.
     if not ignore_missing:

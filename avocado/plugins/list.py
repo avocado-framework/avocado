@@ -95,6 +95,7 @@ class List(CLICmd):
 
             mapping = {
                 ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
+                ReferenceResolutionResult.CORRUPT: TERM_SUPPORT.warn_header_str,
                 ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
                 ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str,
             }

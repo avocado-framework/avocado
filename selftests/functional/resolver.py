@@ -8,7 +8,7 @@ from avocado.utils import process, script
 # is also the same
 from selftests.functional.list import AVOCADO_TEST_OK as AVOCADO_INSTRUMENTED_TEST
 from selftests.functional.list import EXEC_TEST
-from selftests.utils import AVOCADO, BASEDIR
+from selftests.utils import AVOCADO, BASEDIR, python_module_available
 
 
 class ResolverFunctional(unittest.TestCase):
@@ -105,6 +105,23 @@ class ResolverFunctional(unittest.TestCase):
             "examples/tests/skip_conditional.py:NonBareMetal.test_bare_metal", lines[7]
         )
         self.assertEqual("avocado-instrumented: 10", lines[-1])
+
+    @unittest.skipUnless(
+        python_module_available("magic"), "avocado-magic not available"
+    )
+    def test_corrupted_reference(self):
+        cmd_line = f"{AVOCADO} list magic:foo"
+        result = process.run(cmd_line)
+        self.assertIn(
+            "Reference magic:foo might be resolved by magic resolver, but the file is corrupted:",
+            result.stderr_text,
+        )
+        cmd_line = f"{AVOCADO} run magic:foo"
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertIn(
+            "Reference magic:foo might be resolved by magic resolver, but the file is corrupted:",
+            result.stderr_text,
+        )
 
 
 if __name__ == "__main__":
