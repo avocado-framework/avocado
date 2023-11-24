@@ -360,7 +360,7 @@ jobs:
          python3 setup.py bdist_egg
          mv dist/avocado_framework-*egg /tmp/avocado_framework.egg
          python3 setup.py clean --all
-         python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:36 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
+         python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:38 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
 
   podman_external_runner_task:
 
@@ -387,7 +387,7 @@ jobs:
     name: Fedora develop install/uninstall task
     runs-on: ubuntu-latest
     container:
-      image: fedora:36
+      image: fedora:38
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3

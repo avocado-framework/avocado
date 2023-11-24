@@ -117,7 +117,7 @@ class BasicTest(TestCaseTmpDir, Test):
         spawner = self.params.get("spawner", default="process")
         spawner_command = ""
         if spawner == "podman":
-            spawner_command = "--spawner=podman --spawner-podman-image=fedora:36"
+            spawner_command = "--spawner=podman --spawner-podman-image=fedora:38"
         return f"{AVOCADO} run {spawner_command} --job-results-dir {self.tmpdir.name} {path}"
 
     @skipUnless(os.getenv("CI"), skip_package_manager_message)
