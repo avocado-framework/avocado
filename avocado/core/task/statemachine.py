@@ -416,7 +416,8 @@ class Worker:
                 try:
                     self._state_machine.monitored.remove(runtime_task)
                 except ValueError:
-                    pass
+                    # runtime_task has been terminated, there is no need to continue
+                    return
         else:
             LOG.debug(
                 'Task "%s" was very short lived, this may be '
