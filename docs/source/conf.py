@@ -263,6 +263,6 @@ texinfo_documents = [  # pylint: disable=C0103
     ),
 ]
 
-intersphinx_mapping = {"http://docs.python.org/": None}  # pylint: disable=C0103
+intersphinx_mapping = {"python": ("https://docs.python.org", None)}
 
 autoclass_content = "both"  # pylint: disable=C0103
