@@ -536,8 +536,10 @@ Supported message types
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: avocado.core.messages.StartMessageHandler
+   :noindex:
 
 .. autoclass:: avocado.core.messages.FinishMessageHandler
+   :noindex:
 
 Running messages
 ++++++++++++++++
@@ -545,11 +547,16 @@ This message can be used during the run-time and has different properties
 based on the information which is being transmitted.
 
 .. autoclass:: avocado.core.messages.LogMessageHandler
+   :noindex:
 
 .. autoclass:: avocado.core.messages.StdoutMessageHandler
+   :noindex:
 
 .. autoclass:: avocado.core.messages.StderrMessageHandler
+   :noindex:
 
 .. autoclass:: avocado.core.messages.WhiteboardMessageHandler
+   :noindex:
 
 .. autoclass:: avocado.core.messages.FileMessageHandler
+   :noindex:
