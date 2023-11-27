@@ -202,7 +202,7 @@ The following pages document the private APIs of optional Avocado plugins.
             continue
         output_dir = os.path.join(API_OPTIONAL_PLUGINS_PATH, name)
         params = {"API_SOURCE_DIR": path, "output_dir": output_dir, "exclude_dirs": ""}
-        process.run(APIDOC_TEMPLATE % params)
+        process.run(f"{APIDOC_TEMPLATE % params} --implicit-namespaces")
         # Remove the unnecessary generated files
         os.unlink(os.path.join(output_dir, "modules.rst"))
         optional_plugins_toc.write(f"\n   {os.path.join(name, name)}")
