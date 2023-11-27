@@ -44,7 +44,7 @@ class Podman:
     async def execute(self, *args):
         """Execute a command and return the returncode, stdout and stderr.
 
-        :param *args: Variable length argument list to be used as argument
+        :param args: Variable length argument list to be used as argument
                       during execution.
         :rtype: tuple with returncode, stdout and stderr.
         """

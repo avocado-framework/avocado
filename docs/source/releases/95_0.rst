@@ -51,7 +51,7 @@ Misc Changes
 * ``RuntimeTask`` instances are now comparable, and should now be
   unique when representing requirements, preventing having duplicates.
 
-* The order of the ``RuntimeTask``s are now defined in a dependency
+* The order of the ``RuntimeTask`` are now defined in a dependency
   graph, in accordance with BluePrint 004.
 
 Internal Changes

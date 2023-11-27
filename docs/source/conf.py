@@ -40,8 +40,9 @@ def generate_reference():
     reference_path = os.path.join(
         ROOT_PATH, "docs", "source", "config", "reference.rst"
     )
+    stdout_text = result.stdout_text.replace("['/run/*']", r"['/run/\*']")
     with open(reference_path, "w", encoding="utf-8") as reference:
-        reference.write(result.stdout_text)
+        reference.write(stdout_text)
 
 
 def generate_vmimage_distro():

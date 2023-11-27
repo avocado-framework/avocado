@@ -580,10 +580,10 @@ Utility APIs
 :mod:`avocado.utils.distro`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :mod:`avocado.utils.distro: can now detect the distribution on remote
+* :mod:`avocado.utils.distro:` can now detect the distribution on remote
   machines.
 
-* The :mod:`avocado.utils.distro: will now correctly return a
+* The :mod:`avocado.utils.distro:` will now correctly return a
   ``avocado.utils.distro.UNKNOWN_DISTRO`` on non UNIX systems, instead of
   crashing.
 

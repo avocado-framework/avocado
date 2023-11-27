@@ -29,7 +29,7 @@ from avocado.core.enabled_extension_manager import EnabledExtensionManager
 def get_dispatchers(module_name):
     """Returns the classes that implement plugin dispatching
 
-    These should inherit from the *ExtensionManager base classes
+    These should inherit from the *ExtensionManager* base classes
     and contain suitable descriptions.
 
     The produced values are tuples that contain the dispatcher class
