@@ -544,7 +544,7 @@ scheduler".  They are provided for discussion only and do not
 constitute hard requirements for this or future work.
 
 Tasks' requirements fulfillment
-------------------------------
+-------------------------------
 
 1. Prepare for the execution of a task, such as the fulfillment of extra task
 requirements. The requirements resolver is one, if not the only way,
