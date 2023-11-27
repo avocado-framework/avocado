@@ -179,6 +179,20 @@ def get_revision():
     return rev
 
 
+def get_va_bits():
+    """
+    Check for VA address bit size in /proc/cpuinfo
+
+    :return: VA address bit size
+    :rtype: str
+    """
+    cpu_info = genio.read_file("/proc/cpuinfo")
+    for line in cpu_info.splitlines():
+        if "address sizes" in line:
+            return line.split()[-3].strip()
+    return ""
+
+
 def get_arch():
     """Work out which CPU architecture we're running on."""
     cpu_table = [
