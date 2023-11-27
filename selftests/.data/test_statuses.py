@@ -1,4 +1,5 @@
 import sys
+import time
 
 from avocado import Test, skip
 
@@ -287,6 +288,26 @@ class ExceptionTeardown(Test):
 
     def test(self):
         self.log.info("test pre")
+        self.log.info("test post")
+
+    def tearDown(self):
+        self.log.info("teardown pre")
+        self.log.info("teardown status: %s", self.status)
+        raise ValueError
+        # pylint: disable=W0101
+        self.log.info("teardown post")
+
+
+class ExceptionTeardownSleep(Test):
+    timeout = 3
+
+    def setUp(self):
+        self.log.info("setup pre")
+        self.log.info("setup post")
+
+    def test(self):
+        self.log.info("test pre")
+        time.sleep(10)
         self.log.info("test post")
 
     def tearDown(self):

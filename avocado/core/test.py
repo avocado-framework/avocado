@@ -662,8 +662,9 @@ class Test(unittest.TestCase, TestData):
             raise
         except:  # avoid old-style exception failures pylint: disable=W0702
             stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
-            details = sys.exc_info()[1]
-            raise exceptions.TestSetupFail(details)
+            if self.status != "INTERRUPTED":
+                details = sys.exc_info()[1]
+                raise exceptions.TestSetupFail(details)
 
     def _setup_environment_variables(self):
         os.environ["AVOCADO_VERSION"] = VERSION

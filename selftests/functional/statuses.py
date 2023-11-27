@@ -174,6 +174,16 @@ EXPECTED_RESULTS = {
             "teardown status: PASS",
         ],
     ),
+    "ExceptionTeardownSleep.test": (
+        "INTERRUPTED",
+        [
+            "setup pre",
+            "setup post",
+            "test pre",
+            "teardown pre",
+            "teardown status: INTERRUPTED",
+        ],
+    ),
 }
 
 
