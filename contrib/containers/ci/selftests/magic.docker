@@ -4,7 +4,7 @@
 # is by running:
 # $ cd examples/plugins/tests
 # $ buildah bud -f ../../../contrib/containers/ci/selftests/magic.docker
-FROM fedora:36
+FROM fedora:38
 LABEL description "Image that contains the example magic plugin"
 RUN dnf -y install python3-setuptools
 COPY magic /tmp/magic

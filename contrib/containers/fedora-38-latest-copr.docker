@@ -1,4 +1,4 @@
-FROM fedora:36
+FROM fedora:38
 LABEL description "Fedora image with the latest Avocado COPR build"
 RUN dnf -y install dnf-plugins-core
 RUN dnf -y copr enable @avocado/avocado-latest

@@ -32,15 +32,15 @@ class Distro(Test):
         with open(stdout_path, "rb") as stdout:
             self.assertEqual(stdout.read(), output)
 
-    def test_fedora_36(self):
+    def test_fedora_38(self):
         """
-        :avocado: dependency={"type": "podman-image", "uri": "registry.fedoraproject.org/fedora:36"}
+        :avocado: dependency={"type": "podman-image", "uri": "registry.fedoraproject.org/fedora:38"}
         """
         self.run_job(
-            "registry.fedoraproject.org/fedora:36",
+            "registry.fedoraproject.org/fedora:38",
             b"Detected distribution: fedora ("
             + os.uname().machine.encode()
-            + b") version 36 release 0\n",
+            + b") version 38 release 0\n",
         )
 
     def test_rhel_9_1(self):
