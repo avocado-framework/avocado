@@ -18,7 +18,7 @@ Users/Test Writers
   input used for the varianter yaml_to_mux plugin.  It allows the
   definition of test suite based on a YAML file, including different
   variants for different tests.  For more information refer to
-  :ref:`yaml_loader`.
+  `yaml_loader`.
 
 * A better handling of interruption related signals, such as
   ``SIGINT`` and ``SIGTERM``.  Avocado will now try harder to not

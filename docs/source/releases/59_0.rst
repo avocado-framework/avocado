@@ -14,7 +14,7 @@ roughly categorized into major topics and intended audience:
 Users/Test Writers
 ==================
 
-* A :ref:`new plugin <glib-plugin>` enables users to list and execute
+* A `new plugin glib-plugin` enables users to list and execute
   tests based on the `GLib test framework
   <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.  This
   plugin allows individual tests inside a single binary to be listed
@@ -24,8 +24,8 @@ Users/Test Writers
   that can tweak test attributes, including adding prefixes to test
   names.  This allows users to easily differentiate among execution of
   the same test, but executed different configurations.  For more
-  information, look for "special keys" in the :ref:`YAML Loader plugin
-  documentation <yaml_loader>`.
+  information, look for "special keys" in the `YAML Loader plugin
+  documentation yaml_loader`.
 
 * Users can now dump variants to a (JSON) file, and also reuse a
   previously created file in their future jobs execution.  This allows

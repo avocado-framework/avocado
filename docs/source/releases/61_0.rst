@@ -23,7 +23,7 @@ Users/Test Writers
 * SIMPLE tests can also finish with ``SKIP`` OR ``WARN`` status,
   depending on the output produced, and the Avocado test runner
   configuration. It now supports patterns that span across multiple
-  lines.  For more information, refer to :ref:`test_type_simple_status`.
+  lines.  For more information, refer to `test_type_simple_status`.
 
 * Simple bytes and "unicode strings" utility functions have been added
   to :mod:`avocado.utils.astring`, and can be used by extension and
