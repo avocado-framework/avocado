@@ -59,7 +59,7 @@ Utility APIs
 
 * :class:`avocado.utils.ssh.Session` now contains a
   :meth:`avocado.utils.ssh.Session.cleanup_master` method and a
-  :property:`avocado.utils.ssh.Session.control_master` property.
+  `avocado.utils.ssh.Session.control_master` property.
 
 Internal Changes
 ================
