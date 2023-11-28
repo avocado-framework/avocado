@@ -815,6 +815,43 @@ runner task, making it raise a
 process is specific to spawner implementation, for more information
 see :class:`avocado.core.plugin_interfaces.Spawner.terminate_task`.
 
+Timeout Factor
+~~~~~~~~~~~~~~
+
+Like it was mentioned before, a test may have an (adequate) timeout,
+set as a class attribute, such as in the following included example
+test:
+
+.. literalinclude:: ../../../../../examples/tests/timeouttest.py
+
+But, depending on the environment it may be executed (maybe by a
+different user, on a slower machine or more limited network), the
+hardcoded timeout won't be adequate anymore.
+
+On those circumstances, it's possible to set a "timeout factor".  This
+can be given as a parameter, and is pretty much a multiplier to the
+timeout.  Example::
+
+   $ avocado run -p timeout_factor=2.0 examples/tests/timeouttest.py
+   JOB ID     : 55722574664b01077dffd5504e329ad5e0062cc8
+   JOB LOG    : $HOME/avocado/job-results/job-2023-11-29T11.16-5572257/job.log
+    (1/1) examples/tests/timeouttest.py:TimeoutTest.test: STARTED
+    (1/1) examples/tests/timeouttest.py:TimeoutTest.test: PASS (5.01 s)
+   RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+   JOB HTML   : $HOME/avocado/job-results/job-2023-11-29T11.16-5572257/results.html
+   JOB TIME   : 7.77 s
+
+Notice how, under normal circumstances, the test would have timed out,
+due to the sleep time (5.0 seconds) being larger than the timeout set
+in the class attribute (``timeout = 3``).
+
+The actual timeout will be given in the "Test metadata" section in
+test logs.  For the previous test execution it shows::
+
+   [stdlog] 2023-11-29 11:16:23,745 test             L0345 DEBUG| Test metadata:
+   ...
+   [stdlog] 2023-11-29 11:16:23,746 test             L0354 DEBUG|   actual timeout: 6.0
+
 Skipping Tests
 --------------
 
