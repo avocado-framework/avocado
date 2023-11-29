@@ -793,53 +793,27 @@ Setting a Test Timeout
 Sometimes your test suite/test might get stuck forever, and this might
 impact your test grid. You can account for that possibility and set up a
 ``timeout`` parameter for your test. The test timeout can be set through
-the test parameters, as shown below.
+test parameters.  The included example "sleep test" contains a default
+sleep time of 1 second.
 
-::
+.. literalinclude:: ../../../../../examples/tests/sleeptest.py
 
-    sleep_length: 5
-    timeout: 3
+Which can be run with a timeout (shorter the sleep time) with::
 
-
-::
-
-    $ avocado run examples/tests/sleeptest.py --mux-yaml /tmp/sleeptest-example.yaml
-    JOB ID     : c78464bde9072a0b5601157989a99f0ba32a288e
-    JOB LOG    : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/job.log
-        (1/1) examples/tests/sleeptest.py:SleepTest.test;run-0fc1: STARTED
-        (1/1) examples/tests/sleeptest.py:SleepTest.test;run-0fc1: INTERRUPTED: timeout (3.01 s)
+    $ avocado run -p timeout=0.5 examples/tests/sleeptest.py
+    JOB ID     : 01f7e7e9ee82a331c1c6a6b3a939f694d9c0c948
+    JOB LOG    : $HOME/avocado/job-results/job-2016-11-02T11.13-01f7e7e/job.log
+        (1/1) examples/tests/sleeptest.py:SleepTest.test: STARTED
+        (1/1) examples/tests/sleeptest.py:SleepTest.test: INTERRUPTED: Test interrupted: Timeout reached (0.53 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 1
-    JOB TIME   : 3.14 s
-    JOB HTML   : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/html/results.html
+    JOB TIME   : 2.14 s
+    JOB HTML   : $HOME/avocado/job-results/job-2016-11-02T11.13-01f7e7e/html/results.html
 
-
-::
-
-	$ cat $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/job.log
-	2021-10-01 15:44:53,622 job              L0319 INFO | Multiplex tree representation:
-    2021-10-01 15:44:53,622 job              L0319 INFO |  \-- run
-    2021-10-01 15:44:53,622 job              L0319 INFO |
-    2021-10-01 15:44:53,622 job              L0319 INFO | Multiplex variants (1):
-    2021-10-01 15:44:53,622 job              L0319 INFO | Variant run-0fc1:    /run
-    2021-10-01 15:44:53,622 job              L0312 INFO | Temporary dir: /tmp/avocado_tmp_hp4cswyn/avocado_job_pmn___6i
-    2021-10-01 15:44:53,622 job              L0313 INFO |
-    2021-10-01 15:44:53,622 job              L0306 INFO | Job ID: 927fdc4143e9e093a485319820825faacc0f36a3
-    2021-10-01 15:44:53,622 job              L0309 INFO |
-    2021-10-01 15:44:54,165 selector_events  L0059 DEBUG| Using selector: EpollSelector
-    2021-10-01 15:44:54,622 testlogs         L0094 INFO | examples/tests/sleeptest.py:SleepTest.test;run-0fc1: STARTED
-    2021-10-01 15:44:57,653 testlogs         L0101 INFO | examples/tests/sleeptest.py:SleepTest.test;run-0fc1: INTERRUPTED
-    2021-10-01 15:44:57,654 testlogs         L0103 INFO | More information in /home/jarichte/avocado/job-results/job-2021-10-01T15.44-927fdc4/test-results/1-examples_tests_sleeptest.py_SleepTest.test_run-0fc1
-    2021-10-01 15:44:57,762 job              L0643 INFO | Test results available in /home/jarichte/avocado/job-results/job-2021-10-01T15.44-927fdc4
-
-
-
-The YAML file defines a test parameter ``timeout`` which overrides
-the default test timeout. When the timeout is reached, the spawner
-will terminate the test runner task, making it raise a
+When the timeout is reached, the spawner will terminate the test
+runner task, making it raise a
 :class:`avocado.core.exceptions.TestInterruptedError`. The termination
-process is specific to spawner implementation, for more information see
-:class:`avocado.core.plugin_interfaces.Spawner.terminate_task`.
-
+process is specific to spawner implementation, for more information
+see :class:`avocado.core.plugin_interfaces.Spawner.terminate_task`.
 
 Skipping Tests
 --------------
