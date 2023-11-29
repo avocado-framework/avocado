@@ -230,7 +230,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
-    def test_timout_with_tear_down(self):
+    def test_timeout_with_tear_down(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
