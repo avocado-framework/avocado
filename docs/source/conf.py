@@ -6,18 +6,17 @@ import importlib
 import os
 import sys
 
-from avocado.core import parameters
-from avocado.core.varianter import Varianter
-from avocado.utils import genio  # pylint: disable=C0413
-from avocado.utils import path  # pylint: disable=C0413
-from avocado.utils import process  # pylint: disable=C0413
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 ROOT_PATH = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, ROOT_PATH)
 
+from avocado.core import parameters
+from avocado.core.varianter import Varianter
+from avocado.utils import genio  # pylint: disable=C0413
+from avocado.utils import path  # pylint: disable=C0413
+from avocado.utils import process  # pylint: disable=C0413
 
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get("READTHEDOCS", None) == "True"
