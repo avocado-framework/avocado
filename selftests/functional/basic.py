@@ -8,7 +8,6 @@ import unittest
 import xml.dom.minidom
 import zipfile
 
-from avocado import Test
 from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
@@ -904,7 +903,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             )
 
 
-class DryRunTest(Test):
+class DryRunTest(unittest.TestCase):
     def test_dry_run(self):
         examples_path = os.path.join("examples", "tests")
         passtest = os.path.join(examples_path, "passtest.py")
