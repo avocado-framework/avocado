@@ -17,6 +17,6 @@ class TimeoutTest(Test):
         """
         This should throw a TestTimeoutError.
         """
-        sleep_time = self.params.get("sleep_time", default=5)
+        sleep_time = float(self.params.get("sleep_time", default=5.0))
         self.log.info("Sleeping for %.2f seconds (2 more than the timeout)", sleep_time)
         time.sleep(sleep_time)

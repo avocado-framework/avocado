@@ -318,7 +318,12 @@ class Test(unittest.TestCase, TestData):
         elif isinstance(params, tuple):
             params, paths = params[0], params[1]
         self.__params = parameters.AvocadoParams(params, paths, self.__log.name)
-        self.timeout = self.params.get("timeout", default=self.timeout)
+        self.timeout = original_timeout = self.params.get(
+            "timeout", default=self.timeout
+        )
+        timeout_factor = float(self.params.get("timeout_factor", default=1.0))
+        if original_timeout is not None:
+            self.timeout = float(original_timeout) * timeout_factor
 
         self.__status = None
         self.__fail_reason = None
@@ -346,6 +351,9 @@ class Test(unittest.TestCase, TestData):
             pass
         else:
             self.log.debug("  teststmpdir: %s", teststmpdir)
+        self.log.debug("  original timeout: %s", original_timeout)
+        self.log.debug("  timeout factor: %s", timeout_factor)
+        self.log.debug("  actual timeout: %s", self.timeout)
 
         unittest.TestCase.__init__(self, methodName=methodName)
         TestData.__init__(self)
