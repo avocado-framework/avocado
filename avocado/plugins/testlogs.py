@@ -79,7 +79,7 @@ class TestLogsUI(JobPre, JobPost):
         summary_tests = []
         for test in results["tests"]:
             if test["status"] in summary:
-                line = f"{test['name']}: {test['status']}"
+                line = f"{test['id']}: {test['status']}"
                 summary_tests.append(line)
             if not statuses or test["status"] not in statuses:
                 continue
