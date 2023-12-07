@@ -61,7 +61,7 @@ Users/Test Writers
   and supported soon.
 
 * By means of a new plugin (``merge_files``, of type ``job.prepost``),
-  when using the :ref:`output check record <output_check_record>`
+  when using the `output check record output_check_record`
   features, duplicate files created by different tests/variants will
   be consolidated into unique files.
 

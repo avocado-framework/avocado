@@ -40,8 +40,9 @@ def generate_reference():
     reference_path = os.path.join(
         ROOT_PATH, "docs", "source", "config", "reference.rst"
     )
+    stdout_text = result.stdout_text.replace("['/run/*']", r"['/run/\*']")
     with open(reference_path, "w", encoding="utf-8") as reference:
-        reference.write(result.stdout_text)
+        reference.write(stdout_text)
 
 
 def generate_vmimage_distro():
@@ -202,7 +203,7 @@ The following pages document the private APIs of optional Avocado plugins.
             continue
         output_dir = os.path.join(API_OPTIONAL_PLUGINS_PATH, name)
         params = {"API_SOURCE_DIR": path, "output_dir": output_dir, "exclude_dirs": ""}
-        process.run(APIDOC_TEMPLATE % params)
+        process.run(f"{APIDOC_TEMPLATE % params} --implicit-namespaces")
         # Remove the unnecessary generated files
         os.unlink(os.path.join(output_dir, "modules.rst"))
         optional_plugins_toc.write(f"\n   {os.path.join(name, name)}")
@@ -262,6 +263,6 @@ texinfo_documents = [  # pylint: disable=C0103
     ),
 ]
 
-intersphinx_mapping = {"http://docs.python.org/": None}  # pylint: disable=C0103
+intersphinx_mapping = {"python": ("https://docs.python.org", None)}
 
 autoclass_content = "both"  # pylint: disable=C0103

@@ -197,6 +197,7 @@ NORMAL (50). For easier usage, avocado has predefined
 values in: 
 
 .. autoclass:: avocado.core.extension_manager.PluginPriority
+   :noindex:
    :members:
    :undoc-members:
 

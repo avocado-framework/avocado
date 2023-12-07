@@ -1,8 +1,10 @@
+:orphan:
+
 BP???
 #####
 
 .. Please refer to BP000 for detailed instructions on how to write a
-   BluePrint (and remove this comment from your final document).
+   BluePrint (and remove this comment and :orphan: tag from your final document).
 
 :Number: BP???
 :Title:

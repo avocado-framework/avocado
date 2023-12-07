@@ -358,9 +358,9 @@ Bug Fixes
   meaningful exit code on some failures and success situations.
 
 * The extraction of DEB packages by means of
-:meth:`avocado.utils.software_manager.SoftwareManager.extract_from_package`
-was fixed and does not depend on the ``ar`` utility anymore (as it now
-uses the :mod:`avocado.utils.ar` module).
+  :meth:`avocado.utils.software_manager.SoftwareManager.extract_from_package`
+  was fixed and does not depend on the ``ar`` utility anymore (as it now
+  uses the :mod:`avocado.utils.ar` module).
 
 * The ``--store-logging-stream`` parameter value was being incorrectly
   parsed as a list of characters. If a ``bar`` value is given, it
@@ -580,10 +580,10 @@ Utility APIs
 :mod:`avocado.utils.distro`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* :mod:`avocado.utils.distro: can now detect the distribution on remote
+* :mod:`avocado.utils.distro:` can now detect the distribution on remote
   machines.
 
-* The :mod:`avocado.utils.distro: will now correctly return a
+* The :mod:`avocado.utils.distro:` will now correctly return a
   ``avocado.utils.distro.UNKNOWN_DISTRO`` on non UNIX systems, instead of
   crashing.
 

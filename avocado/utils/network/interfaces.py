@@ -716,7 +716,7 @@ class NetworkInterface:
         255.255.252.0 = 22
 
         :param netmask: Netmask value example 255.255.255.0
-        :return : Returns mask value of given netmask
+        :return: Returns mask value of given netmask
         """
         return sum(bin(int(bits)).count("1") for bits in netmask.split("."))
 
@@ -796,9 +796,9 @@ class NetworkInterface:
         :param int_name: source interface name.
         :param peer_ip: Peer IP address (IPv4 or IPv6)
         :param ping_count: How many ICMP echo packets to send.
-        :return : returns True on successful ping flood.
+        :return: returns True on successful ping flood.
                   returns False on ping flood failure.
-        :rtype : boolean
+        :rtype: boolean
         """
         cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
         ping_process = subprocess.Popen(

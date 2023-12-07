@@ -498,7 +498,7 @@ Users
   OR ``WARN`` status, depending on the output produced, and the
   Avocado test runner configuration. It now supports patterns that
   span across multiple lines.  For more information, refer to
-  :ref:`test_type_simple_status`.
+  `test_type_simple_status`.
 
 * A better handling of interruption related signals, such as
   ``SIGINT`` and ``SIGTERM``.  Avocado will now try harder to not
@@ -611,16 +611,16 @@ Test Loader Plugins
   input used for the varianter yaml_to_mux plugin.  It allows the
   definition of test suite based on a YAML file, including different
   variants for different tests.  For more information refer to
-  :ref:`yaml_loader`.
+  `yaml_loader`.
 
 * Users of the YAML test loader have now access to a few special keys
   that can tweak test attributes, including adding prefixes to test
   names.  This allows users to easily differentiate among execution of
   the same test, but executed different configurations.  For more
-  information, look for "special keys" in the :ref:`YAML Loader plugin
-  documentation <yaml_loader>`.
+  information, look for "special keys" in the `YAML Loader plugin
+  documentation yaml_loader`.
 
-* A :ref:`new plugin <glib-plugin>` enables users to list and execute
+* A `new plugin glib-plugin` enables users to list and execute
   tests based on the `GLib test framework
   <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.  This
   plugin allows individual tests inside a single binary to be listed

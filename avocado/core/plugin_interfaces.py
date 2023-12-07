@@ -194,7 +194,7 @@ class PostTest(Plugin):
         :param suite_config: Configuration dict relevant for the whole suite.
         :return: PostTest task runnables created by plugin.
         :rtype: list of tuple(:class:`avocado.core.nrunner.Runnable`,
-        `avocado.core.task.runtime.RuntimeTask.possible_dependency_results`)
+                `avocado.core.task.runtime.RuntimeTask.possible_dependency_results`)
         """
 
 

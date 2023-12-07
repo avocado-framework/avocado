@@ -63,7 +63,8 @@ class RuntimeTaskMixin:
                        make into the job's results.
         :type job_id: str
         :param satisfiable_deps_execution_statuses: The dependency result types that
-        satisfy the execution of this RuntimeTask.
+                                                    satisfy the execution of this
+                                                    RuntimeTask.
         :type satisfiable_deps_execution_statuses: list of test results.
         :returns: RuntimeTask of the test from runnable
         """
@@ -111,7 +112,8 @@ class RuntimeTask(RuntimeTaskMixin):
         :param task: The task to keep additional information about
         :type task: :class:`avocado.core.nrunner.Task`
         :param satisfiable_deps_execution_statuses: The dependency result types that
-        satisfy the execution of this RuntimeTask.
+                                                    satisfy the execution of this
+                                                    RuntimeTask.
         :type satisfiable_deps_execution_statuses: list of test results.
         """
         #: The :class:`avocado.core.nrunner.Task`

@@ -65,8 +65,8 @@ class FinishedMessage(GenericMessage):
         """Creates finished message with all necessary information.
 
         :param result: test result
-        :type result values for the statuses defined in
-                     :class: avocado.core.teststatus.STATUSES
+        :type result: values for the statuses defined in
+                      :class: avocado.core.teststatus.STATUSES
         :param fail_reason: parameter for brief specification, of the failed
                             result.
         :type fail_reason: str

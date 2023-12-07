@@ -514,9 +514,10 @@ def get_numa_node_has_cpus():
     Get the list NUMA node numbers which has CPU's on the system,
     if there is no CPU associated to NUMA node,Those NUMA node number
     will not be appended to list.
+
     :return: A list where NUMA node numbers only which has
              CPU's - as elements of The list.
-    :rtype : List
+    :rtype: List
     """
     cpu_path = "/sys/devices/system/node/has_cpu"
     delim = ",", "-"
@@ -529,9 +530,10 @@ def get_numa_node_has_cpus():
 def numa_nodes_with_assigned_cpus():
     """
     Get NUMA nodes with associated CPU's on the system.
+
     :return: A dictionary,in which "NUMA node numbers" as key
              and "NUMA node associated CPU's" as values.
-    :rtype : dictionary
+    :rtype: dictionary
     """
     numa_nodes_with_cpus = {}
     for path in glob.glob("/sys/devices/system/node/node[0-9]*"):
