@@ -4,7 +4,7 @@ import os
 from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import Init, JobPost, JobPre, ResultEvents
 from avocado.core.settings import settings
-from avocado.core.teststatus import STATUSES
+from avocado.core.teststatus import STATUSES, STATUSES_NOT_OK
 
 
 class TestLogsUIInit(Init):
@@ -48,7 +48,7 @@ class TestLogsUIInit(Init):
             section="job.output.testlogs",
             key="summary_statuses",
             key_type=list,
-            default=["FAIL", "ERROR"],
+            default=STATUSES_NOT_OK,
             help_msg=help_msg,
         )
 
