@@ -4,7 +4,7 @@ import os
 from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import Init, JobPost, JobPre, ResultEvents
 from avocado.core.settings import settings
-from avocado.core.teststatus import STATUSES
+from avocado.core.teststatus import STATUSES, STATUSES_NOT_OK
 
 
 class TestLogsUIInit(Init):
@@ -48,7 +48,7 @@ class TestLogsUIInit(Init):
             section="job.output.testlogs",
             key="summary_statuses",
             key_type=list,
-            default=["FAIL", "ERROR"],
+            default=STATUSES_NOT_OK,
             help_msg=help_msg,
         )
 
@@ -79,7 +79,7 @@ class TestLogsUI(JobPre, JobPost):
         summary_tests = []
         for test in results["tests"]:
             if test["status"] in summary:
-                line = f"{test['name']}: {test['status']}"
+                line = f"{test['id']}: {test['status']}"
                 summary_tests.append(line)
             if not statuses or test["status"] not in statuses:
                 continue
