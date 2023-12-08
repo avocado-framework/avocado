@@ -820,7 +820,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.assertTrue(os.path.exists(file_path))
             with open(file_path, encoding="utf-8") as file:
                 stream = file.read()
-                self.assertIn("matplotlib DEBUG|", stream)
+                self.assertIn("matplotlib __init__         L0337 DEBUG|", stream)
 
         log_dir = os.path.join(self.tmpdir.name, "latest")
         test_log_dir = os.path.join(
