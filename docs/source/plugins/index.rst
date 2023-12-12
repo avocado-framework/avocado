@@ -30,6 +30,7 @@ Some of these plugins may have extra dependencies of their own.
 .. toctree::
    :maxdepth: 3
 
+   optional/avocado_classless
    optional/golang
    optional/results/index
    optional/robot

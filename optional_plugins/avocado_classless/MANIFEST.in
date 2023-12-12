@@ -1,0 +1,2 @@
+include VERSION README.rst
+recursive-include examples *
