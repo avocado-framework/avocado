@@ -16,6 +16,29 @@ from avocado.core.suite import TestSuite
 from avocado.utils import process
 from selftests.utils import python_module_available
 
+TEST_SIZE = {
+    "static-checks": 7,
+    "job-api-1": 1,
+    "job-api-2": 1,
+    "job-api-3": 2,
+    "job-api-4": 9,
+    "job-api-5": 12,
+    "job-api-6": 4,
+    "job-api-7": 1,
+    "nrunner-interface": 70,
+    "nrunner-requirement": 12,
+    "unit": 667,
+    "jobs": 11,
+    "functional-parallel": 297,
+    "functional-serial": 4,
+    "optional-plugins": 0,
+    "optional-plugins-golang": 2,
+    "optional-plugins-html": 3,
+    "optional-plugins-robot": 3,
+    "optional-plugins-varianter_cit": 40,
+    "optional-plugins-varianter_yaml_to_mux": 50,
+}
+
 
 class JobAPIFeaturesTest(Test):
     def check_directory_exists(self, path=None):
@@ -579,6 +602,7 @@ def create_suites(args):  # pylint: disable=W0621
     # ========================================================================
     # Run nrunner interface checks for all available runners
     # ========================================================================
+    nrunner_interface_size = 10
     config_nrunner_interface = {
         "resolver.references": ["selftests/functional/nrunner_interface.py"],
         "run.dict_variants.variant_id_keys": ["runner"],
@@ -616,6 +640,7 @@ def create_suites(args):  # pylint: disable=W0621
                 "runner": "avocado-runner-golang",
             }
         )
+        TEST_SIZE["nrunner-interface"] += nrunner_interface_size
 
     if (
         python_module_available("avocado-framework-plugin-robot")
@@ -626,6 +651,7 @@ def create_suites(args):  # pylint: disable=W0621
                 "runner": "avocado-runner-robot",
             }
         )
+        TEST_SIZE["nrunner-interface"] += nrunner_interface_size
 
     if (
         python_module_available("avocado-framework-plugin-ansible")
@@ -636,6 +662,7 @@ def create_suites(args):  # pylint: disable=W0621
                 "runner": "avocado-runner-ansible-module",
             }
         )
+        TEST_SIZE["nrunner-interface"] += nrunner_interface_size
 
     if args.dict_tests["nrunner-interface"]:
         suites.append(
@@ -727,6 +754,19 @@ def main(args):  # pylint: disable=W0621
         "optional-plugins": False,
     }
 
+    if python_module_available("avocado-framework-plugin-golang"):
+        TEST_SIZE["optional-plugins"] += TEST_SIZE["optional-plugins-golang"]
+    if python_module_available("avocado-framework-plugin-result-html"):
+        TEST_SIZE["optional-plugins"] += TEST_SIZE["optional-plugins-html"]
+    if python_module_available("avocado-framework-plugin-robot"):
+        TEST_SIZE["optional-plugins"] += TEST_SIZE["optional-plugins-robot"]
+    if python_module_available("avocado-framework-plugin-varianter-cit"):
+        TEST_SIZE["optional-plugins"] += TEST_SIZE["optional-plugins-varianter_cit"]
+    if python_module_available("avocado-framework-plugin-varianter-yaml-to-mux"):
+        TEST_SIZE["optional-plugins"] += TEST_SIZE[
+            "optional-plugins-varianter_yaml_to_mux"
+        ]
+
     # Make a list of strings instead of a list with a single string
     if len(args.disable_plugin_checks) > 0:
         args.disable_plugin_checks = args.disable_plugin_checks[0].split(",")
@@ -809,6 +849,19 @@ def main(args):  # pylint: disable=W0621
             print("check.py didn't clean test results.")
             print("uncleaned directories:")
             print(post_job_test_result_dirs.difference(pre_job_test_result_dirs))
+        for suite in j.test_suites:
+            if suite.size != TEST_SIZE[suite.name]:
+                if exit_code == 0:
+                    exit_code = 1
+                print(
+                    f"suite {suite.name} doesn't have {TEST_SIZE[suite.name]} tests"
+                    f" it has {suite.size}."
+                )
+                print(
+                    "If you made some changes into selftests please update `TEST_SIZE`"
+                    " variable in `check.py`. If you haven't done any changes to"
+                    " selftests this behavior is an ERROR, and it needs to be fixed."
+                )
 
     # tmp dirs clean up check
     process.run(f"{sys.executable} selftests/check_tmp_dirs")

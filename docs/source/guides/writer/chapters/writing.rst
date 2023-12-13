@@ -29,6 +29,13 @@ leveraging its API power.
 As can be seen in the example above, an Avocado test is a method that starts
 with ``test`` in a class that inherits from :mod:`avocado.Test`.
 
+.. warning:: Note that combining unittests and avocado-instrumented tests within
+             the same file is not feasible. If a class inherits from :mod:`avocado.Test`,
+             and another class inherits from :class:`unittest.TestCase` in the same file,
+             the unittest class will be excluded from testing. In such instances, it is
+             advisable to segregate these tests into separate files.
+
+
 .. note:: Avocado also supports coroutines as tests.  Simply declare
           your test method using the ``async def`` syntax, and Avocado
           will run it inside an asyncio loop.

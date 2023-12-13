@@ -8,7 +8,6 @@ import unittest
 import xml.dom.minidom
 import zipfile
 
-from avocado import Test
 from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
@@ -507,7 +506,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             expected_rc,
             f"Avocado did not return rc {expected_rc}:\n{result}",
         )
-        self.assertIn("timeout", result_json["tests"][0]["fail_reason"])
+        self.assertIn("Timeout reached", result_json["tests"][0]["fail_reason"])
         # Ensure no test aborted error messages show up
         self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
 
@@ -553,9 +552,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertIn(
-            b"Plant.test_plant_organic: preparing soil on row 0", result.stdout
-        )
+        self.assertIn(b"preparing soil on row 0", result.stdout)
         lines = result.stdout.split(b"\n")
         self.assertEqual(
             len(lines), len(set(lines)), "The --show option has duplicities"
@@ -783,9 +780,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "avocado.test.progress INFO | "
-                "1-examples/tests/logging_streams.py:Plant.test_plant_organic: "
-                "preparing soil on row 0",
+                "logging_streams  L0017 INFO | preparing soil on row 0",
                 stream_line,
             )
 
@@ -805,10 +800,10 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertTrue(os.path.exists(progress_info))
         with open(progress_info, encoding="utf-8") as file:
             stream = file.read()
-            self.assertIn("avocado.job", stream)
-            self.assertIn("avocado.core", stream)
-            self.assertIn("avocado.test", stream)
-            self.assertIn("avocado.app", stream)
+            self.assertIn("INFO | Avocado config:", stream)
+            self.assertIn("requested -> triagin", stream)
+            self.assertIn("preparing soil on row 0", stream)
+            self.assertIn("INFO | RESULTS    : PASS 1 |", stream)
 
     @unittest.skipUnless(
         os.getenv("CI"),
@@ -824,7 +819,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.assertTrue(os.path.exists(file_path))
             with open(file_path, encoding="utf-8") as file:
                 stream = file.read()
-                self.assertIn("matplotlib DEBUG|", stream)
+                self.assertIn("matplotlib __init__         L0337 DEBUG|", stream)
 
         log_dir = os.path.join(self.tmpdir.name, "latest")
         test_log_dir = os.path.join(
@@ -891,7 +886,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "avocado.test.progress ERROR| Avocados are Gone",
+                "logging_streams  L0037 ERROR| Avocados are Gone",
                 stream_line,
             )
         progress_info = os.path.join(
@@ -903,12 +898,12 @@ class RunnerOperationTest(TestCaseTmpDir):
         with open(progress_info, encoding="utf-8") as file:
             stream_line = file.readline()
             self.assertIn(
-                "avocado.test.progress ERROR| 1-examples/tests/logging_streams.py:Plant.test_plant_organic: Avocados are Gone",
+                "logging_streams  L0037 ERROR| Avocados are Gone",
                 stream_line,
             )
 
 
-class DryRunTest(Test):
+class DryRunTest(unittest.TestCase):
     def test_dry_run(self):
         examples_path = os.path.join("examples", "tests")
         passtest = os.path.join(examples_path, "passtest.py")
