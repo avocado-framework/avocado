@@ -15,8 +15,7 @@
     var statusColumn = this.api().column(4);
     var select = $('<select class="form-control input-sm"><option value="">ALL</option></select>')
       .on('change', function () {
-        var val = $(this).val()
-        statusColumn.search(val ? '^' + val + '$' : '', true, false).draw();
+        statusColumn.search($(this).val().trim()).draw();
       });
 
     $('#results_length').wrap('<div class="row"><div class="col-sm-4"></div></div>');
