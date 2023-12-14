@@ -1315,9 +1315,11 @@ tests:
 +=============================+=======================================+=====================================================================================================+
 | AVOCADO_VERSION             | Version of Avocado test runner        | 92.0                                                                                                |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
+| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests. More | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
+|                             | info in :data:`avocado.Test.basedir`  |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                               |
+| AVOCADO_TEST_WORKDIR        | Work directory for the test. More     | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                               |
+|                             | info in :data:`avocado.Test.workdir`  |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_cp07qzd9                                                                           |
 |                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
@@ -1341,9 +1343,11 @@ tests:
 +=============================+=======================================+=====================================================================================================+
 | AVOCADO_VERSION             | Version of Avocado test runner        | 92.0                                                                                                |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
+| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests. More | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
+|                             | info in :data:`avocado.Test.basedir`  |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                               |
+| AVOCADO_TEST_WORKDIR        | Work directory for the test. More     | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu/1-Env.test                               |
+|                             | info in :data:`avocado.Test.workdir`  |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
 |                             | :ref:`plugin_teststmpdir` plugin.  The|                                                                                                     |
