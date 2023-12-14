@@ -1378,7 +1378,9 @@ accessible::
 
 For a full list of utilities, take a look into at the directory return
 by ``avocado exec-path`` (if any).  Also, the example test
-``examples/tests/simplewarning.sh`` can serve as further inspiration.
+``examples/tests/simplewarning.sh`` can serve as further inspiration:
+
+.. literalinclude:: ../../../../../examples/tests/simplewarning.sh
 
 .. tip:: These extensions may be available as a separate package.  For
          RPM packages, look for the ``bash`` sub-package.
