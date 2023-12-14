@@ -180,7 +180,7 @@ Request, but some conditions have to be fulfilled before merging the code:
 Pull Requests failing in CI will not be merged, and reviews won't be given to
 them until all the problems are sorted out. In case of a weird failure, or
 false-negative (eg. due to too many commits in a single PR), please reach the
-developers by @name/email/irc or other means.
+developers by @name/email or other means.
 
 While reviewing the code, one should:
 
