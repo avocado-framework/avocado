@@ -348,6 +348,18 @@ class CentosProbe(RedHatProbe):
     CHECK_VERSION_REGEX = re.compile(r"CentOS Linux release (\d{1,2})\.(\d{1,2}).*")
 
 
+class CentosStreamProbe(RedHatProbe):
+
+    """
+    Probe with version checks for CentOS Stream systems
+    """
+
+    CHECK_FILE = "/etc/redhat-release"
+    CHECK_FILE_CONTAINS = "CentOS Stream"
+    CHECK_FILE_DISTRO_NAME = "centos-stream"
+    CHECK_VERSION_REGEX = re.compile(r"CentOS Stream release (\d{1,2})")
+
+
 class FedoraProbe(RedHatProbe):
 
     """
@@ -480,6 +492,7 @@ def register_probe(probe_class):
 
 register_probe(RedHatProbe)
 register_probe(CentosProbe)
+register_probe(CentosStreamProbe)
 register_probe(FedoraProbe)
 register_probe(AmazonLinuxProbe)
 register_probe(DebianProbe)
