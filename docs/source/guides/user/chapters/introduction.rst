@@ -34,19 +34,17 @@ Running a job with multiple tests
 You can run any number of test in an arbitrary order, as well as mix and match
 instrumented and executable tests::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py /tmp/exec_test.sh 
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py /bin/true
     JOB ID     : 2391dddf53b950631589bd1d44a5a6fdd023b400
     JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.35-2391ddd/job.log
-     (1/4) examples/tests/sleeptest.py:SleepTest.test: STARTED
-     (2/4) examples/tests/failtest.py:FailTest.test: STARTED
-     (3/4) examples/tests/synctest.py:SyncTest.test: STARTED
-     (4/4) /tmp/exec_test.sh: STARTED
-     (4/4) /tmp/exec_test.sh: PASS (0.01 s)
-     (2/4) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.05 s)
-     (1/4) examples/tests/sleeptest.py:SleepTest.test: PASS (1.02 s)
-     (3/4) examples/tests/synctest.py:SyncTest.test: PASS (1.39 s)
-    RESULTS    : PASS 3 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 3.25 s
+     (3/3) /bin/true: STARTED
+     (1/3) examples/tests/sleeptest.py:SleepTest.test: STARTED
+     (3/3) /bin/true: PASS (0.01 s)
+     (2/3) examples/tests/failtest.py:FailTest.test: STARTED
+     (2/3) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.02 s)
+     (1/3) examples/tests/sleeptest.py:SleepTest.test: PASS (1.01 s)
+    RESULTS    : PASS 2 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 4.19 s
 
 .. note:: Although in most cases running ``avocado run $test1 $test3 ...`` is
           fine, it can lead to argument vs. test name clashes. The safest
@@ -211,16 +209,14 @@ Avocado has two different result formats that are intended for human beings:
 A regular run of Avocado will present the test results in a live fashion, that
 is, the job and its test(s) results are constantly updated::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py
     JOB ID     : 2e83086e5d3f82dd68bdc8885e7cce1cebec5f27
-    JOB LOG    : $HOME/wrampazz/avocado/job-results/job-2021-09-27T17.00-2e83086/job.log
-     (3/3) examples/tests/synctest.py:SyncTest.test: STARTED
-     (1/3) examples/tests/sleeptest.py:SleepTest.test: STARTED
-     (2/3) examples/tests/failtest.py:FailTest.test: STARTED
-     (2/3) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.02 s)
-     (1/3) examples/tests/sleeptest.py:SleepTest.test: PASS (1.01 s)
-     (3/3) examples/tests/synctest.py:SyncTest.test: PASS (1.24 s)
-    RESULTS    : PASS 2 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T17.00-2e83086/job.log
+     (1/2) examples/tests/sleeptest.py:SleepTest.test: STARTED
+     (2/2) examples/tests/failtest.py:FailTest.test: STARTED
+     (2/2) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.02 s)
+     (1/2) examples/tests/sleeptest.py:SleepTest.test: PASS (1.01 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB HTML   : $HOME/avocado/job-results/job-2021-09-27T17.00-2e83086/results.html
     JOB TIME   : 2.80 s
 
@@ -256,38 +252,53 @@ used by other test automation projects, such as `jenkins
 <http://jenkins-ci.org/>`__. If you want to make Avocado to generate xunit
 output in the standard output of the runner, simply use::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py --xunit -
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py --xunit -
     <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="job-2021-09-27T17.01-2dd7837" tests="3" errors="0" failures="1" skipped="0" time="2.340" timestamp="2021-09-27T17:01:36.455763">
-    	<testcase classname="&lt;unknown&gt;" name="2-examples/tests/failtest.py:FailTest.test" time="0.026">
-    		<failure type="&lt;unknown&gt;" message="This test is supposed to fail"><![CDATA[<unknown>]]></failure>
-    		<system-out><![CDATA[[stdlog] 2021-09-27 17:01:34,722 test             L0312 INFO | INIT 1-FailTest.test
-    [stdlog] 2021-09-27 17:01:34,723 parameters       L0142 DEBUG| PARAMS (key=timeout, path=*, default=None) => None
-    [stdlog] 2021-09-27 17:01:34,723 test             L0340 DEBUG| Test metadata:
-    [stdlog] 2021-09-27 17:01:34,723 test             L0342 DEBUG|   filename: $HOME/src/avocado/avocado.dev/examples/tests/failtest.py
-    [stdlog] 2021-09-27 17:01:34,723 test             L0348 DEBUG|   teststmpdir: /var/tmp/avocado_vi1xpequ
-    [stdlog] 2021-09-27 17:01:34,723 test             L0538 INFO | START 1-FailTest.test
-    [stdlog] 2021-09-27 17:01:34,724 test             L0207 DEBUG| DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
-    [stdlog] 2021-09-27 17:01:34,724 stacktrace       L0039 ERROR|
-    [stdlog] 2021-09-27 17:01:34,724 stacktrace       L0041 ERROR| Reproduced traceback from: $HOME/src/avocado/avocado.dev/avocado/core/test.py:794
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR| Traceback (most recent call last):
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|   File "$HOME/src/avocado/avocado.dev/examples/tests/failtest.py", line 16, in test
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|     self.fail('This test is supposed to fail')
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|   File "$HOME/src/avocado/avocado.dev/avocado/core/test.py", line 980, in fail
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|     raise exceptions.TestFail(message)
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR| avocado.core.exceptions.TestFail: This test is supposed to fail
-    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0046 ERROR|
-    [stdlog] 2021-09-27 17:01:34,725 test             L0799 DEBUG| Local variables:
-    [stdlog] 2021-09-27 17:01:34,740 test             L0802 DEBUG|  -> self <class 'failtest.FailTest'>: 1-FailTest.test
-    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
-    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=stdout.expected) => NOT FOUND (data sources: variant, test, file)
-    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=stderr.expected) => NOT FOUND (data sources: variant, test, file)
-    [stdlog] 2021-09-27 17:01:34,741 test             L0957 ERROR| FAIL 1-FailTest.test -> TestFail: This test is supposed to fail
-    [stdlog] 2021-09-27 17:01:34,741 test             L0949 INFO |
+    <testsuite name="job-2023-12-21T08.42-0af6e08" tests="2" errors="0" failures="1" skipped="0" time="1.029" timestamp="2023-12-21T08:42:56.070128">
+    	<testcase classname="FailTest" name="examples/tests/failtest.py:FailTest.test" time="0.021">
+    		<failure type="TestFail" message="This test is supposed to fail"><![CDATA[Traceback (most recent call last):
+      File "$HOME/src/avocado/avocado/avocado/core/test.py", line 646, in _run_test
+        raise details
+      File "$HOME/src/avocado/avocado/avocado/core/test.py", line 633, in _run_test
+        testMethod()
+      File "$HOME/src/avocado/avocado/examples/tests/failtest.py", line 16, in test
+        self.fail("This test is supposed to fail")
+      File "$HOME/src/avocado/avocado/avocado/core/test.py", line 785, in wrapper
+        return func(actual_message)
+               ^^^^^^^^^^^^^^^^^^^^
+      File "$HOME/src/avocado/avocado/avocado/core/test.py", line 801, in fail
+        raise exceptions.TestFail(msg)
+    avocado.core.exceptions.TestFail: This test is supposed to fail
+    ]]></failure>
+    		<system-out><![CDATA[[stdlog] 2023-12-21 08:42:54,720 avocado.test test             L0313 INFO | INIT 1-examples/tests/failtest.py:FailTest.test
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test parameters       L0141 DEBUG| PARAMS (key=timeout, path=*, default=None) => None
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test parameters       L0141 DEBUG| PARAMS (key=timeout_factor, path=*, default=1.0) => 1.0
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0345 DEBUG| Test metadata:
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0347 DEBUG|   filename: $HOME/src/avocado/avocado/examples/tests/failtest.py
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0353 DEBUG|   teststmpdir: /var/tmp/avocado_tx32gp2p
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0354 DEBUG|   original timeout: None
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0355 DEBUG|   timeout factor: 1.0
+    [stdlog] 2023-12-21 08:42:54,721 avocado.test test             L0356 DEBUG|   actual timeout: None
+    [stdlog] 2023-12-21 08:42:54,722 avocado.test test             L0548 INFO | START 1-examples/tests/failtest.py:FailTest.test
+    [stdlog] 2023-12-21 08:42:54,722 avocado.test stacktrace       L0040 ERROR| 
+    [stdlog] 2023-12-21 08:42:54,722 avocado.test stacktrace       L0042 ERROR| Reproduced traceback from: $HOME/src/avocado/avocado/avocado/core/test.py:638
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR| Traceback (most recent call last):
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|   File "$HOME/src/avocado/avocado/examples/tests/failtest.py", line 16, in test
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|     self.fail("This test is supposed to fail")
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|   File "$HOME/src/avocado/avocado/avocado/core/test.py", line 785, in wrapper
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|     return func(actual_message)
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|            ^^^^^^^^^^^^^^^^^^^^
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|   File "$HOME/src/avocado/avocado/avocado/core/test.py", line 801, in fail
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR|     raise exceptions.TestFail(msg)
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0049 ERROR| avocado.core.exceptions.TestFail: This test is supposed to fail
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test stacktrace       L0050 ERROR| 
+    [stdlog] 2023-12-21 08:42:54,723 avocado.test test             L0642 DEBUG| Local variables:
+    [stdlog] 2023-12-21 08:42:54,735 avocado.test test             L0645 DEBUG|  -> self <class 'failtest.FailTest'>: 1-examples/tests/failtest.py:FailTest.test
+    [stdlog] 2023-12-21 08:42:54,736 avocado.test test             L0740 ERROR| FAIL 1-examples/tests/failtest.py:FailTest.test -> TestFail: This test is supposed to fail
+    [stdlog] 2023-12-21 08:42:54,736 avocado.test test             L0733 INFO | 
     ]]></system-out>
     	</testcase>
-    	<testcase classname="&lt;unknown&gt;" name="1-examples/tests/sleeptest.py:SleepTest.test" time="1.010"/>
-    	<testcase classname="&lt;unknown&gt;" name="3-examples/tests/synctest.py:SyncTest.test" time="1.304"/>
+    	<testcase classname="SleepTest" name="examples/tests/sleeptest.py:SleepTest.test" time="1.008"/>
     </testsuite>
 
 
@@ -307,58 +318,56 @@ output in the standard output of the runner, simply use::
 `JSON <https://www.json.org/>`__ is a widely used data exchange format. The JSON
 Avocado plugin outputs job information, similarly to the xunit output plugin::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py --json -
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py --json -
     {
         "cancel": 0,
-        "debuglog": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/job.log",
+        "debuglog": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/job.log",
         "errors": 0,
         "failures": 1,
         "interrupt": 0,
-        "job_id": "fd073c26a1e1aacee59bc9e1914b7110e7ac3f8b",
-        "pass": 2,
+        "job_id": "532631bb75ab1aa910a6c4efb1398b4a2bb767b7",
+        "pass": 1,
         "skip": 0,
+        "start": "2023-12-21 08:44:54.176851",
         "tests": [
             {
-                "end": 30759.486869323,
+                "actual_end": 1703166296.9230745,
+                "actual_start": 1703166296.6056573,
+                "end": 32467.637506057,
                 "fail_reason": "This test is supposed to fail",
                 "id": "2-examples/tests/failtest.py:FailTest.test",
-                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/2-examples_tests_failtest.py_FailTest.test",
-                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/2-examples_tests_failtest.py_FailTest.test/debug.log",
-                "start": 30759.456017671,
+                "logdir": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/2-examples_tests_failtest.py_FailTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/2-examples_tests_failtest.py_FailTest.test/debug.log",
+                "name": "examples/tests/failtest.py:FailTest.test",
+                "start": 32467.61666046,
                 "status": "FAIL",
-                "tags": {},
-                "time": 0.030851651998091256,
+                "tags": {
+                    "failure_expected": null
+                },
+                "time": 0.020845596998697147,
                 "whiteboard": ""
             },
             {
-                "end": 30760.472274292,
+                "actual_end": 1703166297.6359792,
+                "actual_start": 1703166296.6054778,
+                "end": 32468.624765129,
                 "fail_reason": "<unknown>",
                 "id": "1-examples/tests/sleeptest.py:SleepTest.test",
-                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/1-examples_tests_sleeptest.py_SleepTest.test",
-                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/1-examples_tests_sleeptest.py_SleepTest.test/debug.log",
-                "start": 30759.455787493,
+                "logdir": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/1-examples_tests_sleeptest.py_SleepTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/1-examples_tests_sleeptest.py_SleepTest.test/debug.log",
+                "name": "examples/tests/sleeptest.py:SleepTest.test",
+                "start": 32467.616292676,
                 "status": "PASS",
                 "tags": {},
-                "time": 1.0164867989988124,
-                "whiteboard": ""
-            },
-            {
-                "end": 30760.690585313,
-                "fail_reason": "<unknown>",
-                "id": "3-examples/tests/synctest.py:SyncTest.test",
-                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/3-examples_tests_synctest.py_SyncTest.test",
-                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/3-examples_tests_synctest.py_SyncTest.test/debug.log",
-                "start": 30759.459244923,
-                "status": "PASS",
-                "tags": {},
-                "time": 1.231340390000696,
+                "time": 1.0084724529988307,
                 "whiteboard": ""
             }
         ],
-        "time": 2.2786788409975998,
-        "total": 3,
+        "time": 1.0293180499975279,
+        "total": 2,
         "warn": 0
     }
+
 
 .. note:: The dash ``-`` in the option ``--json``, it means that the xunit result
           should go to the standard output.
@@ -439,29 +448,31 @@ You can have multiple results formats at once, as long as only one of them uses
 the standard output. For example, it is fine to use the xunit result on stdout
 and the JSON result to output to a file::
 
-    $ avocado run examples/tests/sleeptest.py examples/tests/synctest.py --xunit - --json /tmp/result.json
+    $ avocado run examples/tests/sleeptest.py /bin/true --xunit - --json /tmp/result.json
     <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="job-2021-09-27T17.10-b37e5fe" tests="2" errors="0" failures="0" skipped="0" time="2.220" timestamp="2021-09-27T17:10:28.757207">
-    	<testcase classname="&lt;unknown&gt;" name="1-examples/tests/sleeptest.py:SleepTest.test" time="1.011"/>
-    	<testcase classname="&lt;unknown&gt;" name="2-examples/tests/synctest.py:SyncTest.test" time="1.209"/>
+    <testsuite name="job-2023-12-21T08.46-a4f410d" tests="2" errors="0" failures="0" skipped="0" time="1.020" timestamp="2023-12-21T08:46:25.268311">
+    	<testcase classname="&lt;unknown&gt;" name="/bin/true" time="0.011"/>
+    	<testcase classname="SleepTest" name="examples/tests/sleeptest.py:SleepTest.test" time="1.008"/>
     </testsuite>
 
     $ cat /tmp/result.json
     {
         "cancel": 0,
-        "debuglog": "$HOME/avocado/job-results/job-2021-09-27T17.10-b37e5fe/job.log",
+        "debuglog": "$HOME/avocado/job-results/job-2023-12-21T08.46-a4f410d/job.log",
         "errors": 0,
         "failures": 0,
         "interrupt": 0,
-        "job_id": "b37e5fee226e3806c4d73fef180d7d2cee56464e",
+        "job_id": "a4f410de7969bc8d6148712796e027b110027fa3",
         "pass": 2,
         "skip": 0,
+        "start": "2023-12-21 08:46:21.078811",
+    ...
     }
 
 But you won't be able to do the same without the ``--json`` flag passed to
 the program::
 
-    avocado run examples/tests/sleeptest.py examples/tests/synctest.py --xunit - --json  -
+    avocado run examples/tests/sleeptest.py /bin/true --xunit - --json  -
     avocado run: error: argument --json: Options --xunit --json are trying to
     use stdout simultaneously. Please set at least one of them to a file to
     avoid conflicts
