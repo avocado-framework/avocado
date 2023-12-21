@@ -521,69 +521,20 @@ Running third party test suites
 It is very common in test automation workloads to use test suites developed
 by third parties. By wrapping the execution code inside an Avocado test module,
 you gain access to the facilities and API provided by the framework. Let's
-say you want to pick up a test suite written in C that it is in a tarball,
-uncompress it, compile the suite code, and then executing the test. Here's
-an example that does that::
+say you want to pick up a test written in C, compile the test code,
+and then execute it. Here's an example that does that:
 
-        #!/usr/bin/env python3
+.. literalinclude:: ../../../../../examples/tests/raise.py
 
-        import os
+Here we have an example of the ``setUp`` method in action: Here we get
+the location of the test code written in C through :meth:`get_data()
+<avocado.core.test.TestData.get_data>`, followed by
+:func:`avocado.utils.build.make`, that will build the suite.
 
-        from avocado import Test
-        from avocado.utils import archive, build, process
-
-
-        class SyncTest(Test):
-
-            """
-            Execute the synctest test suite.
-
-            :param sync_tarball: path to the tarball relative to a data directory
-            :param default_symbols: whether to build with debug symbols (bool)
-            :param sync_length: how many data should by used in sync test
-            :param sync_loop: how many writes should be executed in sync test
-            """
-
-            def setUp(self):
-                """
-                Build the synctest suite.
-                """
-                self.cwd = os.getcwd()
-                sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
-                tarball_path = self.get_data(sync_tarball)
-                if tarball_path is None:
-                    self.cancel('Test is missing data file %s' % tarball_path)
-                archive.extract(tarball_path, self.workdir)
-                srcdir = os.path.join(self.workdir, 'synctest')
-                os.chdir(srcdir)
-                if self.params.get('debug_symbols', default=True):
-                    build.make(srcdir,
-                               env={'CFLAGS': '-g -O0'},
-                               extra_args='synctest')
-                else:
-                    build.make(srcdir)
-
-            def test(self):
-                """
-                Execute synctest with the appropriate params.
-                """
-                path = os.path.join(os.getcwd(), 'synctest')
-                cmd = ('%s %s %s' %
-                       (path, self.params.get('sync_length', default=100),
-                        self.params.get('sync_loop', default=10)))
-                process.system(cmd)
-                os.chdir(self.cwd)
-
-Here we have an example of the ``setUp`` method in action: Here we get the
-location of the test suite code (tarball) through
-:func:`avocado.Test.get_data`, then uncompress the tarball through
-:func:`avocado.utils.archive.extract`, an API that will
-decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
-the suite.
-
-In this example, the ``test`` method just gets into the base directory of
-the compiled suite  and executes the ``./synctest`` command, with appropriate
-parameters, using :func:`avocado.utils.process.system`.
+In this example, the ``test`` method just gets into the base directory
+of the compiled test and executes the ``./raise`` command, with
+appropriate parameters (the actual signal to raise), using
+:func:`avocado.utils.process.system`.
 
 .. _Fetching asset files:
 
