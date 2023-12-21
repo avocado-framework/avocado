@@ -276,7 +276,8 @@ class Probe:
         match = self._get_version_match()
         if match is not None:
             if len(match.groups()) > 1:
-                release = match.groups()[1]
+                if match.groups()[1]:
+                    release = match.groups()[1]
         return release
 
     def get_distro(self):
@@ -382,7 +383,7 @@ class AmazonLinuxProbe(Probe):
     CHECK_FILE_CONTAINS = "Amazon Linux"
     CHECK_FILE_DISTRO_NAME = "amzn"
     CHECK_VERSION_REGEX = re.compile(
-        r".*VERSION=\"(\d+)\.(\d+)\".*", re.MULTILINE | re.DOTALL
+        r".*VERSION=\"(\d+)\.?(\d+)?\".*", re.MULTILINE | re.DOTALL
     )
 
 
