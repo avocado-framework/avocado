@@ -5,6 +5,30 @@ Development environment
 
 .. warning:: TODO: Needs improvement here. i.e: virtualenvs, GPG, etc.
 
+Using a container
+-----------------
+
+Having reproducible development environments is hard because
+developers will usually choose their preferred environments, and those
+will never be the same for two people.  Using a container can be a
+good option if you're unsure whether your development environment is
+sound or compatible enough.
+
+The Avocado project maintains a container image that can serve as a
+pretty good starting point for development too (it's actually intended
+to be used on some CI checks, but don't mind that).  You can pull the
+image from::
+
+    quay.io/avocado-framework/avocado-ci-fedora-38
+
+It's a simple image, with just a number of known needed packages
+installed.  This is the full definition of the image:
+
+.. literalinclude:: ../../../../../contrib/containers/ci/selftests/fedora-38.docker
+
+You can use the information there to apply to your own environment if
+you choose not to use the container image itself.
+
 Installing dependencies
 -----------------------
 
