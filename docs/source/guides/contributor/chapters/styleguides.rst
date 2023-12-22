@@ -37,4 +37,9 @@ And if you are merging branches::
 Code style guide
 ----------------
 
-.. warning:: TODO: Add the Code Style Guide.
+Avocado uses the Black code style checker, and thus, you should follow
+its very opinionated style.  In reality, it's recommended to use your
+editor or IDE features to make sure the style is applied
+automatically.  Please refer to the `black documentation
+<https://black.readthedocs.io/en/stable/index.html>`__ for more
+information.

@@ -269,6 +269,10 @@ Build and Quality Status
    :target: https://avocado-framework.readthedocs.io/en/latest/
    :alt: Documentation Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Code Style checking by Black
+
 
 .. _Avocado User's Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/index.html
 .. _Installing section on Avocado User’s Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/installing.html#installing
