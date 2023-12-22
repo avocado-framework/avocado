@@ -1,8 +1,6 @@
 Development environment
 =======================
 
-.. warning:: TODO: Needs improvement here. i.e: virtualenvs, GPG, etc.
-
 Using a container
 -----------------
 
@@ -89,3 +87,28 @@ variable ``$AVOCADO_EXTERNAL_PLUGINS_PATH``. The workflow could be::
     $ make develop-external
 
 You should see the process and status of each directory.
+
+GPG Signatures
+--------------
+
+This is an optional step for most contributors, but if you're
+interested in ensuring that your contribution is linked to yourself,
+this is the best way to do so.
+
+To get a GPG signature, you can find many howtos on the internet, but
+it generally works like this::
+
+    $ gpg --gen-key  # defaults are usually fine (using expiration is recommended)
+    $ gpg --send-keys $YOUR_KEY    # to propagate the key to outer world
+
+Then, you should enable it in git::
+
+    $ git config --global user.signingkey $YOUR_KEY
+
+Optionally, you can link the key with your GH account:
+
+1. Login to github
+2. Go to settings->SSH and GPG keys
+3. Add New GPG key
+4. run ``$(gpg -a --export $YOUR_EMAIL)`` in shell to see your key
+5. paste the key there
