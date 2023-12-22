@@ -229,4 +229,20 @@ List of known community and third party maintained repositories:
 Documentation
 -------------
 
-.. warning:: TODO: Create how to contribute with documentation.
+The process of contributing documentation is very similar to the
+process of contributing code.  The only noteworthy difference is that
+instead of running ``make check`` to verify the soundness of the
+changes, you should build the documentation with a command such as::
+
+$ make -C docs html
+
+If there are any warnings or errors introduced by your changes, the
+documentation will fail to build, showing the cause, such as in::
+
+    Warning, treated as error:
+    $HOME/avocado/docs/source/guides/contributor/chapters/how.rst:239:Unknown directive type "foo".
+
+    .. foo:: bar
+    make: *** [Makefile:48: html] Error 2
+
+A similar check is also performed by the CI, via readthedocs.org.

@@ -20,6 +20,9 @@ Or if you already have pip installed, you can run directly::
 
  $ pip install -r requirements-dev.txt
 
+If you intend to build the documentation locally, please also run::
+
+ $ pip install -r requirements-doc.txt
 
 Installing in develop mode
 --------------------------
