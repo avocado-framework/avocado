@@ -72,7 +72,7 @@ build-wheel: pip
 
 check-wheel: build-wheel
 	$(PYTHON) -m pip install twine
-	twine check ./PYPI_UPLOAD/*
+	twine check --strict ./PYPI_UPLOAD/*
 
 build-egg:
 	if test ! -d EGG_UPLOAD; then mkdir EGG_UPLOAD; fi
