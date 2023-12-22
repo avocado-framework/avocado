@@ -1,8 +1,6 @@
 Development environment
 =======================
 
-.. include:: /.include/helpus.rst
-
 .. warning:: TODO: Needs improvement here. i.e: virtualenvs, GPG, etc.
 
 Using a container

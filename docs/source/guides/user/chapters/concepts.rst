@@ -1,8 +1,6 @@
 Basic Concepts
 ==============
 
-.. include:: /.include/helpus.rst
-
 It is important to understand some basic concepts before start using Avocado.
 
 
