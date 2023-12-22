@@ -51,14 +51,6 @@ Every Pull Request you send will be automatically tested by the
 `CI system <https://github.com/avocado-framework/avocado/actions>`_ and review
 will take place in the Pull Request as well.
 
-For people who don’t like the GitHub development model, there is an option to
-send the patches to the Mailing List, following a more traditional workflow in
-Open Source development communities. The patches are reviewed in the Mailing
-List, should you opt for that. Then a maintainer will collect the patches,
-integrate them on a branch, and submit it as a GitHub Pull Request. This
-process ensures that every contributed patch goes through the CI jobs before
-being considered suitable for inclusion.
-
 Remember that we do have a small “Feature Freeze” period right before the
 release day (usually no longer than one week). It means that during this time,
 no new feature can be merged into the master branch.
