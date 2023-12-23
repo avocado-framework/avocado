@@ -217,7 +217,7 @@ extensions = [
 
 master_doc = "index"  # pylint: disable=C0103
 project = "Avocado"  # pylint: disable=C0103
-copyright = "2014-2019, Red Hat"  # pylint: disable=W0622,C0103
+copyright = "2014-2023, Red Hat"  # pylint: disable=W0622,C0103
 
 VERSION_FILE = os.path.join(ROOT_PATH, "VERSION")
 VERSION = genio.read_file(VERSION_FILE).strip()
