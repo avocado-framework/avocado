@@ -19,9 +19,6 @@ ROOT_PATH = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, ROOT_PATH)
 
 
-# Flag that tells if the docs are being built on readthedocs.org
-ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
-
 #
 # Auto generate API documentation
 #
@@ -189,10 +186,13 @@ The following pages document the private APIs of optional Avocado plugins.
         os.unlink(os.path.join(output_dir, "modules.rst"))
         optional_plugins_toc.write("\n   %s" % os.path.join(name, name))
 
-extensions = ['sphinx.ext.autodoc',  # pylint: disable=C0103
-              'sphinx.ext.intersphinx',
-              'sphinx.ext.todo',
-              'sphinx.ext.coverage']
+extensions = [
+    "sphinx.ext.autodoc",  # pylint: disable=C0103
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx_rtd_theme",
+]
 
 master_doc = 'index'  # pylint: disable=C0103
 project = u'Avocado'  # pylint: disable=C0103
@@ -203,13 +203,7 @@ VERSION = genio.read_file(VERSION_FILE).strip()
 version = VERSION  # pylint: disable=C0103
 release = VERSION  # pylint: disable=C0103
 
-if not ON_RTD:  # only import and set the theme if we're building docs locally
-    try:
-        import sphinx_rtd_theme
-        html_theme = 'sphinx_rtd_theme'  # pylint: disable=C0103
-        html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]  # pylint: disable=C0103
-    except ImportError:
-        html_theme = 'default'  # pylint: disable=C0103
+html_theme = "sphinx_rtd_theme"  # pylint: disable=C0103
 
 htmlhelp_basename = 'avocadodoc'  # pylint: disable=C0103
 
