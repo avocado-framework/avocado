@@ -34,6 +34,8 @@ setup(
     name="avocado-framework-plugin-spawner-remote",
     version=VERSION,
     description="Remote (host) based spawner",
+    long_description="Remote (host) based spawner",
+    long_description_content_type="text/plain",
     author="Avocado Developers",
     author_email="avocado-devel@redhat.com",
     url="http://avocado-framework.github.io/",
