@@ -19,43 +19,27 @@ motivation, approach and effects::
 Signing commits
 ~~~~~~~~~~~~~~~
 
-Optionally you can sign the commits using GPG signatures. Doing
-it is simple and it helps from unauthorized code being merged without notice.
+If you've set a GPG signature, it's a good idea to put it in use when
+committing your changes.  To sign your commits, add the ``-S`` command
+line option, such as in::
 
-All you need is a valid GPG signature, git configuration, and slightly modified
-workflow to use the signature. Eventually, set it up in GitHub; hence, benefiting
-from the “nice” UI.
-
-Get a GPG signature::
-
-    # Google for howto, but generally it works like this
-    $ gpg --gen-key  # defaults are usually fine (using expiration is recommended)
-    $ gpg --send-keys $YOUR_KEY    # to propagate the key to outer world
-
-Enable it in git::
-
-    $ git config --global user.signingkey $YOUR_KEY
-
-(optional) Link the key with your GH account::
-
-    1. Login to github
-    2. Go to settings->SSH and GPG keys
-    3. Add New GPG key
-    4. run $(gpg -a --export $YOUR_EMAIL) in shell to see your key
-    5. paste the key there
-
-Use it::
-
-    # You can sign commits by using '-S'
     $ git commit -S
-    # You can sign merges by using '-S'
+
+And if you are merging branches::
+
     $ git merge -S
 
 .. warning::
-   You can not use the merge button on GitHub to do signed merges as GitHub
-   does not have your private key.
+   If you use the merge button on GitHub, the signature will be
+   performed with GitHub's own private key.  Please check whether you
+   find that acceptable or not.
 
 Code style guide
 ----------------
 
-.. warning:: TODO: Add the Code Style Guide.
+Avocado uses the Black code style checker, and thus, you should follow
+its very opinionated style.  In reality, it's recommended to use your
+editor or IDE features to make sure the style is applied
+automatically.  Please refer to the `black documentation
+<https://black.readthedocs.io/en/stable/index.html>`__ for more
+information.

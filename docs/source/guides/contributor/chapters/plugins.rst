@@ -403,10 +403,13 @@ resolve the ``magic:foo`` and ``something-else`` references, but couldn't::
   magic                something-else Word "something-else" is not a valid magic word
   ...
 
-We can see that the reference "magic:foo" resembles the magic words by type but it is not magic words ``pass`` or ``fail``.
-Consequently, the resolver can provide the user with information about potentially corrupted references.
-This can assist the user in identifying typos or reference mistakes. As the creator of the resolver,
-you can use the "ReferenceResolutionResult.CORRUPT" variable to notify the user of such a situation.
+We can see that the reference "magic:foo" resembles the magic words by
+type but it is not magic words ``pass`` or ``fail``.  Consequently,
+the resolver can provide the user with information about potentially
+corrupted references.  This can assist the user in identifying typos
+or reference mistakes. As the creator of the resolver, you can use the
+:data:`avocado.core.resolver.ReferenceResolutionResult.CORRUPT` variable
+to notify the user of such a situation.
 
 Running magic tests
 -------------------

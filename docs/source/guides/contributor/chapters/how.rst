@@ -51,14 +51,6 @@ Every Pull Request you send will be automatically tested by the
 `CI system <https://github.com/avocado-framework/avocado/actions>`_ and review
 will take place in the Pull Request as well.
 
-For people who don’t like the GitHub development model, there is an option to
-send the patches to the Mailing List, following a more traditional workflow in
-Open Source development communities. The patches are reviewed in the Mailing
-List, should you opt for that. Then a maintainer will collect the patches,
-integrate them on a branch, and submit it as a GitHub Pull Request. This
-process ensures that every contributed patch goes through the CI jobs before
-being considered suitable for inclusion.
-
 Remember that we do have a small “Feature Freeze” period right before the
 release day (usually no longer than one week). It means that during this time,
 no new feature can be merged into the master branch.
@@ -237,4 +229,20 @@ List of known community and third party maintained repositories:
 Documentation
 -------------
 
-.. warning:: TODO: Create how to contribute with documentation.
+The process of contributing documentation is very similar to the
+process of contributing code.  The only noteworthy difference is that
+instead of running ``make check`` to verify the soundness of the
+changes, you should build the documentation with a command such as::
+
+$ make -C docs html
+
+If there are any warnings or errors introduced by your changes, the
+documentation will fail to build, showing the cause, such as in::
+
+    Warning, treated as error:
+    $HOME/avocado/docs/source/guides/contributor/chapters/how.rst:239:Unknown directive type "foo".
+
+    .. foo:: bar
+    make: *** [Makefile:48: html] Error 2
+
+A similar check is also performed by the CI, via readthedocs.org.

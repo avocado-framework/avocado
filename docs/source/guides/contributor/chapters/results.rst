@@ -17,5 +17,6 @@ one to look at.  It will require you to implement the methods that
 will perform actions (write to a file/stream) for each of the defined
 events on a Job and test execution.
 
-You can take a look at `Plugins` for more information on how to
-write a plugin that will activate and execute the new result format.
+You can take a look at :ref:`writing_plugin` for more information on
+how to write a plugin that will activate and execute the new result
+format.
