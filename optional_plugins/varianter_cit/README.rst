@@ -11,6 +11,10 @@ turn become different test scenarios.
 To learn more about this algorithm, please take a look to the papers
 listed below.
 
+To install the Avocado CIT plugin from pip, use::
+
+    $ sudo pip install avocado-framework-plugin-varianter-cit
+
 To run the example below, use the test included in the avocado code ::
 
     $ git clone https://github.com/avocado-framework/avocado.git
