@@ -6,7 +6,7 @@
 SYNOPSIS
 ========
 
-avocado [-h] [-v] [--config [CONFIG_FILE]] [--show [STREAM[:LVL]]] [-s]
+avocado [-h] [-v] [--config [CONFIG_FILE]] [--show [STREAM[:LEVEL]]] [-s]
  {config,diff,distro,exec-path,list,multiplex,plugins,run,sysinfo} ...
 
 DESCRIPTION
