@@ -673,42 +673,6 @@ variants. If no matches are found, then it would proceed to ``/qa/*``
 Keep in mind that only slices defined in mux-path are taken into account
 for relative paths (the ones starting with ``*``).
 
-
-WRAP EXECUTABLE RUN BY TESTS
-============================
-
-Avocado allows the instrumentation of executables being run by a test
-in a transparent way. The user specifies a script ("the wrapper") to be
-used to run the actual program called by the test.
-
-If the instrumentation script is implemented correctly, it should not
-interfere with the test behavior. That is, the wrapper should avoid
-changing the return status, standard output and standard error messages
-of the original executable.
-
-The user can be specific about which program to wrap (with a shell-like
-glob), or if that is omitted, a global wrapper that will apply to all
-programs called by the test.
-
-So, for every executable run by the test, the program name will be
-compared to the pattern to decide whether to wrap it or not. You can
-have multiples wrappers and patterns defined.
-
-Examples::
-
-    $ avocado run examples/tests/datadir.py --wrapper examples/wrappers/strace.sh
-
-Any command created by the test datadir will be wrapped on
-``strace.sh``. ::
-
-    $ avocado run examples/tests/datadir.py \
-            --wrapper examples/wrappers/ltrace.sh:*make \
-            --wrapper examples/wrappers/perf.sh:*datadir
-
-Any command that matches the pattern `*make` will be wrapper on
-``ltrace.sh`` and the pattern ``*datadir`` will trigger the execution of
-``perf.sh``.
-
 FILES
 =====
 
