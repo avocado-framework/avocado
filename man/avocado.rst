@@ -6,17 +6,17 @@
 SYNOPSIS
 ========
 
-avocado [-h] [-v] [--config [CONFIG_FILE]] [--show [STREAM[:LVL]]] [-s]
- {config,diff,distro,exec-path,list,multiplex,plugins,run,sysinfo} ...
+avocado [-h] [-v] [--config [CONFIG_FILE]] [--enable-paginator] [-V] [--show STREAM[:LEVEL]]
+ {assets,cache,config,diff,distro,exec-path,jobs,list,plugins,replay,run,sysinfo,variants,vmimage} ...
 
 DESCRIPTION
 ===========
 
-Avocado is a modern test framework that is built on the experience
-accumulated with `autotest` (https://autotest.github.io).
+Avocado is a set of tools and libraries to help with automated
+testing.
 
-`avocado` is also the name of its test runner command line tool,
-described in this man page.
+`avocado` is also the name of its command line tool, described in this
+man page.
 
 For more information about the Avocado project, please check its
 website: https://avocado-framework.github.io/
@@ -48,6 +48,7 @@ Real use of avocado depends on running avocado subcommands. This a
 typical list of avocado subcommands::
 
     assets              Manage assets
+    cache               Interface for manipulating the Avocado cache metadata
     config              Shows avocado config keys
     diff                Shows the difference between 2 jobs.
     distro              Shows detected Linux distribution
@@ -74,7 +75,7 @@ Options for subcommand `run` (`avocado run --help`)::
     positional arguments:
       TEST_REFERENCE        List of test references (aliases or paths)
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       -p NAME_VALUE, --test-parameter NAME_VALUE
                             Parameter name and value to pass to all tests. This is
@@ -84,12 +85,12 @@ Options for subcommand `run` (`avocado run --help`)::
                             parameter.
       --suite-runner SUITE_RUNNER
                             Selects the runner implementation from one of the
-                            installed and active implementations.  You can run
+                            installed and active implementations. You can run
                             "avocado plugins" and find the list of valid runners
                             under the "Plugins that run test suites on a job
-                            (runners) section.  Defaults to "nrunner", which is
-                            the new runner and only runner supported at this moment.
-
+                            (runners)" section. Defaults to "nrunner", which is
+                            the only runner that ships with core Avocado at this
+                            moment.
       -d, --dry-run         Instead of running the test only list them and log
                             their params.
       --dry-run-no-cleanup  Do not automatically clean up temporary directories
@@ -113,9 +114,10 @@ Options for subcommand `run` (`avocado run --help`)::
       --keep-tmp            Keep job temporary files (useful for avocado
                             debugging).
       --ignore-missing-references
-                            Force the job execution, even if some of the test.
-      --disable-sysinfo     Enable or disable sysinfo information. Like hardware
-                            details, profiles, etc.
+                            Force the job execution, even if some of the test
+                            references are not resolved to tests.
+      --disable-sysinfo     Disable sysinfo collection (like hardware details,
+                            profiles, etc).
       --execution-order RUN.EXECUTION_ORDER
                             Defines the order of iterating through test suite and
                             test variants
@@ -142,7 +144,7 @@ Options for subcommand `run` (`avocado run --help`)::
     output and result format:
       --store-logging-stream LOGGING_STREAM
                             Store given logging STREAMs in
-                            "$JOB_RESULTS_DIR/$STREAM.$LEVEL."
+                            "$JOB_RESULTS_DIR/$STREAM.$LEVEL".
       --xunit FILE          Enable xUnit result format and write it to FILE. Use
                             "-" to redirect to the standard output.
       --disable-xunit-job-result
@@ -184,12 +186,16 @@ Options for subcommand `run` (`avocado run --help`)::
       --status-server-listen HOST_PORT
                             URI where status server will listen on. Usually a
                             "HOST:PORT" string. This is only effective if
-                            "status_server_auto" is disabled
+                            "status_server_auto" is disabled. If
+                            "status_server_uri" is not set, the value from
+                            "status_server_listen " will be used.
       --status-server-uri HOST_PORT
                             URI for connecting to the status server, usually a
                             "HOST:PORT" string. Use this if your status server is
                             in another host, or different port. This is only
-                            effective if "status_server_auto" is disabled
+                            effective if "status_server_auto" is disabledIf
+                            "status_server_listen" is not set. Value from
+                            "status_server_uri" will be used.
       --max-parallel-tasks NUMBER_OF_TASKS
                             Number of maximum number tasks running in parallel.
                             You can disable parallel execution by setting this to
@@ -201,26 +207,18 @@ Options for subcommand `run` (`avocado run --help`)::
       --spawner-podman-bin PODMAN_BIN
                             Path to the podman binary
       --spawner-podman-image CONTAINER_IMAGE
-                            Image name to use when creating the container
+                            Image name to use when creating the container. The
+                            first default choice is a container image matching the
+                            current OS. If unable to detect, default becomes the
+                            latest Fedora release.
+      --spawner-podman-avocado-egg AVOCADO_EGG
+                            Avocado egg path to be used during initial bootstrap
+                            of avocado inside the isolated environment. By
+                            default, Avocado will try to download (or get from
+                            cache) an egg from its repository. Please use a valid
+                            URL, including the protocol (for local files, use the
+                            "file:///" prefix).
 
-    job replay:
-      --replay JOB_ID       Replay a job identified by its (partial) hash id. Use
-                            "--replay" latest to replay the latest job.
-      --replay-test-status TEST_STATUS
-                            Filter tests to replay by test status.
-      --replay-ignore IGNORE
-                            Ignore variants and/or configuration from the source
-                            job.
-      --replay-resume       Resume an interrupted job
-
-    wrapper support:
-      --wrapper SCRIPT[:EXECUTABLE]
-                            Use a script to wrap executables run by a test. The
-                            wrapper is either a path to a script (AKA a global
-                            wrapper) or a path to a script followed by colon
-                            symbol (:), plus a shell like glob to the target
-                            EXECUTABLE. Multiple wrapper options are allowed, but
-                            only one global wrapper can be defined.
 
 Options for subcommand `assets` (`avocado assets --help`)::
 
@@ -232,7 +230,7 @@ Options for subcommand `assets` (`avocado assets --help`)::
         purge               Removes assets cached locally.
         list                List all cached assets.
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
 
 Options for subcommand `config` (`avocado config --help`)::
@@ -241,7 +239,7 @@ Options for subcommand `config` (`avocado config --help`)::
       sub-command
         reference  Show a configuration reference with all registered options
 
-    optional arguments:
+    options:
       -h, --help   show this help message and exit
       --datadir    Shows the data directories currently being used by Avocado
 
@@ -250,8 +248,7 @@ Options for subcommand `diff` (`avocado diff --help`)::
     positional arguments:
       JOB                   A job reference, identified by a (partial) unique ID
                             (SHA1) or test results directory.
-
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --html FILE           Enable HTML output to the FILE where the result should
                             be written.
@@ -271,7 +268,7 @@ Options for subcommand `diff` (`avocado diff --help`)::
 
 Options for subcommand `distro` (`avocado distro --help`)::
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --distro-def-create   Creates a distro definition file based on the path
                             given.
@@ -290,7 +287,7 @@ Options for subcommand `distro` (`avocado distro --help`)::
 
 Options for subcommand `exec-path` (`avocado exec-path --help`)::
 
-    optional arguments:
+    options:
       -h, --help  show this help message and exit
 
 Options for subcommand `jobs` (`avocado jobs --help`)::
@@ -301,11 +298,8 @@ Options for subcommand `jobs` (`avocado jobs --help`)::
         show            Show details about a specific job. When passing a Job ID,
                         you can use any Job Reference (job_id, "latest", or job
                         results path).
-        get-output-files
-                        Download output files generated by tests on
-                        AVOCADO_TEST_OUTPUTDIR
 
-    optional arguments:
+    options:
       -h, --help        show this help message and exit
 
 Options for subcommand `list` (`avocado list --help`)::
@@ -313,7 +307,7 @@ Options for subcommand `list` (`avocado list --help`)::
     positional arguments:
       TEST_REFERENCE        List of test references (aliases or paths)
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --write-recipes-to-directory DIRECTORY
                             Writes runnable recipe files to a directory. Valid
@@ -337,6 +331,7 @@ Options for subcommand `plugins` (`avocado plugins --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
+      -o, --ordered  Will list the plugins in execution order
 
 Options for subcommand `replay` (`avocado reply --help`)::
 
@@ -360,7 +355,7 @@ Options for subcommand `sysinfo` (`avocado sysinfo --help`)::
 
 Options for subcommand `variants` (`avocado variants --help`)::
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --summary SUMMARY     Verbosity of the variants summary. (positive integer -
                             0, 1, ... - or none, brief, normal, verbose, full,
@@ -392,8 +387,19 @@ Options for subcommand `vmimage` (`avocado vmimage --help`)::
         list      List of all downloaded images
         get       Downloads chosen VMimage if it's not already in the cache
 
-    optional arguments:
+    options:
       -h, --help  show this help message and exit
+
+Options for subcommand `cache` (`avocado cache --help`)::
+
+    positional arguments:
+      {list,clear}
+        list        List metadata in avocado cache
+        clear       Clear avocado cache, you can specify which part of cache will be
+                    removed.
+
+    options:
+      -h, --help    show this help message and exit
 
 RUNNING A TEST
 ==============
@@ -408,6 +414,7 @@ test directories. The output should be similar to::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
+     (1/1) sleeptest.py:SleepTest.test: STARTED
      (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.11 s
@@ -491,56 +498,51 @@ the contents of the test location being used by avocado (if you are in
 doubt about which one is that, you may use `avocado config --datadir`).
 The output looks like::
 
-    $ avocado list
-    INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gendata.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/linuxbuild.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/multiplextest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/skiptest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptenmin.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/synctest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/warntest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/whiteboard.py
+    $ avocado list examples/tests
+    avocado-instrumented examples/tests/abort.py:AbortTest.test
+    avocado-instrumented examples/tests/assert.py:Assert.test_assert_raises
+    avocado-instrumented examples/tests/assert.py:Assert.test_fails_to_raise
+    avocado-instrumented examples/tests/assets.py:Hello.test_gpg_signature
+    avocado-instrumented examples/tests/assets.py:Hello.test_build_run
+    avocado-instrumented examples/tests/cabort.py:CAbort.test
+    avocado-instrumented examples/tests/cancel_on_exception.py:CancelOnException.test
+    ...
 
-Here, `INSTRUMENTED` means that the files there are python files with an
-avocado test class in them, therefore, that they are what we call
-instrumented tests. This means those tests can use all avocado APIs and
-facilities. Let's try to list a directory with a bunch of executable
-shell scripts::
+Here, `avocado-instrumented` means that the files there are Python
+files with an Avocado test class in them, therefore, that they are
+what we call instrumented tests. This means those tests can use all
+Avocado APIs and facilities. Let's try to list some executable shell
+scripts::
 
-    $ avocado list examples/wrappers/
-    SIMPLE examples/wrappers/bind_cpu0.sh
-    SIMPLE examples/wrappers/dummy.sh
-    SIMPLE examples/wrappers/ltrace.sh
-    SIMPLE examples/wrappers/perf.sh
-    SIMPLE examples/wrappers/rr.sh
-    SIMPLE examples/wrappers/strace.sh
-    SIMPLE examples/wrappers/time.sh
-    SIMPLE examples/wrappers/valgrind.sh
+    $ avocado list examples/tests/*sh
+    exec-test examples/tests/custom_env_variable.sh
+    exec-test examples/tests/env_variables.sh
+    exec-test examples/tests/failtest.sh
+    exec-test examples/tests/passtest.sh
+    exec-test examples/tests/simplewarning.sh
+    exec-test examples/tests/sleeptest.sh
+    exec-test examples/tests/use_data.sh
 
-Here, `SIMPLE` means that those files are executables, that avocado will
+Here, `exec-test` means that those files are executables, that avocado will
 simply execute and return PASS or FAIL depending on their return codes
-(PASS -> 0, FAIL -> any integer different than 0). You can also provide
-the `--verbose`, or `-V` flag to display files that were detected but
+(PASS -> 0, FAIL -> any integer different than 0).  Not every single file
+will be resolved as a valid test::files that were detected but
 are not avocado tests, along with summary information::
 
-    $ avocado -V list examples/gdb-prerun-scripts/
-    Type       Test                                     Tag(s)
-    NOT_A_TEST examples/gdb-prerun-scripts/README
-    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
+    $ avocado list examples/gdb-prerun-scripts/ | wc -l
+    0
 
-    TEST TYPES SUMMARY
-    ==================
-    not_a_test: 2
+You can also provide the `--verbose`, or `-V` flag to display the test
+resolution details::
+
+    $ avocado -V list null
+    ...
+    Resolver             Reference Info
+    avocado-instrumented null      File "null" does not end with ".py"
+    python-unittest      null      File "null" does not end with ".py"
+    exec-test            null      File "null" does not exist or is not a executable file
+    tap                  null      File "null" does not exist or is not a executable file
+    ...
 
 That summarizes the basic commands you should be using more frequently
 when you start with avocado. Let's talk now about how avocado stores
@@ -549,7 +551,8 @@ test results.
 EXPLORING RESULTS
 =================
 
-When `avocado` runs tests, it saves all its results on your system::
+When `avocado run` runs tests in a job, it saves all its results on
+your system::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
@@ -559,6 +562,7 @@ For your convenience, `avocado` maintains a link to the latest job run
 `"latest"` to browse your test results::
 
     $ ls /home/user/avocado/job-results/latest
+    full.log
     id
     jobdata
     job.log
@@ -573,15 +577,19 @@ The main log file is `job.log`, but every test has its own results
 directory::
 
     $ ls -1 ~/avocado/job-results/latest/test-results/
-    1-sleeptest.py:SleepTest.test
+    1-sleeptest.py_SleepTest.test
+    by-status
+
+The `by-status` directory allows you to browse tests by their outcome,
+that is, you can see all test results which ended up in failures by
+listing the contents of `by-status/FAIL` and all success by listing
+the contents of `by-status/PASS` and so on.
 
 Since this is a directory, it should have content similar to::
 
-    $ ls -1 ~/avocado/job-results/latest/test-results/1-sleeptest.py\:SleepTest.test/
+    $ ls -1 ~/avocado/job-results/latest/test-results/1-sleeptest.py_SleepTest.test/
     data
     debug.log
-    stderr
-    stdout
     whiteboard
 
 MULTIPLEX FILE
@@ -615,9 +623,13 @@ And the output should look like::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
+     (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: STARTED
      (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: PASS (0.50 s)
+     (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: STARTED
      (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: PASS (1.01 s)
+     (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: STARTED
      (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: PASS (5.01 s)
+     (4/4) examples/tests/sleeptest.py:SleepTest.test;run-longest-efc4: STARTED
      (4/4) examples/tests/sleeptest.py:SleepTest.test;run-longest-efc4: PASS (10.01 s)
     RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 16.65 s
@@ -666,78 +678,6 @@ variants. If no matches are found, then it would proceed to ``/qa/*``
 
 Keep in mind that only slices defined in mux-path are taken into account
 for relative paths (the ones starting with ``*``).
-
-
-WRAP EXECUTABLE RUN BY TESTS
-============================
-
-Avocado allows the instrumentation of executables being run by a test
-in a transparent way. The user specifies a script ("the wrapper") to be
-used to run the actual program called by the test.
-
-If the instrumentation script is implemented correctly, it should not
-interfere with the test behavior. That is, the wrapper should avoid
-changing the return status, standard output and standard error messages
-of the original executable.
-
-The user can be specific about which program to wrap (with a shell-like
-glob), or if that is omitted, a global wrapper that will apply to all
-programs called by the test.
-
-So, for every executable run by the test, the program name will be
-compared to the pattern to decide whether to wrap it or not. You can
-have multiples wrappers and patterns defined.
-
-Examples::
-
-    $ avocado run examples/tests/datadir.py --wrapper examples/wrappers/strace.sh
-
-Any command created by the test datadir will be wrapped on
-``strace.sh``. ::
-
-    $ avocado run examples/tests/datadir.py \
-            --wrapper examples/wrappers/ltrace.sh:*make \
-            --wrapper examples/wrappers/perf.sh:*datadir
-
-Any command that matches the pattern `*make` will be wrapper on
-``ltrace.sh`` and the pattern ``*datadir`` will trigger the execution of
-``perf.sh``.
-
-LINUX DISTRIBUTION UTILITIES
-============================
-
-Avocado has some planned features that depend on knowing the Linux
-Distribution being used on the system. The most basic command prints the
-detected Linux Distribution::
-
-    $ avocado distro
-    Detected distribution: fedora (x86_64) version 21 release 0
-
-Other features are available with the same command when command line
-options are given, as shown by the `--help` option.
-
-For instance, it possible to create a so-called "Linux Distribution
-Definition" file, by inspecting an installation tree. The installation
-tree could be the contents of the official installation ISO or a local
-network mirror.
-
-These files let Avocado pinpoint if a given installed package is part of
-the original Linux Distribution or something else that was installed
-from an external repository or even manually. This, in turn, can help
-detecting regressions in base system packages that affected a given test
-result.
-
-To generate a definition file run::
-
-    $ avocado distro --distro-def-create --distro-def-name avocadix  \
-                     --distro-def-version 1 --distro-def-arch x86_64 \
-                     --distro-def-type rpm --distro-def-path /mnt/dvd
-
-And the output will be something like::
-
-    Loading distro information from tree... Please wait...
-    Distro information saved to "avocadix-1-x86_64.distro"
-
 
 FILES
 =====

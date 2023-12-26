@@ -41,7 +41,7 @@ def register_core_options():
         section="core",
         key="show",
         key_type=lambda x: set(x.split(",")),
-        metavar="STREAM[:LVL]",
+        metavar="STREAM[:LEVEL]",
         nargs="?",
         default=set(["app"]),
         help_msg=help_msg,
