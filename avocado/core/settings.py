@@ -261,7 +261,7 @@ class ConfigOption:
         self.positional_arg = positional_arg
         self.choices = choices
         self.nargs = nargs
-        self._metavar = metavar
+        self._metavar = metavar or self._metavar
         self.required = required
         self._action = action
         self._argparse_type = argparse_type
