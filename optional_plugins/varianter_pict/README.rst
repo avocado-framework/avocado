@@ -28,6 +28,10 @@ is not as convenient as having it on your ``$PATH``.
 Using the PICT Varianter Plugin
 -------------------------------
 
+To install the Avocado PICT plugin from pip, use::
+
+    $ sudo pip install avocado-framework-plugin-varianter-pict
+
 To run the example below, use the test included in the avocado code ::
 
     $ git clone https://github.com/avocado-framework/avocado.git
