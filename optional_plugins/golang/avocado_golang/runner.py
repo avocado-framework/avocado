@@ -67,7 +67,6 @@ class GolangRunner(BaseRunner):
         def poll_proc():
             return process.poll() is not None
 
-        yield self.prepare_status("started")
         yield from self.running_loop(poll_proc)
 
         result = "pass" if process.returncode == 0 else "fail"
