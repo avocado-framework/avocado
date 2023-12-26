@@ -414,6 +414,7 @@ test directories. The output should be similar to::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
+     (1/1) sleeptest.py:SleepTest.test: STARTED
      (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.11 s
@@ -497,56 +498,51 @@ the contents of the test location being used by avocado (if you are in
 doubt about which one is that, you may use `avocado config --datadir`).
 The output looks like::
 
-    $ avocado list
-    INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gendata.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/linuxbuild.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/multiplextest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/skiptest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptenmin.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/synctest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/warntest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/whiteboard.py
+    $ avocado list examples/tests
+    avocado-instrumented examples/tests/abort.py:AbortTest.test
+    avocado-instrumented examples/tests/assert.py:Assert.test_assert_raises
+    avocado-instrumented examples/tests/assert.py:Assert.test_fails_to_raise
+    avocado-instrumented examples/tests/assets.py:Hello.test_gpg_signature
+    avocado-instrumented examples/tests/assets.py:Hello.test_build_run
+    avocado-instrumented examples/tests/cabort.py:CAbort.test
+    avocado-instrumented examples/tests/cancel_on_exception.py:CancelOnException.test
+    ...
 
-Here, `INSTRUMENTED` means that the files there are python files with an
-avocado test class in them, therefore, that they are what we call
-instrumented tests. This means those tests can use all avocado APIs and
-facilities. Let's try to list a directory with a bunch of executable
-shell scripts::
+Here, `avocado-instrumented` means that the files there are Python
+files with an Avocado test class in them, therefore, that they are
+what we call instrumented tests. This means those tests can use all
+Avocado APIs and facilities. Let's try to list some executable shell
+scripts::
 
-    $ avocado list examples/wrappers/
-    SIMPLE examples/wrappers/bind_cpu0.sh
-    SIMPLE examples/wrappers/dummy.sh
-    SIMPLE examples/wrappers/ltrace.sh
-    SIMPLE examples/wrappers/perf.sh
-    SIMPLE examples/wrappers/rr.sh
-    SIMPLE examples/wrappers/strace.sh
-    SIMPLE examples/wrappers/time.sh
-    SIMPLE examples/wrappers/valgrind.sh
+    $ avocado list examples/tests/*sh
+    exec-test examples/tests/custom_env_variable.sh
+    exec-test examples/tests/env_variables.sh
+    exec-test examples/tests/failtest.sh
+    exec-test examples/tests/passtest.sh
+    exec-test examples/tests/simplewarning.sh
+    exec-test examples/tests/sleeptest.sh
+    exec-test examples/tests/use_data.sh
 
-Here, `SIMPLE` means that those files are executables, that avocado will
+Here, `exec-test` means that those files are executables, that avocado will
 simply execute and return PASS or FAIL depending on their return codes
-(PASS -> 0, FAIL -> any integer different than 0). You can also provide
-the `--verbose`, or `-V` flag to display files that were detected but
+(PASS -> 0, FAIL -> any integer different than 0).  Not every single file
+will be resolved as a valid test::files that were detected but
 are not avocado tests, along with summary information::
 
-    $ avocado -V list examples/gdb-prerun-scripts/
-    Type       Test                                     Tag(s)
-    NOT_A_TEST examples/gdb-prerun-scripts/README
-    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
+    $ avocado list examples/gdb-prerun-scripts/ | wc -l
+    0
 
-    TEST TYPES SUMMARY
-    ==================
-    not_a_test: 2
+You can also provide the `--verbose`, or `-V` flag to display the test
+resolution details::
+
+    $ avocado -V list null
+    ...
+    Resolver             Reference Info
+    avocado-instrumented null      File "null" does not end with ".py"
+    python-unittest      null      File "null" does not end with ".py"
+    exec-test            null      File "null" does not exist or is not a executable file
+    tap                  null      File "null" does not exist or is not a executable file
+    ...
 
 That summarizes the basic commands you should be using more frequently
 when you start with avocado. Let's talk now about how avocado stores
@@ -555,7 +551,8 @@ test results.
 EXPLORING RESULTS
 =================
 
-When `avocado` runs tests, it saves all its results on your system::
+When `avocado run` runs tests in a job, it saves all its results on
+your system::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
@@ -565,6 +562,7 @@ For your convenience, `avocado` maintains a link to the latest job run
 `"latest"` to browse your test results::
 
     $ ls /home/user/avocado/job-results/latest
+    full.log
     id
     jobdata
     job.log
@@ -579,15 +577,19 @@ The main log file is `job.log`, but every test has its own results
 directory::
 
     $ ls -1 ~/avocado/job-results/latest/test-results/
-    1-sleeptest.py:SleepTest.test
+    1-sleeptest.py_SleepTest.test
+    by-status
+
+The `by-status` directory allows you to browse tests by their outcome,
+that is, you can see all test results which ended up in failures by
+listing the contents of `by-status/FAIL` and all success by listing
+the contents of `by-status/PASS` and so on.
 
 Since this is a directory, it should have content similar to::
 
-    $ ls -1 ~/avocado/job-results/latest/test-results/1-sleeptest.py\:SleepTest.test/
+    $ ls -1 ~/avocado/job-results/latest/test-results/1-sleeptest.py_SleepTest.test/
     data
     debug.log
-    stderr
-    stdout
     whiteboard
 
 MULTIPLEX FILE
@@ -621,9 +623,13 @@ And the output should look like::
 
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
+     (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: STARTED
      (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: PASS (0.50 s)
+     (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: STARTED
      (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: PASS (1.01 s)
+     (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: STARTED
      (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: PASS (5.01 s)
+     (4/4) examples/tests/sleeptest.py:SleepTest.test;run-longest-efc4: STARTED
      (4/4) examples/tests/sleeptest.py:SleepTest.test;run-longest-efc4: PASS (10.01 s)
     RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 16.65 s
