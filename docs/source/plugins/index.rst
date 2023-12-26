@@ -15,6 +15,7 @@ Please note that this is not a fully comprehensive list.
 .. toctree::
    :maxdepth: 3
 
+   standard/distro
    standard/teststmpdir
 
 ================
