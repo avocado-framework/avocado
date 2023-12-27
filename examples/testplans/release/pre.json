@@ -7,9 +7,6 @@
         {"name": "Check status of master branch",
          "description": "Navigate to:\n\n   https://github.com/avocado-framework/avocado#build-and-quality-status\n\nand make sure that all build and quality services report good indicators"},
 
-        {"name": "Set the readthedocs.org token and check it",
-        "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org: Run locally selftests/pre_release/tests/readthedocs.py and make sure it is passing."},
-
         {"name": "Run GitHub Action 'Pre-release tests'",
          "description": "Run the GitHub Action 'Pre-release tests' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/prerelease.yml and check all the tests pass. Make at least a quick visual check to the logs."},
 
