@@ -245,10 +245,6 @@ Build and Quality Status
    :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
    :alt: Copr build
 
-.. image:: https://api.cirrus-ci.com/github/avocado-framework/avocado.svg
-   :target: https://cirrus-ci.com/github/avocado-framework/avocado
-   :alt: Basic checks on Cirrus CI
-
 .. image:: https://api.codeclimate.com/v1/badges/03f506164e1d19f95480/maintainability
    :target: https://codeclimate.com/github/avocado-framework/avocado/maintainability
    :alt: Code Climate Maintainability
