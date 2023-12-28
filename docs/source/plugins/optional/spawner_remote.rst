@@ -1,0 +1,1 @@
+../../../../optional_plugins/spawner_remote/README.rst

@@ -35,3 +35,4 @@ Some of these plugins may have extra dependencies of their own.
    optional/results/index
    optional/robot
    optional/varianters/index
+   optional/spawner_remote
