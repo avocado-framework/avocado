@@ -49,15 +49,6 @@ It uses Avocado in its `ftest
 <https://github.com/daos-stack/daos/blob/master/src/tests/ftest/avocado_tests.py>`__
 test suite.
 
-Falco
-~~~~~
-
-`Falco <https://falco.org/>`__, the cloud-native runtime security
-project, is the de facto Kubernetes threat detection engine.
-
-It uses Avocado in its `regression test suite
-<https://github.com/falcosecurity/falco/tree/master/test#falco-regression-tests>`__.
-
 RUDDER
 ~~~~~~
 

@@ -50,12 +50,14 @@ distro: !mux
     !filter-out : /run/architectures/ppc
     !filter-out : /run/architectures/ppc64
     version: !mux
-      34:
-        version: 34
-      35:
-        version: 35
       36:
         version: 36
+      37:
+        version: 37
+      38:
+        version: 38
+      39:
+        version: 39
   ubuntu:
     name: ubuntu
     !filter-out : /run/architectures/arm
