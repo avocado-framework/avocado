@@ -87,8 +87,8 @@ class RunnerInit(Init):
             "URI for connecting to the status server, usually "
             'a "HOST:PORT" string. Use this if your status server '
             "is in another host, or different port. This is only "
-            'effective if "status_server_auto" is disabled'
-            'If "status_server_listen" is not set. Value from "status_server_uri" '
+            'effective if "status_server_auto" is disabled. '
+            'If "status_server_listen" is not set, the value from "status_server_uri" '
             "will be used."
         )
         settings.register_option(
