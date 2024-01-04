@@ -1,0 +1,164 @@
+========================
+103.0 - Sound of Freedom
+========================
+
+The Avocado team is proud to present another release: Avocado 103.0,
+AKA "Sound of Freedom", is now available!
+
+Release documentation: `Avocado 103.0
+<http://avocado-framework.readthedocs.io/en/103.0/>`_
+
+Users/Test Writers
+==================
+
+* The remote spawner is a new optional plugin that makes use of remote
+  `aexpect <https://github.com/avocado-framework/aexpect/>`__ sessions
+  (to remote hosts or equivalently remote containers behind remote hosts
+  forwarded via specific ports) as slots to schedule test runs on.
+
+* The format of test log messages have been reverted to more closely
+  match previous LTS (92.x) format like line number and Python module
+  name (see `#5721
+  <https://github.com/avocado-framework/avocado/issues/5721>`__).
+
+* The ``avocado-instrumented`` runner used to have an internal timeout
+  of 24 hours that users might not have intended to use or respect.
+  This internal timeout has been removed and configuration such as
+  ``task.timeout.running`` or ``--job-timeout`` are the timeout users
+  should worry about (see `#5394
+  <https://github.com/avocado-framework/avocado/issues/5394>`__).
+
+* The ``json`` result file now contains the actual start and end time
+  of tests in a format based on :func:`time.time` (see `#5768
+  <https://github.com/avocado-framework/avocado/pull/5768>`__).
+
+* The ``avocado jobs list`` command now presents a sorted list of jobs
+  based on the modification of the results file (see `#5762
+  <https://github.com/avocado-framework/avocado/pull/5762/commits/a956ff05ad18cec8fad88401a51d95a9da4a1462>`__).
+
+* If the status server is manually configured (that is,
+  ``--status-server-disable-auto`` is set), and either the URI
+  (``--status-server-uri`` or the listen address is given
+  (``--status-server-listen``) the other will automatically be set to
+  the same value for convenience (see `#5748
+  <https://github.com/avocado-framework/avocado/pull/5748>`__).
+
+* Python 3.12 is now formally supported (see `#5789
+  <https://github.com/avocado-framework/avocado/pull/5789>`__).
+
+* Resolvers can now choose to report a resolution result of type
+  :data:`avocado.core.resolver.ReferenceResolutionResult.CORRUPT`, which
+  can be used when the reference seems to be accurate to the resolver in
+  question, but something is broken in the resolved entity (such as a
+  corrupt test file. See `#5710
+  <https://github.com/avocado-framework/avocado/issues/5710>`__).
+
+* When running ``avocado-instrumented`` tests with a ``timeout``
+  defined, it's possible to set a ``timeout_factor`` parameter that
+  will either extend or shorten the actual timeout for that execution
+  (see `#5820
+  <https://github.com/avocado-framework/avocado/issues/5820>`__).
+
+Utility Modules
+===============
+
+* The :meth:`avocado.utils.ssh.Session.cmd` now supports setting a
+  ``timeout`` for the command execution (see `#5775
+  <https://github.com/avocado-framework/avocado/issues/5775>`__).
+
+* The :mod:`avocado.utils.distro` module added specific detection for
+  CentOS Stream (see `#5667
+  <https://github.com/avocado-framework/avocado/issues/5667>`__).
+
+* The :mod:`avocado.utils.distro` module improved detection for
+  Amazon Linux (see `#5668
+  <https://github.com/avocado-framework/avocado/issues/5668>`__).
+
+Bug Fixes
+=========
+
+* The loader for ``avocado-instrumented`` tests could end up using the
+  wrong Python module if a module of the same name existed elsewhere
+  in the import path.  Now, the actual path of the Python file
+  containing the test (given in the ``modulePath`` parameter) is used
+  explicitly by the Python module importer (see `#5686
+  <https://github.com/avocado-framework/avocado/issues/5686>`__).
+
+* When :ref:`dependencies <managing-requirements>` are not fulfilled,
+  test results would be missing, instead of being clearly shown as
+  ``CANCEL`` (see `#5667
+  <https://github.com/avocado-framework/avocado/issues/5667>`__).
+
+* :func:`avocado.utils.path.init_dir` would raise
+  :class:`FileExistsError` if the directory already existed, usually
+  causing crashes on its users (see `#5746
+  <https://github.com/avocado-framework/avocado/pull/5746>`__).
+
+* The :ref:`whiteboard <saving-test-generated-custom-data>` file was
+  being created with duplicate content because of the legacy runner
+  implementation, which is now removed (see `#5770
+  <https://github.com/avocado-framework/avocado/issues/5770>`__).
+
+* The ``avocado jobs show`` command now presents the correct time
+  tests have ended (see `#5762
+  <https://github.com/avocado-framework/avocado/pull/5762/commits/b7ec30e69b2a51f97eb97ee445b12997366b5652>`__).
+
+* The :func:`avocado.utils.download.url_open` function used to
+  misleadingly says that a URL had been retrieved at a stage where
+  only a response was obtained.  It now presents an accurate message
+  (see `#5742
+  <https://github.com/avocado-framework/avocado/issues/5742>`__).
+
+* The Podman Spawner had a race condition where the state of the
+  container (and thus the task) would not take into account the
+  transition from "created" to "running" (see `#5783
+  <https://github.com/avocado-framework/avocado/pull/5783>`__).
+
+* Avocado has re-enabled ``stdout`` and ``stderr`` files for
+  ``avocado-instrumented`` files (see `#5779
+  <https://github.com/avocado-framework/avocado/issues/5779>`__).
+
+* The Spawner interface and implementations now properly checks if the
+  termination of a task was successful or not.  The statemachine uses
+  that information to let users know of situations where a task could
+  not be terminated (see `#5788
+  <https://github.com/avocado-framework/avocado/pull/5788>`__).
+
+* The ``tearDown()`` of ``avocado-instrumented`` now gets called
+  properly if a test times out (see `#5795
+  <https://github.com/avocado-framework/avocado/pull/5795>`__).
+
+* The Process Spawner now properly handles a situation where, during
+  the termination of a task, the process itself finishes before the
+  spawner has the chance to do so (see `#5805
+  <https://github.com/avocado-framework/avocado/pull/5805>`__).
+
+* When interrupting ``avocado-instrumented`` tests, the ``tearDown()``
+  will be called to allow for cleanups.  If an error occurred during
+  the execution of ``tearDown()`` the status of the test would change
+  to ``ERROR`` (instead of keeping its original ``INTERRUPT`` status
+  (see `#5801
+  <https://github.com/avocado-framework/avocado/issues/5801>`__).
+
+* The HTML result plugin was not properly filtering tests based on
+  their status (see `#5828
+  <https://github.com/avocado-framework/avocado/issues/5828>`__).
+
+* The ``testlogs`` plugin was not showing tests with all "not ok"
+  statuses and was showing test names instead of test IDs which are
+  unique in a suite (see `#5827
+  <https://github.com/avocado-framework/avocado/issues/5827>`__).
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/102.0...103.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/29?closed=1>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt7599146>`_.
