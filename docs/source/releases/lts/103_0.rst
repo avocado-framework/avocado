@@ -1,0 +1,571 @@
+.. _lts_103_0:
+
+=========
+103.0 LTS
+=========
+
+The Avocado team is proud to present another LTS (Long Term Stability)
+release: Avocado 103.0, AKA "Sound of Freedom", is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Important Announcement
+======================
+
+Since the previous LTS version (92.0), Avocado has removed the
+legacy runner implementation (internally simply called ``runner``).
+While the ``runner`` implementation is not the default on version 92.x
+(``nrunner`` is the default) it was still available as an option.  Now
+``nrunner`` is the only available runner implementation shipped by
+default.
+
+**Users migrating from Avocado 92.x and using the legacy runner will
+be impacted by this change and should act accordingly.**
+
+If your Avocado configuration file has a ``[run]`` section with
+``test_runner`` set to ``runner``, please keep in mind that:
+
+* The ``runner`` implementation no longer exists
+* The ``test_runner`` was renamed to ``suite_runner`` (along with the
+  rename of the command line option ``--test-runner`` to
+  ``--suite-runner``).  This is only relevant if you have a custom
+  runner and want to use it.
+
+While most of the functionality of the legacy runner is available
+under the new runner implementation (``nrunner``) there are some
+differences and even missing features.  `Known nrunner issues
+<https://github.com/avocado-framework/avocado/issues?q=is%3Aopen+is%3Aissue+label%3Anrunner>`__
+are being tracked on our GitHub project page, with the ``nrunner``
+tag, and new issue reports are appreciated.
+
+Upgrading from 92.x to 103.0
+============================
+
+Upgrading Installations
+-----------------------
+
+Avocado is available on a number of different repositories and
+installation methods. You can find the complete details
+:ref:`here <installing>`.
+
+After looking at your installation options, please consider the
+following when planning an in-place upgrade or a deployment version
+bump:
+
+* When using Python's own package management, that is, ``pip``, simply
+  choose a version lower to the *next* Avocado release to benefit from
+  minor releases (bugfixes) in this LTS series.  In short,
+  ``avocado-framework<104.0`` will get you the latest release of this
+  LTS series.
+
+* When using RPM packages on Linux distributions, check if there's a
+  particular repository that provides LTS packages only.  On
+  distributions that provide "modules", you may find a ``103lts``
+  stream.  If no modules are available, use your package manager tools
+  (such as DNF's versionlock plugin) to pin the installation to the
+  92.x versions.
+
+Porting Tests
+-------------
+
+Depending on the test type (say, ``avocado-instrumented`` or
+``exec-test``), test writers will have to observe different aspects of
+the changes since 92.0 LTS.  This section deals primarily with
+``avocado-instrumented`` tests.
+
+To be considered an ``avocado-instrumented`` test, the test is based
+on the :class:`avocado.test.Test <avocado.core.test.Test>` class.  The
+API available in that class is called the "Test API".  It's also
+common, but not mandatory, for such tests to leverage the modules
+under the ``avocado.utils`` namespace, collectively known as the
+Utility APIs.
+
+With that in mind, the two sections below describe issues you should
+consider when moving your tests from Avocado 92.X LTS to 103.0 LTS.
+
+Test API compatibility
+~~~~~~~~~~~~~~~~~~~~~~
+
+Fortunately, there have been no changes in the public Test API since
+92.0 LTS that should impact tests.
+
+If you're interested in knowing about all the internal implementation
+changes, though, feel free to inspect them with a command such as::
+
+  $ git diff 92.0..103.0 -- avocado/core/test.py
+  $ git log 92.0..103.0 -- avocado/core/test.py
+
+Utility API compatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The changes in the utility APIs (those that live under the
+``avocado.utils`` namespace) are too many to present porting
+suggestions.  Please refer to the :ref:`lts_103_0_utility_apis` section
+for a comprehensive list of changes, including new features your test
+may be able to leverage.
+
+Changes from previous LTS
+=========================
+
+.. note:: This is not a collection of all changes encompassing all releases
+          from 92.0 to 103.0.  This list contains changes that are relevant
+          to users of 92.0, when evaluating an upgrade to 103.0.
+
+When compared to the last LTS (version 92.0), the main changes
+introduced by this versions are:
+
+Users / Test Writers
+--------------------
+
+* Python 3.10, 3.11 and 3.12 are formally supported (along with 3.7,
+  3.8 and 3.9)
+
+* Command line options prefixed with ``--nrunner-`` had this prefix
+  removed. A command line option such as ``--nrunner-spawner`` is now
+  simply ``--spawner``. The matching configuration options such as
+  ``nrunner.something`` became ``run.something``. This is due to the
+  fact that ``nrunner`` is now the only runner implementation offered
+  by default, so the differentiation and extra typing seems
+  unnecessary. If other runners are added in the future (or by custom,
+  out of tree, plugins) they can choose to respect the existing
+  options if they apply.
+
+* A contrib script that provides the features of the legacy
+  ``--external-runner`` feature has been added. It’s built on the Job
+  API and ``nrunner`` architecture.
+
+* There were major changes to the Avocado logging behavior, most of
+  them to address feedback from users since the previous logging
+  changes:
+
+ 1. The root logger handler was restored. This enables all loggers out
+    of ``avocado.*`` namespace by default. If a test, either directly or
+    indirectly through 3rd party libraries, logs into any namespace
+    (say ``logging.getLogger('my-library')``) it will show up in the
+    Avocado’s test logs.
+ 2. The job.log file continues to contain logs for the avocado.job
+    namespace, but a new file called ``full.log`` contains all
+    generated logs for a job, including logs from all tests.
+
+* The ``runner.output.utf8`` and ``core.input_encoding`` were settings
+  were removed, and now default to the system’s setting (by using
+  :func:`sys.getdefaultencoding`).
+
+* Test results files (in a job’s result directory) can now be accessed
+  by their result status. For instance, assuming the latest job
+  results are stored in ``~/avocado/job-results/latest`` (the default
+  location), users can find the results for tests that ended in ``FAIL``
+  at ``~/avocado/job-results/latest/test-results/by-status/FAIL.``
+
+* Avocado will now print at the end of the job a more descriptive list
+  of tests that finished with :data:`"not OK"
+  <avocado.core.teststatus.STATUSES_NOT_OK>` statuses.
+
+* The ``avocado jobs get-output-files`` command was removed. Its
+  original intended purpose has not been relevant for some time, and
+  the preservation of output files are already handled directly by all
+  spawner implementations.
+
+* The Avocado Resolver now allows tests that are implemented in files
+  (by far the most common scenario) and that may also access test data
+  files (see :ref:`accessing-test-data-files`) to pass that
+  information along to spawners. The effect of that is that when
+  running such tests on “remote” spawner environments (such as
+  “podman”) the test file and the data files can be made available in
+  the remote environment. This is currently enabled in
+  ``avocado-instrumented``, ``python-unittest``, ``exec-test`` and
+  ``tap`` tests.
+
+* User of macOS will have a better experience when using Avocado. The
+  full set of Avocado’s selftests are now run under macOS
+  on CI. Please be advised that macOS is not currently supported at
+  the same level of Linux-based operating systems due to the lack of
+  contributors/maintainers with access to the needed hardware. If you
+  are a user/developer and are willing to contribute to this, please
+  let the Avocado team know.
+
+* :ref:`sysinfo-collection` is now fully supported in ``nrunner``,
+  including per-test collection of system information.
+
+* New plugin interfaces, :class:`PreTest
+  <avocado.core.plugin_interfaces.PreTest>` and :class:`PostTest
+  <avocado.core.plugin_interfaces.PostTest>`, allow actions to be
+  executed right before or after the execution of a test, in the same
+  spawner environment as the test itself.
+
+* Plugins can now have a builtin priority in relation to other plugins
+  of the same type that will affect its :ref:`execution order
+  <plugins_execution_order>`.  This is in addition to the configurable
+  ``plugins.$type.order`` settings.
+
+* The ``dict_variants`` plugin now allows the configuration of the
+  keys that will determine the variant ID.
+
+* Environment variables such as ``AVOCADO_VERSION`` ,
+  ``AVOCADO_TEST_WORKDIR``, ``AVOCADO_TEST_BASEDIR``,
+  ``AVOCADO_TEST_LOGDIR`` and ``AVOCADO_TEST_LOGFILE`` are now made
+  available to ``exec-test``.
+
+* Result plugins such as ``json`` and ``xunit`` now contain more
+  accurate values reflecting Avocado’s concepts of a test’s ID and
+  name.
+
+* The ``xunit`` (AKA ``junit``) result file now contains the class,
+  test’s file names and better error information for test cases.
+
+* The ``xunit`` and ``json`` result files now contain the test variant
+  information.
+
+* Avocado's :ref:`requirement management <managing-requirements>`
+  has been extended in a number of ways detailed below.  In short,
+  Avocado is now able to install requirements declared for a test in
+  an isolated container if the ``--nrunner-spawner=podman`` is chosen
+  (with a base image defined by ``--spawner-podman-image``).  That
+  container image with the requirements fulfilled will only be built
+  once, but a fresh environment will be used for every single test
+  execution.
+
+  * All requirements fulfilled will be recorded in a "cache database"
+    so they will only need to be fulfilled once
+
+  * Transparent support for the all spawners.  This means that users
+    of the podman spawner will have their requirements checked and
+    fulfilled on the container image of their choice.  As stated
+    previously, that information will be kept in a requirement cache
+    database.  The container images will be available for super fast
+    reuse after the first execution.
+
+* A new type of plugin, ``Cache``, has been introduced and is
+  responsible for manipulating with cache, and it's representation
+  through the Avocado interface. It is currently implemented for
+  the ``vmimage`` and ``requirements`` cache.
+
+* Asset cache checksum can now use multiple hash algorithms. The
+  ability to store multiple hashes, created by different algorithm to
+  the cache ``CHECKSUM`` file was added. This is useful when different
+  tests refer to the same asset, but use different hash algorithms.
+
+* Ansible modules can now be used as dependencies. For instance,
+  instead of asking test writers to write code to, say, create user
+  accounts that will be used during a test, a developer can simply use
+  ansible’s `user
+  <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html>`__
+  module.  Likewise, if a test needs a service installed or up and
+  running: instead of writing all that code, the test writer can
+  describe that dependency using the `service
+  <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/service_module.html>`__
+  ansible module.
+
+* By setting the ``spawner.podman.avocado_spawner_egg`` configuration
+  users can now control the exact Avocado package that will be
+  automatically deployed within Podman containers.
+
+* When using the podman spawner, if the test URI looks like a
+  filesystem path, it will be exposed read only to the container. This
+  makes running Avocado tests inside containers transparent in many
+  cases.
+
+* A Podman image can now be treated as a dependency. This is currently
+  mostly useful to tests that will manually create containers, but
+  it’s expected to also be leveraged by the podman spawner and suite
+  and job level dependencies in the near future.
+
+* :class:`avocado.core.nrunner.runnable.Runnable` instances will now,
+  under some circumstances, automatically include the current
+  environment’s relevant and required configuration. This makes
+  standalone executions of ``avocado-runner-*`` commands easier, while
+  previously it would require manually entering all required
+  configuration.
+
+* The ``--failfast`` feature now acts on any :data:`"not OK"
+  <avocado.core.teststatus.STATUSES_NOT_OK>` result.  Previously, it
+  would only act (that is, abort the job) upon a ``FAIL`` test result.
+
+* Test writers can now access a test’s status while the
+  :meth:`avocado.core.test.Test.tearDown` method is being run.
+
+* Support was added for ``Coverage.py`` when running
+  ``avocado-instrumented`` tests (currently limited to the
+  process spawner).
+
+* A results plugin for `Beaker <https://beaker-project.org>`_ is
+  now available and works out of the box without any manual
+  configuration needed.
+
+* The task identifiers can now be configured as a format string that
+  utilizes the attributes of the runnable. This allows users to define
+  how test results will be named and presented.
+
+* When using the Job API, test suites can be enabled or
+  disabled. Having a disabled test suite means it won’t be
+  executed. This eases the creation of custom jobs where the user can
+  choose to run a subset of suites.
+
+* The remote spawner is a new optional plugin that makes use of remote
+  `aexpect <https://github.com/avocado-framework/aexpect/>`__ sessions
+  (to remote hosts or equivalently remote containers behind remote hosts
+  forwarded via specific ports) as slots to schedule test runs on.
+
+* The ``avocado-instrumented`` runner used to have an internal timeout
+  of 24 hours that users might not have intended to use or respect.
+  This internal timeout has been removed and configuration such as
+  ``task.timeout.running`` or ``--job-timeout`` are the timeout users
+  should worry about.
+
+* The ``json`` result file now contains the actual start and end time
+  of tests in a format based on :func:`time.time`.
+
+* The ``avocado jobs list`` command now presents a sorted list of jobs
+  based on the modification of the results file.
+
+* If the status server is manually configured (that is,
+  ``--status-server-disable-auto`` is set), and either the URI
+  (``--status-server-uri`` or the listen address is given
+  (``--status-server-listen``) the other will automatically be set to
+  the same value for convenience.
+
+* Resolvers can now choose to report a resolution result of type
+  :data:`avocado.core.resolver.ReferenceResolutionResult.CORRUPT`, which
+  can be used when the reference seems to be accurate to the resolver in
+  question, but something is broken in the resolved entity (such as a
+  corrupt test file.
+
+* When running ``avocado-instrumented`` tests with a ``timeout``
+  defined, it's possible to set a ``timeout_factor`` parameter that
+  will either extend or shorten the actual timeout for that execution.
+
+Bug Fixes
+---------
+
+* Avocado now presents the correct message when it’s interrupted with
+  a ``CTRL+C`` (AKA ``SIGNINT``, AKA :class:`KeyboardInterrupt`).
+
+* The ``fetchasset`` plugin would fail when parsing some Python test
+  files (in search of assets) and would produce a hard to follow error
+  message (``AttributeError: 'Subscript' object has no attribute 'id'``).
+
+* A runnable’s variant (and thus parameters) information was not being
+  respected when using the Job API.
+
+* Test parameters given with the command line argument ``-p`` are now
+  internally converted into variants values. This fixes the issue with
+  those parameters not being displayed in the ``results.html`` files.
+
+* The ``variants.json`` file, saved at the jobdata directory inside a
+  job’s result directory, now takes into consideration the possible
+  multiple suites in a job. The files are now named after named with a
+  numeric suffix and, if a name was given to the suite, a name suffix
+  as well.
+
+* The serialization of the job configuration file, also saved in the
+  ``jobdata`` directory, has been updated to support set data types.
+
+* Fixed a limit for ``exec-test`` and ``tap`` tests, where the
+  ``STDOUT`` or ``STDERR`` buffers could be exhausted, and the test
+  would get stuck forever on further writes. The exec-test and tap
+  runners can now make use of the (optional) output_dir parameter,
+  resulting in a much more efficient I/O handling. When output_dir is
+  used, the only limitation on ``STDOUT`` and ``STDERR`` is the
+  file-system itself.
+
+* Tests of type ``exec-test`` with a URI pointing to a file on the
+  current working directory (that is, without an absolute directory
+  prefix or a directory component to it) were not properly executed
+  (“No such file or directory” was given). This is now fixed.
+
+* The automatic status server was very prone to failures due to
+  ``AF_UNIX``’s limitation on the length of paths, because it was
+  created inside a job’s result directory. Now it’s created on the
+  base system temporary directory, which makes it very hard to exceed
+  the path length limit.
+
+* Avocado now supports actual file system limitation regarding the
+  maximum file name length, instead of making assumptions about the
+  limits. This allows Avocado to properly behave in environments such
+  as containers backed by overlayfs.
+
+* A condition that would favor the configuration given to the job,
+  instead of the more specific configuration given to the suite, was
+  fixed.
+
+* A condition that could crash Avocado when a suite name wasn’t a
+  filesystem safe name has been fixed.
+
+* Tasks that are "skipped" due to their timeouts being hit now include
+  the appropriate reason.
+
+* The HTML report now contains an "ALL" selection for test types,
+  instead of an empty value.
+
+* The independence of ``--status-server-uri``
+  and ``--status-server-listen`` was not being respected. Because
+  Tasks are being created with whatever is the current status server
+  URI (either determined automatically, or with the "listen" config),
+  the "uri" config went unused. These issues are now fixed.
+
+* Running tests’ statuses are now properly marked as ``INTERRUPTED``
+  instead of ``CANCEL`` when they reach their own (or the job) timeout.
+
+* The ``avocado jobs show`` command used to show a simplified and
+  possibly incorrect information about the spawner used. This
+  information is no longer displayed, given that it’s a test suite
+  attribute, and not really a job level information.
+
+* The loader for ``avocado-instrumented`` tests could end up using the
+  wrong Python module if a module of the same name existed elsewhere
+  in the import path.  Now, the actual path of the Python file
+  containing the test (given in the ``modulePath`` parameter) is used
+  explicitly by the Python module importer.
+
+* When :ref:`dependencies <managing-requirements>` are not fulfilled,
+  test results would be missing, instead of being clearly shown as
+  ``CANCEL``.
+
+* :func:`avocado.utils.path.init_dir` would raise
+  :class:`FileExistsError` if the directory already existed, usually
+  causing crashes on its users.
+
+* The :ref:`whiteboard <saving-test-generated-custom-data>` file was
+  being created with duplicate content because of the legacy runner
+  implementation, which is now removed.
+
+* The ``avocado jobs show`` command now presents the correct time
+  tests have ended.
+
+* The :func:`avocado.utils.download.url_open` function used to
+  misleadingly says that a URL had been retrieved at a stage where
+  only a response was obtained.  It now presents an accurate message.
+
+* The Podman Spawner had a race condition where the state of the
+  container (and thus the task) would not take into account the
+  transition from "created" to "running".
+
+* Avocado has re-enabled ``stdout`` and ``stderr`` files for
+  ``avocado-instrumented`` files.
+
+* The Spawner interface and implementations now properly checks if the
+  termination of a task was successful or not.  The statemachine uses
+  that information to let users know of situations where a task could
+  not be terminated.
+
+* The ``tearDown()`` of ``avocado-instrumented`` now gets called
+  properly if a test times out.
+
+* The Process Spawner now properly handles a situation where, during
+  the termination of a task, the process itself finishes before the
+  spawner has the chance to do so.
+
+* When interrupting ``avocado-instrumented`` tests, the ``tearDown()``
+  will be called to allow for cleanups.  If an error occurred during
+  the execution of ``tearDown()`` the status of the test would change
+  to ``ERROR`` instead of keeping its original ``INTERRUPT`` status.
+
+* The HTML result plugin was not properly filtering tests based on
+  their status.
+
+* The ``testlogs`` plugin was not showing tests with all "not ok"
+  statuses and was showing test names instead of test IDs which are
+  unique in a suite.
+
+.. _lts_103_0_utility_apis:
+
+Utility APIs
+------------
+
+* :mod:`avocado.utils.nvme` added new functions, such as:
+
+  * :func:`avocado.utils.nvme.create_namespaces`
+  * :func:`avocado.utils.nvme.get_ns_status`
+  * :func:`avocado.utils.nvme.get_nslist_with_pci`
+
+* :mod:`avocado.utils.multipath` added a new function:
+
+  * :func:`avocado.utils.multipath.get_mpath_paths_status` that
+    returns the status of all paths of a mpath device was introduced.
+
+* :mod:`avocado.utils.distro`:
+
+  * Received updates to support more recent versions of the UnionTech
+    OS.
+  * Added specific detection for CentOS Stream.
+  * Improved detection for Amazon Linux.
+
+* :mod:`avocado.utils.cpu`:
+
+  * Introduced a utility to check if a given CPU is hotpluggable
+
+* :mod:`avocado.utils.ssh`:
+
+  * The :meth:`avocado.utils.ssh.Session.cmd` now supports setting a
+    ``timeout`` for the command execution.
+
+* :mod:`avocado.utils.network`:
+
+  * Removed deprecated modules and methods.
+  * Adds a missing network mask prefix when creating static
+    configurations.
+  * Added :func:`avocado.utils.network.hosts.Host.validate_mac_addr`
+    which checks if a given MAC address is valid.
+  * A function to check packet loss was added to
+    :mod:`avocado.utils.network.interfaces`
+  * :func:`avocado.utils.network.interfaces.NetworkInterface.is_bond`
+    that allows users to check if a given interface is a bonding
+    device.
+  * The :mod:`avocado.utils.network.ports` fixed some wrong premises
+    regarding the availability of open ports for different protocols
+    (such as a free TCP versus a free UDP port).
+
+* :mod:`avocado.utils.disk`:
+
+  * Introduced :func:`avocado.utils.disk.get_disks_by_id()` which
+    returns all disks by device ids.
+
+* :mod:`avocado.utils.archive`:
+
+  * Added support for Zstandard uncompression.
+
+* :mod:`avocado.utils.process`:
+
+  * Received the changes necessary to cope with changes in
+    :func:`signal.default_int_handler`. It now passes all the given
+    arguments along.
+
+* :mod:`avocado.utils.software_manager`:
+
+  * Allows DNF/YUM repository options to be customized.
+
+* :mod:`avocado.utils.softwareraid`:
+
+  * A new method was added that checks the existence of a software
+    raid device.
+
+* :mod:`avocado.utils.podman`:
+
+  * A new :func:`avocado.utils.podman.Podman.get_container_info`
+    method introduced.
+
+* :mod:`avocado.utils.cloudinit`:
+
+  * Now allows for a finer grained usage of the functionality in
+    :class:`avocado.utils.cloudinit.PhoneHomeServer`.
+
+* :mod:`avocado.utils.vmimage`:
+
+  * Ubuntu’s provider now properly handles the version number when it
+    compares versions with trailing zeroes.
+  * Ubuntu and OpenSUSE providers can now fetch the best (latest)
+    version available when no version is given.
+  * OpenSUSE provider will now use OpenStack images starting from
+    version 15.3, due to the other images having been discontinued.
+  * Uses https://cloud.debian.org for obtaining Debian Cloud images.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (92.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/92.0...103.0>`_.
