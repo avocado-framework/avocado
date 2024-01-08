@@ -212,7 +212,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"--max-parallel-tasks=1"
         )
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn(b"Interrupting job (failfast).", result.stdout)
+        self.assertIn(b"Interrupting job (failfast).", result.stderr)
         self.assertIn(b"PASS 1 | ERROR 0 | FAIL 1 | SKIP 1", result.stdout)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         self.assertEqual(
@@ -230,7 +230,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"--max-parallel-tasks=1"
         )
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn(b"Interrupting job (failfast).", result.stdout)
+        self.assertIn(b"Interrupting job (failfast).", result.stderr)
         self.assertIn(b"PASS 1 | ERROR 1 | FAIL 0 | SKIP 1", result.stdout)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         self.assertEqual(

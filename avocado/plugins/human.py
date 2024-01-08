@@ -140,7 +140,7 @@ class Human(ResultEvents):
             return
 
         if job.interrupted_reason is not None:
-            LOG_UI.info(job.interrupted_reason)
+            LOG_UI.warning(job.interrupted_reason)
 
         if job.status == "PASS":
             LOG_UI.info(
