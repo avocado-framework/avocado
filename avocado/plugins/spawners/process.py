@@ -33,6 +33,9 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     description = "Process based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
+    def is_operational(self):
+        return True
+
     @staticmethod
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:

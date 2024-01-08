@@ -68,6 +68,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
     slots_cache = {}
 
+    def is_operational(self):
+        return True
+
     @staticmethod
     async def run_remote_cmd_async(session, command, timeout):
         loop = asyncio.get_event_loop()

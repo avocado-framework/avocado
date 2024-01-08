@@ -138,6 +138,20 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             f'output received "{out}" does not match expected output'
         )
 
+    def is_operational(self):
+        try:
+            _ = self.podman_version
+        except PodmanException as ex:
+            LOG.error(ex)
+            return False
+
+        if self.podman_version[0] >= 3:
+            return True
+        LOG.error(
+            f"The podman binary f{self.podman_bin} did not report a suitable version (>= 3.0)"
+        )
+        return False
+
     @property
     def podman_version(self):
         if self._podman_version == (None, None, None):

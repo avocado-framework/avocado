@@ -289,6 +289,16 @@ class Runner(SuiteRunner):
             job.interrupted_reason = f"Suite {test_suite.name} is disabled."
             return summary
 
+        spawner_name = test_suite.config.get("run.spawner")
+        spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
+        if not spawner.is_operational():
+            suite_name = f" {test_suite.name}" if test_suite.name else ""
+            msg = f'Spawner "{spawner_name}" is not operational, aborting execution of suite {suite_name}. Please check the logs for more information.'
+            LOG_JOB.error(msg)
+            job.interrupted_reason = msg
+            summary.add("INTERRUPTED")
+            return summary
+
         test_suite.tests, missing_requirements = check_runnables_runner_requirements(
             test_suite.tests
         )
@@ -325,8 +335,6 @@ class Runner(SuiteRunner):
             if rt.task.category == "test"
         ]
         self.tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
-        spawner_name = test_suite.config.get("run.spawner")
-        spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
         max_running = min(
             test_suite.config.get("run.max_parallel_tasks"), len(self.runtime_tasks)
         )
