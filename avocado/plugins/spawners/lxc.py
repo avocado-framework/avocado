@@ -105,6 +105,12 @@ class LXCSpawner(Spawner, SpawnerMixin):
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
     slots_cache = {}
 
+    def is_operational(self):
+        if not LXC_AVAILABLE:
+            LOG.error("LXC python bindings not available on the system")
+            return False
+        return True
+
     @staticmethod
     def run_container_cmd(container, command):
         with LXCStreamsFile() as tmp_out, LXCStreamsFile() as tmp_err:
@@ -208,11 +214,6 @@ class LXCSpawner(Spawner, SpawnerMixin):
         release = self.config.get("spawner.lxc.release")
         arch = self.config.get("spawner.lxc.arch")
         create_hook = self.config.get("spawner.lxc.create_hook")
-
-        if not LXC_AVAILABLE:
-            msg = "LXC python bindings not available on the system"
-            runtime_task.status = msg
-            return False
 
         container_id = runtime_task.spawner_handle
         container = lxc.Container(container_id)

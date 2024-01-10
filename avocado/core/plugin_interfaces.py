@@ -426,6 +426,16 @@ class Spawner(Plugin):
         :type result: `avocado.core.teststatus.STATUSES`
         """
 
+    @abc.abstractmethod
+    def is_operational(self):
+        """Checks whether this spawner is operationally capable to perform.
+
+        :result: whether or not this spawner is operational on this system,
+                 that is, whether it has all its requirements set up and
+                 should be ready to operate successfully.
+        :rtype: bool
+        """
+
 
 class DeploymentSpawner(Spawner):
     """Spawners that needs basic deployment are based on this class.
