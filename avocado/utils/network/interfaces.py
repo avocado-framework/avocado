@@ -836,9 +836,9 @@ class NetworkInterface:
                 f"cat /sys/class/net/{self.name}/device/devspec | "
                 f"awk -F/ '{{print $3}}'"
             )
-            interface_type = process.run(cmd, shell=True, ignore_status=True).decode(
-                "utf-8"
-            )
+            interface_type = process.system_output(
+                cmd, shell=True, ignore_status=True
+            ).decode("utf-8")
             cmd = f"echo {interface_type} | sed 's/@/-/' "
             interface_type = process.system_output(
                 cmd, shell=True, ignore_status=True
