@@ -123,7 +123,13 @@ def get_disks():
     """
     json_result = process.run("lsblk --json --paths --inverse")
     json_data = json.loads(json_result.stdout_text)
-    return [str(disk["name"]) for disk in json_data["blockdevices"]]
+    disks = []
+    for device in json_data["blockdevices"]:
+        disks.append(device["name"])
+        if "children" in device:
+            for child in device["children"]:
+                disks.append(child["name"])
+    return disks
 
 
 def get_all_disk_paths():
