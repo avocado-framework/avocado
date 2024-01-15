@@ -49,9 +49,13 @@ def main():
     configure_logging_settings()
     for version in ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]:
         url = get_egg_url(python_version=version)
-        asset = Asset(url, cache_dirs=CACHE_DIRS)
-        asset.fetch()
-    return True
+        try:
+            asset = Asset(url, cache_dirs=CACHE_DIRS)
+            asset.fetch()
+        except OSError:
+            LOG.error("Failed to fetch Avocado egg for Python version %s", version)
+            return 1
+    return 0
 
 
 if __name__ == "__main__":
