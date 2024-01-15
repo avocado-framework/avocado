@@ -34,7 +34,14 @@ def configure_logging_settings():
     logger_handler.setFormatter(formatter)
 
 
-def get_egg_url(avocado_version=None, python_version=None):
+def get_setuptools_egg_url(python_version=None):
+    if python_version is None:
+        version = sys.version_info
+        python_version = f"{version.major}.{version.minor}"
+    return f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{python_version}.egg"
+
+
+def get_avocado_egg_url(avocado_version=None, python_version=None):
     if avocado_version is None:
         avocado_version = VERSION
     if python_version is None:
@@ -48,12 +55,19 @@ def get_egg_url(avocado_version=None, python_version=None):
 def main():
     configure_logging_settings()
     for version in ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]:
-        url = get_egg_url(python_version=version)
+        url = get_avocado_egg_url(python_version=version)
         try:
             asset = Asset(url, cache_dirs=CACHE_DIRS)
             asset.fetch()
         except OSError:
             LOG.error("Failed to fetch Avocado egg for Python version %s", version)
+            return 1
+        url = get_setuptools_egg_url(python_version=version)
+        try:
+            asset = Asset(url, cache_dirs=CACHE_DIRS)
+            asset.fetch()
+        except OSError:
+            LOG.error("Failed to fetch setuptools egg for Python version %s", version)
             return 1
     return 0
 
