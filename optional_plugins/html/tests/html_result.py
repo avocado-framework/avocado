@@ -82,8 +82,8 @@ class HtmlResultTest(unittest.TestCase):
 
     def test_output_compatible_setup_2(self):
         prefix = "avocado_" + __name__
-        tmpfile = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
-        tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"{prefix}_result.xml")
+        tmpfile2 = os.path.join(self.tmpdir.name, f"{prefix}_result.json")
         tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir.name)
         tmpfile3 = os.path.join(tmpdir, "result.html")
         cmd_line = (
