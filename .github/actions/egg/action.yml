@@ -1,0 +1,14 @@
+name: Egg
+description: Test running avocado from eggs
+runs:
+  using: composite
+  steps:
+    - name: Test running avocado from eggs
+      shell: sh
+      run: |
+       python3 setup.py bdist_egg
+       mv dist/avocado_framework-*egg /tmp
+       python3 setup.py clean --all
+       python3 -c 'import sys; import glob; sys.path.insert(0, glob.glob("/tmp/avocado_framework-*.egg")[0]); from avocado.core.main import main; sys.exit(main())' run /bin/true
+       cd /tmp
+       python3 -c 'import sys; from pkg_resources import require; require("avocado-framework"); from avocado.core.main import main; sys.exit(main())' run /bin/true
