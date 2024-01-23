@@ -283,6 +283,60 @@ class ConfigOption:
                 self._value = dst_type(value)
 
 
+class AvocadoConfigParser:
+    """AvocadoConfigParser uses ConfigParser to parse config from INI files.
+
+    During the parsing process, it preserves the config files path.
+    The configuration from files is stored in a dict-like structure
+    where key is avocado config namespace and value is a pair of config value
+    and config file where this value comes from.
+
+    example:
+        AvocadoConfigParser['namespace'] = tuple('value', 'config_file_path')
+    """
+
+    def __init__(self):
+        self._config = {}
+
+    def read(self, filenames):
+        """Parses the INI files to Avocado config
+
+        :param filenames: One or more files which will be parsed.
+        :type filenames: list or str
+        :return: List of successfully parsed files.
+        :rtype: list
+        """
+        if isinstance(filenames, str):
+            filenames = [filenames]
+        read_ok = []
+        for filename in filenames:
+            try:
+                with open(filename, encoding="utf-8") as fp:
+                    self.read_file(fp)
+            except OSError:
+                continue
+            read_ok.append(filename)
+        return read_ok
+
+    def read_file(self, file):
+        """Parses file-like object to Avocado config
+
+        :param file: File-like object which will be parsed.
+        """
+        new_config = configparser.ConfigParser()
+        new_config.read_file(file)
+        for section in new_config:
+            items = new_config.items(section)
+            for key, value in items:
+                self._config[f"{section}.{key}"] = (value, file.name)
+
+    def __iter__(self):
+        return self._config.__iter__()
+
+    def __getitem__(self, namespace):
+        return self._config[namespace]
+
+
 class Settings:
     """Settings is the Avocado configuration handler.
 
@@ -314,7 +368,7 @@ class Settings:
 
     def __init__(self):
         """Constructor. Tries to find the main settings files and load them."""
-        self.config = configparser.ConfigParser()
+        self.config = AvocadoConfigParser()
         self.all_config_paths = []
         self.config_paths = []
         self._namespaces = {}
@@ -569,11 +623,16 @@ class Settings:
         After parsing config file options this method should be executed to
         have an unified settings.
         """
-        for section in self.config:
-            items = self.config.items(section)
-            for key, value in items:
-                namespace = f"{section}.{key}"
+        for namespace in self.config:
+            value = self.config[namespace]
+            path = value[1]
+            value = value[0]
+            try:
                 self.update_option(namespace, value, convert=True)
+            except SyntaxError:
+                raise SyntaxError(
+                    f"Syntax error in config file {path}, please check the value {value} "
+                )
 
     def process_config_path(self, path):
         """Update list of config paths and process the given path."""
