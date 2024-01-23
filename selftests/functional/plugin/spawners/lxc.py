@@ -1,9 +1,8 @@
 import asyncio
 import os
-import sys
 from unittest import mock
 
-from avocado import Test, skipIf
+from avocado import Test
 from avocado.core.job import Job
 from avocado.plugins.spawners import lxc
 from avocado.plugins.spawners.lxc import LXCSpawner
@@ -12,11 +11,6 @@ from selftests.utils import BASEDIR
 LXC_BACKEND = mock.MagicMock()
 
 
-def incompatible_python_version():
-    return sys.version_info.major == 3 and sys.version_info.minor <= 7
-
-
-@skipIf(incompatible_python_version(), "Not compatible with Python under 3.7.0")
 @mock.patch("avocado.plugins.spawners.lxc.lxc", LXC_BACKEND)
 class LXCSpawnerTest(Test):
     def setUp(self):

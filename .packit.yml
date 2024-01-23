@@ -7,9 +7,7 @@ jobs:
     metadata:
       targets:
       - fedora-all
-      - centos-stream-8
       - centos-stream-9
-      - epel-8
       - epel-9
       - fedora-38-aarch64
       - fedora-38-ppc64le

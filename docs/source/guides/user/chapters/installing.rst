@@ -19,7 +19,7 @@ Installing from PyPI
 --------------------
 
 The simplest installation method is through ``pip``.  On most POSIX systems
-with Python 3.7 (or later) and ``pip`` available, installation can be performed
+with Python 3.8 (or later) and ``pip`` available, installation can be performed
 with a single command::
 
   $ pip3 install --user avocado-framework
