@@ -22,13 +22,11 @@ import os
 
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.output import LOG_JOB, LOG_UI
-from avocado.core.settings import settings
 from avocado.core.varianter import VARIANTS_FILENAME
 from avocado.utils.astring import string_to_safe_path
 from avocado.utils.path import init_dir
 
 JOB_DATA_DIR = "jobdata"
-CONFIG_FILENAME = "config"
 TEST_REFERENCES_FILENAME = "test_references"
 PWD_FILENAME = "pwd"
 JOB_CONFIG_FILENAME = "args.json"
@@ -54,8 +52,8 @@ def record(job, cmdline=None):
     """
     Records all required job information.
     """
+
     base_dir = init_dir(job.logdir, JOB_DATA_DIR)
-    path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
@@ -67,11 +65,6 @@ def record(job, cmdline=None):
             references_file.write(f"{references}")
             references_file.flush()
             os.fsync(references_file)
-
-    with open(path_cfg, "w", encoding="utf-8") as config_file:
-        settings.config.write(config_file)
-        config_file.flush()
-        os.fsync(config_file)
 
     for idx, suite in enumerate(job.test_suites, 1):
         if suite.name:
@@ -142,16 +135,6 @@ def retrieve_job_config(resultsdir):
     if recorded_job_config:
         with open(recorded_job_config, "r", encoding="utf-8") as job_config_file:
             return json.load(job_config_file, cls=ConfigDecoder)
-
-
-def retrieve_config(resultsdir):
-    """
-    Retrieves the job settings from the results directory.
-    """
-    recorded_config = _retrieve(resultsdir, CONFIG_FILENAME)
-    if recorded_config is None:
-        return None
-    return recorded_config
 
 
 def retrieve_cmdline(resultsdir):

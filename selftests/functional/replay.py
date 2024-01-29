@@ -64,7 +64,6 @@ class ReplayTests(TestCaseTmpDir):
         """
         file_list = [
             "variants-1.json",
-            "config",
             "test_references",
             "pwd",
             "args.json",
