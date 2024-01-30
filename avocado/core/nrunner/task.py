@@ -62,7 +62,16 @@ class TaskStatusService:
                 self.connection.connect(self.uri)
 
         data = json_dumps(status)
-        self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+        try:
+            self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+        except BrokenPipeError:
+            try:
+                self._create_connection()
+                self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+            except ConnectionRefusedError:
+                LOG.warning(f"Connection with {self.uri} has been lost.")
+                return False
+        return True
 
     def close(self):
         if self.connection is not None:
@@ -203,12 +212,23 @@ class Task:
         self.setup_output_dir()
         runner_klass = self.runnable.pick_runner_class()
         runner = runner_klass()
+        running_status_services = self.status_services
+        damaged_status_services = []
         for status in runner.run(self.runnable):
             if status["status"] == "started":
                 status.update({"output_dir": self.runnable.output_dir})
             status.update({"id": self.identifier})
             if self.job_id is not None:
                 status.update({"job_id": self.job_id})
-            for status_service in self.status_services:
-                status_service.post(status)
+            for status_service in running_status_services:
+                if not status_service.post(status):
+                    damaged_status_services.append(status_service)
+            if damaged_status_services:
+                running_status_services = list(
+                    filter(
+                        lambda s: s not in damaged_status_services,
+                        running_status_services,
+                    )
+                )
+                damaged_status_services.clear()
             yield status
