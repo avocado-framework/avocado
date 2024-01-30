@@ -40,27 +40,35 @@ class TaskStatusService:
 
     def __init__(self, uri):
         self.uri = uri
-        self.connection = None
+        self._connection = None
 
-    def post(self, status):
+    @property
+    def connection(self):
+        if not self._connection:
+            self._create_connection()
+        return self._connection
+
+    def _create_connection(self):
+        """
+        Creates connection with `self.uri` based on `socket.create_connection`
+        """
         if ":" in self.uri:
             host, port = self.uri.split(":")
             port = int(port)
-            if self.connection is None:
-                for _ in range(600):
-                    try:
-                        self.connection = socket.create_connection((host, port))
-                        break
-                    except ConnectionRefusedError as error:
-                        LOG.warning(error)
-                        time.sleep(1)
-                else:
-                    self.connection = socket.create_connection((host, port))
+            for _ in range(600):
+                try:
+                    self._connection = socket.create_connection((host, port))
+                    break
+                except ConnectionRefusedError as error:
+                    LOG.warning(error)
+                    time.sleep(1)
+            else:
+                self._connection = socket.create_connection((host, port))
         else:
-            if self.connection is None:
-                self.connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                self.connection.connect(self.uri)
+            self._connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._connection.connect(self.uri)
 
+    def post(self, status):
         data = json_dumps(status)
         self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
 
