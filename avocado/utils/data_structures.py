@@ -23,7 +23,6 @@ This module contains handy classes that can be used inside
 avocado core code or plugins.
 """
 
-
 import math
 import sys
 
@@ -157,7 +156,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
         if dict1.keys() != dict2.keys():
             set1 = set(dict1.keys())
             set2 = set(dict2.keys())
-            diff_btw_dict.append(f"{level} + {set1-set2} - {set2-set1}")
+            diff_btw_dict.append(f"{level} + {set1 - set2} - {set2 - set1}")
             common_keys = set1 & set2
         else:
             common_keys = set(dict1.keys())
@@ -183,7 +182,6 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
 
 
 class Borg:
-
     """
     Multiple instances of this class will share the same state.
 
@@ -201,7 +199,6 @@ class Borg:
 
 
 class LazyProperty:
-
     """
     Lazily instantiated property.
 
@@ -225,7 +222,6 @@ class LazyProperty:
 
 
 class CallbackRegister:
-
     """
     Registers pickable functions to be executed later.
     """
