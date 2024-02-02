@@ -182,6 +182,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
 
 
 class Borg:
+
     """
     Multiple instances of this class will share the same state.
 
