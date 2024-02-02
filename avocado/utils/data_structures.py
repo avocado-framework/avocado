@@ -137,7 +137,7 @@ def comma_separated_ranges_to_list(string):
     values = []
     ranges = string.split(",")
     for range_str in ranges:
-        if '-' in range_str:
+        if "-" in range_str:
             start, end = map(int, range_str.split("-"))
             values.extend(range(start, end + 1))
         else:
