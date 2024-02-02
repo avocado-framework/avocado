@@ -156,7 +156,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
         if dict1.keys() != dict2.keys():
             set1 = set(dict1.keys())
             set2 = set(dict2.keys())
-            diff_btw_dict.append(f"{level} + {set1 - set2} - {set2 - set1}")
+            diff_btw_dict.append(f"{level} + {set1-set2} - {set2-set1}")
             common_keys = set1 & set2
         else:
             common_keys = set(dict1.keys())
