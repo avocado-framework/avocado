@@ -200,6 +200,7 @@ class Borg:
 
 
 class LazyProperty:
+
     """
     Lazily instantiated property.
 
