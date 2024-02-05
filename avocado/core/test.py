@@ -252,7 +252,6 @@ class Test(unittest.TestCase, TestData):
         params=None,
         base_logdir=None,
         config=None,
-        runner_queue=None,
         tags=None,
     ):
         """
@@ -339,8 +338,6 @@ class Test(unittest.TestCase, TestData):
         self.__running = False
         self.paused = False
         self.paused_msg = ""
-
-        self.__runner_queue = runner_queue
 
         self.log.debug("Test metadata:")
         if self.filename:
@@ -485,25 +482,6 @@ class Test(unittest.TestCase, TestData):
         return self.__cache_dirs
 
     @property
-    def runner_queue(self):
-        """
-        The communication channel between test and test runner
-        """
-        return self.__runner_queue
-
-    def set_runner_queue(self, runner_queue):
-        """
-        Override the runner_queue
-        """
-        if self.__runner_queue is not None:
-            raise RuntimeError(
-                f"Overriding of runner_queue multiple times "
-                f"is not allowed -> old={self.__runner_queue} "
-                f"new={runner_queue}"
-            )
-        self.__runner_queue = runner_queue
-
-    @property
     def status(self):
         """
         The result status of this test
@@ -561,13 +539,6 @@ class Test(unittest.TestCase, TestData):
         if current_time is None:
             current_time = time.monotonic()
         self.time_elapsed = current_time - self.time_start
-
-    def report_state(self):
-        """
-        Send the current test state to the test runner process
-        """
-        if self.runner_queue is not None:
-            self.runner_queue.put(self.get_state())
 
     def get_state(self):
         """
