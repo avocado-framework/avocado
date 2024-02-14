@@ -315,55 +315,56 @@ output in the standard output of the runner, simply use::
 
 **2. JSON:**
 
+
 `JSON <https://www.json.org/>`__ is a widely used data exchange format. The JSON
 Avocado plugin outputs job information, similarly to the xunit output plugin::
 
     $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py --json -
     {
         "cancel": 0,
-        "debuglog": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/job.log",
+        "debuglog": "$HOME/avocado/job-results/job-2024-02-08T16.24-bee291e/job.log",
         "errors": 0,
         "failures": 1,
         "interrupt": 0,
-        "job_id": "532631bb75ab1aa910a6c4efb1398b4a2bb767b7",
+        "job_id": "bee291e496e7a54b3e81e3836abd860aa779d37b",
         "pass": 1,
         "skip": 0,
-        "start": "2023-12-21 08:44:54.176851",
+        "start": "2024-02-08 16:24:48.169658",
         "tests": [
             {
-                "actual_end": 1703166296.9230745,
-                "actual_start": 1703166296.6056573,
-                "end": 32467.637506057,
+                "actual_time_end": 1707405889.5167582,
+                "actual_time_start": 1707405889.207349,
                 "fail_reason": "This test is supposed to fail",
                 "id": "2-examples/tests/failtest.py:FailTest.test",
-                "logdir": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/2-examples_tests_failtest.py_FailTest.test",
-                "logfile": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/2-examples_tests_failtest.py_FailTest.test/debug.log",
+                "logdir": "$HOME/avocado/job-results/job-2024-02-08T16.24-bee291e/test-results/2-examples_tests_failtest.py_FailTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2024-02-08T16.24-bee291e/test-results/2-examples_tests_failtest.py_FailTest.test/debug.log",
                 "name": "examples/tests/failtest.py:FailTest.test",
-                "start": 32467.61666046,
                 "status": "FAIL",
                 "tags": {
                     "failure_expected": null
                 },
-                "time": 0.020845596998697147,
+                "time_elapsed": 0.038685322972014546,
+                "time_end": 889039.845678904,
+                "time_start": 889039.806993581,
                 "whiteboard": ""
             },
             {
-                "actual_end": 1703166297.6359792,
-                "actual_start": 1703166296.6054778,
-                "end": 32468.624765129,
+                "actual_time_end": 1707405890.2360377,
+                "actual_time_start": 1707405889.2069798,
                 "fail_reason": "<unknown>",
                 "id": "1-examples/tests/sleeptest.py:SleepTest.test",
-                "logdir": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/1-examples_tests_sleeptest.py_SleepTest.test",
-                "logfile": "$HOME/avocado/job-results/job-2023-12-21T08.44-532631b/test-results/1-examples_tests_sleeptest.py_SleepTest.test/debug.log",
+                "logdir": "$HOME/avocado/job-results/job-2024-02-08T16.24-bee291e/test-results/1-examples_tests_sleeptest.py_SleepTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2024-02-08T16.24-bee291e/test-results/1-examples_tests_sleeptest.py_SleepTest.test/debug.log",
                 "name": "examples/tests/sleeptest.py:SleepTest.test",
-                "start": 32467.616292676,
                 "status": "PASS",
                 "tags": {},
-                "time": 1.0084724529988307,
+                "time_elapsed": 1.011205994989723,
+                "time_end": 889040.816592906,
+                "time_start": 889039.805386911,
                 "whiteboard": ""
             }
         ],
-        "time": 1.0293180499975279,
+        "time": 1.0498913179617375,
         "total": 2,
         "warn": 0
     }
