@@ -11,7 +11,14 @@ Release documentation: `Avocado 104.0
 Users/Test Writers
 ==================
 
-* 
+* The result.json test attributes related to time has been renamed in version 104.0
+  to correspond to `job.result.tests` in Job API. The Difference between new and old::
+
+    time_start = start
+    actual_time_start = actual_start
+    time_end = end
+    actual_time_end = actual_end
+    time_elapsed = time
 
 Utility Modules
 ===============
