@@ -338,18 +338,18 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass()
         results = [status for status in runner.run(runnable)]
-        if sys.version_info < (3, 12, 1):
-            output1 = (
-                b"----------------------------------------------------------------------\n"
-                b"Ran 1 test in "
-            )
-            output2 = b"s\n\nOK (skipped=1)\n"
-        else:
+        if sys.version_info == (3, 12, 1):
             output1 = (
                 b"----------------------------------------------------------------------\n"
                 b"Ran 0 tests in "
             )
             output2 = b"\n\nNO TESTS RAN (skipped=1)\n"
+        else:
+            output1 = (
+                b"----------------------------------------------------------------------\n"
+                b"Ran 1 test in "
+            )
+            output2 = b"s\n\nOK (skipped=1)\n"
         output = results[-2]
         result = results[-1]
         self.assertEqual(result["status"], "finished")
