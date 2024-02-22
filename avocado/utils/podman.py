@@ -32,7 +32,7 @@ class PodmanException(Exception):
     pass
 
 
-class Podman:
+class AsyncPodman:
     def __init__(self, podman_bin=None):
         path = which(podman_bin or "podman")
         if not path:

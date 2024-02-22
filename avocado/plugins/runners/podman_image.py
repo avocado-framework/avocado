@@ -7,7 +7,7 @@ from multiprocessing import Process, SimpleQueue, set_start_method
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
 from avocado.core.utils import messages
-from avocado.utils.podman import Podman, PodmanException
+from avocado.utils.podman import AsyncPodman, PodmanException
 
 
 class PodmanImageRunner(BaseRunner):
@@ -34,7 +34,7 @@ class PodmanImageRunner(BaseRunner):
         # information for debugging in case of errors.
         logging.getLogger("avocado.utils.podman").addHandler(logging.NullHandler())
         try:
-            podman = Podman()
+            podman = AsyncPodman()
             loop = asyncio.get_event_loop()
             loop.run_until_complete(podman.execute("pull", uri))
             queue.put({"result": "pass"})

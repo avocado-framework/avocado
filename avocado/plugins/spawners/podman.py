@@ -16,7 +16,7 @@ from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.version import VERSION
 from avocado.utils import distro
 from avocado.utils.asset import Asset
-from avocado.utils.podman import Podman, PodmanException
+from avocado.utils.podman import AsyncPodman, PodmanException
 
 LOG = logging.getLogger(__name__)
 
@@ -163,7 +163,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if self._podman is None:
             podman_bin = self.config.get("spawner.podman.bin")
             try:
-                self._podman = Podman(podman_bin)
+                self._podman = AsyncPodman(podman_bin)
             except PodmanException as ex:
                 LOG.error(ex)
         return self._podman
