@@ -136,13 +136,12 @@ def comma_separated_ranges_to_list(string):
     :return list: list of integer values in comma separated range
     """
     values = []
-    for value in string.split(","):
-        if "-" in value:
-            start, end = value.split("-")
-            for val in range(int(start), int(end) + 1):
-                values.append(int(val))
+    for range_str in string.split(","):
+        if "-" in range_str:
+            start, end = range_str.split("-")
+            values.extend(range(int(start), int(end) + 1))
         else:
-            values.append(int(value))
+            values.append(int(range_str))
     return values
 
 
@@ -183,7 +182,6 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
 
 
 class Borg:
-
     """
     Multiple instances of this class will share the same state.
 
