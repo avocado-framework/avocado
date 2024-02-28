@@ -265,12 +265,10 @@ class PMem:
     def disable_namespace(self, namespace="all", region="", bus="", verbose=False):
         """
         Disable namespaces
-
         :param namespace: name of the namespace to be disabled
         :param region: Filter namespace by region
         :param bus: Filter namespace by bus
         :param verbose: Enable True command with debug information
-
         :return: True on success
         :raise: :class:`PMemException`, if command fails.
         """
@@ -302,16 +300,17 @@ class PMem:
         """
         args = namespace
         if region:
-            args = f"{args} -r {region}"
+            args += f" -r {region}"
         if bus:
-            args = f"{args} -b {bus}"
+            args += f" -b {bus}"
         if verbose:
-            args = f"{args} -v"
+            args += " -v"
 
-        if process.system(
-            f"{self.ndctl} enable-namespace {args}", shell=True, ignore_status=True
-        ):
+        cmd = f"{self.ndctl} enable-namespace {args}"
+
+        if process.system(cmd, shell=True, ignore_status=False) != 0:
             raise PMemException(f'Namespace enable failed for "{namespace}"')
+
         return True
 
     def create_namespace(
