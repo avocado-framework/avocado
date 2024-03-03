@@ -48,60 +48,6 @@ def register_core_options():
     )
 
     help_msg = (
-        "Python regular expression that will make the test status WARN when matched."
-    )
-    stgs.register_option(
-        section="simpletests.status",
-        key="warn_regex",
-        default="^WARN$",
-        help_msg=help_msg,
-    )
-
-    help_msg = (
-        "Location to search the regular expression on. "
-        "Accepted values: all, stdout, stderr."
-    )
-    stgs.register_option(
-        section="simpletests.status",
-        key="warn_location",
-        default="all",
-        help_msg=help_msg,
-    )
-
-    help_msg = (
-        "Python regular expression that will make the test status SKIP when matched."
-    )
-    stgs.register_option(
-        section="simpletests.status",
-        key="skip_regex",
-        default="^SKIP$",
-        help_msg=help_msg,
-    )
-
-    help_msg = (
-        "Location to search the regular expression on. "
-        "Accepted values: all, stdout, stderr."
-    )
-    stgs.register_option(
-        section="simpletests.status",
-        key="skip_location",
-        default="all",
-        help_msg=help_msg,
-    )
-
-    help_msg = (
-        "Fields to include in the presentation of executable test "
-        "failures.  Accepted values: status, stdout, stderr."
-    )
-    stgs.register_option(
-        section="simpletests.status",
-        key="failure_fields",
-        key_type=list,
-        default=["status", "stdout", "stderr"],
-        help_msg=help_msg,
-    )
-
-    help_msg = (
         "The amount of time to wait between asking nicely for a task "
         "to be terminated (say sending a signal) and proceeding with "
         "a more forceful termination. This may allow runners within "
