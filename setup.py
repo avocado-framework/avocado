@@ -451,6 +451,7 @@ if __name__ == "__main__":
                 "python-unittest = avocado.plugins.resolvers:PythonUnittestResolver",
                 "avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver",
                 "tap = avocado.plugins.resolvers:TapResolver",
+                "runnable-recipe = avocado.plugins.resolvers:RunnableRecipeResolver",
             ],
             "avocado.plugins.suite.runner": [
                 "nrunner = avocado.plugins.runner_nrunner:Runner",

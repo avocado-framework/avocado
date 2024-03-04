@@ -123,6 +123,22 @@ class ResolverFunctional(unittest.TestCase):
             result.stderr_text,
         )
 
+    def test_runnable_recipe(self):
+        test_path = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "runnables",
+            "exec_test_echo_no_newline.json",
+        )
+        cmd_line = f"{AVOCADO} list {test_path}"
+        result = process.run(cmd_line)
+        self.assertEqual(
+            b"exec-test /bin/echo\n",
+            result.stdout,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
