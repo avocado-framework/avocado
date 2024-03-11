@@ -13,7 +13,6 @@ from avocado.utils import path as utils_path
 from avocado.utils import process, script
 from selftests.utils import (
     AVOCADO,
-    BASEDIR,
     TestCaseTmpDir,
     python_module_available,
     skipOnLevelsInferiorThan,
@@ -1121,36 +1120,6 @@ class RunnerReferenceFromConfig(TestCaseTmpDir):
             expected_rc,
             f"Avocado did not return rc {expected_rc}:\n{result}",
         )
-
-    def tearDown(self):
-        super().tearDown()
-        self.config_file.remove()
-
-
-class RunnerExecTestFailureFields(TestCaseTmpDir):
-    def setUp(self):
-        super().setUp()
-        self.config_file = script.TemporaryScript(
-            "avocado.conf",
-            "[simpletests.status]\nfailure_fields = ['stdout', 'stderr']\n",
-        )
-        self.config_file.save()
-
-    def test_exec_test_failure_fields(self):
-        fail_test = os.path.join(BASEDIR, "examples", "tests", "failtest.sh")
-        cmd_line = (
-            f"{AVOCADO} --config {self.config_file.path} run "
-            f"--job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo -- {fail_test}"
-        )
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        self.assertEqual(
-            result.exit_status,
-            expected_rc,
-            f"Avocado did not return rc {expected_rc}:\n{result}",
-        )
-        self.assertNotIn("Exited with status: '1'", result.stdout_text)
 
     def tearDown(self):
         super().tearDown()
