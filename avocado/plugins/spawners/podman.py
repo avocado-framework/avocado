@@ -421,27 +421,27 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         _, stdout, _ = await self.podman.execute(
             "commit", "-q", runtime_task.spawner_handle
         )
-        container_id = stdout.decode().strip()
-        cache.update_environment(self.environment, environment_id, container_id)
+        image_id = stdout.decode().strip()
+        cache.update_environment(self.environment, environment_id, image_id)
         cache.update_requirement_status(
             self.environment,
-            container_id,
+            image_id,
             runtime_task.task.runnable.kind,
             runtime_task.task.runnable.kwargs.get("name"),
             True,
         )
 
     async def save_requirement_in_cache(self, runtime_task):  # pylint: disable=W0221
-        container_id = str(uuid.uuid4())
+        image_id = str(uuid.uuid4())
         _, requirements = self._get_image_from_cache(runtime_task)
         if requirements:
             for requirement_type, requirement in requirements:
                 cache.set_requirement(
-                    self.environment, container_id, requirement_type, requirement
+                    self.environment, image_id, requirement_type, requirement
                 )
         cache.set_requirement(
             self.environment,
-            container_id,
+            image_id,
             runtime_task.task.runnable.kind,
             runtime_task.task.runnable.kwargs.get("name"),
             False,
