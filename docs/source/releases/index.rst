@@ -37,6 +37,7 @@ Regular Releases
 .. toctree::
    :maxdepth: 1
 
+   104_0
    103_0
    102_0
    101_0

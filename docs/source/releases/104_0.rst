@@ -1,0 +1,66 @@
+=====================
+104.0 - Restore Point
+=====================
+
+The Avocado team is proud to present another release: Avocado 104.0,
+AKA "Restore Point", is now available!
+
+Release documentation: `Avocado 104.0
+<http://avocado-framework.readthedocs.io/en/104.0/>`_
+
+Users/Test Writers
+==================
+
+* The minimal Python version requirement now is 3.8. Python 3.7 and
+  earlier are not tested nor supported starting with this release.
+* The result.json test attributes related to time has been renamed in version 104.0
+  to correspond to `job.result.tests` in Job API. The Difference between new and old::
+
+        time_start = start
+        actual_time_start = actual_start
+        time_end = end
+        actual_time_end = actual_end
+        time_elapsed = time
+
+* The parsing of avocado configuration files has been improved to
+  show better error messages during parsing error.
+* Unused and legacy ``simpletest.*`` settings have been removed
+  from avocado as leftover of legacy runner.
+
+Utility Modules
+===============
+
+* :func:`avocado.utils.network.interfaces.NetworkInterface.get_device_IPI_name`,
+  got a fix for "ERROR: 'CmdResult' object has no attribute 'decode'".
+* :func:`avocado.utils.data_structures.comma_separated_ranges_to_list` has been optimized.
+* :mod:`avocado.utils.podman` got a synchronous version of podman utilities.
+
+Bug Fixes
+=========
+
+* TaskStatusService got error handling for lost connection and
+  ``avocado-runner-*`` won’t crash any more when the status server socket is closed.
+
+Internal Changes
+================
+
+* The ``contrib/scripts/avocado-fetch-eggs.py`` got an update for
+  egg handling related to post LTS changes.
+* Added CodeQL workflow for GitHub code scanning in Avocado repo.
+* The ``tmpfile.mktemp`` has been changed to ``tmpdir`` because of security reasons.
+* CI: fix for testing of different OS images with egg and version tasks.
+* Unused and legacy ``runner queue`` has been removed from :class:`avocado.Test`.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/103.0...104.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/30>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt9362492/>`_.
