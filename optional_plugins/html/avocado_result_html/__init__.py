@@ -34,7 +34,6 @@ from avocado.utils.path import find_command
 
 
 class ReportModel:
-
     """
     Prepares an object that can be passed up to mustache for rendering.
     """
@@ -189,7 +188,6 @@ class ReportModel:
 
 
 class HTMLResult(Result):
-
     """
     HTML Test Result class.
     """
@@ -313,7 +311,6 @@ class HTMLInit(Init):
 
 
 class HTML(CLI):
-
     """
     HTML job report
     """

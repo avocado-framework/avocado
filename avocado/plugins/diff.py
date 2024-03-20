@@ -32,7 +32,6 @@ from avocado.core.varianter import Varianter
 
 
 class Diff(CLICmd):
-
     """
     Implements the avocado 'diff' subcommand
     """

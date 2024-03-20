@@ -24,7 +24,6 @@ class NoMatchError(KeyError):
 
 
 class AvocadoParams:
-
     """
     Params object used to retrieve params from given path. It supports
     absolute and relative paths. For relative paths one can define multiple
@@ -199,7 +198,6 @@ class AvocadoParams:
 
 
 class AvocadoParam:
-
     """
     This is a single slice params. It can contain multiple leaves and tries to
     find matching results.

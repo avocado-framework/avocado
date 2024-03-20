@@ -5,7 +5,6 @@ from avocado.utils import gdb, genio, process
 
 
 class GdbTest(Test):
-
     """
     Execute the gdb test
 

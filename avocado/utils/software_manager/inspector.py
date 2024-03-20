@@ -37,7 +37,6 @@ SUPPORTED_PACKAGE_MANAGERS = {
 
 
 class SystemInspector:
-
     """
     System inspector class.
 

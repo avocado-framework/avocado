@@ -27,7 +27,6 @@ from avocado.utils import process
 
 
 class SoftwarePackage:
-
     """
     Definition of relevant information on a software package
     """
@@ -59,7 +58,6 @@ class SoftwarePackage:
 
 
 class DistroDef(utils_distro.LinuxDistro):
-
     """
     More complete information on a given Linux Distribution
 
@@ -104,7 +102,6 @@ class DistroDef(utils_distro.LinuxDistro):
 
 
 class DistroPkgInfoLoader:
-
     """
     Loads information from the distro installation tree into a DistroDef
 
@@ -166,7 +163,6 @@ class DistroPkgInfoLoader:
 
 
 class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
-
     """
     Loads package information for RPM files
     """
@@ -196,7 +192,6 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
 
 
 class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
-
     """
     Loads package information for DEB files
     """
@@ -296,7 +291,6 @@ def load_from_tree(name, version, release, arch, package_type, path):
 
 
 class Distro(CLICmd):
-
     """
     Implements the avocado 'distro' subcommand
     """

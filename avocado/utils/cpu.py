@@ -215,7 +215,7 @@ def get_arch():
         (b"^hart\\s*: 1$", "riscv"),
     ]
     cpuinfo = _get_info()
-    for (pattern, arch) in cpu_table:
+    for pattern, arch in cpu_table:
         if _list_matches(cpuinfo, pattern):
             if arch == "arm":
                 # ARM is a special situation, which matches both 32 bits

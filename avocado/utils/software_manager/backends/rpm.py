@@ -10,7 +10,6 @@ LOG = logging.getLogger(__name__)
 
 
 class RpmBackend(BaseBackend):
-
     """
     This class implements operations executed with the rpm package manager.
 

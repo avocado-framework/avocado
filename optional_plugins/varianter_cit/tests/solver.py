@@ -4,7 +4,6 @@ from avocado_varianter_cit.Solver import Solver
 
 
 class SolverTest(unittest.TestCase):
-
     """
     Test for compute_constraints function
     """

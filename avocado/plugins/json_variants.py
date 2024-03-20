@@ -36,7 +36,6 @@ class JsonVariantsInit(Init):
 
 
 class JsonVariantsCLI(CLI):
-
     """
     Serialized based Varianter options
     """
@@ -65,7 +64,6 @@ class JsonVariantsCLI(CLI):
 
 
 class JsonVariants(Varianter):
-
     """
     Processes the serialized file into variants
     """

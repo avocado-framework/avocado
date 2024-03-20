@@ -4,7 +4,6 @@ from avocado import Test
 
 
 class TimeoutTest(Test):
-
     """
     Functional test for avocado. Throw a TestTimeoutError.
 

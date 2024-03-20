@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class NastyException:
-
     """Please never use something like this!!! (old-style exception)"""
 
     def __init__(self, msg):
@@ -13,7 +12,6 @@ class NastyException:
 
 
 class FailTest(Test):
-
     """
     This test raises old-style-class exception
 

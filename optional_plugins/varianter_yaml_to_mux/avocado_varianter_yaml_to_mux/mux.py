@@ -35,7 +35,6 @@ REMOVE_VALUE = 1
 
 
 class MuxTree:
-
     """
     Object representing part of the tree from the root to leaves or another
     multiplex domain. Recursively it creates multiplexed variants of the full
@@ -211,7 +210,6 @@ class MuxPlugin:
 
 
 class OutputValue:  # only container pylint: disable=R0903
-
     """Ordinary value with some debug info"""
 
     def __init__(self, value, node, srcyaml):
@@ -227,7 +225,6 @@ class OutputValue:  # only container pylint: disable=R0903
 
 
 class OutputList(list):  # only container pylint: disable=R0903
-
     """List with some debug info"""
 
     def __init__(self, values, nodes, yamls):
@@ -250,7 +247,6 @@ class OutputList(list):  # only container pylint: disable=R0903
 
 
 class ValueDict(dict):  # only container pylint: disable=R0903
-
     """Dict which stores the origin of the items"""
 
     def __init__(self, srcyaml, node, values):
@@ -289,7 +285,6 @@ class ValueDict(dict):  # only container pylint: disable=R0903
 
 
 class Control:  # Few methods pylint: disable=R0903
-
     """Container used to identify node vs. control sequence"""
 
     def __init__(self, code, value=None):
@@ -298,7 +293,6 @@ class Control:  # Few methods pylint: disable=R0903
 
 
 class MuxTreeNode(tree.TreeNode):
-
     """
     Class for bounding nodes into tree-structure with support for
     multiplexation

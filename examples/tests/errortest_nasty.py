@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class NastyException(Exception):
-
     """Please never use something like this!!!"""
 
     def __init__(self, msg):  # pylint: disable=W0231
@@ -13,7 +12,6 @@ class NastyException(Exception):
 
 
 class FailTest(Test):
-
     """
     Very nasty exception test
 

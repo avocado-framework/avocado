@@ -43,7 +43,6 @@ class RunInit(Init):
 
 
 class Run(CLICmd):
-
     """
     Implements the avocado 'run' subcommand
     """

@@ -51,7 +51,6 @@ class ListWithUnpickableAttribute(list):
 
 
 class TestUnpickableObject(unittest.TestCase):
-
     """
     Basic selftests for `avocado.utils.stacktrace.str_unpickable_object
     """

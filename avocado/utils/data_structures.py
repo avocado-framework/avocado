@@ -199,7 +199,6 @@ class Borg:
 
 
 class LazyProperty:
-
     """
     Lazily instantiated property.
 
@@ -223,7 +222,6 @@ class LazyProperty:
 
 
 class CallbackRegister:
-
     """
     Registers pickable functions to be executed later.
     """

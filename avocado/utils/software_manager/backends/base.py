@@ -25,7 +25,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class BaseBackend:
-
     """
     This class implements all common methods among backends.
     """

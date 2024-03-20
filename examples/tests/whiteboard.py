@@ -6,7 +6,6 @@ from avocado import Test
 
 
 class WhiteBoard(Test):
-
     """
     Example of whiteboard usage.
     """

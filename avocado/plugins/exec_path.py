@@ -23,7 +23,6 @@ from avocado.core.plugin_interfaces import CLICmd
 
 
 class ExecPath(CLICmd):
-
     """
     Implements the avocado 'exec-path' subcommand
     """

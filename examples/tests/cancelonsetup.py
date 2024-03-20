@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class CancelOnSetupTest(Test):
-
     """
     Example test that cancels the current test, on the setUp phase.
     """

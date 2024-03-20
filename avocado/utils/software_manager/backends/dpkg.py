@@ -13,7 +13,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class DpkgBackend(BaseBackend):
-
     """
     This class implements operations executed with the dpkg package manager.
 

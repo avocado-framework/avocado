@@ -3,7 +3,6 @@ from avocado.utils import kernel
 
 
 class LinuxBuildTest(Test):
-
     """
     Execute the Linux Build test.
 

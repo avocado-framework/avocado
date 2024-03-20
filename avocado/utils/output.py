@@ -45,7 +45,6 @@ def display_data_size(size):
 
 
 class ProgressBar:
-
     """
     Displays interactively the progress of a given task
 

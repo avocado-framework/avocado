@@ -4,7 +4,6 @@ from avocado import Test
 
 
 class AsyncSleepTest(Test):
-
     """
     This test sleeps for 1s by default
 

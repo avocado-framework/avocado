@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class MultiplexTest(Test):
-
     """
     Execute a test that uses provided parameters (for multiplexing testing).
 

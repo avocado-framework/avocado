@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class MultipleTests(Test):
-
     """
     Following the unittest module pattern, every test method starts
     with a literal 'test' prefix, so that 'test_foo' and 'testFoo' are

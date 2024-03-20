@@ -33,7 +33,7 @@ class MagicResolver(Resolver):
     def resolve(reference):  # pylint: disable=W0221
         try:
             key_word, magic_word = reference.split(":", 1)
-        except (ValueError):
+        except ValueError:
             key_word = None
             magic_word = reference
         if key_word != "magic":

@@ -2,6 +2,6 @@ FROM fedora:38
 LABEL description "Fedora image used on integration checks"
 RUN dnf -y module enable avocado:latest
 RUN dnf -y install dnf-plugins-core git findutils make which
-RUN dnf -y install diffutils python3-isort python3-enchant python3-pylint python3-autopep8 python3-black
+RUN dnf -y install diffutils python3-isort python3-enchant python3-pylint python3-autopep8
 RUN dnf -y builddep python-avocado
 RUN dnf -y clean all

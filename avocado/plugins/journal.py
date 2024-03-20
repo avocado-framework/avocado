@@ -37,7 +37,6 @@ SCHEMA = {
 
 
 class JournalResult(ResultEvents):
-
     """
     Test Result Journal class.
 
@@ -135,7 +134,6 @@ class JournalResult(ResultEvents):
 
 
 class Journal(CLI):
-
     """
     Test journal
     """

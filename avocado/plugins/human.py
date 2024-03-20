@@ -46,7 +46,6 @@ class HumanInit(Init):
 
 
 class Human(ResultEvents):
-
     """
     Human result UI
     """
@@ -157,7 +156,6 @@ class Human(ResultEvents):
 
 
 class HumanJob(JobPre, JobPost):
-
     """
     Human result UI
     """

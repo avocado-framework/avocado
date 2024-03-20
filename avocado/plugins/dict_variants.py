@@ -47,7 +47,6 @@ class DictVariantsInit(Init):
 
 
 class DictVariants(Varianter):
-
     """
     Turns (a list of) Python dictionaries into variants
     """

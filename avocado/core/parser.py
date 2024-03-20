@@ -32,7 +32,6 @@ DESCRIPTION = "Avocado Test Runner"
 
 
 class ArgumentParser(argparse.ArgumentParser):
-
     """
     Class to override argparse functions
     """
@@ -52,7 +51,6 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 class FileOrStdoutAction(argparse.Action):
-
     """
     Controls claiming the right to write to the application standard output
     """
@@ -74,7 +72,6 @@ class FileOrStdoutAction(argparse.Action):
 
 
 class Parser:
-
     """
     Class to Parse the command line arguments.
     """

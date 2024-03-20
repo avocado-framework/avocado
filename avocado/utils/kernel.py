@@ -31,7 +31,6 @@ LOG = logging.getLogger(__name__)
 
 
 class KernelBuild:
-
     """
     Build the Linux Kernel from official tarballs.
     """

@@ -46,7 +46,6 @@ def gather_collectibles_config(config):
 
 
 class SysInfo:
-
     """
     Log different system properties at some key control points.
 

@@ -26,7 +26,6 @@ SHEBANG = "#!"
 
 
 class CmdNotFoundError(Exception):
-
     """
     Indicates that the command was not found in the system after a search.
 

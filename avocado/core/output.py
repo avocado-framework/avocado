@@ -248,7 +248,6 @@ TEST_STATUS_DECORATOR_MAPPING = {
 
 
 class _StdOutputFile:
-
     """
     File-like object which stores (_is_stdout, content) into the provided list
     """
@@ -299,7 +298,6 @@ class _StdOutputFile:
 
 
 class StdOutput:
-
     """
     Class to modify sys.stdout/sys.stderr
     """
@@ -576,7 +574,6 @@ class FilterTestMessageOnly(logging.Filter):
 
 
 class ProgressStreamHandler(logging.StreamHandler):
-
     """
     Handler class that allows users to skip new lines on each emission.
     """
@@ -607,7 +604,6 @@ class ProgressStreamHandler(logging.StreamHandler):
 
 
 class MemStreamHandler(logging.StreamHandler):
-
     """
     Handler that stores all records in self.log (shared in all instances)
     """
@@ -624,7 +620,6 @@ class MemStreamHandler(logging.StreamHandler):
 
 
 class Paginator:
-
     """
     Paginator that uses less to display contents on the terminal.
 
@@ -722,7 +717,6 @@ def disable_log_handler(logger):
 
 
 class Throbber:
-
     """
     Produces a spinner used to notify progress in the application UI.
     """

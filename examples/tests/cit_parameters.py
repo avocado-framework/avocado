@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class CitParameters(Test):
-
     """
     Example test that fetches the parameters set on examples/cit/params.ini
 

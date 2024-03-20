@@ -43,9 +43,9 @@ class StatusRepo:
         if result is not None and result.upper() not in STATUSES:
             overridden = "error"
             message["result"] = overridden
-            message[
-                "fail_reason"
-            ] = f'Runner error occurred: Test reports unsupported status "{result}"'
+            message["fail_reason"] = (
+                f'Runner error occurred: Test reports unsupported status "{result}"'
+            )
             LOG.error(
                 'Task "%s" finished message with unsupported status '
                 '"%s", changing to "%s"',

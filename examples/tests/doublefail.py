@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class DoubleFail(Test):
-
     """
     Functional test for avocado. Straight up fail the test.
 

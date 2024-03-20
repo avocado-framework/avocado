@@ -129,7 +129,6 @@ def can_mount():
 
 
 class BaseIso9660:
-
     """
     Represents a ISO9660 filesystem
 
@@ -210,7 +209,6 @@ class MixInMntDirMount:
 
 
 class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
-
     """
     Represents a ISO9660 filesystem
 
@@ -278,7 +276,6 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
 
 
 class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
-
     """
     Represents a ISO9660 filesystem
 
@@ -306,7 +303,6 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
 
 
 class Iso9660Mount(BaseIso9660):
-
     """
     Represents a mounted ISO9660 filesystem.
     """
@@ -375,7 +371,6 @@ class Iso9660Mount(BaseIso9660):
 
 
 class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
-
     """
     Represents a ISO9660 filesystem
 
@@ -499,7 +494,7 @@ def iso9660(path, capabilities=None):
         ("mount", can_mount, Iso9660Mount, common_capabilities),
     ]
 
-    for (name, check, klass, cap) in implementations:
+    for name, check, klass, cap in implementations:
         if capabilities is not None and not set(capabilities).issubset(cap):
             continue
         if check():

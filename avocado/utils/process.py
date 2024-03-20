@@ -336,7 +336,6 @@ cmd_split = shlex.split
 
 
 class CmdResult:
-
     """
     Command execution result.
 
@@ -529,7 +528,6 @@ class FDDrainer:
 
 
 class SubProcess:
-
     """
     Run a subprocess in the background, collecting stdout/stderr streams.
     """

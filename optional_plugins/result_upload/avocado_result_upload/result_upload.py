@@ -23,7 +23,6 @@ from avocado.utils import process
 
 
 class ResultUpload(Result):
-
     """
     ResultsUpload output class
     """
@@ -57,7 +56,6 @@ class ResultUpload(Result):
 
 
 class ResultUploadCLI(CLI):
-
     """
     ResultsUpload output class
     """

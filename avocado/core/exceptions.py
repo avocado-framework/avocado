@@ -18,7 +18,6 @@ Exception classes, useful for tests, and other parts of the framework code.
 
 
 class JobBaseException(Exception):
-
     """
     The parent of all job exceptions.
 
@@ -27,42 +26,36 @@ class JobBaseException(Exception):
 
 
 class JobError(JobBaseException):
-
     """
     A generic error happened during a job execution.
     """
 
 
 class JobTestSuiteError(JobBaseException):
-
     """
     Generic error happened during the creation of a job's test suite
     """
 
 
 class JobTestSuiteEmptyError(JobTestSuiteError):
-
     """
     Error raised when the creation of a test suite results in an empty suite
     """
 
 
 class JobTestSuiteDuplicateNameError(JobTestSuiteError):
-
     """
     Error raised when a test suite name is not unique in a job
     """
 
 
 class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
-
     """
     Test References did not produce a valid reference by any resolver
     """
 
 
 class JobFailFast(JobBaseException):
-
     """
     Indicates that the test has failed because failfast is enabled.
 
@@ -72,14 +65,12 @@ class JobFailFast(JobBaseException):
 
 
 class OptionValidationError(Exception):
-
     """
     An invalid option was passed to the test runner
     """
 
 
 class TestBaseException(Exception):
-
     """
     The parent of all test exceptions.
 
@@ -91,7 +82,6 @@ class TestBaseException(Exception):
 
 
 class TestSetupFail(TestBaseException):
-
     """
     Indicates an error during a setup or cleanup procedure.
     """
@@ -100,7 +90,6 @@ class TestSetupFail(TestBaseException):
 
 
 class TestError(TestBaseException):
-
     """
     Indicates that the test was not fully executed and an error happened.
 
@@ -113,7 +102,6 @@ class TestError(TestBaseException):
 
 
 class TestAbortError(TestBaseException):
-
     """
     Indicates that the test was prematurely aborted.
     """
@@ -122,7 +110,6 @@ class TestAbortError(TestBaseException):
 
 
 class TestSkipError(TestBaseException):
-
     """
     Indicates that the test is skipped.
 
@@ -135,7 +122,6 @@ class TestSkipError(TestBaseException):
 
 
 class TestFail(TestBaseException, AssertionError):
-
     """
     Indicates that the test failed.
 
@@ -148,7 +134,6 @@ class TestFail(TestBaseException, AssertionError):
 
 
 class TestWarn(TestBaseException):
-
     """
     Indicates that bad things (may) have happened, but not an explicit
     failure.

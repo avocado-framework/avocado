@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class GetData(Test):
-
     """
     Example for get_data() API usage
     """

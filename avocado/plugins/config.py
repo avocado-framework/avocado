@@ -22,7 +22,6 @@ from avocado.core.settings import settings
 
 
 class Config(CLICmd):
-
     """
     Implements the avocado 'config' subcommand
     """

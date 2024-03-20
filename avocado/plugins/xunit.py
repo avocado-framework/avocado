@@ -231,7 +231,6 @@ class XUnitInit(Init):
 
 
 class XUnitCLI(CLI):
-
     """
     xUnit output
     """

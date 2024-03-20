@@ -37,7 +37,6 @@ def _get_tags_as_string(tags):
 
 
 class List(CLICmd):
-
     """
     Implements the avocado 'list' subcommand
     """

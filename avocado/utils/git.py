@@ -27,7 +27,6 @@ LOG = logging.getLogger(__name__)
 
 
 class GitRepoHelper:
-
     """
     Helps to deal with git repos, mostly fetching content from a repo
     """

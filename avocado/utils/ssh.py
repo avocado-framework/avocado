@@ -11,6 +11,7 @@ Example of use:
         if result.exit_status == 0:
             print(result.stdout_text)
 """
+
 import os
 import shlex
 import stat

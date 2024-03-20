@@ -11,7 +11,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class AptBackend(DpkgBackend):
-
     """
     Implements the apt backend for software manager.
 

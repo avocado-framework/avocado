@@ -24,7 +24,6 @@ def missing_binary(binary):
 
 
 class Base(unittest.TestCase):
-
     """
     Common setUp/tearDown for partition tests
     """
@@ -79,7 +78,6 @@ class TestPartition(Base):
 
 
 class TestPartitionMkfsMount(Base):
-
     """
     Tests that assume a filesystem and mounted partition
     """
@@ -205,7 +203,6 @@ class TestPartitionMkfsMount(Base):
 
 @unittest.skipIf(not os.path.isfile("/etc/mtab"), "macOS does not have /etc/mtab")
 class TestMtabLock(unittest.TestCase):
-
     """
     Unit tests for avocado.utils.partition
     """

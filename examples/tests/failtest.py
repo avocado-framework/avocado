@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class FailTest(Test):
-
     """
     Example test for avocado. Straight up fail the test.
 

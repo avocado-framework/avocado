@@ -26,7 +26,6 @@ from avocado.utils import process
 
 
 class VarianterPictCLI(CLI):
-
     """
     Pict based Varianter options
     """
@@ -121,7 +120,6 @@ def parse_pict_output(output):
 
 
 class VarianterPict(Varianter):
-
     """
     Processes the pict file into variants
     """

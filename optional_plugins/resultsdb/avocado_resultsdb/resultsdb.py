@@ -27,7 +27,6 @@ from avocado.core.settings import settings
 
 
 class ResultsdbResultEvent(ResultEvents):
-
     """
     ResultsDB output class
     """
@@ -142,7 +141,6 @@ class ResultsdbResultEvent(ResultEvents):
 
 
 class ResultsdbResult(Result):
-
     """
     ResultsDB render class
     """
@@ -159,7 +157,6 @@ class ResultsdbResult(Result):
 
 
 class ResultsdbCLI(CLI):
-
     """
     Propagate Job results to Resultsdb
     """

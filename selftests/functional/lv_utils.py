@@ -15,7 +15,6 @@ from selftests.utils import TestCaseTmpDir
 
 
 class LVUtilsTest(TestCaseTmpDir):
-
     """
     Check the LVM related utilities
     """

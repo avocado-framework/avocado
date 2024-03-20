@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class WarnTest(Test):
-
     """
     Functional test for avocado. Throw a TestWarn.
     """
