@@ -39,22 +39,23 @@ def is_port_available(
     :type address: str
     :param family: Default is socket.AF_INET. Accepted values are:
                    socket.AF_INET or socket.AF_INET6.
-    :type type: socket.AddressFamily.AF_*
+    :type family: socket.AddressFamily.AF_*
     :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
                      Accepted values are: socket.SOCK_STREAM or
                      socket.SOCK_DGRAM.
-    :type type: socket.AddressFamily.SOCK_*
+    :type protocol: socket.AddressFamily.SOCK_*
     """
     try:
         with socket.socket(family, protocol) as sock:
-            sock.bind((address, port))
-    except PermissionError:
-        # Permission denied, can't be sure
-        return False
-    except OSError:
-        # Address already in use or cannot assign requested address
-        return False
-    return True
+            # Set a timeout for the connection attempt
+            sock.settimeout(1)
+            sock.connect((address, port))
+    except ConnectionRefusedError:
+        # If connection is refused, the port is free
+        return True
+    finally:
+        sock.close()
+    return False
 
 
 def is_port_free(port, address):
