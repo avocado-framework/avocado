@@ -60,7 +60,7 @@ def get_docstring_directives_tags(docstring):
                     if key in result:
                         result[key].add(val)
                     else:
-                        result[key] = set([val])
+                        result[key] = {val}
                 else:
                     result[tag] = None
     return result
