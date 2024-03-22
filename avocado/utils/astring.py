@@ -50,16 +50,14 @@ def bitlist_to_string(data):
 
     :param data: Bit list to be transformed
     """
-    result = []
-    pos = 0
+    result = bytearray()
     c = 0
-    while pos < len(data):
-        c += data[pos] << (7 - (pos % 8))
+    for pos, bit in enumerate(data):
+        c |= bit << (7 - (pos % 8))
         if (pos % 8) == 7:
             result.append(c)
             c = 0
-        pos += 1
-    return "".join([chr(c) for c in result])
+    return result.decode("ascii")
 
 
 def string_to_bitlist(data):
