@@ -121,8 +121,14 @@ def get_disks():
     :returns: a list of paths to the physical disks on the system
     :rtype: list of str
     """
-    json_result = process.run("lsblk --json --paths --inverse")
-    json_data = json.loads(json_result.stdout_text)
+    try:
+        json_result = process.run("lsblk --json --paths --inverse")
+    except process.CmdError as ce:
+        raise DiskError(f"Error occurred while executing lsblk command: {ce}")
+    try:
+        json_data = json.loads(json_result.stdout_text)
+    except json.JSONDecodeError as je:
+        raise DiskError(f"Error occurred while parsing JSON data: {je}")
     disks = []
     for device in json_data["blockdevices"]:
         disks.append(device["name"])
