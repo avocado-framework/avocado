@@ -107,7 +107,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build eggs
-        run: make -f Makefile.gh build-egg
+        run: |
+          if python -c 'import sys; exit(0) if sys.version_info.minor > 11 else exit(1)' ; then
+            pip install setuptools
+          fi
+          make -f Makefile.gh build-egg
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
