@@ -149,22 +149,23 @@ Test types
 Avocado at its simplest configuration can run three different types of tests:
 
 * Executable tests (``exec-test``)
-* python unittest
-* instrumented
+* Python unittest tests (``python-unittest``)
+* Avocado Instrumented tests (``avocado-instrumented``)
+* TAP producing tests (``tap``)
 
 You can mix and match those in a single job.
 
 Avocado plugins can also introduce additional test types.
 
-Executable Tests
+Executable tests
 ~~~~~~~~~~~~~~~~
 
 Any executable file can serve as a test. The criteria for PASS/FAIL is
 the return code of the executable.  If it returns 0, the test PASSes,
 if it returns anything else, it FAILs.
 
-Python unittest
-~~~~~~~~~~~~~~~
+Python unittest tests
+~~~~~~~~~~~~~~~~~~~~~
 
 The discovery of classical Python unittest is also supported, although unlike
 Python unittest we still use static analysis to get individual tests so
@@ -173,8 +174,8 @@ no surprises when running unittests via Avocado.
 
 .. _Instrumented:
 
-Instrumented
-~~~~~~~~~~~~
+Avocado Instrumented tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These are tests written in Python or BASH with the Avocado helpers that use the
 Avocado test API.
@@ -189,8 +190,8 @@ including logging, test result status and other more sophisticated test APIs.
 Test statuses ``PASS``, ``WARN`` and ``SKIP`` are considered
 successful. The ``ERROR``, ``FAIL`` and ``INTERRUPTED`` signal failures.
 
-TAP
-~~~
+TAP producing tests
+~~~~~~~~~~~~~~~~~~~
 
 TAP tests are pretty much like executable tests in the sense that they are
 programs (either binaries or scripts) that will executed.  The
