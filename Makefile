@@ -37,7 +37,7 @@ uninstall:
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
 
 requirements-dev: pip
-	- $(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
+	$(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
 
 smokecheck: clean uninstall develop
 	$(PYTHON) -m avocado run examples/tests/passtest.py
