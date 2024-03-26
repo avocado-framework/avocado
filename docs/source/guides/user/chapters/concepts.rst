@@ -24,11 +24,19 @@ location::
   JOB LOG    : $HOME/avocado/job-results/job-2015-06-10T10.44-49ec339/job.log
 
 
+Test Resolver
+~~~~~~~~~~~~~
+
+A test resolver is Avocado's component that will take a reference you
+know about and will turn it into an actual test that can be run.  This
+reference, explained next, can be pretty much any string, but it'll
+usually be some form of text containing the path to the file that
+contains the test.
+
+For more information please refer to :ref:`finding_tests`.
+
 Test References
 ~~~~~~~~~~~~~~~
-
-.. warning:: TODO: We are talking here about Test Resolver, but the reader was
-  not introduced to this concept yet.
 
 A Test Reference is a string that can be resolved into
 (interpreted as) one or more tests by the Avocado Test Resolver.
