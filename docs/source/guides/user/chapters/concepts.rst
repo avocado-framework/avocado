@@ -228,11 +228,11 @@ can have a good idea on what happened to the job.
 
 The single individual exit codes are:
 
-* AVOCADO_ALL_OK (0)
-* AVOCADO_TESTS_FAIL (1)
-* AVOCADO_JOB_FAIL (2)
-* AVOCADO_FAIL (4)
-* AVOCADO_JOB_INTERRUPTED (8)
+* :data:`AVOCADO_ALL_OK <avocado.core.exit_codes.AVOCADO_ALL_OK>`
+* :data:`AVOCADO_TESTS_FAIL <avocado.core.exit_codes.AVOCADO_TEST_FAIL>`
+* :data:`AVOCADO_JOB_FAIL <avocado.core.exit_codes.AVOCADO_JOB_FAIL>`
+* :data:`AVOCADO_FAIL <avocado.core.exit_codes.AVOCADO_FAIL>`
+* :data:`AVOCADO_JOB_INTERRUPTED <avocado.core.exit_codes.AVOCADO_JOB_INTERRUPTED>`
 
 If a job finishes with exit code `9`, for example, it means we had at least one
 test that failed and also we had at some point a job interruption, probably due
