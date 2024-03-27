@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avocado-project.org/runnable-recipe.schema.json",
+    "title": "runnable-recipe",
+    "description": "Runnable serialized in a JSON based recipe file",
+    "type": "object",
+    "properties": {
+        "kind": {
+            "description": "The kind of runnable, which should be matched to a capable runner",
+            "type": "string"
+        },
+        "uri": {
+            "description": "The main reference to what needs to be run. This is free form, but commonly set to the path to a file containing the test or being the test, or an actual URI with multiple parts",
+            "type": "string"
+        },
+        "args": {
+            "description": "Sequence of arguments to be interpreted by the runner.  For instance, exec-test turns these into positional command line arguments",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": false
+        },
+        "kwargs": {
+            "description": "Keyword based arguments, that is, a sequence of key and values.  The exec-test, for instance, will turn these into environment variables",
+            "type": "object"
+        },
+        "config": {
+            "description": "Avocado settings that should be applied to this runnable.  At least the ones declared as CONFIGURATION_USED in the runner specific for this kind should be present",
+            "type": "object"
+        }
+    },
+    "additionalProperties": false,
+    "required": [ "kind" ]
+}
