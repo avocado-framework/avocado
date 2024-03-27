@@ -5,7 +5,6 @@ from avocado.utils.software_manager.inspector import (
 
 
 class SoftwareManager:
-
     """
     Package management abstraction layer.
 

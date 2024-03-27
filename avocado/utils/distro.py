@@ -38,7 +38,6 @@ __all__ = [
 
 # pylint: disable=R0903
 class LinuxDistro:
-
     """
     Simple collection of information for a Linux Distribution
     """
@@ -97,7 +96,6 @@ UNKNOWN_DISTRO = LinuxDistro(
 
 
 class Probe:
-
     """
     Probes the machine and does it best to confirm it's the right distro.
     If given an avocado.utils.ssh.Session object representing another machine, Probe
@@ -324,7 +322,6 @@ class Probe:
 
 
 class RedHatProbe(Probe):
-
     """
     Probe with version checks for Red Hat Enterprise Linux systems
     """
@@ -338,7 +335,6 @@ class RedHatProbe(Probe):
 
 
 class CentosProbe(RedHatProbe):
-
     """
     Probe with version checks for CentOS systems
     """
@@ -350,7 +346,6 @@ class CentosProbe(RedHatProbe):
 
 
 class CentosStreamProbe(RedHatProbe):
-
     """
     Probe with version checks for CentOS Stream systems
     """
@@ -362,7 +357,6 @@ class CentosStreamProbe(RedHatProbe):
 
 
 class FedoraProbe(RedHatProbe):
-
     """
     Probe with version checks for Fedora systems
     """
@@ -374,7 +368,6 @@ class FedoraProbe(RedHatProbe):
 
 
 class AmazonLinuxProbe(Probe):
-
     """
     Probe for Amazon Linux systems
     """
@@ -388,7 +381,6 @@ class AmazonLinuxProbe(Probe):
 
 
 class DebianProbe(Probe):
-
     """
     Simple probe with file checks for Debian systems
     """
@@ -399,7 +391,6 @@ class DebianProbe(Probe):
 
 
 class UbuntuProbe(Probe):
-
     """
     Simple probe for Ubuntu systems in general
     """
@@ -413,7 +404,6 @@ class UbuntuProbe(Probe):
 
 
 class SUSEProbe(Probe):
-
     """
     Simple probe for SUSE systems in general
     """
@@ -456,7 +446,6 @@ class SUSEProbe(Probe):
 
 
 class OpenEulerProbe(Probe):
-
     """
     Simple probe for openEuler systems in general
     """
@@ -468,7 +457,6 @@ class OpenEulerProbe(Probe):
 
 
 class UnionTechProbe(Probe):
-
     """
     Simple probe for UnionTech systems in general
     """
@@ -533,7 +521,6 @@ def detect(session=None):
 
 
 class Spec:
-
     """
     Describes a distro, usually for setting minimum distro requirements
     """

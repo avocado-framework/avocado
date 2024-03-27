@@ -159,7 +159,6 @@ def dump_ivariants(ivariants):
 
 
 class FakeVariantDispatcher:
-
     """
     This object can act instead of VarianterDispatcher to report loaded
     variants.
@@ -210,7 +209,6 @@ class FakeVariantDispatcher:
 
 
 class Varianter:
-
     """
     This object takes care of producing test variants
     """

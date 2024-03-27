@@ -4,7 +4,6 @@ from avocado.utils.software_manager.manager import SoftwareManager
 
 
 class CancelTest(Test):
-
     """
     Example tests that cancel the current test from inside the test.
     """

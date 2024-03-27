@@ -164,7 +164,6 @@ def get_this_file():
 
 
 class UnlimitedDiff(unittest.TestCase):
-
     """
     Serves two purposes: as a base class to test safeloader.find_class_and_methods
     and, while at it, to set unlimited diff on failure results.

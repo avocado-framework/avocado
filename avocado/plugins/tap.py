@@ -46,7 +46,6 @@ def file_log_factory(log_file):
 
 
 class TAPResult(ResultEvents):
-
     """
     TAP output class
     """
@@ -195,7 +194,6 @@ class TAPInit(Init):
 
 
 class TAP(CLI):
-
     """
     TAP Test Anything Protocol output avocado plugin
     """

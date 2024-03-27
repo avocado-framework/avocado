@@ -32,7 +32,6 @@ class LockFailed(Exception):
 
 
 class FileLock:
-
     """
     Creates an exclusive advisory lock for a file.
     All processes should use and honor the advisory

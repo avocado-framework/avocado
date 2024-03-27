@@ -42,7 +42,6 @@ from avocado.utils import astring
 
 
 class FilterSet(set):
-
     """Set of filters in standardized form"""
 
     @staticmethod
@@ -63,7 +62,6 @@ class FilterSet(set):
 
 
 class TreeEnvironment(dict):
-
     """TreeNode environment with values, origins and filters"""
 
     def __init__(self):
@@ -127,7 +125,6 @@ class TreeEnvironment(dict):
 
 
 class TreeNodeEnvOnly:
-
     """
     Minimal TreeNode-like class providing interface for AvocadoParams
     """
@@ -171,7 +168,6 @@ class TreeNodeEnvOnly:
 
 
 class TreeNode:
-
     """
     Class for bounding nodes into tree-structure.
     """

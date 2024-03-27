@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class Phases(Test):
-
     """
     Example test for checking the reported test phases
     """

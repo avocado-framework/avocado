@@ -8,6 +8,7 @@ Finds the beaker API entry point using the BEAKER_LAB_CONTROLLER_URL
 environment variable.  Does nothing in case the variable is not set.
 
 """
+
 import glob
 import os
 import pprint
@@ -20,7 +21,6 @@ from avocado.core.plugin_interfaces import ResultEvents
 
 
 class BeakerResult(ResultEvents):
-
     """
     send test results to beaker test harness api
     """

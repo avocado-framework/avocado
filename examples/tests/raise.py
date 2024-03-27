@@ -6,7 +6,6 @@ from avocado.utils import build, process
 
 
 class Raise(Test):
-
     """
     A test that calls raise() to signals to itself.
 

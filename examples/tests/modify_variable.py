@@ -6,7 +6,6 @@ from avocado.utils import build, gdb
 
 
 class PrintVariableTest(Test):
-
     """
     This demonstrates the GDB API
     1) it executes C program which prints MY VARIABLE 'A' IS: 0

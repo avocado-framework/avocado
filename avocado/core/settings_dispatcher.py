@@ -24,7 +24,6 @@ from avocado.core.extension_manager import ExtensionManager
 
 
 class SettingsDispatcher(ExtensionManager):
-
     """
     Dispatchers that allows plugins to modify settings
 

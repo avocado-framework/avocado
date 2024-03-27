@@ -59,7 +59,6 @@ class SettingsError(Exception):
 
 
 class ConfigFileNotFound(SettingsError):
-
     """
     Error thrown when the main settings file could not be found.
     """

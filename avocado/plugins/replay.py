@@ -25,7 +25,6 @@ from avocado.core.settings import settings
 
 
 class Replay(CLICmd):
-
     """Implements the avocado 'replay' subcommand."""
 
     name = "replay"

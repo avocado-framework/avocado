@@ -2,7 +2,6 @@ import avocado
 
 
 class FailOnException(avocado.Test):
-
     """
     Test illustrating the behavior of the fail_on decorator.
 

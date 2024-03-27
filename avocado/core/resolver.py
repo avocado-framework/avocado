@@ -55,7 +55,6 @@ class ReferenceResolutionAction(Enum):
 
 
 class ReferenceResolution:
-
     """
     Represents one complete reference resolution
 
@@ -99,7 +98,6 @@ class ReferenceResolution:
 
 
 class Resolver(EnabledExtensionManager):
-
     """
     Main test reference resolution utility.
 
@@ -143,7 +141,6 @@ class Resolver(EnabledExtensionManager):
 
 
 class Discoverer(EnabledExtensionManager):
-
     """
     Secondary test reference resolution utility.
 

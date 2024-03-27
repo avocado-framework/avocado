@@ -135,7 +135,6 @@ def find_free_ports(
 
 
 class PortTracker(Borg):
-
     """
     Tracks ports used in the host machine.
     """

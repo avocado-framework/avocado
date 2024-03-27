@@ -5,7 +5,6 @@ from avocado import Test
 
 
 class SleepTenMin(Test):
-
     """
     Sleeps for 10 minutes
 

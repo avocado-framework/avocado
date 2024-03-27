@@ -2,7 +2,6 @@ import avocado
 
 
 class CancelOnException(avocado.Test):
-
     """
     Test illustrating the usage of the cancel_on decorator.
     """

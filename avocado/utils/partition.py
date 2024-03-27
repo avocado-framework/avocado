@@ -33,7 +33,6 @@ LOG = logging.getLogger(__name__)
 
 
 class PartitionError(Exception):
-
     """
     Generic PartitionError
     """
@@ -75,7 +74,6 @@ class MtabLock:
 
 
 class Partition:
-
     """
     Class for handling partitions and filesystems
     """

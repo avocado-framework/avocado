@@ -30,7 +30,6 @@ DEFAULT_ORDER_OF_COMBINATIONS = 2
 
 
 class VarianterCitCLI(CLI):
-
     """
     CIT Varianter options
     """
@@ -73,7 +72,6 @@ class VarianterCitCLI(CLI):
 
 
 class VarianterCit(Varianter):
-
     """
     Processes the parameters file into variants
     """

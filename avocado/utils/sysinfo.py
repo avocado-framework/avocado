@@ -32,7 +32,6 @@ class CollectibleException(Exception):
 
 
 class Collectible(ABC):
-
     """
     Abstract class for representing sysinfo collectibles.
     """
@@ -80,7 +79,6 @@ class Collectible(ABC):
 
 
 class Logfile(Collectible):
-
     """
     Collectible system file.
 
@@ -126,7 +124,6 @@ class Logfile(Collectible):
 
 
 class Command(Collectible):
-
     """
     Collectible command.
 
@@ -192,7 +189,6 @@ class Command(Collectible):
 
 
 class Daemon(Command):
-
     """
     Collectible daemon.
 
@@ -271,7 +267,6 @@ class Daemon(Command):
 
 
 class JournalctlWatcher(Collectible):
-
     """
     Track the content of systemd journal.
 
@@ -327,7 +322,6 @@ class JournalctlWatcher(Collectible):
 
 
 class LogWatcher(Collectible):
-
     """
     Keep track of the contents of a log file in another compressed file.
 

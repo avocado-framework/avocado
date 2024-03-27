@@ -40,7 +40,6 @@ READ_ONLY_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 
 
 class Script:
-
     """
     Class that represents a script.
     """
@@ -106,7 +105,6 @@ class Script:
 
 
 class TemporaryScript(Script):
-
     """
     Class that represents a temporary script.
     """

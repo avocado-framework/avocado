@@ -4,7 +4,6 @@ from avocado.utils import data_structures
 
 
 class TestDataStructures(unittest.TestCase):
-
     """
     Unit tests for avocado.utils.data_structures
     """

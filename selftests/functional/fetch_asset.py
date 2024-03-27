@@ -2,7 +2,6 @@
 Functional tests for fetch_asset core test method
 """
 
-
 import os
 import tempfile
 import unittest

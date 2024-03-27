@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class ErrorTest(Test):
-
     """
     Example test that raises generic exception
 

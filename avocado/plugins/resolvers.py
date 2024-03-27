@@ -70,7 +70,7 @@ def python_resolver(name, reference, find_tests):
     class_methods_info, _ = find_tests(module_path)
     runnables = []
     for klass, methods_tags_depens in class_methods_info.items():
-        for (method, tags, depens) in methods_tags_depens:
+        for method, tags, depens in methods_tags_depens:
             klass_method = f"{klass}.{method}"
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue

@@ -49,7 +49,6 @@ __RE_FILE_SUBS = re.compile(r"(?<!\\)\\:")  # substitute '\\:' but not '\\\\:'
 
 
 class ListOfNodeObjects(list):  # Few methods pylint: disable=R0903
-
     """
     Used to mark list as list of objects from whose node is going to be created
     """
@@ -261,7 +260,6 @@ def _mux_loader(loader, node):
 
 
 class _BaseLoader(SafeLoader):
-
     """
     YAML loader with additional features related to mux
     """
@@ -354,7 +352,6 @@ def create_from_yaml(paths):
 
 
 class YamlToMuxInit(Init):
-
     """
     YamlToMux initialization plugin
     """
@@ -408,7 +405,6 @@ class YamlToMuxInit(Init):
 
 
 class YamlToMuxCLI(CLI):
-
     """
     Defines arguments for YamlToMux plugin
     """
@@ -478,7 +474,6 @@ class YamlToMuxCLI(CLI):
 
 
 class YamlToMux(mux.MuxPlugin, Varianter):
-
     """
     Processes the mux options into varianter plugin
     """

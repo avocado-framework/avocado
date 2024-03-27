@@ -264,7 +264,6 @@ class SysInfoTest(PreTest, PostTest):
 
 
 class SysInfo(CLICmd):
-
     """
     Collect system information
     """

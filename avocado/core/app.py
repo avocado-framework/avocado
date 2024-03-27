@@ -29,7 +29,6 @@ from avocado.utils import process
 
 
 class AvocadoApp:
-
     """
     Avocado application.
     """

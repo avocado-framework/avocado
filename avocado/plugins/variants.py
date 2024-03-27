@@ -43,7 +43,6 @@ def map_verbosity_level(level):
 
 
 class Variants(CLICmd):
-
     """
     Implements "variants" command to visualize/debug test variants and params
     """

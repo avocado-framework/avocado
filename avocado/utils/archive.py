@@ -162,7 +162,6 @@ class ArchiveException(Exception):
 
 
 class ArchiveFile:
-
     """
     Class that represents an Archive file.
 

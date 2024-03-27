@@ -19,7 +19,6 @@ from avocado.core.settings import settings
 
 
 class Cache(CLICmd):
-
     """
     Implements the avocado 'cache' subcommand
     """

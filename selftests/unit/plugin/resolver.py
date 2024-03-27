@@ -50,7 +50,6 @@ class SampleTest(TestCase):
 
 
 class ReferenceResolution(unittest.TestCase):
-
     """
     Tests on how to initialize and use
     :class:`avocado.core.resolver.ReferenceResolution`

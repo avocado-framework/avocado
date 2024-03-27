@@ -222,7 +222,6 @@ def string_to_hex(text):
 
 
 class CommandResult:
-
     """
     A GDB command, its result, and other possible messages
     """
@@ -257,7 +256,6 @@ class CommandResult:
 
 
 class GDB:
-
     """
     Wraps a GDB subprocess for easier manipulation
     """
@@ -549,7 +547,6 @@ class GDB:
 
 
 class GDBServer:
-
     """
     Wraps a gdbserver instance
     """

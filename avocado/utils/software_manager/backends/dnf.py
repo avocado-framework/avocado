@@ -7,7 +7,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class DnfBackend(YumBackend):
-
     """
     Implements the dnf backend for software manager.
 

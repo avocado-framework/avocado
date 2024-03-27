@@ -69,7 +69,6 @@ TEST_STATE_ATTRIBUTES = (
 
 
 class TestData:
-
     """
     Class that adds the ability for tests to have access to data files
 
@@ -220,7 +219,6 @@ class TestData:
 
 
 class Test(unittest.TestCase, TestData):
-
     """
     Base implementation for the test class.
 

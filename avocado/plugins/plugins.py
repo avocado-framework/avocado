@@ -24,7 +24,6 @@ from avocado.utils import astring
 
 
 class Plugins(CLICmd):
-
     """
     Plugins information
     """

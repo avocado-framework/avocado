@@ -30,7 +30,6 @@ import threading
 
 
 class BaseDrainer(abc.ABC):
-
     """
     Base drainer, doesn't provide complete functionality to be useful.
     """

@@ -133,7 +133,6 @@ class JSONInit(Init):
 
 
 class JSONCLI(CLI):
-
     """
     JSON output
     """

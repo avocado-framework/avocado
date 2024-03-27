@@ -9,7 +9,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class ZypperBackend(RpmBackend):
-
     """
     Implements the zypper backend for software manager.
 

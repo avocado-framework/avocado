@@ -2,7 +2,6 @@ from avocado.utils import astring
 
 
 class TestID:
-
     """
     Test ID construction and representation according to specification
 

@@ -4,7 +4,6 @@ from avocado import Test
 
 
 class AbortTest(Test):
-
     """
     A test that just calls abort() (and abort).
 

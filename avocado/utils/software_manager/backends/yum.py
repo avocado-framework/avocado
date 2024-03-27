@@ -22,7 +22,6 @@ log = logging.getLogger("avocado.utils.software_manager")
 
 
 class YumBackend(RpmBackend):
-
     """
     Implements the yum backend for software manager.
 

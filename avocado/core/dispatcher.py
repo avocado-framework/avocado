@@ -53,7 +53,6 @@ def get_dispatchers(module_name):
 
 
 class CLIDispatcher(EnabledExtensionManager):
-
     """
     Calls extensions on configure/run
 
@@ -68,7 +67,6 @@ class CLIDispatcher(EnabledExtensionManager):
 
 
 class CLICmdDispatcher(EnabledExtensionManager):
-
     """
     Calls extensions on configure/run
 
@@ -83,7 +81,6 @@ class CLICmdDispatcher(EnabledExtensionManager):
 
 
 class JobPrePostDispatcher(EnabledExtensionManager):
-
     """
     Calls extensions before Job execution
 
@@ -100,7 +97,6 @@ class JobPrePostDispatcher(EnabledExtensionManager):
 
 
 class TestPreDispatcher(EnabledExtensionManager):
-
     """
     Calls extensions before Test execution
 
@@ -115,7 +111,6 @@ class TestPreDispatcher(EnabledExtensionManager):
 
 
 class TestPostDispatcher(EnabledExtensionManager):
-
     """
     Calls extensions after Test execution
 

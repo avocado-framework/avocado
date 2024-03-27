@@ -6,7 +6,6 @@ from avocado import Test, main
 
 
 class WhiteBoard(Test):
-
     """
     Simple test that saves test custom data to the test whiteboard
 

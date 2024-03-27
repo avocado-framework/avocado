@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class PassTest(Test):
-
     """
     Example test that passes.
 

@@ -1,6 +1,7 @@
 """
 Verifies the avocado.utils.iso9660 functionality
 """
+
 import os
 import tempfile
 import unittest.mock
@@ -52,7 +53,6 @@ class Capabilities(unittest.TestCase):
 
 
 class BaseIso9660:
-
     """
     Base class defining setup and tests for shared Iso9660 functionality
     """
@@ -116,7 +116,6 @@ class BaseIso9660:
 
 
 class IsoInfo(BaseIso9660, unittest.TestCase):
-
     """
     IsoInfo-based check
     """
@@ -130,7 +129,6 @@ class IsoInfo(BaseIso9660, unittest.TestCase):
 
 
 class IsoRead(BaseIso9660, unittest.TestCase):
-
     """
     IsoRead-based check
     """
@@ -144,7 +142,6 @@ class IsoRead(BaseIso9660, unittest.TestCase):
 
 
 class IsoMount(BaseIso9660, unittest.TestCase):
-
     """
     Mount-based check
     """
@@ -160,7 +157,6 @@ class IsoMount(BaseIso9660, unittest.TestCase):
 
 
 class PyCDLib(BaseIso9660, unittest.TestCase):
-
     """
     PyCDLib-based check
     """

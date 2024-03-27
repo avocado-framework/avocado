@@ -1,6 +1,7 @@
 """
 Please don't get inspired by this ugly code
 """
+
 import sys
 
 sys.stdout.write("Direct output to stdout\n")

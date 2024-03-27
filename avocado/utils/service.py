@@ -368,7 +368,6 @@ COMMANDS = (
 
 
 class _ServiceResultParser:  # pylint: disable=too-few-public-methods
-
     """
     A class that contains staticmethods to parse the result of service command.
     """
@@ -402,7 +401,6 @@ class _ServiceResultParser:  # pylint: disable=too-few-public-methods
 
 
 class _ServiceCommandGenerator:  # pylint: disable=too-few-public-methods
-
     """
     Generate command lists for starting/stopping services.
     """
@@ -543,7 +541,6 @@ class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
 
 
 class _GenericServiceManager:  # pylint: disable=too-few-public-methods
-
     """
     Base class for SysVInitServiceManager and SystemdServiceManager.
     """
@@ -626,7 +623,6 @@ class _GenericServiceManager:  # pylint: disable=too-few-public-methods
 class _SysVInitServiceManager(
     _GenericServiceManager
 ):  # pylint: disable=too-few-public-methods
-
     """
     Concrete class that implements the SysVInitServiceManager
     """
@@ -684,7 +680,6 @@ def convert_systemd_target_to_runlevel(target):
 
 
 class _SystemdServiceManager(_GenericServiceManager):
-
     """
     Concrete class that implements the SystemdServiceManager
     """

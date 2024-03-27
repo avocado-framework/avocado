@@ -2,7 +2,6 @@
 Assets plugin functional tests
 """
 
-
 import os
 import tempfile
 import unittest

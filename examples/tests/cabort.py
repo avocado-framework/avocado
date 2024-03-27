@@ -6,7 +6,6 @@ from avocado.utils import build, process
 
 
 class CAbort(Test):
-
     """
     A test that calls C standard lib function abort().
 
