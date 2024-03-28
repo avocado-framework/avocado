@@ -23,7 +23,7 @@ import math
 import os
 import re
 
-from avocado.utils import data_structures, genio, process, wait
+from avocado.utils import genio, process, wait
 from avocado.utils.data_structures import DataSize
 
 LOG = logging.getLogger(__name__)
@@ -220,14 +220,17 @@ def numa_nodes_with_memory():
 
     :return: List with nodes which has memory.
     """
-    mem_path = "/sys/devices/system/node/has_normal_memory"
-    if not os.path.exists(mem_path):
-        mem_path = "/sys/devices/system/node/has_memory"
-        if not os.path.exists(mem_path):
-            raise MemError("No NUMA nodes have memory")
+    mem_paths = [
+        "/sys/devices/system/node/has_normal_memory",
+        "/sys/devices/system/node/has_memory",
+    ]
+    mem_path = next((path for path in mem_paths if os.path.exists(path)), None)
+    if mem_path is None:
+        raise MemError("No NUMA nodes have memory")
+    with open(mem_path, "r", encoding="utf-8") as f:
+        node_list = f.read().rstrip("\n")
 
-    node_list = str(genio.read_file(mem_path).rstrip("\n"))
-    return data_structures.comma_separated_ranges_to_list(node_list)
+    return [int(node) for node in node_list.split(",")]
 
 
 def node_size():
