@@ -615,6 +615,20 @@ class NetworkInterface:
             LOG.debug(msg)
             return False
 
+    def is_bond_slave(self):
+        """Check if interface is a bonding slave
+
+        This method checks if the interface is a bonding slave or not
+
+        rtype: bool
+        """
+        try:
+            if "SLAVE" in self._get_interface_details().get("flags"):
+                return True
+        except (NWException, IndexError):
+            raise NWException("Could not get interface detail.")
+            return False
+
     def is_veth(self):
         """Check if interface is a Virtual Ethernet.
 
