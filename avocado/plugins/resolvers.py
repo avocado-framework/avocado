@@ -143,3 +143,20 @@ class TapResolver(Resolver):
         return ReferenceResolution(
             reference, ReferenceResolutionResult.SUCCESS, [runnable]
         )
+
+
+class RunnableRecipeResolver(Resolver):
+    name = "runnable-recipe"
+    description = "Test resolver for JSON runnable recipes"
+
+    def resolve(self, reference):
+        criteria_check = check_file(
+            reference, reference, suffix=".json", type_name="JSON file"
+        )
+        if criteria_check is not True:
+            return criteria_check
+
+        runnable = Runnable.from_recipe(reference)
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, [runnable]
+        )
