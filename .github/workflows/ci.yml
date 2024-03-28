@@ -15,7 +15,7 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
@@ -31,7 +31,7 @@ jobs:
         run: python3 setup.py test --select=static-checks
       - name: Archive failed tests logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: static-checks-logs
           path: /home/runner/avocado/job-results/
@@ -51,11 +51,11 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install setuptools on Python 3.12
@@ -77,11 +77,11 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -98,7 +98,7 @@ jobs:
         run: python3 setup.py test --skip=static-checks
       - name: Archive failed tests logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-logs-${{ matrix.python-version }}
           path: /home/runner/avocado/job-results/
@@ -119,9 +119,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
@@ -152,9 +152,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -188,9 +188,9 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -218,9 +218,9 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install setuptools on Python 3.12
@@ -228,7 +228,7 @@ jobs:
     - name: Build tarballs and wheels
       run: make -f Makefile.gh build-wheel check-wheel
     - name: Save tarballs and wheels as artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tarballs_and_wheels-${{ matrix.python-version }}
         path: ${{github.workspace}}/PYPI_UPLOAD/
@@ -245,9 +245,9 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install setuptools on Python 3.12
@@ -255,7 +255,7 @@ jobs:
     - name: Build eggs
       run: make -f Makefile.gh build-egg
     - name: Save eggs as artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: eggs-${{ matrix.python-version }}
         path: ${{github.workspace}}/EGG_UPLOAD/
@@ -268,7 +268,7 @@ jobs:
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Run Codespell Check
@@ -277,7 +277,7 @@ jobs:
         run: make -f Makefile.gh bandit
         continue-on-error: True
       - name: Save bandit output as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bandit-results
           path: /home/runner/work/avocado/avocado/bandit-output.txt
@@ -294,7 +294,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_fedora_38:
@@ -307,7 +307,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_ubi_8:
@@ -320,7 +320,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python3.11 python3.11-setuptools python3.11-setuptools-rust
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_ubi_9:
@@ -331,7 +331,7 @@ jobs:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_debian_12:
@@ -344,7 +344,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_debian_11:
@@ -357,7 +357,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_ubuntu_22:
@@ -370,7 +370,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   version_task_ubuntu_20:
@@ -383,7 +383,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
   egg_task_fedora_37:
@@ -396,7 +396,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_fedora_38:
@@ -409,7 +409,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_ubi_8:
@@ -422,7 +422,7 @@ jobs:
       - name: Install Python dependencies
         run: dnf -y install python38 python38-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_ubi_9:
@@ -433,7 +433,7 @@ jobs:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_debian_12:
@@ -446,7 +446,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_debian_11:
@@ -459,7 +459,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_ubuntu_22:
@@ -472,7 +472,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   egg_task_ubuntu_20:
@@ -485,7 +485,7 @@ jobs:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
   podman_egg_task:
@@ -494,7 +494,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Test running avocado from eggs under Podman spawner
         run: |
          apt update && apt -y install python3 python3-setuptools
@@ -509,7 +509,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Test running avocado from released eggs under Podman spawner with 3rd party plugins
         run: |
          apt update && apt -y install python3 python3-setuptools
@@ -531,7 +531,7 @@ jobs:
       image: fedora:38
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Test avocado install/uninstall
         run: |
          python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
@@ -553,7 +553,7 @@ jobs:
       image: quay.io/avocado-framework/avocado-ci-fedora-36
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run unittests and functional tests
         run: |
          make develop
