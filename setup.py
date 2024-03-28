@@ -419,6 +419,7 @@ if __name__ == "__main__":
                 "teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir",
                 "human = avocado.plugins.human:HumanJob",
                 "testlogsui = avocado.plugins.testlogs:TestLogsUI",
+                "suite-dependency = avocado.plugins.dependency:SuiteDependency",
             ],
             "avocado.plugins.test.pre": [
                 "dependency = avocado.plugins.dependency:DependencyResolver",
