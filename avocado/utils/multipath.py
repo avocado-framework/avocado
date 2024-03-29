@@ -224,11 +224,18 @@ def get_path_status(disk_path):
     mpath_op = get_multipath_details()
     if not mpath_op:
         return ("", "", "")
-    for maps in mpath_op["maps"]:
-        for path_groups in maps["path_groups"]:
-            for paths in path_groups["paths"]:
-                if paths["dev"] == disk_path:
-                    return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
+
+    paths_info = {}
+    for maps in mpath_op.get("maps", []):
+        for path_groups in maps.get("path_groups", []):
+            for paths in path_groups.get("paths", []):
+                paths_info[paths["dev"]] = (
+                    paths["dm_st"],
+                    paths["dev_st"],
+                    paths["chk_st"],
+                )
+
+    return paths_info.get(disk_path, ("", "", ""))
 
 
 def get_mpath_paths_status(wwid):
