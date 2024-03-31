@@ -34,11 +34,11 @@ def is_port_available(
     :type address: str
     :param family: Default is socket.AF_INET. Accepted values are:
                    socket.AF_INET or socket.AF_INET6.
-    :type type: socket.AddressFamily.AF_*
+    :type family: socket.AddressFamily.AF_*
     :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
                      Accepted values are: socket.SOCK_STREAM or
                      socket.SOCK_DGRAM.
-    :type type: socket.AddressFamily.SOCK_*
+    :type protocol: socket.AddressFamily.SOCK_*
     """
     try:
         with socket.socket(family, protocol) as sock:
