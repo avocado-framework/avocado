@@ -22,11 +22,6 @@ import warnings
 
 from avocado.utils.data_structures import Borg
 
-#: Families taken into account in this class
-FAMILIES = (socket.AF_INET, socket.AF_INET6)
-#: Protocols taken into account in this class
-PROTOCOLS = (socket.SOCK_STREAM, socket.SOCK_DGRAM)
-
 
 def is_port_available(
     port, address, family=socket.AF_INET, protocol=socket.SOCK_STREAM
