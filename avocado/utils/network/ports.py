@@ -42,14 +42,15 @@ def is_port_available(
     """
     try:
         with socket.socket(family, protocol) as sock:
-            sock.bind((address, port))
-    except PermissionError:
-        # Permission denied, can't be sure
-        return False
-    except OSError:
-        # Address already in use or cannot assign requested address
-        return False
-    return True
+            # Set a timeout for the connection attempt
+            sock.settimeout(1)
+            sock.connect((address, port))
+    except ConnectionRefusedError:
+        # If connection is refused, the port is free
+        return True
+    finally:
+        sock.close()
+    return False
 
 
 def is_port_free(port, address):
