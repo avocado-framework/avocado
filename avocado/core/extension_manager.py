@@ -26,6 +26,7 @@ import sys
 
 import pkg_resources
 
+from avocado.core.exceptions import JobBaseException
 from avocado.utils import stacktrace
 
 # This is also defined in avocado.core.output, but this avoids a
@@ -188,6 +189,8 @@ class ExtensionManager:
                 raise
             except KeyboardInterrupt:
                 raise
+            except JobBaseException:
+                raise
             except:  # catch any exception pylint: disable=W0702
                 LOG_UI.error(
                     'Error running method "%s" of plugin "%s": %s',
@@ -213,6 +216,8 @@ class ExtensionManager:
             except SystemExit:
                 raise
             except KeyboardInterrupt:
+                raise
+            except JobBaseException:
                 raise
             except:  # catch any exception pylint: disable=W0702
                 LOG_UI.error(
