@@ -24,11 +24,19 @@ location::
   JOB LOG    : $HOME/avocado/job-results/job-2015-06-10T10.44-49ec339/job.log
 
 
+Test Resolver
+~~~~~~~~~~~~~
+
+A test resolver is Avocado's component that will take a reference you
+know about and will turn it into an actual test that can be run.  This
+reference, explained next, can be pretty much any string, but it'll
+usually be some form of text containing the path to the file that
+contains the test.
+
+For more information please refer to :ref:`finding_tests`.
+
 Test References
 ~~~~~~~~~~~~~~~
-
-.. warning:: TODO: We are talking here about Test Resolver, but the reader was
-  not introduced to this concept yet.
 
 A Test Reference is a string that can be resolved into
 (interpreted as) one or more tests by the Avocado Test Resolver.
@@ -149,22 +157,23 @@ Test types
 Avocado at its simplest configuration can run three different types of tests:
 
 * Executable tests (``exec-test``)
-* python unittest
-* instrumented
+* Python unittest tests (``python-unittest``)
+* Avocado Instrumented tests (``avocado-instrumented``)
+* TAP producing tests (``tap``)
 
 You can mix and match those in a single job.
 
 Avocado plugins can also introduce additional test types.
 
-Executable Tests
+Executable tests
 ~~~~~~~~~~~~~~~~
 
 Any executable file can serve as a test. The criteria for PASS/FAIL is
 the return code of the executable.  If it returns 0, the test PASSes,
 if it returns anything else, it FAILs.
 
-Python unittest
-~~~~~~~~~~~~~~~
+Python unittest tests
+~~~~~~~~~~~~~~~~~~~~~
 
 The discovery of classical Python unittest is also supported, although unlike
 Python unittest we still use static analysis to get individual tests so
@@ -173,8 +182,8 @@ no surprises when running unittests via Avocado.
 
 .. _Instrumented:
 
-Instrumented
-~~~~~~~~~~~~
+Avocado Instrumented tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These are tests written in Python or BASH with the Avocado helpers that use the
 Avocado test API.
@@ -189,8 +198,8 @@ including logging, test result status and other more sophisticated test APIs.
 Test statuses ``PASS``, ``WARN`` and ``SKIP`` are considered
 successful. The ``ERROR``, ``FAIL`` and ``INTERRUPTED`` signal failures.
 
-TAP
-~~~
+TAP producing tests
+~~~~~~~~~~~~~~~~~~~
 
 TAP tests are pretty much like executable tests in the sense that they are
 programs (either binaries or scripts) that will executed.  The
@@ -227,11 +236,11 @@ can have a good idea on what happened to the job.
 
 The single individual exit codes are:
 
-* AVOCADO_ALL_OK (0)
-* AVOCADO_TESTS_FAIL (1)
-* AVOCADO_JOB_FAIL (2)
-* AVOCADO_FAIL (4)
-* AVOCADO_JOB_INTERRUPTED (8)
+* :data:`AVOCADO_ALL_OK <avocado.core.exit_codes.AVOCADO_ALL_OK>`
+* :data:`AVOCADO_TESTS_FAIL <avocado.core.exit_codes.AVOCADO_TEST_FAIL>`
+* :data:`AVOCADO_JOB_FAIL <avocado.core.exit_codes.AVOCADO_JOB_FAIL>`
+* :data:`AVOCADO_FAIL <avocado.core.exit_codes.AVOCADO_FAIL>`
+* :data:`AVOCADO_JOB_INTERRUPTED <avocado.core.exit_codes.AVOCADO_JOB_INTERRUPTED>`
 
 If a job finishes with exit code `9`, for example, it means we had at least one
 test that failed and also we had at some point a job interruption, probably due
