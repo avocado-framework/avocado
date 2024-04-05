@@ -13,7 +13,7 @@ except ImportError:
     JSONSCHEMA_AVAILABLE = False
 
 
-BASE_SCHEMA_DIR = os.path.join(BASEDIR, "contrib", "schemas")
+BASE_SCHEMA_DIR = os.path.join(BASEDIR, "avocado", "schemas")
 BASE_RECIPE_DIR = os.path.join(BASEDIR, "examples", "nrunner", "recipes")
 
 

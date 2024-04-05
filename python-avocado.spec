@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 104.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -191,6 +191,8 @@ cp -r examples/tests %{buildroot}%{_docdir}/avocado
 cp -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
+mkdir -p %{buildroot}%{_datarootdir}/avocado
+mv %{buildroot}%{python3_sitelib}/avocado/schemas %{buildroot}%{_datarootdir}/avocado
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec chmod -c -x {} ';'
 mkdir -p %{buildroot}%{_libexecdir}/avocado
 mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
@@ -263,6 +265,10 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %dir %{_sysconfdir}/avocado/scripts/job/pre.d
 %dir %{_sysconfdir}/avocado/scripts/job/post.d
 %dir %{_sharedstatedir}/avocado
+%dir %{_sharedstatedir}/avocado/data
+%dir %{_datarootdir}/avocado
+%dir %{_datarootdir}/avocado/schemas
+%{_datarootdir}/avocado/schemas/*
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
@@ -436,6 +442,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Apr  2 2024 Cleber Rosa <crosa@redhat.com> - 104.0-2
+- Package JSON schema files
+
 * Tue Mar 19 2024 Jan Richter <jarichte@redhat.com> - 104.0-1
 - New release
 
