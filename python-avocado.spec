@@ -196,6 +196,7 @@ mv %{buildroot}%{python3_sitelib}/avocado/schemas %{buildroot}%{_datarootdir}/av
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec chmod -c -x {} ';'
 mkdir -p %{buildroot}%{_libexecdir}/avocado
 mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
+rmdir %{buildroot}%{python3_sitelib}/avocado/libexec
 
 %if %{with tests}
 %check
@@ -444,6 +445,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Tue Apr  2 2024 Cleber Rosa <crosa@redhat.com> - 104.0-2
 - Package JSON schema files
+- Removed empty libexec dir
 
 * Tue Mar 19 2024 Jan Richter <jarichte@redhat.com> - 104.0-1
 - New release
