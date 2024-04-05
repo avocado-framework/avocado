@@ -84,6 +84,7 @@ Requires: python3-avocado-common == %{version}-%{release}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
+Requires: python3-jsonschema
 %if ! 0%{?rhel}
 Requires: python3-pycdlib
 %endif
@@ -446,6 +447,8 @@ Again Shell code (and possibly other similar shells).
 * Tue Apr  2 2024 Cleber Rosa <crosa@redhat.com> - 104.0-2
 - Package JSON schema files
 - Removed empty libexec dir
+- Require python3-jsonschema to perform runtime schema validation
+  for recipe files
 
 * Tue Mar 19 2024 Jan Richter <jarichte@redhat.com> - 104.0-1
 - New release
