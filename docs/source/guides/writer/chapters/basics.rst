@@ -41,6 +41,9 @@ by ``avocado exec-path`` (if any).  Also, the example test
 Environment Variables for Tests
 -------------------------------
 
+Avocado's environment variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Avocado exports some information, including test parameters, as environment
 variables to the running test. Here is a list of the variables that Avocado
 currently exports to exec-test tests in default:
@@ -69,3 +72,21 @@ currently exports to exec-test tests in default:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+
+User's environment variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also let avocado set your own environment variables. For that, you need
+to pass the environment variables as keyword arguments (``kwargs``) to the exec-tests.
+Here is an example of Job API which passes ``SLEEP_LENGTH`` to sleeptest.sh to set
+the time for which the test should sleep:
+
+.. literalinclude:: ../../../../../examples/jobs/custom_exec_test.py
+
+And now we can see that sleeptest.sh can use  ``SLEEP_LENGTH`` environment
+variable:
+
+.. literalinclude:: ../../../../../examples/tests/sleeptest.sh
+
+.. note:: All environment variables set by avocado will be accessible only during
+          the test runtime and it won't change your environment.
