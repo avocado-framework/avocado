@@ -90,3 +90,12 @@ variable:
 
 .. note:: All environment variables set by avocado will be accessible only during
           the test runtime and it won't change your environment.
+
+Disabling environment variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Let's imagine that your testing environment has some important variables, but they
+could have a negative impact on one of your tests. In that case, avocado lets you
+disable those variables during the test runtime. To disable a test variable,
+you need to set it in test ``kwargs`` to ``None``  like this::
+
+  Runnable("exec-test", "examples/tests/sleeptest.sh", SLEEP_LENGTH=None)

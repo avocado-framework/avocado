@@ -98,6 +98,12 @@ class My(Test):
         logging.getLogger("some.other.logger").info("SHOULD BE ON debug.log")
 """
 
+EXEC_ENV_VARIABLE_TEST = """#!/bin/bash
+if [[ -n "${TEST_ENV}" ]]; then
+    exit 1
+fi
+"""
+
 
 def probe_binary(binary):
     try:
@@ -1092,6 +1098,27 @@ class RunnerExecTest(TestCaseTmpDir):
             expected_rc,
             f"Avocado did not return rc {expected_rc}:\n{result}",
         )
+
+    @skipUnlessPathExists("/bin/bash")
+    def test_env_var_disable(self):
+        with script.TemporaryScript("exec_env_var.sh", EXEC_ENV_VARIABLE_TEST) as tst:
+            res = process.run(
+                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst}",
+            )
+            result = res.stdout_text.split("\n")[-2]
+            self.assertIn(
+                "'returncode': 1",
+                result,
+                "Script unexpectedly passed with environment variable set",
+            )
+
+            res = process.run(
+                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst} TEST_ENV=json:null",
+            )
+            result = res.stdout_text.split("\n")[-2]
+            self.assertIn(
+                "'returncode': 0", result, "The env variable was not disabled."
+            )
 
     def tearDown(self):
         self.pass_script.remove()
