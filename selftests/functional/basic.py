@@ -104,6 +104,12 @@ if [[ -n "${TEST_ENV}" ]]; then
 fi
 """
 
+EXEC_DEFAULT_ENV_VARIABLE_TEST = """#!/bin/bash
+if [[ -n "${AVOCADO_VERSION}" ]]; then
+    exit 1
+fi
+"""
+
 
 def probe_binary(binary):
     try:
@@ -1002,6 +1008,24 @@ class RunnerExecTest(TestCaseTmpDir):
         )
         self.fail_script.save()
 
+    def _test_env(self, configuration, expected_rc, test_file):
+        with script.TemporaryScript("exec_env_var.sh", test_file) as tst:
+            res = process.run(
+                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst}",
+            )
+            result = res.stdout_text.split("\n")[-2]
+            self.assertIn(
+                "'returncode': 1",
+                result,
+                "Script unexpectedly passed with environment variable set.",
+            )
+
+            res = process.run(
+                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst} {configuration}"
+            )
+            result = res.stdout_text.split("\n")[-2]
+            self.assertIn(f"'returncode': {expected_rc}", result)
+
     def test_exec_test_pass(self):
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
@@ -1101,24 +1125,21 @@ class RunnerExecTest(TestCaseTmpDir):
 
     @skipUnlessPathExists("/bin/bash")
     def test_env_var_disable(self):
-        with script.TemporaryScript("exec_env_var.sh", EXEC_ENV_VARIABLE_TEST) as tst:
-            res = process.run(
-                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst}",
-            )
-            result = res.stdout_text.split("\n")[-2]
-            self.assertIn(
-                "'returncode': 1",
-                result,
-                "Script unexpectedly passed with environment variable set",
-            )
+        self._test_env("TEST_ENV=json:null", 0, EXEC_ENV_VARIABLE_TEST)
 
-            res = process.run(
-                f"env TEST_ENV=test avocado-runner-exec-test runnable-run -k exec-test -u {tst} TEST_ENV=json:null",
-            )
-            result = res.stdout_text.split("\n")[-2]
-            self.assertIn(
-                "'returncode': 0", result, "The env variable was not disabled."
-            )
+    @skipUnlessPathExists("/bin/sh")
+    def test_env_clear_system(self):
+        self._test_env(
+            '-c \'{"runner.exectest.clear_env": "system"}\'', 0, EXEC_ENV_VARIABLE_TEST
+        )
+
+    @skipUnlessPathExists("/bin/sh")
+    def test_env_clear_all(self):
+        self._test_env(
+            '-c \'{"runner.exectest.clear_env": "all"}\'',
+            0,
+            EXEC_DEFAULT_ENV_VARIABLE_TEST,
+        )
 
     def tearDown(self):
         self.pass_script.remove()

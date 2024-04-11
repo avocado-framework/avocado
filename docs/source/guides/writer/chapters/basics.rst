@@ -99,3 +99,12 @@ disable those variables during the test runtime. To disable a test variable,
 you need to set it in test ``kwargs`` to ``None``  like this::
 
   Runnable("exec-test", "examples/tests/sleeptest.sh", SLEEP_LENGTH=None)
+
+If you need to clear the whole environment before your test, then you can set
+``runner.exectest.clear_env`` config variable. This variable has two options.
+``system`` and ``all``. If you use ``system`` option the testing environment
+will have only Avocado default variables and variables from test ``kwargs``.
+If you use ``all`` option, the testing environment will have only variables
+from test ``kwargs``::
+
+  Runnable("exec-test", "examples/tests/sleeptest.sh", config={'runner.exectest.clear_env': system}, SLEEP_LENGTH=1)
