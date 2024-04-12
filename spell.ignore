@@ -571,7 +571,6 @@ logdirs
 workdir
 datasize
 getoutput
-doublefree
 synctest
 getstatusoutput
 rtd
