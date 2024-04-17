@@ -1,15 +1,12 @@
 import glob
 import os
-import unittest
 
 from avocado import Test, skipUnless
 from avocado.core import exit_codes
 from avocado.utils import process, script
 from selftests.utils import AVOCADO, TestCaseTmpDir
 
-SINGLE_SUCCESS_CHECK = '''#!/usr/bin/env python3
-
-from avocado import Test
+SINGLE_SUCCESS_CHECK = '''from avocado import Test
 
 
 class SuccessTest(Test):
@@ -20,9 +17,7 @@ class SuccessTest(Test):
         """
 '''
 
-SINGLE_FAIL_CHECK = '''#!/usr/bin/env python3
-
-from avocado import Test
+SINGLE_FAIL_CHECK = '''from avocado import Test
 
 
 class FailTest(Test):
@@ -33,9 +28,7 @@ class FailTest(Test):
         """
 '''
 
-MULTIPLE_SUCCESS = '''#!/usr/bin/env python3
-
-from avocado import Test
+MULTIPLE_SUCCESS = '''from avocado import Test
 from avocado.utils import process
 
 
@@ -65,9 +58,7 @@ class SuccessTest(Test):
         self.check_hello()
 '''
 
-MULTIPLE_FAIL = '''#!/usr/bin/env python3
-
-from avocado import Test
+MULTIPLE_FAIL = '''from avocado import Test
 from avocado.utils import process
 
 
@@ -221,7 +212,3 @@ class BasicTest(TestCaseTmpDir, Test):
                 "-foo-bar-",
                 result.stdout_text,
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

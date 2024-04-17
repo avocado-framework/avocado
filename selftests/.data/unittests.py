@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import unittest
 
 
@@ -17,7 +16,3 @@ class Second(unittest.TestCase):
     @unittest.skip("This is suppose to be skipped")
     def test_skip(self):
         pass
-
-
-if __name__ == "__main__":
-    unittest.main()
