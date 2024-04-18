@@ -14,6 +14,17 @@ fi
 unset LIST
 unset COUNT
 
+echo -n "* Checking for avocado.plugin imports from avocado/core: "
+LIST=`git grep -E '^(import avocado\.plugins.*|from avocado\.plugins(.*)import)' avocado/core | grep -v 'avocado\.core'`
+COUNT=`git grep -E '^(import avocado\.plugins.*|from avocado\.plugins(.*)import)' avocado/core | grep -v 'avocado\.core' | wc -l`
+(( RESULT = RESULT + COUNT ))
+echo "$COUNT"
+if [ -n "$LIST" ]; then
+   echo "$LIST"
+fi
+unset LIST
+unset COUNT
+
 echo -n "* Checking for avocado imports from avocado/utils: "
 LIST=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils | grep -v 'avocado\.utils'`
 COUNT=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils | grep -v 'avocado\.utils' | wc -l`
