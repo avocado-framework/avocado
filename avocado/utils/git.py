@@ -39,6 +39,7 @@ class GitRepoHelper:
         commit=None,
         destination_dir=None,
         base_uri=None,
+        submodule=False,
     ):
         """
         Instantiates a new GitRepoHelper
@@ -56,11 +57,14 @@ class GitRepoHelper:
         :type base_uri: string
         :param base_uri: a closer, usually local, git repository url from where
                          to fetch content first from
+        :type submodule: Boolean
+        :param submodule: to download submodules recursively
         """
         self.uri = uri
         self.base_uri = base_uri
         self.branch = branch
         self.commit = commit
+        self.submodule = submodule
 
         if destination_dir is None:
             uri_basename = uri.split("/")[-1]
@@ -179,6 +183,13 @@ class GitRepoHelper:
             top_tag_desc = f"tag {top_tag}"
         LOG.info("git commit ID is %s (%s)", top_commit, top_tag_desc)
 
+    def submodule_checkout(self):
+        """
+        Performs a git checkout of submodules recursively
+        """
+        LOG.debug("Checking out submodules")
+        self.git_cmd("submodule update --init --recursive")
+
     def execute(self):
         """
         Performs all steps necessary to initialize and download a git repo.
@@ -191,10 +202,18 @@ class GitRepoHelper:
             self.fetch(self.base_uri)
         self.fetch(self.uri)
         self.checkout()
+        if self.submodule:
+            self.submodule_checkout()
 
 
 def get_repo(
-    uri, branch="master", lbranch=None, commit=None, destination_dir=None, base_uri=None
+    uri,
+    branch="master",
+    lbranch=None,
+    commit=None,
+    destination_dir=None,
+    base_uri=None,
+    submodule=False,
 ):
     """
     Utility function that retrieves a given git code repository.
@@ -212,7 +231,11 @@ def get_repo(
     :type base_uri: string
     :param base_uri: a closer, usually local, git repository url from where to
                 fetch content first from
+    :type submodule: Boolean
+    :param submodule: to download submodules recursively
     """
-    repo = GitRepoHelper(uri, branch, lbranch, commit, destination_dir, base_uri)
+    repo = GitRepoHelper(
+        uri, branch, lbranch, commit, destination_dir, base_uri, submodule
+    )
     repo.execute()
     return repo.destination_dir
