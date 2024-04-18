@@ -1,0 +1,5 @@
+python3-avocado-framework (103.0ubuntu1) jammy; urgency=medium
+
+  * Initial release.
+
+ -- David Negreira <david.negreira@canonical.com>  Thu, 18 Apr 2024 12:53:10 +0000
