@@ -2,10 +2,18 @@ import base64
 import collections
 import json
 import logging
+import os
 import subprocess
 import sys
 
 import pkg_resources
+
+try:
+    import jsonschema
+
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
 
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.settings import settings
@@ -19,6 +27,14 @@ RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
 #: The configuration that is known to be used by standalone runners
 STANDALONE_EXECUTABLE_CONFIG_USED = {}
+
+#: Location used for schemas when packaged (as in RPMs)
+SYSTEM_WIDE_SCHEMA_PATH = "/usr/share/avocado/schemas"
+
+
+class RunnableRecipeInvalidError(Exception):
+    """Signals that a runnable recipe is not well formed, contains
+    missing or bad data"""
 
 
 def _arg_decode_base64(arg):
@@ -196,6 +212,53 @@ class Runnable:
             **_key_val_args_to_kwargs(args.get("kwargs", [])),
         )
 
+    @staticmethod
+    def _validate_recipe_json_schema(recipe):
+        """Attempts to validate the runnable recipe using a JSON schema
+
+        :param recipe: the recipe already parsed from JSON into a dict
+        :type recipe: dict
+        :returns: whether the runnable recipe JSON was attempted to be
+                  validated with a JSON schema
+        :rtype: bool
+        :raises: RunnableRecipeInvalidError if the recipe is invalid
+        """
+        if not JSONSCHEMA_AVAILABLE:
+            return False
+        schema_filename = "runnable-recipe.schema.json"
+        schema_path = pkg_resources.resource_filename(
+            "avocado", os.path.join("schemas", schema_filename)
+        )
+        if not os.path.exists(schema_path):
+            schema_path = os.path.join(SYSTEM_WIDE_SCHEMA_PATH, schema_filename)
+            if not os.path.exists(schema_path):
+                return False
+        with open(schema_path, "r", encoding="utf-8") as schema:
+            try:
+                jsonschema.validate(recipe, json.load(schema))
+            except jsonschema.exceptions.ValidationError as details:
+                raise RunnableRecipeInvalidError(details)
+        return True
+
+    @classmethod
+    def _validate_recipe(cls, recipe):
+        """Validates a recipe using either JSON schema or builtin logic
+
+        :param recipe: the recipe already parsed from JSON into a dict
+        :type recipe: dict
+        :returns: None
+        :raises: RunnableRecipeInvalidError if the recipe is invalid
+        """
+        if not cls._validate_recipe_json_schema(recipe):
+            # This is a simplified validation of the recipe
+            allowed = set(["kind", "uri", "args", "kwargs", "config"])
+            if not "kind" in recipe:
+                raise RunnableRecipeInvalidError('Missing required property "kind"')
+            if not set(recipe.keys()).issubset(allowed):
+                raise RunnableRecipeInvalidError(
+                    "Additional properties are not allowed"
+                )
+
     @classmethod
     def from_recipe(cls, recipe_path):
         """
@@ -207,6 +270,7 @@ class Runnable:
         """
         with open(recipe_path, encoding="utf-8") as recipe_file:
             recipe = json.load(recipe_file)
+            cls._validate_recipe(recipe)
         config = ConfigDecoder.decode_set(recipe.get("config", {}))
         return cls.from_avocado_config(
             recipe.get("kind"),
