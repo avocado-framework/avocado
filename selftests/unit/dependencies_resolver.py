@@ -1,5 +1,6 @@
 import unittest
 
+from avocado.core.dependencies.dependency import Dependency
 from avocado.core.nrunner.runnable import Runnable
 from avocado.plugins.dependency import DependencyResolver
 
@@ -12,8 +13,8 @@ class BasicTests(unittest.TestCase):
             kind="package",
             uri=None,
             dependencies=[
-                {"type": "package", "name": "foo"},
-                {"type": "package", "name": "bar"},
+                Dependency("package", kwargs={"name": "foo"}),
+                Dependency("package", kwargs={"name": "bar"}),
             ],
         )
         dependency_runnables = DependencyResolver.pre_test_runnables(runnable)
