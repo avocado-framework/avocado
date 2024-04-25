@@ -260,6 +260,25 @@ class Runnable:
                 )
 
     @classmethod
+    def from_dict(cls, recipe_dict):
+        """
+        Returns a runnable from a runnable dictionary
+
+        :param recipe_dict: a dictionary with runnable keys and values
+
+        :rtype: instance of :class:`Runnable`
+        """
+        cls._validate_recipe(recipe_dict)
+        config = ConfigDecoder.decode_set(recipe_dict.get("config", {}))
+        return cls.from_avocado_config(
+            recipe_dict.get("kind"),
+            recipe_dict.get("uri"),
+            *recipe_dict.get("args", ()),
+            config=config,
+            **recipe_dict.get("kwargs", {}),
+        )
+
+    @classmethod
     def from_recipe(cls, recipe_path):
         """
         Returns a runnable from a runnable recipe file
@@ -269,16 +288,8 @@ class Runnable:
         :rtype: instance of :class:`Runnable`
         """
         with open(recipe_path, encoding="utf-8") as recipe_file:
-            recipe = json.load(recipe_file)
-            cls._validate_recipe(recipe)
-        config = ConfigDecoder.decode_set(recipe.get("config", {}))
-        return cls.from_avocado_config(
-            recipe.get("kind"),
-            recipe.get("uri"),
-            *recipe.get("args", ()),
-            config=config,
-            **recipe.get("kwargs", {}),
-        )
+            recipe_dict = json.load(recipe_file)
+        return cls.from_dict(recipe_dict)
 
     @classmethod
     def from_avocado_config(cls, kind, uri, *args, config=None, **kwargs):

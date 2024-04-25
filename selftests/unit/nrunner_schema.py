@@ -30,6 +30,6 @@ class Schema(Test):
 
     def test_runnable_recipes(self):
         for recipe_path in glob.glob(
-            os.path.join(BASE_RECIPE_DIR, "runnables", "*.json")
+            os.path.join(BASE_RECIPE_DIR, "runnable", "*.json")
         ):
             self._test("runnable-recipe.schema.json", recipe_path)

@@ -477,15 +477,15 @@ Runnables from recipes
 
 You can run a "noop" recipe with::
 
-  avocado-runner-noop runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
+  avocado-runner-noop runnable-run-recipe examples/nrunner/recipes/runnable/noop.json
 
 You can run an "exec-test" runner with::
 
-  avocado-runner-exec-test runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
+  avocado-runner-exec-test runnable-run-recipe examples/nrunner/recipes/runnable/exec_test_sleep_3.json
 
 You can run a "python-unittest" runner with::
 
-  avocado-runner-python-unittest runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
+  avocado-runner-python-unittest runnable-run-recipe examples/nrunner/recipes/runnable/python_unittest.json
 
 Writing new runner scripts
 --------------------------
