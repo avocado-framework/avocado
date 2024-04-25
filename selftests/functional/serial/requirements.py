@@ -104,6 +104,32 @@ class SuccessTest(Test):
         self.check_hello()
 '''
 
+TEST_WITHOUT_DEPENDENCY = """from avocado import Test
+from avocado.utils import process
+
+class SuccessTest(Test):
+
+    def check_hello(self):
+        result = process.run("hello", ignore_status=True)
+        self.assertEqual(result.exit_status, 0)
+        self.assertIn('Hello, world!', result.stdout_text,)
+
+    def test_a(self):
+        self.check_hello()
+
+    def test_b(self):
+        self.check_hello()
+
+    def test_c(self):
+        self.check_hello()
+"""
+
+DEPENDENCY_FILE = """
+[
+	{"type": "package", "name": "hello"}
+]
+"""
+
 
 class BasicTest(TestCaseTmpDir, Test):
     """
@@ -246,3 +272,25 @@ class BasicTest(TestCaseTmpDir, Test):
                 "PASS 1",
                 result.stdout_text,
             )
+
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_job_dependency(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_multiple_success.py"),
+            TEST_WITHOUT_DEPENDENCY,
+        ) as test:
+            command = self.get_command(test.path)
+            with script.Script(
+                os.path.join(self.tmpdir.name, "dependency.json"), DEPENDENCY_FILE
+            ) as dependency_config:
+                command = f"{command} --job-dependency={dependency_config.path}"
+                result = process.run(command, ignore_status=True)
+                self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+                self.assertIn(
+                    "PASS 3",
+                    result.stdout_text,
+                )
+                self.assertNotIn(
+                    "vim-common",
+                    result.stdout_text,
+                )
