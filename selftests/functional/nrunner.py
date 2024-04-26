@@ -99,7 +99,7 @@ class RunnableRun(unittest.TestCase):
             "examples",
             "nrunner",
             "recipes",
-            "runnables",
+            "runnable",
             "exec_test_sh_echo_env_var.json",
         )
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"

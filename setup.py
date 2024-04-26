@@ -453,6 +453,7 @@ if __name__ == "__main__":
                 "avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver",
                 "tap = avocado.plugins.resolvers:TapResolver",
                 "runnable-recipe = avocado.plugins.resolvers:RunnableRecipeResolver",
+                "runnables-recipe = avocado.plugins.resolvers:RunnablesRecipeResolver",
             ],
             "avocado.plugins.suite.runner": [
                 "nrunner = avocado.plugins.runner_nrunner:Runner",

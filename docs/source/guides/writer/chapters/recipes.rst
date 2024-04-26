@@ -16,7 +16,7 @@ pure Python code, such as in the following Job example:
 But, they can also be defined in JSON files, which we call "runnable
 recipes", such as:
 
-.. literalinclude:: ../../../../../examples/nrunner/recipes/runnables/exec_test_sleep_3.json
+.. literalinclude:: ../../../../../examples/nrunner/recipes/runnable/exec_test_sleep_3.json
 
 
 Runnable recipe format
@@ -40,13 +40,13 @@ Avocado ships with a ``runnable-recipe`` resolver plugin, which means
 that you can use runnable recipe file as a reference, and get
 something that Avocado can run (that is, a ``Runnable``).  Example::
 
-   avocado list examples/nrunner/recipes/runnables/python_unittest.json
+   avocado list examples/nrunner/recipes/runnable/python_unittest.json
    python-unittest selftests/unit/test.py:TestClassTestUnit.test_long_name
 
 And just as runnable recipe's resolution can be listed, they can also
 be executed::
 
-  avocado run examples/nrunner/recipes/runnables/python_unittest.json
+  avocado run examples/nrunner/recipes/runnable/python_unittest.json
   JOB ID     : bca087e0e5f16e62f24430602f87df67ecf093f7
   JOB LOG    : ~/avocado/job-results/job-2024-04-17T11.53-bca087e/job.log
    (1/1) selftests/unit/test.py:TestClassTestUnit.test_long_name: STARTED
@@ -57,3 +57,22 @@ be executed::
 .. tip:: As a possible integration strategy with existing tests, you
          can have one or more runnable recipe files that are passed
          to Avocado to be executed.
+
+Combining multiple recipes in a single file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Avocado also ships with a slightly difference resolver, called
+``runnables-recipe``.  It reads a recipe file that, instead of
+containing one single runnable, contains (potentially) many.
+It should contain nothing more than an a list of runnables.
+
+For instance, to run both ``/bin/true`` and ``/bin/false``, you can
+define a file like:
+
+.. literalinclude:: ../../../../../examples/nrunner/recipes/runnables/true_false.json
+
+That will be parsed by the ``runnables-recipe`` resolver, like in
+``avocado list examples/nrunner/recipes/runnables/true_false.json``::
+
+  exec-test /bin/true
+  exec-test /bin/false

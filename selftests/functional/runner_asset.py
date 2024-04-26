@@ -38,7 +38,7 @@ class RunnableRun(unittest.TestCase):
     @unittest.skipUnless(os.getenv("CI"), skip_message)
     def test_recipe(self):
         recipe = os.path.join(
-            BASEDIR, "examples", "nrunner", "recipes", "runnables", "asset.json"
+            BASEDIR, "examples", "nrunner", "recipes", "runnable", "asset.json"
         )
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)

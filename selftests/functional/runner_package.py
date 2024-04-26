@@ -45,7 +45,7 @@ class RunnableRun(unittest.TestCase):
             "examples",
             "nrunner",
             "recipes",
-            "runnables",
+            "runnable",
             "package_check_foo.json",
         )
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"
