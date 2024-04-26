@@ -634,8 +634,10 @@ def lscpu():
     output = process.run("lscpu")
     res = {}
     for line in output.stdout.decode("utf-8").split("\n"):
+        if "Physical cores/chip:" in line:
+            res["physical_cores"] = int(line.split(":")[1].strip())
         if "Core(s) per socket:" in line:
-            res["cores"] = int(line.split(":")[1].strip())
+            res["virtual_cores"] = int(line.split(":")[1].strip())
         if "Physical sockets:" in line:
             res["physical_sockets"] = int(line.split(":")[1].strip())
         if "Physical chips:" in line:
