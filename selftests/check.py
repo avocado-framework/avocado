@@ -29,7 +29,7 @@ TEST_SIZE = {
     "nrunner-requirement": 24,
     "unit": 669,
     "jobs": 11,
-    "functional-parallel": 303,
+    "functional-parallel": 306,
     "functional-serial": 6,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,

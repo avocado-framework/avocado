@@ -166,7 +166,7 @@ class Runnable:
 
         # For kwargs we can use the entire list of values or with a specific
         # index.
-        kwargs = "-".join(self.kwargs.values())
+        kwargs = "-".join(str(self.kwargs.values()))
         if "kwargs" in fmt and "[" in fmt:
             kwargs = self.kwargs
 

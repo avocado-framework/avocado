@@ -179,6 +179,20 @@ def register_core_options():
     )
 
     help_msg = (
+        "If and how to clear test environment. Two possible options, "
+        "`system` and `all`. "
+        "`system` = no variables set, besides avocados default and kwargs. "
+        "`all` = only kwargs are set."
+    )
+    stgs.register_option(
+        section="runner.exectest",
+        key="clear_env",
+        key_type=str,
+        default=None,
+        help_msg=help_msg,
+    )
+
+    help_msg = (
         "By default Avocado runners will use the {uri} of a test as "
         "its identifier. Use a custom f-string identifier in order to "
         "change it."

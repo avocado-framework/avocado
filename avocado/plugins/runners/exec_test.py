@@ -33,7 +33,11 @@ class ExecTestRunner(BaseRunner):
     name = "exec-test"
     description = "Runner for standalone executables treated as tests"
 
-    CONFIGURATION_USED = ["run.keep_tmp", "runner.exectest.exitcodes.skip"]
+    CONFIGURATION_USED = [
+        "run.keep_tmp",
+        "runner.exectest.exitcodes.skip",
+        "runner.exectest.clear_env",
+    ]
 
     def _process_final_status(
         self, process, runnable, stdout=None, stderr=None
@@ -119,12 +123,23 @@ class ExecTestRunner(BaseRunner):
         return False
 
     def _get_env(self, runnable):
-        env = dict(os.environ)
+        clear_env = runnable.config.get("runner.exectest.clear_env", None)
+        if clear_env not in ["all", "system", None]:
+            raise ValueError(
+                f"The `runner.exectest.clear_env` value {clear_env} is not supported."
+            )
+        if clear_env in ["all", "system"]:
+            env = {}
+        else:
+            env = dict(os.environ)
         if runnable.kwargs:
             env.update(runnable.kwargs)
+            for key, value in runnable.kwargs.items():
+                if value is None:
+                    del env[key]
 
         # set default Avocado environment variables if running on a valid Task
-        if runnable.uri is not None:
+        if runnable.uri is not None and clear_env != "all":
             avocado_test_env_variables = self._get_env_variables(runnable)
             # save environment variables for further cleanup
             runnable.kwargs.update(avocado_test_env_variables)
