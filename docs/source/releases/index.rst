@@ -26,6 +26,7 @@ Long Term Stability Releases
 
    lts/92_0
    lts/92_1
+   lts/92_2
    lts/82_0
    lts/69_0
    lts/52_0

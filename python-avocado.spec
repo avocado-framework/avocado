@@ -8,10 +8,10 @@
     %global gittar          avocado-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      0e1dace6c618dcfe39adb5c6df1c560e31d6fe98
+        %global commit      640e856ca527bfc39546d274b6cf56b6ecaa148c
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20221028
+        %global commit_date 20240430
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -26,7 +26,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 92.1
+Version: 92.2
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
@@ -368,6 +368,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Apr 30 2024 Cleber Rosa <crosa@redhat.com> - 92.2-1
+- New release
+
 * Wed Oct 26 2022 Cleber Rosa <crosa@redhat.com> - 92.1-1
 - New release
 
