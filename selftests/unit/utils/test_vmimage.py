@@ -257,77 +257,155 @@ class DebianImageProvider(unittest.TestCase):
 
 class OpenSUSEImageProvider(unittest.TestCase):
 
-    #: extracted from https://download.opensuse.org/repositories/Cloud:/Images:/
+    #: extracted from https://download.opensuse.org/pub/opensuse/distribution/leap/
     VERSION_LISTING = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
-  <title>Index of /repositories/Cloud:/Images:</title>
-  <link rel="stylesheet" href="/icons/index.css" type="text/css" />
-<script src="/icons/include/setloc.js" type="text/javascript"></script> </head>
+  <title>Index of /pub/opensuse/distribution/leap</title>
+  <link rel="stylesheet" href="/theme/download.css" type="text/css" />
+<meta charset="utf-8" /> <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <meta name="description" content="The openSUSE Download repositories providing all of the software in the openSUSE distributions and openSUSE Build Service repositories" /> <link rel="shortcut icon" type="image/x-icon" href="https://static.opensuse.org/favicon.ico" /> <link rel="icon" href="https://static.opensuse.org/favicon-32.png" sizes="32x32"> <link rel="icon" href="https://static.opensuse.org/favicon-48.png" sizes="48x48"> <link rel="icon" href="https://static.opensuse.org/favicon-64.png" sizes="64x64"> <link rel="icon" href="https://static.opensuse.org/favicon-96.png" sizes="96x96"> <link rel="icon" href="https://static.opensuse.org/favicon-144.png" sizes="144x144"> <link rel="icon" href="https://static.opensuse.org/favicon-192.png" sizes="192x192"> <link rel="apple-touch-icon" href="https://static.opensuse.org/favicon-144.png" sizes="144x144"> <link rel="apple-touch-icon" href="https://static.opensuse.org/favicon-192.png" sizes="192x192"> <link rel="mask-icon" href="https://static.opensuse.org/mask-icon.svg" color="#73ba25" /> <meta name="mobile-web-app-capable" content="yes" /> <meta name="theme-color" content="#73ba25" /> <meta property="og:site_name" content="openSUSE Download" /> <meta property="og:title" content="openSUSE Download" /> <meta property="og:description" content="The openSUSE Download repositories providing all of the software in the openSUSE distributions and openSUSE Build Service repositories" /> <meta property="og:url" content="http://download.opensuse.org" /> <meta property="og:image" content="https://static.opensuse.org/favicon-192.png" /> <meta name="twitter:card" content="summary" /> <meta name="twitter:title" content="openSUSE Download" /> <meta name="twitter:url" content="http://download.opensuse.org" /> <meta name="twitter:image" content="https://static.opensuse.org/favicon-192.png" /> <script src="/theme/setloc.js"></script> <script defer src="https://static.opensuse.org/chameleon-3.0/dist/js/jquery.slim.js"></script> <script defer src="https://static.opensuse.org/chameleon-3.0/dist/js/bootstrap.bundle.js"></script> <script defer src="https://static.opensuse.org/chameleon-3.0/dist/js/chameleon.js"></script> <link rel="canonical" href="http://download.opensuse.org" /> </head>
  <body>
-<div id="oss-header">
-  <div>
-    <h1 id="oss-header-title">openSUSE Mirror Index</h1>
-    <!-- <a href="/" title="home" id="oss-header-logo">openSUSE Mirror</a> -->
-    <h5 id="oss-header-subtitle">Sub domains</h5>
-    &nbsp;
-    <ul>
-      <li><a href="https://www.opensuse.org" title="openSUSE homepage">openSUSE</a></li>
-      <li><a href="http://openbuildservice.org/" title="Open Build Service homepage">Open Build Service</a></li>
-      <li><a href="https://mirrors.opensuse.org/" title="List of mirror servers">Mirrors</a></li>
-      <li><a href="https://software.opensuse.org/" title="Software portal">Software</a></li>
+<nav class="navbar noprint navbar-expand-md">
+
+  <a class="navbar-brand" href="/">
+    <img src="https://static.opensuse.org/favicon.svg" class="d-inline-block align-top" alt="openSUSE" title="openSUSE"
+      width="30" height="30">
+    <span class="navbar-title">Download</span>
+  </a>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse">
+    <svg width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd"
+        d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z">
+      </path>
+    </svg>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbar-collapse">
+    <ul class="nav navbar-nav mr-auto flex-md-shrink-0">
+
+
+
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false">
+
+          Shortcuts
+        </a>
+        <div class="dropdown-menu">
+
+
+          <a class="dropdown-item" href="/debug/"> debug</a>
+
+
+
+          <a class="dropdown-item" href="/distribution/"> distribution</a>
+
+
+
+          <a class="dropdown-item" href="/factory/"> factory</a>
+
+
+
+          <a class="dropdown-item" href="/ports/"> ports</a>
+
+
+
+          <a class="dropdown-item" href="/repositories/"> repositories</a>
+
+
+
+          <a class="dropdown-item" href="/source/"> source</a>
+
+
+
+          <a class="dropdown-item" href="/tumbleweed/"> tumbleweed</a>
+
+
+
+          <a class="dropdown-item" href="/update/"> update</a>
+
+
+        </div>
+      </li>
+
+
+
+
     </ul>
+
+
   </div>
-  <div id="oss-header-clear"></div>
-</div>
-<div id="mirrorbrain-details">
-<h1>openSUSE download server</h1>
-<p>This is the download area of the <a href="https://www.opensuse.org/">openSUSE distribution</a> and the <a href="http://build.opensuse.org/">openSUSE Build Service</a>. If you are searching for a specific package for your distribution, we recommend to use our <a href="https://software.opensuse.org/">Software Portal</a> instead.
-<br />
-Short overview over the important directories and their content:</p>
-  <table>
-    <tr><td><a href="/debug/">debug</a> : </td><td><a href="/debug/">debug packages for official released distribution packages</a></td></tr>
-    <tr><td><a href="/distribution/">distribution</a> : </td><td><a href="/distribution/">official released openSUSE distributions - online repositories and ISO images</a></td></tr>
-    <tr><td><a href="/factory/">factory</a> : </td><td><a href="/factory/">Tumbleweed (former Factory) installation sources and ISO images</a></td></tr>
-    <tr><td><a href="/ports/">ports</a> : </td><td><a href="/ports/">ports of the openSUSE distribution</a></td></tr>
-    <tr><td><a href="/repositories/">repositories</a> : </td><td><a href="/repositories/">repositories and images created with the Open Build Service</a></td></tr>
-    <tr><td><a href="/source/">source</a> : </td><td><a href="/source/">source packages of official released distribution packages</a></td></tr>
-    <tr><td><a href="/tumbleweed/">tumbleweed</a> : </td><td><a href="/tumbleweed/">Tumbleweed installation sources and ISO images</a></td></tr>
-    <tr><td><a href="/update/">update</a> : </td><td><a href="/update/">updated packages for official released distribution packages</a></td></tr>
-  </table>
-</div>
-<div id="mirrorbrain-wrap">
-<h2 id="breadcrumbs">Index of <a href="/">download.opensuse.org</a>/</h2>
-<script type="text/javascript">setloc();</script>
-<table><tr><th><img src="/icons/blank.gif" alt="[ICO]" width="16" height="16" /></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th>Metadata</th></tr><tr><th colspan="5"><hr /></th></tr>
-<tr><td valign="top"><a href="/repositories/Cloud:/"><img src="/icons/up.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="/repositories/Cloud:/">Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_15.0/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_15.0/">Leap_15.0/</a></td><td align="right">08-Feb-2018 10:04  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_15.1/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_15.1/">Leap_15.1/</a></td><td align="right">20-May-2019 19:34  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_15.2/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_15.2/">Leap_15.2/</a></td><td align="right">21-Oct-2019 12:09  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_42.1/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_42.1/">Leap_42.1/</a></td><td align="right">06-Dec-2016 01:06  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_42.2/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_42.2/">Leap_42.2/</a></td><td align="right">06-Dec-2016 13:14  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="Leap_42.3/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="Leap_42.3/">Leap_42.3/</a></td><td align="right">21-Feb-2017 06:49  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="openSUSE_13.1/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="openSUSE_13.1/">openSUSE_13.1/</a></td><td align="right">01-Nov-2017 13:10  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="openSUSE_13.2/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="openSUSE_13.2/">openSUSE_13.2/</a></td><td align="right">01-Nov-2017 13:10  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><a href="SLES_12.3/"><img src="/icons/folder.png" alt="[DIR]" width="16" height="16" /></a></td><td><a href="SLES_12.3/">SLES_12.3/</a></td><td align="right">01-Nov-2017 13:25  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+
+  <button class="navbar-toggler megamenu-toggler" type="button" data-toggle="collapse" data-target="#megamenu"
+    aria-expanded="true">
+    <svg class="bi bi-grid" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd"
+        d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z">
+      </path>
+    </svg>
+  </button>
+
+</nav>
+
+<div id="megamenu" class="megamenu collapse"></div>
+<main class="container flex-fill my-4">
+    <p class="alert alert-info">If you have a server with some space left, and want to help with making the openSUSE experience better for other users,  <a href="https://en.opensuse.org/openSUSE:Mirror_howto">become a mirror</a>!</p>
+    <p class="alert alert-warning">This is the download area of the <a href="https://software.opensuse.org/distributions">openSUSE distributions</a> and the <a href="http://build.opensuse.org/">openSUSE Build Service</a>. If you are searching for a specific package for your distribution, we recommend to use our <a href="https://software.opensuse.org/">Software Portal</a> instead.</p>
+    <div id="breadcrumbs">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" class="mr-1" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M.5 8a.5.5 0 0 1 .5.5V12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5a.5.5 0 0 1 1 0V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8.5A.5.5 0 0 1 .5 8z"/>
+                    <path d="M5 7.5a.5.5 0 0 1 .707 0L8 9.793 10.293 7.5a.5.5 0 1 1 .707.707l-2.646 2.647a.5.5 0 0 1-.708 0L5 8.207A.5.5 0 0 1 5 7.5z"/>
+                    <path d="M8 1a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0v-8A.5.5 0 0 1 8 1z"/>
+                </svg>
+                Download
+            </li>
+        </ol>
+    </div>
+    <script type="text/javascript">setloc();</script>
+
+<table><tr><th><img src="/theme/icons/blank.svg" alt="[ICO]" width="16" height="16" /></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th>Metadata</th></tr><tr><th colspan="5"><hr /></th></tr>
+<tr><td valign="top"><a href="/pub/opensuse/distribution/"><img src="/theme/icons/up.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="/pub/opensuse/distribution/">Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><a href="15.0/"><img src="/theme/icons/folder.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="15.0/">15.0/</a></td><td align="right">03-Sep-2018 14:11  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><a href="15.1/"><img src="/theme/icons/folder.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="15.1/">15.1/</a></td><td align="right">14-May-2019 12:01  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><a href="15.2/"><img src="/theme/icons/folder.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="15.2/">15.2/</a></td><td align="right">08-Feb-2021 14:44  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><a href="15.3/"><img src="/theme/icons/folder.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="15.3/">15.3/</a></td><td align="right">28-May-2021 17:53  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+<tr><td valign="top"><a href="42.3/"><img src="/theme/icons/folder.svg" alt="[DIR]" width="16" height="16" /></a></td><td><a href="42.3/">42.3/</a></td><td align="right">21-Jul-2017 09:22  </td><td align="right">  - </td><td>&nbsp;</td></tr>
 <tr><th colspan="5"><hr /></th></tr>
 </table>
-</div>
-<div class="oss-header-clear"></div>
-<div id="mirrorbrain-footer">
-  <a href="https://www.opensuse.org/">openSUSE</a> download area - powered by <a href="http://httpd.apache.org/">Apache</a> and <a href="http://mirrorbrain.org/">MirrorBrain</a>.
-  <p>If you find a bug, please report it at: <a href="https://bugzilla.opensuse.org/" target="_blank">https://bugzilla.opensuse.org</a>.
-  If you have a server with some space left: <a href='https://en.opensuse.org/openSUSE:Mirror_howto'>become a mirror</a>!</p>
- <p class="text-center">&copy; 2015-2017 SUSE LLC. <span lang="en">All Rights Reserved.</span> <a lang="en" href="https://en.opensuse.org/Imprint">Imprint.</a></p>
-</div>
+<script type="text/javascript">settable();</script>
+</main>
+<footer class="footer">
+  <div class="container">
+    <div class="d-flex justify-content-between">
+      <div class="footer-copyright">
+        &copy; 2015-2020 SUSE LLC., openSUSE contributors
+      </div>
+      <div class="list-inline">
+
+        <a class="list-inline-item" href="https://github.com/openSUSE/mirrorbrain">Source Code</a>
+
+        <a class="list-inline-item" href="https://bugzilla.opensuse.org/">Report Bugs</a>
+
+        <a class="list-inline-item" href="https://en.opensuse.org/Imprint">Imprint</a>
+
+      </div>
+    </div>
+  </div>
+</footer>
+
 </body></html>
 """
 
     def setUp(self):
-        self.suse_available_versions = ['Leap_15.0', 'Leap_42.1', 'Leap_42.2', 'Leap_42.3']
-        self.base_images_url = 'https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.0/images/'
+        self.suse_available_versions = ['15.0', '15.1', '15.2', '15.3', '42.3']
+        self.base_images_url = 'https://download.opensuse.org/pub/opensuse/distribution/leap/15.3/appliances/'
 
     @staticmethod
     def get_html_with_image_link(image_link):
@@ -338,7 +416,7 @@ Short overview over the important directories and their content:</p>
         ''' % image_link
 
     def test_get_best_version_default(self):
-        suse_latest_version = 15.0
+        suse_latest_version = 15.3
         suse_provider = vmimage.OpenSUSEImageProvider(arch='x86_64')
         self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
                          suse_latest_version)
@@ -351,27 +429,27 @@ Short overview over the important directories and their content:</p>
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def test_get_image_url(self, urlopen_mock):
-        image = 'openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.qcow2'
+        image = 'openSUSE-Leap-15.3-JeOS.x86_64-OpenStack-Cloud.qcow2'
         html_fixture = self.get_html_with_image_link(image)
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         expected_image_url = self.base_images_url + image
 
         suse_provider = vmimage.OpenSUSEImageProvider(arch='x86_64')
-        suse_provider.get_version = unittest.mock.Mock(return_value='15.0')
+        suse_provider.get_version = unittest.mock.Mock(return_value='15.3')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def test_get_image_url_defining_build(self, urlopen_mock):
-        image = 'openSUSE-Leap-15.0-OpenStack.x86_64-1.1.1-Buildlp111.11.11.qcow2'
+        image = 'openSUSE-Leap-15.3-JeOS.x86_64-15.3-OpenStack-Cloud-Build1.111.qcow2'
         html_fixture = self.get_html_with_image_link(image)
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         expected_image_url = self.base_images_url + image
 
-        suse_provider = vmimage.OpenSUSEImageProvider(build='1.1.1-Buildlp111.11.11',
+        suse_provider = vmimage.OpenSUSEImageProvider(build='1.111',
                                                       arch='x86_64')
-        suse_provider.get_version = unittest.mock.Mock(return_value='15.0')
+        suse_provider.get_version = unittest.mock.Mock(return_value='15.3')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
@@ -380,7 +458,7 @@ Short overview over the important directories and their content:</p>
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         provider = vmimage.OpenSUSEImageProvider()
         self.assertEqual(provider.get_versions(),
-                         [15.0, 15.1, 15.2, 42.1, 42.2, 42.3])
+                         [15.0, 15.1, 15.2, 15.3, 42.3])
 
 
 class FedoraImageProvider(unittest.TestCase):

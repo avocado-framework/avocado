@@ -209,7 +209,7 @@ class FedoraImageProviderBase(ImageProviderBase):
         else:
             cloud = 'CloudImages'
 
-        if self.url_old_images and int(self.version) <= 34:
+        if self.url_old_images and int(self.version) <= 36:
             self.url_versions = self.url_old_images
 
         self.url_images = self.url_versions + '{version}/' \
@@ -290,11 +290,22 @@ class UbuntuImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
+    def get_best_version(self, versions):
+        """ Return best (more recent) version """
+        max_float = max([float(item) for item in versions])
+        return str(f'{max_float:2.2f}')
+
     def get_versions(self):
         """Return all available versions for the current parameters."""
         parser = VMImageHtmlParser(self.version_pattern)
         self._feed_html_parser(self.url_versions, parser)
-        return parser.items
+
+        resulting_versions = []
+        if parser.items:
+            for version in parser.items:
+                max_float = float(version)
+                resulting_versions.append(str(f'{max_float:2.2f}'))
+        return resulting_versions
 
 
 class DebianImageProvider(ImageProviderBase):
@@ -378,31 +389,22 @@ class OpenSUSEImageProvider(ImageProviderBase):
 
     def __init__(self, version='[0-9]{2}.[0-9]{1}', build=None, arch=DEFAULT_ARCH):
         super(OpenSUSEImageProvider, self).__init__(version, build, arch)
-        self.url_versions = 'https://download.opensuse.org/repositories/Cloud:/Images:/'
-        self.url_images = self.url_versions + 'Leap_{version}/images/'
+        self.url_versions = 'https://download.opensuse.org/pub/opensuse/distribution/leap/'
+        self.url_images = self.url_versions + '{version}/appliances/'
 
         if not build:
-            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-OpenStack.(?P<arch>{arch})-((.)*).qcow2$'
+            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-OpenStack-Cloud.qcow2$'
 
         else:
-            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-OpenStack.' \
-                                 '(?P<arch>{arch})-(?P<build>{build}).qcow2$'
-
-    @property
-    def version_pattern(self):
-        return '^Leap_%s' % self._version
+            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-{version}' \
+                                 '-OpenStack-Cloud-Build(?P<build>{build}).qcow2$'
 
     @staticmethod
     def _convert_version_numbers(versions):
         """
-        Return the pure version numbers
-
-        The version pattern return Leap_15.0, Leap_42.0, Leap_XY.Z,
-        but the actual version will numeric versions only
+        Return float instead of strings
         """
-        pattern = r'(^Leap_)?([0-9{2}.[0-9]{1})'
-        replace = r'\2'
-        return [float(re.sub(pattern, replace, str(v))) for v in versions]
+        return [float(v) for v in versions]
 
     def get_versions(self):
         versions = super(OpenSUSEImageProvider, self).get_versions()
