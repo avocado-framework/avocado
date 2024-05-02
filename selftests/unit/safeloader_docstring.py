@@ -1,6 +1,5 @@
 import unittest
 
-from avocado.core.dependencies.dependency import Dependency
 from avocado.core.safeloader.docstring import (
     DOCSTRING_DIRECTIVE_RE,
     check_docstring_directive,
@@ -166,12 +165,12 @@ class DocstringDirectives(unittest.TestCase):
 
     def test_dependency_single(self):
         raw = ':avocado: dependency={"foo":"bar"}'
-        exp = [Dependency(kwargs={"foo": "bar"})]
+        exp = [{"foo": "bar"}]
         self.assertEqual(get_docstring_directives_dependencies(raw), exp)
 
     def test_dependency_double(self):
         raw = ':avocado: dependency={"foo":"bar"}\n:avocado: dependency={"uri":"http://foo.bar"}'
-        exp = [Dependency(kwargs={"foo": "bar"}), Dependency(uri="http://foo.bar")]
+        exp = [{"foo": "bar"}, {"uri": "http://foo.bar"}]
         self.assertEqual(get_docstring_directives_dependencies(raw), exp)
 
     def test_directives_regex(self):

@@ -12,8 +12,6 @@
 # Copyright: Red Hat Inc. 2024
 # Authors: Jan Richter <jarcihte@redhat.com>
 
-from avocado.core.nrunner.runnable import Runnable
-
 
 class Dependency:
     """
@@ -56,9 +54,6 @@ class Dependency:
         if isinstance(other, Dependency):
             return hash(self) == hash(other)
         return False
-
-    def to_runnable(self, config):
-        return Runnable(self.kind, self.uri, *self.args, config=config, **self.kwargs)
 
     @classmethod
     def from_dictionary(cls, dictionary):
