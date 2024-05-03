@@ -1,8 +1,6 @@
 import json
 import re
 
-from avocado.core.dependencies.dependency import Dependency
-
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
 DOCSTRING_DIRECTIVE_RE_RAW = (
@@ -80,9 +78,7 @@ def get_docstring_directives_dependencies(docstring):
         if item.startswith("dependency="):
             _, dependency_str = item.split("dependency=", 1)
             try:
-                dependencies.append(
-                    Dependency.from_dictionary(json.loads(dependency_str))
-                )
+                dependencies.append(json.loads(dependency_str))
             except json.decoder.JSONDecodeError:
                 # ignore dependencies in case of malformed dictionary
                 continue

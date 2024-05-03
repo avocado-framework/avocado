@@ -15,6 +15,7 @@ try:
 except ImportError:
     JSONSCHEMA_AVAILABLE = False
 
+from avocado.core.dependencies.dependency import Dependency
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.settings import settings
 from avocado.core.utils.eggenv import get_python_path_env_if_egg
@@ -100,7 +101,7 @@ class Runnable:
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
-        self.dependencies = kwargs.pop("dependencies", None)
+        self.dependencies = self.read_dependencies(kwargs.pop("dependencies", None))
         self.variant = kwargs.pop("variant", None)
         self.output_dir = kwargs.pop("output_dir", None)
         #: list of (:class:`ReferenceResolutionAssetType`, str) tuples
@@ -344,6 +345,25 @@ class Runnable:
             if config_item not in config:
                 config[config_item] = whole_config.get(config_item)
         return config
+
+    def read_dependencies(self, dependencies_dict):
+        """
+        Converts dependencies from json to avocado.core.dependencies.dependency.Dependency
+
+        :param dependencies: Runnable dependencies
+        :type dependencies: list of dict, or list of Dependency
+        :returns: Runnable dependencies in avocado.core.dependencies.dependency.Dependency format.
+        :rtype: list of Dependency
+        """
+        if isinstance(dependencies_dict, list):
+            return list(
+                map(
+                    lambda d: (
+                        Dependency.from_dictionary(d) if isinstance(d, dict) else d
+                    ),
+                    dependencies_dict,
+                )
+            )
 
     def get_command_args(self):
         """

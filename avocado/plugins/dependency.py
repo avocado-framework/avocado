@@ -15,6 +15,7 @@ import json
 
 from avocado.core.dependencies.dependency import Dependency
 from avocado.core.exceptions import JobBaseException
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import JobPre, PreTest
 
 
@@ -43,8 +44,22 @@ class DependencyResolver(PreTest):
         dependency_runnables = []
         unique_dependencies = list(dict.fromkeys(test_runnable.dependencies))
         for dependency in unique_dependencies:
-            dependency_runnables.append(dependency.to_runnable(test_runnable.config))
+            dependency_runnables.append(
+                DependencyResolver._dependency_to_runnable(
+                    dependency, test_runnable.config
+                )
+            )
         return dependency_runnables
+
+    @staticmethod
+    def _dependency_to_runnable(dependency, config):
+        return Runnable(
+            dependency.kind,
+            dependency.uri,
+            *dependency.args,
+            config=config,
+            **dependency.kwargs,
+        )
 
 
 class SuiteDependency(JobPre):

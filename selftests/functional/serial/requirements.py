@@ -130,6 +130,14 @@ DEPENDENCY_FILE = """
 ]
 """
 
+DEPENDENCY_RECIPE_FMT = """
+{
+  "kind": "avocado-instrumented",
+  "uri": "{path}",
+  "kwargs": {"dependencies": [{"type": "package", "name": "hello"}]}
+}
+"""
+
 
 class BasicTest(TestCaseTmpDir, Test):
     """
@@ -284,6 +292,31 @@ class BasicTest(TestCaseTmpDir, Test):
                 os.path.join(self.tmpdir.name, "dependency.json"), DEPENDENCY_FILE
             ) as dependency_config:
                 command = f"{command} --job-dependency={dependency_config.path}"
+                result = process.run(command, ignore_status=True)
+                self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+                self.assertIn(
+                    "PASS 3",
+                    result.stdout_text,
+                )
+                self.assertNotIn(
+                    "vim-common",
+                    result.stdout_text,
+                )
+
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_dependency_recipe(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_multiple_success.py"),
+            TEST_WITHOUT_DEPENDENCY,
+        ) as test:
+            dependency_recipe_data = DEPENDENCY_RECIPE_FMT.format(
+                path=f"{test.path}:SuccessTest.test_a"
+            )
+            with script.Script(
+                os.path.join(self.tmpdir.name, "dependency_recipe.json"),
+                dependency_recipe_data,
+            ) as recipe:
+                command = self.get_command(recipe.path)
                 result = process.run(command, ignore_status=True)
                 self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
                 self.assertIn(
