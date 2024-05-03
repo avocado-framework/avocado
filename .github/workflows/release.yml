@@ -73,12 +73,25 @@ jobs:
         run: |
           make -f Makefile.gh build-update-readthedocs
       - run: echo "In a few minutes the release documentation will be available in https://${{ github.event.inputs.rtd_project }}.readthedocs.io/en/${{ github.event.inputs.version }}/"
-      - name: Upload to pypi
-        continue-on-error: true
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USER }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWD }}
-        run: make -f Makefile.gh update-pypi
+
+  publish-to-pypi:
+    name: Publish Avocado to PyPI
+    needs:
+    - release
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/avocado-framework
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    steps:
+    - name: Download all the wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: wheel
+        path: dist/
+    - name: Publish avocado to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
 
   build-and-publish-eggs:
     name: Build eggs and publish them
