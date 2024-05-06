@@ -90,3 +90,39 @@ jobs:
           name: job-results-deployment
           path: /github/home/avocado/job-results/
           retention-days: 1
+
+  package-build:
+    name: Build Package (wheel/tarball)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build tarballs and wheels
+      run: make -f Makefile.gh build-wheel check-wheel
+    - name: Save tarballs and wheels as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: tarballs_and_wheels
+        path: ${{github.workspace}}/PYPI_UPLOAD/
+        retention-days: 1
+    - run: echo "🥑 This job's status is ${{ job.status }}."
+
+  publish-to-test-pypi:
+    name: Publish Avocado to TestPyPI
+    needs:
+    - package-build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/avocado-framework
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    steps:
+    - name: Download all the wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: tarballs_and_wheels
+        path: dist/
+    - name: Publish avocado to test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
