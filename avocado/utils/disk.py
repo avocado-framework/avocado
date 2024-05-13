@@ -450,3 +450,32 @@ def get_disk_partitions(disk):
         for line in partitions_op.split("\n")
         if line.startswith(disk) and "Extended" not in line
     ]
+
+
+def get_io_scheduler_list(device_name):
+    """
+    Returns io scheduler available for the IO Device
+    :param device_name: Device  name example like sda
+    :return: list of IO scheduler
+    """
+    names = open(__sched_path(device_name), "r", encoding="utf-8").read()
+    return names.translate(str.maketrans("[]", " ")).split()
+
+
+def get_io_scheduler(device_name):
+    """
+    Return io scheduler name which is set currently  for device
+    :param device_name: Device  name example like sda
+    :return: IO scheduler
+    :rtype :  str
+    """
+    return re.split(
+        r"[\[\]]", open(__sched_path(device_name), "r", encoding="utf-8").read()
+    )[1]
+
+
+def __sched_path(device_name):
+ 
+    file_path = f"/sys/block/{device_name}/queue/scheduler"
+    return file_path
+
