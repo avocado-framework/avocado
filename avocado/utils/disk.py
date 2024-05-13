@@ -475,7 +475,19 @@ def get_io_scheduler(device_name):
 
 
 def __sched_path(device_name):
- 
+
     file_path = f"/sys/block/{device_name}/queue/scheduler"
     return file_path
 
+
+def set_io_scheduler(device_name, name):
+    """
+    Set io scheduler to a device
+    :param device_name:  Device  name example like sda
+    :param name: io scheduler name
+    """
+    if name not in get_io_scheduler_list(device_name):
+        raise DiskError(f"No such IO scheduler: {name}")
+
+    with open(__sched_path(device_name), "w", encoding="utf-8") as fp:
+        fp.write(name)
