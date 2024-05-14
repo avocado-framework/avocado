@@ -24,6 +24,7 @@ Linux OS utilities
 """
 
 import os
+import psutil
 
 from avocado.utils import genio
 
@@ -72,3 +73,17 @@ def enable_selinux_enforcing():
     if is_selinux_enforcing():
         return True
     return False
+
+
+def get_processes_by_name(name):
+    """
+    Return a list of processes matching 'name'
+
+    :param name: name of the process
+
+    :return: list of processes
+    """
+    matching_processes = [
+        proc for proc in psutil.process_iter(["name"]) if proc.info["name"] == name
+    ]
+    return matching_processes
