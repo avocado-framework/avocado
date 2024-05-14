@@ -73,6 +73,17 @@ and `multiprocessing unitary
 <https://github.com/pok-kernel/pok/tree/main/testsuite/multiprocessing_unitary_tests>`__
 tests.
 
+isar
+~~~~
+
+`isar <https://github.com/ilbers/isar>`__ is the "Integration System
+for Automated Root filesystem generation".  It is a set of scripts for
+building software packages and repeatable generation of Debian-based
+root filesystems with customizations.
+
+It is used in the project's `test suite
+<https://github.com/ilbers/isar/tree/master/testsuite#install-avocado>`__.
+
 Avocado extensions
 ------------------
 

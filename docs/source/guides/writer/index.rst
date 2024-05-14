@@ -7,6 +7,7 @@ Avocado Test Writer's Guide
 
    chapters/basics
    chapters/writing
+   chapters/recipes
    chapters/logging
    chapters/parameters
    chapters/libs

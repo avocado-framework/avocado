@@ -37,15 +37,12 @@ jobs:
                   addComment(input: {
                           subjectId: ${{ env.PR_ID }},
                           body: """Dear contributor,
-                                  Avocado is currently under sprint #103, which is due to release an LTS (Long Term Stability) release. 
+                                  Avocado is currently at the end of sprint #105, therefore we are in feature freeze state.
                                   Please avoid merging changes that do not fall into these categories:
                                   * Bug fixes
-                                  * Usability Improvements
                                   * Documentation updates
 
-                                  As for the Avocado utility modules (“avocado.utils”) it is OK to introduce new functionality, 
-                                  but changes to the existing APIs (including interface and behavior) should be avoided. 
-                                  These kind of changes should wait until sprint #104."""}) {
+                                  The feature freeze will be active until the release planned on 05/06/2024."""}) {
 
                                   clientMutationId
                   }

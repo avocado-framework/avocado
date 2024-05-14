@@ -599,7 +599,6 @@ class Job:
             self.pre_tests()
             return self.run_tests()
         except exceptions.JobBaseException as details:
-            self.status = details.status
             fail_class = details.__class__.__name__
             self.log.error("\nAvocado job failed: %s: %s", fail_class, details)
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL

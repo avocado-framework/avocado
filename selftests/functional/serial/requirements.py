@@ -1,15 +1,12 @@
 import glob
 import os
-import unittest
 
 from avocado import Test, skipUnless
 from avocado.core import exit_codes
 from avocado.utils import process, script
 from selftests.utils import AVOCADO, TestCaseTmpDir
 
-SINGLE_SUCCESS_CHECK = '''#!/usr/bin/env python3
-
-from avocado import Test
+SINGLE_SUCCESS_CHECK = '''from avocado import Test
 
 
 class SuccessTest(Test):
@@ -20,9 +17,7 @@ class SuccessTest(Test):
         """
 '''
 
-SINGLE_FAIL_CHECK = '''#!/usr/bin/env python3
-
-from avocado import Test
+SINGLE_FAIL_CHECK = '''from avocado import Test
 
 
 class FailTest(Test):
@@ -33,9 +28,7 @@ class FailTest(Test):
         """
 '''
 
-MULTIPLE_SUCCESS = '''#!/usr/bin/env python3
-
-from avocado import Test
+MULTIPLE_SUCCESS = '''from avocado import Test
 from avocado.utils import process
 
 
@@ -65,9 +58,7 @@ class SuccessTest(Test):
         self.check_hello()
 '''
 
-MULTIPLE_FAIL = '''#!/usr/bin/env python3
-
-from avocado import Test
+MULTIPLE_FAIL = '''from avocado import Test
 from avocado.utils import process
 
 
@@ -92,6 +83,60 @@ class FailTest(Test):
         :avocado: dependency={"type": "package", "name": "-foo-bar-"}
         """
 '''
+
+SINGLE_SUCCESS_DUPLCITIES = '''from avocado import Test
+from avocado.utils import process
+
+
+class SuccessTest(Test):
+
+    def check_hello(self):
+        result = process.run("hello", ignore_status=True)
+        self.assertEqual(result.exit_status, 0)
+        self.assertIn('Hello, world!', result.stdout_text,)
+
+    def test_a(self):
+        """
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        """
+        self.check_hello()
+'''
+
+TEST_WITHOUT_DEPENDENCY = """from avocado import Test
+from avocado.utils import process
+
+class SuccessTest(Test):
+
+    def check_hello(self):
+        result = process.run("hello", ignore_status=True)
+        self.assertEqual(result.exit_status, 0)
+        self.assertIn('Hello, world!', result.stdout_text,)
+
+    def test_a(self):
+        self.check_hello()
+
+    def test_b(self):
+        self.check_hello()
+
+    def test_c(self):
+        self.check_hello()
+"""
+
+DEPENDENCY_FILE = """
+[
+	{"type": "package", "name": "hello"}
+]
+"""
+
+DEPENDENCY_RECIPE_FMT = """
+{
+  "kind": "avocado-instrumented",
+  "uri": "{path}",
+  "kwargs": {"dependencies": [{"type": "package", "name": "hello"}]}
+}
+"""
 
 
 class BasicTest(TestCaseTmpDir, Test):
@@ -222,6 +267,63 @@ class BasicTest(TestCaseTmpDir, Test):
                 result.stdout_text,
             )
 
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_dependency_duplicates(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_single_success.py"),
+            SINGLE_SUCCESS_DUPLCITIES,
+        ) as test:
+            command = self.get_command(test.path)
+            result = process.run(command, ignore_status=True)
+            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+            self.assertIn(
+                "PASS 1",
+                result.stdout_text,
+            )
 
-if __name__ == "__main__":
-    unittest.main()
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_job_dependency(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_multiple_success.py"),
+            TEST_WITHOUT_DEPENDENCY,
+        ) as test:
+            command = self.get_command(test.path)
+            with script.Script(
+                os.path.join(self.tmpdir.name, "dependency.json"), DEPENDENCY_FILE
+            ) as dependency_config:
+                command = f"{command} --job-dependency={dependency_config.path}"
+                result = process.run(command, ignore_status=True)
+                self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+                self.assertIn(
+                    "PASS 3",
+                    result.stdout_text,
+                )
+                self.assertNotIn(
+                    "vim-common",
+                    result.stdout_text,
+                )
+
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_dependency_recipe(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_multiple_success.py"),
+            TEST_WITHOUT_DEPENDENCY,
+        ) as test:
+            dependency_recipe_data = DEPENDENCY_RECIPE_FMT.format(
+                path=f"{test.path}:SuccessTest.test_a"
+            )
+            with script.Script(
+                os.path.join(self.tmpdir.name, "dependency_recipe.json"),
+                dependency_recipe_data,
+            ) as recipe:
+                command = self.get_command(recipe.path)
+                result = process.run(command, ignore_status=True)
+                self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+                self.assertIn(
+                    "PASS 3",
+                    result.stdout_text,
+                )
+                self.assertNotIn(
+                    "vim-common",
+                    result.stdout_text,
+                )

@@ -16,6 +16,7 @@
 Test resolver for builtin test types
 """
 
+import json
 import os
 import re
 
@@ -143,3 +144,55 @@ class TapResolver(Resolver):
         return ReferenceResolution(
             reference, ReferenceResolutionResult.SUCCESS, [runnable]
         )
+
+
+class RunnableRecipeResolver(Resolver):
+    name = "runnable-recipe"
+    description = "Test resolver for JSON runnable recipes"
+
+    def resolve(self, reference):
+        criteria_check = check_file(
+            reference, reference, suffix=".json", type_name="JSON file"
+        )
+        if criteria_check is not True:
+            return criteria_check
+
+        runnable = Runnable.from_recipe(reference)
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, [runnable]
+        )
+
+
+class RunnablesRecipeResolver(Resolver):
+    name = "runnables-recipe"
+    description = "Test resolver for multiple runnables in a JSON recipe file"
+
+    @staticmethod
+    def _validate_and_load_runnables(reference):
+        with open(reference, "r", encoding="utf-8") as json_file:
+            runnables = json.load(json_file)
+
+        if not (
+            isinstance(runnables, list)
+            and all([isinstance(r, dict) for r in runnables])
+        ):
+            return ReferenceResolution(
+                reference,
+                ReferenceResolutionResult.NOTFOUND,
+                info="File {reference} does not look like a runnables recipe JSON file",
+            )
+
+        return ReferenceResolution(
+            reference,
+            ReferenceResolutionResult.SUCCESS,
+            [Runnable.from_dict(r) for r in runnables],
+        )
+
+    def resolve(self, reference):
+        criteria_check = check_file(
+            reference, reference, suffix=".json", type_name="JSON file"
+        )
+        if criteria_check is not True:
+            return criteria_check
+
+        return self._validate_and_load_runnables(reference)

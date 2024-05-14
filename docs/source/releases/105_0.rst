@@ -1,0 +1,84 @@
+===================
+105.0 - Poor Things
+===================
+
+The Avocado team is proud to present another release: Avocado 105.0,
+AKA "Poor Things", is now available!
+
+Release documentation: `Avocado 105.0
+<http://avocado-framework.readthedocs.io/en/105.0/>`_
+
+Users/Test Writers
+==================
+
+* A couple of new resolvers were introduced: one that can reads from
+  standard ``JSON`` "runnable recipe" files, and one that can read
+  from a ``JSON`` file containing multiple occurrences of the
+  previously mentioned runnable recipes.  This allows users to
+  "configure" in ``JSON`` what Avocado is going to resolve, and if
+  it's the case, run as a test.
+
+* Users can now define common dependency for each test inside job or
+  with Job API inside suite.  With this feature, it should be easier
+  to create jobs with tests which have common dependencies.
+
+* More control over the environment variables in ``exec-test`` was
+  introduced. It's now possible to disable one environment variable or
+  clear the whole environment during the test runtime so it won't be
+  available to the underlying executable.
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.cpu`: added support for getting physical cores
+  from ``lscpu``
+
+* :mod:`avocado.utils.git`: added support for checking out submodules
+
+* :mod:`avocado.utils.cpu`: utility update for AMD x86_64 arch to
+  return family details, model number for x86_64 and Zen information
+
+* :mod:`avocado.utils.disk`: improved the exception handling
+
+* :mod:`avocado.utils.astring`: optimized ``bitlist_to_string()`` using
+  ``bytearray``
+
+Bug Fixes
+=========
+
+* Runnables no longer ignore the configuration passed from recipes
+
+* Runnable (and Task) dependencies could deadlock and fail to complete
+  if they were duplicates.  Duplicates are now removed before
+  attempting to fulfill them.
+
+Internal Changes
+================
+
+* Added a module boundary check for importing avocado plugins inside
+  avocado core.
+
+* Some selftests had shebangs and ``main()`` calls removed
+
+* The ``JSON`` based runnable recipe now receives schema based
+  validation when the supporting library is available, or a simplified
+  check when it's not.
+
+* The GitHub actions used on the various workflows were all updated to
+  the latest available versions.
+
+* The code style is slightly changed with the update to black version 24.3.0
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/104.0...105.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/31>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt14230458/>`_.

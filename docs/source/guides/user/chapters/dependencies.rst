@@ -93,6 +93,52 @@ Defining a dependency in the class docstring will fulfill the dependency for
 every test within a test class. Defining a dependency in the test docstring
 will fulfill the dependency for that single test only.
 
+Defining a job dependency
+-------------------------
+
+Managing dependencies across multiple tests within a job can be streamlined
+using the Job Dependency Feature. If your tests share common dependencies,
+there's no need to specify them individually for each test. Instead, you can
+utilize the Job Dependency Feature to apply a set of dependencies to every
+test within the job.
+
+Once it is enabled, Avocado will read the list of common dependencies from
+the specified JSON file and automatically apply them to each test within
+the job.
+
+Enabling the Job Dependency
++++++++++++++++++++++++++++
+
+To enable this feature, you have two options:
+
+  1. Command-line Option:
+       Use of the `--job-dependency` option of the avocado run command
+       to specify the path to the dependency JSON file::
+
+        avocado run --job-dependency=dependencies.json tests/
+
+  2. Configuration File:
+       Alternatively, you can set the path to the dependency JSON file
+       using the `job.run.dependency` configuration option in the Avocado
+       configuration file.
+
+.. tip:: If you're using the Job API, you have the flexibility to define
+         different dependencies for each suite. Simply modify the
+         `job.run.dependency` value in the suite configuration during suite
+         creation.
+
+Dependency File Format
+++++++++++++++++++++++
+
+The dependency file follows the same format as the test dependency defined
+in the docstring. If you have multiple dependencies, ensure to encapsulate
+them within a JSON list::
+
+    [
+    {"type": "package", "name": "hello"},
+    {"type": "package", "name": "bash"}
+    ]
+
 Supported types of dependencies
 -------------------------------
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import tempfile
 import unittest
@@ -136,7 +134,3 @@ class ChangeValidationTest(unittest.TestCase):
             change_success,
             f"The change must not be valid:\n{diff_validator.create_diff_report(change_dict)}",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

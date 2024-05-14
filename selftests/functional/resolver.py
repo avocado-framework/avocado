@@ -1,3 +1,5 @@
+import glob
+import json
 import os
 import stat
 import unittest
@@ -8,7 +10,7 @@ from avocado.utils import process, script
 # is also the same
 from selftests.functional.list import AVOCADO_TEST_OK as AVOCADO_INSTRUMENTED_TEST
 from selftests.functional.list import EXEC_TEST
-from selftests.utils import AVOCADO, BASEDIR, python_module_available
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, python_module_available
 
 
 class ResolverFunctional(unittest.TestCase):
@@ -121,6 +123,59 @@ class ResolverFunctional(unittest.TestCase):
         self.assertIn(
             "Reference magic:foo might be resolved by magic resolver, but the file is corrupted:",
             result.stderr_text,
+        )
+
+    def test_runnable_recipe(self):
+        test_path = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "runnable",
+            "exec_test_echo_no_newline.json",
+        )
+        cmd_line = f"{AVOCADO} list {test_path}"
+        result = process.run(cmd_line)
+        self.assertEqual(
+            b"exec-test /bin/echo\n",
+            result.stdout,
+        )
+
+
+class ResolverFunctionalTmp(TestCaseTmpDir):
+    def test_runnables_recipe(self):
+        all_runnable_recipes = glob.glob(
+            os.path.join(
+                BASEDIR, "examples", "nrunner", "recipes", "runnable", "*.json"
+            )
+        )
+        result = []
+        for runnable_recipe_path in all_runnable_recipes:
+            with open(
+                runnable_recipe_path, "r", encoding="utf-8"
+            ) as runnable_recipe_file:
+                runnable_recipe = json.load(runnable_recipe_file)
+                result.append(runnable_recipe)
+
+        runnables_recipe_path = os.path.join(self.tmpdir.name, "runnables-recipe.json")
+        with open(
+            runnables_recipe_path, "w", encoding="utf-8"
+        ) as runnables_recipe_file:
+            json.dump(result, runnables_recipe_file)
+
+        exp = b"""TEST TYPES SUMMARY
+==================
+asset: 1
+exec-test: 3
+noop: 1
+package: 1
+python-unittest: 1
+sysinfo: 1"""
+        cmd_line = f"{AVOCADO} -V list {runnables_recipe_path}"
+        result = process.run(cmd_line)
+        self.assertIn(
+            exp,
+            result.stdout,
         )
 
 

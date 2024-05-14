@@ -27,7 +27,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 104.0
+Version: 105.0
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
@@ -84,6 +84,7 @@ Requires: python3-avocado-common == %{version}-%{release}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
+Requires: python3-jsonschema
 %if ! 0%{?rhel}
 Requires: python3-pycdlib
 %endif
@@ -191,9 +192,12 @@ cp -r examples/tests %{buildroot}%{_docdir}/avocado
 cp -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
+mkdir -p %{buildroot}%{_datarootdir}/avocado
+mv %{buildroot}%{python3_sitelib}/avocado/schemas %{buildroot}%{_datarootdir}/avocado
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec chmod -c -x {} ';'
 mkdir -p %{buildroot}%{_libexecdir}/avocado
 mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
+rmdir %{buildroot}%{python3_sitelib}/avocado/libexec
 
 %if %{with tests}
 %check
@@ -263,6 +267,10 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %dir %{_sysconfdir}/avocado/scripts/job/pre.d
 %dir %{_sysconfdir}/avocado/scripts/job/post.d
 %dir %{_sharedstatedir}/avocado
+%dir %{_sharedstatedir}/avocado/data
+%dir %{_datarootdir}/avocado
+%dir %{_datarootdir}/avocado/schemas
+%{_datarootdir}/avocado/schemas/*
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
@@ -436,6 +444,15 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue May 07 2024 Cleber Rosa <crosa@redhat.com> - 105.0-1
+- New release
+
+* Tue Apr  2 2024 Cleber Rosa <crosa@redhat.com> - 104.0-2
+- Package JSON schema files
+- Removed empty libexec dir
+- Require python3-jsonschema to perform runtime schema validation
+  for recipe files
+
 * Tue Mar 19 2024 Jan Richter <jarichte@redhat.com> - 104.0-1
 - New release
 

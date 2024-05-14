@@ -48,8 +48,8 @@ class List(CLICmd):
     def _prepare_matrix_for_display(matrix, verbose=False):
         colored_matrix = []
         for item in matrix:
-            cls = item[0]
-            type_label = TERM_SUPPORT.healthy_str(cls)
+            kind = item[0]
+            type_label = TERM_SUPPORT.healthy_str(kind)
             if verbose:
                 colored_matrix.append(
                     (type_label, item[1], _get_tags_as_string(item[2] or {}))
@@ -127,7 +127,11 @@ class List(CLICmd):
 
     @staticmethod
     def _get_resolution_matrix(suite):
-        """Used for resolver."""
+        """Used for resolver.
+
+        :returns: a list of tuples with either (kind, uri, tags) or
+                  (kind, uri) depending on whether verbose mode is on
+        """
         test_matrix = []
         verbose = suite.config.get("core.verbose")
         for runnable in suite.tests:

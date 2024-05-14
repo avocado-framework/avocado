@@ -419,6 +419,7 @@ if __name__ == "__main__":
                 "teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir",
                 "human = avocado.plugins.human:HumanJob",
                 "testlogsui = avocado.plugins.testlogs:TestLogsUI",
+                "suite-dependency = avocado.plugins.dependency:SuiteDependency",
             ],
             "avocado.plugins.test.pre": [
                 "dependency = avocado.plugins.dependency:DependencyResolver",
@@ -451,6 +452,8 @@ if __name__ == "__main__":
                 "python-unittest = avocado.plugins.resolvers:PythonUnittestResolver",
                 "avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver",
                 "tap = avocado.plugins.resolvers:TapResolver",
+                "runnable-recipe = avocado.plugins.resolvers:RunnableRecipeResolver",
+                "runnables-recipe = avocado.plugins.resolvers:RunnablesRecipeResolver",
             ],
             "avocado.plugins.suite.runner": [
                 "nrunner = avocado.plugins.runner_nrunner:Runner",

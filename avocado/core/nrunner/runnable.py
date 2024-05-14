@@ -2,11 +2,20 @@ import base64
 import collections
 import json
 import logging
+import os
 import subprocess
 import sys
 
 import pkg_resources
 
+try:
+    import jsonschema
+
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
+
+from avocado.core.dependencies.dependency import Dependency
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.settings import settings
 from avocado.core.utils.eggenv import get_python_path_env_if_egg
@@ -19,6 +28,14 @@ RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
 #: The configuration that is known to be used by standalone runners
 STANDALONE_EXECUTABLE_CONFIG_USED = {}
+
+#: Location used for schemas when packaged (as in RPMs)
+SYSTEM_WIDE_SCHEMA_PATH = "/usr/share/avocado/schemas"
+
+
+class RunnableRecipeInvalidError(Exception):
+    """Signals that a runnable recipe is not well formed, contains
+    missing or bad data"""
 
 
 def _arg_decode_base64(arg):
@@ -80,11 +97,11 @@ class Runnable:
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self._config = {}
         if config is None:
-            config = self.filter_runnable_config(kind, {})
+            config = self.add_configuration_used(kind, {})
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
-        self.dependencies = kwargs.pop("dependencies", None)
+        self.dependencies = self.read_dependencies(kwargs.pop("dependencies", None))
         self.variant = kwargs.pop("variant", None)
         self.output_dir = kwargs.pop("output_dir", None)
         #: list of (:class:`ReferenceResolutionAssetType`, str) tuples
@@ -150,7 +167,7 @@ class Runnable:
 
         # For kwargs we can use the entire list of values or with a specific
         # index.
-        kwargs = "-".join(self.kwargs.values())
+        kwargs = "-".join(str(self.kwargs.values()))
         if "kwargs" in fmt and "[" in fmt:
             kwargs = self.kwargs
 
@@ -176,10 +193,10 @@ class Runnable:
         configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
         if not set(configuration_used).issubset(set(config.keys())):
             LOG.warning(
-                "The runnable config should have only values "
-                "essential for its runner. In the next version of "
-                "avocado, this will raise a Value Error. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
+                "The runnable config should have values essential for its runner. "
+                "In this case, it's missing some of the used configuration.  In a "
+                "future avocado version this will raise a ValueError. Please "
+                "use avocado.core.nrunner.runnable.Runnable.add_configuration_used "
                 "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
             )
         self._config = config
@@ -196,6 +213,72 @@ class Runnable:
             **_key_val_args_to_kwargs(args.get("kwargs", [])),
         )
 
+    @staticmethod
+    def _validate_recipe_json_schema(recipe):
+        """Attempts to validate the runnable recipe using a JSON schema
+
+        :param recipe: the recipe already parsed from JSON into a dict
+        :type recipe: dict
+        :returns: whether the runnable recipe JSON was attempted to be
+                  validated with a JSON schema
+        :rtype: bool
+        :raises: RunnableRecipeInvalidError if the recipe is invalid
+        """
+        if not JSONSCHEMA_AVAILABLE:
+            return False
+        schema_filename = "runnable-recipe.schema.json"
+        schema_path = pkg_resources.resource_filename(
+            "avocado", os.path.join("schemas", schema_filename)
+        )
+        if not os.path.exists(schema_path):
+            schema_path = os.path.join(SYSTEM_WIDE_SCHEMA_PATH, schema_filename)
+            if not os.path.exists(schema_path):
+                return False
+        with open(schema_path, "r", encoding="utf-8") as schema:
+            try:
+                jsonschema.validate(recipe, json.load(schema))
+            except jsonschema.exceptions.ValidationError as details:
+                raise RunnableRecipeInvalidError(details)
+        return True
+
+    @classmethod
+    def _validate_recipe(cls, recipe):
+        """Validates a recipe using either JSON schema or builtin logic
+
+        :param recipe: the recipe already parsed from JSON into a dict
+        :type recipe: dict
+        :returns: None
+        :raises: RunnableRecipeInvalidError if the recipe is invalid
+        """
+        if not cls._validate_recipe_json_schema(recipe):
+            # This is a simplified validation of the recipe
+            allowed = set(["kind", "uri", "args", "kwargs", "config"])
+            if not "kind" in recipe:
+                raise RunnableRecipeInvalidError('Missing required property "kind"')
+            if not set(recipe.keys()).issubset(allowed):
+                raise RunnableRecipeInvalidError(
+                    "Additional properties are not allowed"
+                )
+
+    @classmethod
+    def from_dict(cls, recipe_dict):
+        """
+        Returns a runnable from a runnable dictionary
+
+        :param recipe_dict: a dictionary with runnable keys and values
+
+        :rtype: instance of :class:`Runnable`
+        """
+        cls._validate_recipe(recipe_dict)
+        config = ConfigDecoder.decode_set(recipe_dict.get("config", {}))
+        return cls.from_avocado_config(
+            recipe_dict.get("kind"),
+            recipe_dict.get("uri"),
+            *recipe_dict.get("args", ()),
+            config=config,
+            **recipe_dict.get("kwargs", {}),
+        )
+
     @classmethod
     def from_recipe(cls, recipe_path):
         """
@@ -206,22 +289,15 @@ class Runnable:
         :rtype: instance of :class:`Runnable`
         """
         with open(recipe_path, encoding="utf-8") as recipe_file:
-            recipe = json.load(recipe_file)
-        config = ConfigDecoder.decode_set(recipe.get("config", {}))
-        return cls.from_avocado_config(
-            recipe.get("kind"),
-            recipe.get("uri"),
-            *recipe.get("args", ()),
-            config=config,
-            **recipe.get("kwargs", {}),
-        )
+            recipe_dict = json.load(recipe_file)
+        return cls.from_dict(recipe_dict)
 
     @classmethod
     def from_avocado_config(cls, kind, uri, *args, config=None, **kwargs):
         """Creates runnable with only essential config for runner of specific kind."""
         if not config:
             config = {}
-        config = cls.filter_runnable_config(kind, config)
+        config = cls.add_configuration_used(kind, config)
         return cls(kind, uri, *args, config=config, **kwargs)
 
     @classmethod
@@ -245,30 +321,49 @@ class Runnable:
         return configuration_used
 
     @classmethod
-    def filter_runnable_config(cls, kind, config):
+    def add_configuration_used(cls, kind, config):
         """
-        Returns only essential values for specific runner.
+        Adds essential configuration values for specific runner.
 
-        It will use configuration from argument completed by values from
-        config file and avocado default configuration.
+        It will add missing configuration in the given config,
+        complementing it with values from config file and avocado default
+        configuration.
 
         :param kind: Kind of runner which should use the configuration.
         :type kind: str
-        :param config: Configuration values for runner. If some values will be
-                       missing the default ones and from config file will be
-                       used.
+        :param config: Configuration values for runner. If any used configuration
+                       values are missing, the default ones and from config file
+                       will be used.
         :type config: dict
-        :returns: Config dict, which has only values essential for runner
-                  based on STANDALONE_EXECUTABLE_CONFIG_USED
+        :returns: Config dict, which has existing entries plus values
+                  essential for runner based on
+                  STANDALONE_EXECUTABLE_CONFIG_USED
         :rtype: dict
         """
         whole_config = settings.as_dict()
-        filtered_config = {}
         for config_item in cls.get_configuration_used_by_kind(kind):
-            filtered_config[config_item] = config.get(
-                config_item, whole_config.get(config_item)
+            if config_item not in config:
+                config[config_item] = whole_config.get(config_item)
+        return config
+
+    def read_dependencies(self, dependencies_dict):
+        """
+        Converts dependencies from json to avocado.core.dependencies.dependency.Dependency
+
+        :param dependencies: Runnable dependencies
+        :type dependencies: list of dict, or list of Dependency
+        :returns: Runnable dependencies in avocado.core.dependencies.dependency.Dependency format.
+        :rtype: list of Dependency
+        """
+        if isinstance(dependencies_dict, list):
+            return list(
+                map(
+                    lambda d: (
+                        Dependency.from_dictionary(d) if isinstance(d, dict) else d
+                    ),
+                    dependencies_dict,
+                )
             )
-        return filtered_config
 
     def get_command_args(self):
         """

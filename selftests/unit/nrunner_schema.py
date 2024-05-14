@@ -13,7 +13,7 @@ except ImportError:
     JSONSCHEMA_AVAILABLE = False
 
 
-BASE_SCHEMA_DIR = os.path.join(BASEDIR, "contrib", "schemas")
+BASE_SCHEMA_DIR = os.path.join(BASEDIR, "avocado", "schemas")
 BASE_RECIPE_DIR = os.path.join(BASEDIR, "examples", "nrunner", "recipes")
 
 
@@ -30,6 +30,6 @@ class Schema(Test):
 
     def test_runnable_recipes(self):
         for recipe_path in glob.glob(
-            os.path.join(BASE_RECIPE_DIR, "runnables", "*.json")
+            os.path.join(BASE_RECIPE_DIR, "runnable", "*.json")
         ):
             self._test("runnable-recipe.schema.json", recipe_path)

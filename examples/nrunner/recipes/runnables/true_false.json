@@ -1,0 +1,7 @@
+[
+    {"kind": "exec-test",
+     "uri": "/bin/true"},
+
+    {"kind": "exec-test",
+     "uri": "/bin/false"}
+]

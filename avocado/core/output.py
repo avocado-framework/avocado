@@ -105,8 +105,8 @@ class TermSupport:
                 self.disable()
         elif force_color != "always":
             raise ValueError(
-                "The value for runner.output.color must be one of "
-                "'always', 'never', 'auto' and not " + force_color
+                f"The value for runner.output.color must be one of "
+                f"'always', 'never', 'auto' and not {force_color}"
             )
 
     def disable(self):
@@ -134,7 +134,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return self.HEADER + msg + self.ENDC
+        return f"{self.HEADER}{msg}{self.ENDC}"
 
     def fail_header_str(self, msg):
         """
@@ -142,7 +142,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return self.FAIL + msg + self.ENDC
+        return f"{self.FAIL}{msg}{self.ENDC}"
 
     def warn_header_str(self, msg):
         """
@@ -150,7 +150,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return self.WARN + msg + self.ENDC
+        return f"{self.WARN}{msg}{self.ENDC}"
 
     def healthy_str(self, msg):
         """
@@ -158,7 +158,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return self.PASS + msg + self.ENDC
+        return f"{self.PASS}{msg}{self.ENDC}"
 
     def partial_str(self, msg):
         """
@@ -166,7 +166,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return self.PARTIAL + msg + self.ENDC
+        return f"{self.PARTIAL}{msg}{self.ENDC}"
 
     def pass_str(self, msg="PASS", move=MOVE_BACK):
         """
@@ -174,7 +174,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.PASS + msg + self.ENDC
+        return f"{move}{self.PASS}{msg}{self.ENDC}"
 
     def skip_str(self, msg="SKIP", move=MOVE_BACK):
         """
@@ -182,7 +182,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.SKIP + msg + self.ENDC
+        return f"{move}{self.SKIP}{msg}{self.ENDC}"
 
     def fail_str(self, msg="FAIL", move=MOVE_BACK):
         """
@@ -190,7 +190,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.FAIL + msg + self.ENDC
+        return f"{move}{self.FAIL}{msg}{self.ENDC}"
 
     def error_str(self, msg="ERROR", move=MOVE_BACK):
         """
@@ -198,7 +198,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.ERROR + msg + self.ENDC
+        return f"{move}{self.ERROR}{msg}{self.ENDC}"
 
     def interrupt_str(self, msg="INTERRUPT", move=MOVE_BACK):
         """
@@ -206,7 +206,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.INTERRUPT + msg + self.ENDC
+        return f"{move}{self.INTERRUPT}{msg}{self.ENDC}"
 
     def warn_str(self, msg="WARN", move=MOVE_BACK):
         """
@@ -214,7 +214,7 @@ class TermSupport:
 
         If the output does not support colors, just return the original string.
         """
-        return move + self.WARN + msg + self.ENDC
+        return f"{move}{self.WARN}{msg}{self.ENDC}"
 
 
 #: Transparently handles colored terminal, when one is used
@@ -725,10 +725,10 @@ class Throbber:
     # Only print a throbber when we're on a terminal
     if TERM_SUPPORT.enabled:
         MOVES = [
-            TERM_SUPPORT.MOVE_BACK + STEPS[0],
-            TERM_SUPPORT.MOVE_BACK + STEPS[1],
-            TERM_SUPPORT.MOVE_BACK + STEPS[2],
-            TERM_SUPPORT.MOVE_BACK + STEPS[3],
+            f"{TERM_SUPPORT.MOVE_BACK}{STEPS[0]}",
+            f"{TERM_SUPPORT.MOVE_BACK}{STEPS[1]}",
+            f"{TERM_SUPPORT.MOVE_BACK}{STEPS[2]}",
+            f"{TERM_SUPPORT.MOVE_BACK}{STEPS[3]}",
         ]
     else:
         MOVES = ["", "", "", ""]
