@@ -22,11 +22,14 @@
 """
 Linux OS utilities
 """
-
+import logging
 import os
+
 import psutil
 
 from avocado.utils import genio
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_proc_sys(key):
@@ -87,3 +90,18 @@ def get_processes_by_name(name):
         proc for proc in psutil.process_iter(["name"]) if proc.info["name"] == name
     ]
     return matching_processes
+
+
+def kill_processes(processes):
+    """
+    Attempt to kill all 'processes'
+
+    :param processes: linux process
+    """
+    for proc in processes:
+        try:
+            proc.kill()
+        except psutil.NoSuchProcess:
+            LOGGER.error(f"No such process: {proc.pid}")
+        except psutil.AccessDenied:
+            LOGGER.error(f"Access denied to {proc.pid}")
