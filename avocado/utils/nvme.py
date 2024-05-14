@@ -47,7 +47,7 @@ def get_controller_name(pci_addr):
     :raises: :py:class:`NvmeException` on failure to find pci_address in OS
     """
     if pci_addr in pci.get_pci_addresses():
-        path = f"/sys/bus/pci/devices/{pci_addr}/nvme/"
+        path = os.path.join("/sys/bus/pci/devices", pci_addr, "nvme")
         return "".join(os.listdir(path))
     raise NvmeException("Unable to list as wrong pci_addr")
 
