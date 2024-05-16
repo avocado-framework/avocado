@@ -27,7 +27,7 @@ import platform
 import re
 from enum import Enum
 
-from avocado.utils import astring, data_structures, process
+from avocado.utils import data_structures, process
 
 LOG = logging.getLogger(__name__)
 
@@ -208,8 +208,8 @@ def get_loaded_modules():
     if not os.path.exists(modules_path):
         LOG.info("Modules file can not be found at %s", modules_path)
         return []
-    with open(modules_path, "rb") as proc_modules:  # pylint: disable=W1514
-        return [astring.to_text(_.split(b" ", 1)[0]) for _ in proc_modules]
+    with open(modules_path, "r", encoding="utf-8") as proc_modules:
+        return [line.split(" ", 1)[0] for line in proc_modules]
 
 
 def check_kernel_config(config_name):
@@ -221,7 +221,6 @@ def check_kernel_config(config_name):
     :return: Config status in running kernel (NOT_SET, BUILTIN, MODULE)
     :rtype: :class:`ModuleConfig`
     """
-
     kernel_version = platform.uname()[2]
 
     config_file = "/boot/config-" + kernel_version
