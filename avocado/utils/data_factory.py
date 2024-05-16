@@ -69,17 +69,18 @@ def make_dir_and_populate(basedir="/tmp"):
     """
     try:
         path = tempfile.mkdtemp(prefix="avocado_" + __name__, dir=basedir)
-        n_files = _RAND_POOL.randint(100, 150)
+        n_files = random.randint(100, 150)
         for _ in range(n_files):
-            fd, _ = tempfile.mkstemp(dir=path, text=True)
-            str_length = _RAND_POOL.randint(30, 50)
-            n_lines = _RAND_POOL.randint(5, 7)
-            for _ in range(n_lines):
-                os.write(fd, generate_random_string(str_length).encode())
-            os.close(fd)
-    except OSError as details:
-        log_msg = "Failed to generate dir in '%s' and populate: %s"
-        LOG.error(log_msg, basedir, details)
+            file_path = os.path.join(
+                path, tempfile.NamedTemporaryFile(delete=False, dir=path).name
+            )
+            str_length = random.randint(30, 50)
+            n_lines = random.randint(5, 7)
+            with open(file_path, "w", encoding="utf-8") as f:
+                for _ in range(n_lines):
+                    f.write(generate_random_string(str_length) + "\n")
+    except OSError as e:
+        LOG.error(f"Failed to generate dir in '{basedir}' and populate: {e}")
         return None
 
     return path
