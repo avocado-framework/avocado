@@ -440,13 +440,15 @@ def reset(full_pci_address):
 def rescan(full_pci_address):
     """
     Rescan the system and check for full_pci_address
-
     :param full_pci_address: Full PCI address including domain (0000:03:00.0)
     :return: None
     """
-    genio.write_file_or_fail("/sys/bus/pci/rescan", "1")
-    if not wait.wait_for(lambda: rescan_check(full_pci_address), timeout=5):
-        raise ValueError(f"Unsuccessful to rescan for {full_pci_address}")
+    try:
+        genio.write_file_or_fail("/sys/bus/pci/rescan", "1")
+        if not wait.wait_for(lambda: rescan_check(full_pci_address), timeout=5):
+            raise ValueError(f"Unsuccessful to rescan for {full_pci_address}")
+    except (IOError, TimeoutError) as e:
+        raise ValueError(f"Failed to rescan for {full_pci_address}: {e}")
 
 
 def get_iommu_group(full_pci_address):
@@ -491,7 +493,6 @@ def get_memory_address(pci_address):
     :note: This function returns only the first such address.
 
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
-
     :return: memory address of a pci_address.
     :rtype: str
     """
