@@ -109,7 +109,16 @@ class PythonUnittestRunner(BaseRunner):
             return
 
         runner = TextTestRunner(stream=stream, verbosity=0)
-        unittest_result = runner.run(suite)
+        # running the actual test
+        if "COVERAGE_RUN" in os.environ:
+            from coverage import Coverage
+
+            coverage = Coverage(data_suffix=True)
+            with coverage.collect():
+                unittest_result = runner.run(suite)
+            coverage.save()
+        else:
+            unittest_result = runner.run(suite)
 
         unittest_result_entries = None
         if len(unittest_result.errors) > 0:

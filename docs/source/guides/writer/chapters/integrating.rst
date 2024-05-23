@@ -10,7 +10,7 @@ like which parts are being exercised by the tests, may help develop new tests.
 `Coverage.py`_ is a tool designed for measuring code coverage of Python
 programs. It runs monitoring the program's source, taking notes of which
 parts of the code have been executed. It is possible to use Coverage.py while
-running Avocado Instrumented tests.
+running Avocado Instrumented tests or Python unittests.
 
 To make the Coverage.py parameters visible to other processes spawned by
 Avocado, create the ``.coveragerc`` file in the project's root folder and set
