@@ -1,0 +1,2 @@
+[run]
+source = avocado/, optional_plugins/
