@@ -631,7 +631,7 @@ def lscpu():
     :physical chips:
     :chips: physical sockets * physical chips
     """
-    output = process.run("lscpu")
+    output = process.run("LANG=en_US.UTF-8;lscpu", shell=True)
     res = {}
     for line in output.stdout.decode("utf-8").split("\n"):
         if "Physical cores/chip:" in line:
