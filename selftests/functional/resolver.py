@@ -141,6 +141,22 @@ class ResolverFunctional(unittest.TestCase):
             result.stdout,
         )
 
+    def test_runnable_recipe_origin(self):
+        test_path = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "recipes",
+            "runnable",
+            "python_unittest.json",
+        )
+        cmd_line = f"{AVOCADO} -V list {test_path}"
+        result = process.run(cmd_line)
+        self.assertIn(
+            b"python-unittest selftests/unit/test.py:TestClassTestUnit.test_long_name runnable-recipe\n",
+            result.stdout,
+        )
+
 
 class ResolverFunctionalTmp(TestCaseTmpDir):
     def test_runnables_recipe(self):
