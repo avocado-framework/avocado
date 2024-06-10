@@ -15,8 +15,8 @@ echo "Using coverage utility: $COVERAGE"
 
 $COVERAGE erase
 rm -f .coverage.*
-RUNNING_COVERAGE=1 AVOCADO_CHECK_LEVEL=1 UNITTEST_AVOCADO_CMD="$COVERAGE run -p --include 'avocado/*,optional_plugins/*' $PYTHON -m avocado" $COVERAGE run -p --include "avocado/*,optional_plugins/*" ./selftests/run
-$COVERAGE combine .coverage*
+$COVERAGE run selftests/check.py --skip=static-checks
+$COVERAGE combine
 echo
 $COVERAGE report -m --include "avocado/core/*"
 echo
