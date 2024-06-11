@@ -93,6 +93,26 @@ class FailTest(Test):
         """
 '''
 
+SINGLE_SUCCESS_DUPLCITIES = '''from avocado import Test
+from avocado.utils import process
+
+
+class SuccessTest(Test):
+
+    def check_hello(self):
+        result = process.run("hello", ignore_status=True)
+        self.assertEqual(result.exit_status, 0)
+        self.assertIn('Hello, world!', result.stdout_text,)
+
+    def test_a(self):
+        """
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        """
+        self.check_hello()
+'''
+
 
 class BasicTest(TestCaseTmpDir, Test):
 
@@ -220,6 +240,20 @@ class BasicTest(TestCaseTmpDir, Test):
             )
             self.assertNotIn(
                 "-foo-bar-",
+                result.stdout_text,
+            )
+
+    @skipUnless(os.getenv("CI"), skip_install_message)
+    def test_dependency_duplicates(self):
+        with script.Script(
+            os.path.join(self.tmpdir.name, "test_single_success.py"),
+            SINGLE_SUCCESS_DUPLCITIES,
+        ) as test:
+            command = self.get_command(test.path)
+            result = process.run(command, ignore_status=True)
+            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+            self.assertIn(
+                "PASS 1",
                 result.stdout_text,
             )
 
