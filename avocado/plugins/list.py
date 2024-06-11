@@ -52,7 +52,7 @@ class List(CLICmd):
             type_label = TERM_SUPPORT.healthy_str(kind)
             if verbose:
                 colored_matrix.append(
-                    (type_label, item[1], _get_tags_as_string(item[2] or {}))
+                    (type_label, item[1], item[2], _get_tags_as_string(item[3] or {}))
                 )
             else:
                 colored_matrix.append((type_label, item[1]))
@@ -65,6 +65,7 @@ class List(CLICmd):
             header = (
                 TERM_SUPPORT.header_str("Type"),
                 TERM_SUPPORT.header_str("Test"),
+                TERM_SUPPORT.header_str("Resolver"),
                 TERM_SUPPORT.header_str("Tag(s)"),
             )
 
@@ -134,13 +135,15 @@ class List(CLICmd):
         """
         test_matrix = []
         verbose = suite.config.get("core.verbose")
-        for runnable in suite.tests:
-
-            if verbose:
-                tags = runnable.tags or {}
-                test_matrix.append((runnable.kind, runnable.uri, tags))
-            else:
-                test_matrix.append((runnable.kind, runnable.uri))
+        for resolution in suite.resolutions:
+            for runnable in resolution.resolutions:
+                if verbose:
+                    tags = runnable.tags or {}
+                    test_matrix.append(
+                        (runnable.kind, runnable.uri, resolution.origin, tags)
+                    )
+                else:
+                    test_matrix.append((runnable.kind, runnable.uri))
         return test_matrix
 
     @staticmethod
