@@ -15,8 +15,8 @@ Libexec PATHs modifier
 """
 
 import os
-
-from pkg_resources import resource_filename
+import pathlib
+from importlib import resources, util
 
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -40,4 +40,10 @@ class ExecPath(CLICmd):
         if os.path.isdir(system_wide):
             LOG_UI.debug(system_wide)
         else:
-            LOG_UI.debug(resource_filename("avocado", "libexec"))
+            if hasattr(resources, "files"):
+                LOG_UI.debug(resources.files("avocado").joinpath("libexec"))
+            # Python <= 3.8 does not have importlib.resources.files
+            else:
+                LOG_UI.debug(
+                    pathlib.Path(util.find_spec("avocado").origin).parent / "libexec"
+                )

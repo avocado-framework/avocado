@@ -41,9 +41,9 @@ import configparser
 import glob
 import json
 import os
+import pathlib
 import re
-
-from pkg_resources import resource_exists, resource_filename
+from importlib import resources, util
 
 from avocado.core.settings_dispatcher import SettingsDispatcher
 
@@ -413,8 +413,15 @@ class Settings:
 
         config_file_name = "avocado.conf"
         config_pkg_base = os.path.join("etc", "avocado", config_file_name)
-        if resource_exists("avocado", config_pkg_base):
-            self._config_path_pkg = resource_filename("avocado", config_pkg_base)
+        if hasattr(resources, "files"):
+            config_file = resources.files("avocado").joinpath(config_pkg_base)
+        # Python <= 3.8 does not have importlib.resources.files
+        else:
+            config_file = (
+                pathlib.Path(util.find_spec("avocado").origin).parent / config_pkg_base
+            )
+        if config_file.exists():
+            self._config_path_pkg = str(config_file)
         else:
             self._config_path_pkg = None
         self._config_dir_system = os.path.join(cfg_dir, "avocado")

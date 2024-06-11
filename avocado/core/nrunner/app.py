@@ -4,8 +4,7 @@ import json
 import os
 import re
 import sys
-
-import pkg_resources
+from importlib import metadata
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
@@ -227,9 +226,16 @@ class BaseRunnerApp:
         """
         config_used = []
         for kind in self.RUNNABLE_KINDS_CAPABLE:
-            for ep in pkg_resources.iter_entry_points(
-                "avocado.plugins.runnable.runner", kind
-            ):
+            all_eps = metadata.entry_points()
+            if isinstance(all_eps, dict):
+                # Older stdlib importlib.metadata.entry_points returns {key: tuple}
+                all_eps = [ep for group in all_eps.values() for ep in group]
+            eps = {
+                ep
+                for ep in all_eps
+                if ep.group == "avocado.plugins.runnable.runner" and ep.name == kind
+            }
+            for ep in eps:
                 try:
                     runner = ep.load()
                     config_used += runner.CONFIGURATION_USED

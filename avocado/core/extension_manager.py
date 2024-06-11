@@ -23,8 +23,7 @@ import copy
 import enum
 import logging
 import sys
-
-import pkg_resources
+from importlib import metadata
 
 from avocado.core.exceptions import JobBaseException
 from avocado.utils import stacktrace
@@ -90,7 +89,12 @@ class ExtensionManager:
             invoke_kwds = {}
 
         # load plugins
-        for ep in pkg_resources.iter_entry_points(self.namespace):
+        all_eps = metadata.entry_points()
+        if isinstance(all_eps, dict):
+            # Older stdlib importlib.metadata.entry_points returns {key: tuple}
+            all_eps = [ep for group in all_eps.values() for ep in group]
+        eps = {ep for ep in all_eps if ep.group == self.namespace}
+        for ep in eps:
             try:
                 plugin = ep.load()
                 obj = plugin(**invoke_kwds)

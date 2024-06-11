@@ -3,10 +3,10 @@ import collections
 import json
 import logging
 import os
+import pathlib
 import subprocess
 import sys
-
-import pkg_resources
+from importlib import metadata, resources, util
 
 try:
     import jsonschema
@@ -227,10 +227,18 @@ class Runnable:
         if not JSONSCHEMA_AVAILABLE:
             return False
         schema_filename = "runnable-recipe.schema.json"
-        schema_path = pkg_resources.resource_filename(
-            "avocado", os.path.join("schemas", schema_filename)
-        )
-        if not os.path.exists(schema_path):
+        if hasattr(resources, "files"):
+            schema_path = resources.files("avocado").joinpath(
+                "schemas", schema_filename
+            )
+        # Python <= 3.8 does not have importlib.resources.files
+        else:
+            schema_path = (
+                pathlib.Path(util.find_spec("avocado").origin).parent
+                / "schemas"
+                / schema_filename
+            )
+        if not schema_path.exists():
             schema_path = os.path.join(SYSTEM_WIDE_SCHEMA_PATH, schema_filename)
             if not os.path.exists(schema_path):
                 return False
@@ -591,8 +599,13 @@ class Runnable:
         :returns: a module that can be run with "python -m" or None"""
         namespace = "console_scripts"
         section = f"avocado-runner-{kind}"
-        for ep in pkg_resources.iter_entry_points(namespace, section):
-            return ep.module_name
+        eps = metadata.entry_points()
+        if isinstance(eps, dict):
+            # Older stdlib importlib.metadata.entry_points returns {key: tuple}
+            eps = [ep for group in eps.values() for ep in group]
+        for ep in set(eps):
+            if ep.group == namespace and ep.name == section:
+                return ep.module
 
     @staticmethod
     def pick_runner_class_from_entry_point_kind(kind):
@@ -605,12 +618,18 @@ class Runnable:
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
         namespace = "avocado.plugins.runnable.runner"
-        for ep in pkg_resources.iter_entry_points(namespace, kind):
-            try:
-                obj = ep.load()
-                return obj
-            except ImportError:
-                return
+        eps = metadata.entry_points()
+        if isinstance(eps, dict):
+            # Older stdlib importlib.metadata.entry_points returns {key: tuple}
+            eps = [ep for group in eps.values() for ep in group]
+
+        for ep in set(eps):
+            if ep.group == namespace and ep.name == kind:
+                try:
+                    obj = ep.load()
+                    return obj
+                except ImportError:
+                    return
 
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.

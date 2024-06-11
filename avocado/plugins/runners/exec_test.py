@@ -4,8 +4,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-
-import pkg_resources
+from importlib import metadata
 
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import BaseRunner
@@ -85,8 +84,8 @@ class ExecTestRunner(BaseRunner):
         """Return the Avocado package version, if installed"""
         version = "unknown.unknown"
         try:
-            version = pkg_resources.get_distribution("avocado-framework").version
-        except pkg_resources.DistributionNotFound:
+            version = metadata.version("avocado-framework")
+        except metadata.PackageNotFoundError:
             pass
         return version
 
