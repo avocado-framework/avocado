@@ -89,6 +89,19 @@ def register_job_options():
         key_type=list,
     )
 
+    help_msg = (
+        "Whether to add a layer of memory based buffering with a given number of "
+        "entries.  If set to 0 or less than 0, buffering disabled."
+    )
+    settings.register_option(
+        section="job.run",
+        key="logging_buffer_size",
+        help_msg=help_msg,
+        default=0,
+        metavar="SIZE",
+        key_type=int,
+    )
+
 
 register_job_options()
 
@@ -210,13 +223,15 @@ class Job:
         # Enable test logger
         full_log = os.path.join(self.logdir, "full.log")
         fmt = "%(asctime)s %(name)s %(module)-16.16s L%(lineno)-.4d %(levelname)-5.5s| %(message)s"
+        buffer_size = self.config.get("job.run.logging_buffer_size")
         output.add_log_handler(
             LOG_JOB,
             logging.FileHandler,
             self.logfile,
             self.loglevel,
             fmt,
-            handler_filter=output.FilterTestMessage(),
+            output.FilterTestMessage(),
+            buffer_size,
         )
         output.add_log_handler(
             logging.getLogger(""),
@@ -224,7 +239,8 @@ class Job:
             full_log,
             self.loglevel,
             fmt,
-            handler_filter=output.FilterTestMessage(),
+            output.FilterTestMessage(),
+            buffer_size,
         )
         output.add_log_handler(
             logging.getLogger(""),
@@ -232,7 +248,8 @@ class Job:
             full_log,
             self.loglevel,
             "",
-            handler_filter=output.FilterTestMessageOnly(),
+            output.FilterTestMessageOnly(),
+            buffer_size,
         )
 
         # --store-logging-stream files
@@ -251,7 +268,8 @@ class Job:
                 logfile,
                 level,
                 fmt,
-                handler_filter=output.FilterTestMessage(),
+                output.FilterTestMessage(),
+                buffer_size,
             )
             output.add_log_handler(
                 enabled_logger,
@@ -259,7 +277,8 @@ class Job:
                 logfile,
                 level,
                 "",
-                handler_filter=output.FilterTestMessageOnly(),
+                output.FilterTestMessageOnly(),
+                buffer_size,
             )
 
     def __stop_job_logging(self):
