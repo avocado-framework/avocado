@@ -339,15 +339,9 @@ class TestSuite:
         if job_config:
             config.update(job_config)
         config.update(suite_config)
-        runner = config.get("run.suite_runner")
-        if runner == "nrunner":
-            suite = cls._from_config_with_resolver(config, name)
-            if suite.test_parameters or suite.variants:
-                suite.tests = suite._get_test_variants()
-        else:
-            raise TestSuiteError(
-                f'Suite creation for runner "{runner}" ' f"is not supported"
-            )
+        suite = cls._from_config_with_resolver(config, name)
+        if suite.test_parameters or suite.variants:
+            suite.tests = suite._get_test_variants()
 
         if not config.get("run.ignore_missing_references"):
             if not suite.tests:
