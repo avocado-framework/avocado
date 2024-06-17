@@ -212,7 +212,7 @@ class FedoraImageProviderBase(ImageProviderBase):
         else:
             cloud = "CloudImages"
 
-        if self.url_old_images and int(self.version) <= 36:
+        if self.url_old_images and int(self.version) <= 38:
             self.url_versions = self.url_old_images
 
         self.url_images = self.url_versions + "{version}/" + cloud + "/{arch}/images/"
