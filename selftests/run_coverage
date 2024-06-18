@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # Execute all unittests with coverage and report code coverage.
 #
 # Copyright: Red Hat Inc.
@@ -25,4 +25,6 @@ echo
 $COVERAGE report -m --include "avocado/plugins/*"
 echo
 $COVERAGE report -m --include "optional_plugins/*"
+echo
+$COVERAGE report
 $COVERAGE xml
