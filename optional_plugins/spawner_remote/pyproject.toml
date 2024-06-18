@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-spawner-remote"
+dynamic = ["dependencies", "version"]
+authors = [{name = "Avocado Developers", email = "avocado-devel@redhat.com"}]
+description = "Remote (host) based spawner"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[project.urls]
+Homepage = "https://avocado-vt.readthedocs.io"
+
+[project.entry-points."avocado.plugins.init"]
+remote = "avocado_spawner_remote:RemoteSpawnerInit"
+
+[project.entry-points."avocado.plugins.spawner"]
+remote = "avocado_spawner_remote:RemoteSpawner"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["avocado_spawner_remote"]

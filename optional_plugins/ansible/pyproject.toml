@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-ansible"
+dynamic = ["dependencies", "version"]
+authors = [{name = "Avocado Developers", email = "avocado-devel@redhat.com"}]
+description = "Adds to Avocado the ability to use ansible modules as dependencies for tests"
+readme = {text = "Adds to Avocado the ability to use ansible modules as dependencies for tests", content-type = "text/x-rst"}
+
+[project.urls]
+Homepage = "https://avocado-vt.readthedocs.io"
+
+[project.scripts]
+avocado-runner-ansible-module = "avocado_ansible.module:main"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+ansible-module = "avocado_ansible.module:AnsibleModuleRunner"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["avocado_ansible"]

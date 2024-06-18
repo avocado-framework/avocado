@@ -17,47 +17,12 @@ import os
 
 from setuptools import setup
 
-# Handle systems with setuptools < 40
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    packages = ["avocado_golang"]
-else:
-    packages = find_namespace_packages(include=["avocado_golang"])
-
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
 
 
-def get_long_description():
-    with open(os.path.join(BASE_PATH, "README.rst"), "rt", encoding="utf-8") as readme:
-        readme_contents = readme.read()
-    return readme_contents
-
-
 setup(
-    name="avocado-framework-plugin-golang",
-    version=VERSION,
-    description="Avocado Plugin for Execution of Golang tests",
-    long_description=get_long_description(),
-    long_description_content_type="text/x-rst",
-    author="Avocado Developers",
-    author_email="avocado-devel@redhat.com",
-    url="http://avocado-framework.github.io/",
-    packages=packages,
-    include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}"],
     test_suite="tests",
-    entry_points={
-        "console_scripts": [
-            "avocado-runner-golang = avocado_golang.runner:main",
-        ],
-        "avocado.plugins.resolver": [
-            "golang = avocado_golang.golang:GolangResolver",
-        ],
-        "avocado.plugins.runnable.runner": [
-            "golang = avocado_golang.runner:GolangRunner"
-        ],
-    },
 )

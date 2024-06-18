@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-robot"
+dynamic = ["dependencies", "version"]
+authors = [{name = "Avocado Developers", email = "avocado-devel@redhat.com"}]
+description = "Avocado Plugin for Execution of Robot Framework tests"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[project.urls]
+Homepage = "https://avocado-vt.readthedocs.io"
+
+[project.scripts]
+avocado-runner-robot = "avocado_robot.runner:main"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+robot = "avocado_robot.runner:RobotRunner"
+
+[project.entry-points."avocado.plugins.resolver"]
+robot = "avocado_robot.robot:RobotResolver"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["avocado_robot"]

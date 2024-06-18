@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-rogue"
+version = "1.0"
+description = 'Avocado "rogue" test type'
+readme = {text = "This is a plugin that contains a rogue runner, that is, a runner that will try to never allow to be terminated.", content-type = "text/x-rst"}
+
+[project.scripts]
+avocado-runner-rogue = "avocado_rogue.runner:main"
+
+[project.entry-points."avocado.plugins.resolver"]
+rogue = "avocado_rogue.resolver:RogueResolver"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+rogue = "avocado_rogue.runner:RogueRunner"
