@@ -18,6 +18,7 @@ Test resolver module.
 
 import glob
 import os
+import stat
 from enum import Enum
 
 from avocado.core.enabled_extension_manager import EnabledExtensionManager
@@ -196,11 +197,32 @@ def check_file(
             info=f'File "{path}" does not exist or is not a {type_name}',
         )
 
-    if not os.access(path, access_check):
+    st = os.stat(path)
+
+    user_permissions = st.st_mode & (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+
+    # Initialize required permissions to 0, indicating no permissions are needed yet
+    required_permissions = 0
+
+    # Build the required permissions based on access_check
+    if access_check & os.R_OK:
+        # If read access needs to be checked, set the corresponding user read permission bit
+        required_permissions |= stat.S_IRUSR
+    if access_check & os.W_OK:
+        # If write access needs to be checked, set the corresponding user write permission bit
+        required_permissions |= stat.S_IWUSR
+    if access_check & os.X_OK:
+        # If execute access needs to be checked, set the corresponding user execute permission bit
+        required_permissions |= stat.S_IXUSR
+
+    # Check if the user has the required permissions
+    if (user_permissions & required_permissions) != required_permissions:
+        # If the bitwise AND of user permissions and required permissions is not equal to required permissions,
+        # it means the user is missing some permissions
         return ReferenceResolution(
             reference,
             ReferenceResolutionResult.NOTFOUND,
-            info=f'File "{path}" does not exist or is not {access_name}',
+            info=f'File "{path}" does not have the required {access_name} permissions',
         )
 
     return True
