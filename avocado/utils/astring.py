@@ -66,16 +66,13 @@ def string_to_bitlist(data):
 
     :param data: String to be transformed
     """
-    data = [ord(c) for c in data]
+    ord_ = ord
     result = []
+    append = result.append
     for ch in data:
-        i = 7
-        while i >= 0:
-            if ch & (1 << i) != 0:
-                result.append(1)
-            else:
-                result.append(0)
-            i -= 1
+        ascii_value = ord_(ch)
+        for i in range(7, -1, -1):
+            append((ascii_value >> i) & 1)
     return result
 
 
