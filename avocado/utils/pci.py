@@ -549,16 +549,16 @@ def get_vpd(dom_pci_address):
         if len(line) < 5:
             continue
         if "*YL" in line:
-            vpd_dic["slot"] = line[4:]
+            vpd_dic["slot"] = line[4:].strip()
         elif "*DS" in line:
-            vpd_dic["pci_id"] = line[4:]
+            vpd_dic["pci_id"] = line[4:].strip()
         elif "*FC" in line:
-            vpd_dic["feature_code"] = line[4:]
+            vpd_dic["feature_code"] = line[4:].strip()
         elif "*AX" in line:
             if not (dom_pci_address in line or vpd_dic["pci_id"].split()[0] in line):
-                dev_list.append(line[4:])
+                dev_list.append(line[4:].strip())
         elif "*CD" in line:
-            vpd_dic["pci_id"] = line[4:]
+            vpd_dic["pci_id"] = line[4:].strip()
     vpd_dic["devices"] = dev_list
     return vpd_dic
 
