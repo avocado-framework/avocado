@@ -36,13 +36,7 @@ jobs:
           gh api graphql -f query='mutation {
                   addComment(input: {
                           subjectId: ${{ env.PR_ID }},
-                          body: """Dear contributor,
-                                  Avocado is currently at the end of sprint #105, therefore we are in feature freeze state.
-                                  Please avoid merging changes that do not fall into these categories:
-                                  * Bug fixes
-                                  * Documentation updates
-
-                                  The feature freeze will be active until the release planned on 05/06/2024."""}) {
+                          body: """${{ env.PR_ANNOUNCEMENT }}"""}) {
 
                                   clientMutationId
                   }
