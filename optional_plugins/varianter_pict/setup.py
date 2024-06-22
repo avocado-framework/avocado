@@ -18,14 +18,6 @@ import re
 
 from setuptools import setup
 
-# Handle systems with setuptools < 40
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    packages = ["avocado_varianter_pict"]
-else:
-    packages = find_namespace_packages(include=["avocado_varianter_pict"])
-
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
@@ -38,23 +30,7 @@ def get_long_description():
 
 
 setup(
-    name="avocado-framework-plugin-varianter-pict",
-    version=VERSION,
-    description="Varianter with combinatorial capabilities by PICT",
     long_description=get_long_description(),
     long_description_content_type="text/x-rst",
-    author="Avocado Developers",
-    author_email="avocado-devel@redhat.com",
-    url="http://avocado-framework.github.io/",
-    packages=packages,
-    include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}"],
-    entry_points={
-        "avocado.plugins.cli": [
-            "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI",
-        ],
-        "avocado.plugins.varianter": [
-            "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPict",
-        ],
-    },
 )

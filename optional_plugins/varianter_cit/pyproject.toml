@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-varianter-cit"
+dynamic = ["dependencies", "version"]
+authors = [{name = "Avocado Developers", email = "avocado-devel@redhat.com"}]
+description = "Varianter with combinatorial capabilities"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[project.urls]
+Homepage = "https://avocado-vt.readthedocs.io"
+
+[project.entry-points."avocado.plugins.cli"]
+varianter_cit = "avocado_varianter_cit.varianter_cit:VarianterCitCLI"
+
+[project.entry-points."avocado.plugins.varianter"]
+varianter_cit = "avocado_varianter_cit.varianter_cit:VarianterCit"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["avocado_varianter_cit"]

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-result-upload"
+dynamic = ["dependencies", "version"]
+authors = [{name = "Avocado Developers", email = "avocado-devel@redhat.com"}]
+description = "Avocado Plugin to propagate Job results to remote host"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[project.urls]
+Homepage = "http://github.com/avocado-framework/avocado"
+
+[project.entry-points."avocado.plugins.cli"]
+results_upload = "avocado_result_upload.result_upload:ResultUploadCLI"
+
+[project.entry-points."avocado.plugins.result"]
+results_upload = "avocado_result_upload.result_upload:ResultUpload"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["avocado_result_upload"]
