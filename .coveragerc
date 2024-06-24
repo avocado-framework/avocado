@@ -1,2 +1,3 @@
 [run]
 source = avocado/, optional_plugins/
+concurrency = multiprocessing
