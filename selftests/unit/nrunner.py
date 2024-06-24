@@ -58,7 +58,7 @@ class RunnableTest(unittest.TestCase):
 
     def test_recipe_noop(self):
         open_mocked = unittest.mock.mock_open(read_data='{"kind": "noop"}')
-        with unittest.mock.patch("builtins.open", open_mocked):
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
             runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "noop")
 
@@ -70,7 +70,7 @@ class RunnableTest(unittest.TestCase):
                 '"kwargs": {"TERM": "vt3270"}}'
             )
         )
-        with unittest.mock.patch("builtins.open", open_mocked):
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
             runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "exec-test")
         self.assertEqual(runnable.uri, "/bin/sh")
@@ -85,7 +85,7 @@ class RunnableTest(unittest.TestCase):
                 '"config": {"runner.identifier_format": "{uri}-{args[0]}"}}'
             )
         )
-        with unittest.mock.patch("builtins.open", open_mocked):
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
             runnable = Runnable.from_recipe("fake_path")
         configuration_used = ["run.keep_tmp", "runner.exectest.exitcodes.skip"]
         for conf in configuration_used:
