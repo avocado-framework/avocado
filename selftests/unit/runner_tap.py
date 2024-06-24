@@ -16,7 +16,7 @@ class RunnerTap(unittest.TestCase):
     def test_fail(self):
         tap_script = """#!/bin/sh
 echo '1..2'
-echo '# Defining an basic test'
+echo '# Defining a basic test'
 echo 'ok 1 - description 1'
 echo 'not ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, "tap.sh")
@@ -36,7 +36,7 @@ echo 'not ok 2 - description 2'"""
     def test_ok(self):
         tap_script = """#!/bin/sh
 echo '1..2'
-echo '# Defining an basic test'
+echo '# Defining a basic test'
 echo 'ok 1 - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, "tap.sh")
@@ -56,7 +56,7 @@ echo 'ok 2 - description 2'"""
     def test_skip(self):
         tap_script = """#!/bin/sh
 echo '1..2'
-echo '# Defining an basic test'
+echo '# Defining a basic test'
 echo 'ok 1 - # SKIP description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, "tap.sh")
@@ -76,7 +76,7 @@ echo 'ok 2 - description 2'"""
     def test_bailout(self):
         tap_script = """#!/bin/sh
 echo '1..2'
-echo '# Defining an basic test'
+echo '# Defining a basic test'
 echo 'Bail out! - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, "tap.sh")
@@ -96,7 +96,7 @@ echo 'ok 2 - description 2'"""
     def test_error(self):
         tap_script = """#!/bin/sh
 echo '1..2'
-echo '# Defining an basic test'
+echo '# Defining a basic test'
 echo 'error - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, "tap.sh")
