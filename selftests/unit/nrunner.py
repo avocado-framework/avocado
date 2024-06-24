@@ -203,39 +203,30 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
 
 
 class RunnableToRecipe(unittest.TestCase):
-    def setUp(self):
-        prefix = temp_dir_prefix(self)
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_runnable_to_recipe_noop(self):
         runnable = Runnable("noop", None)
-        recipe_path = os.path.join(self.tmpdir.name, "recipe.json")
-        runnable.write_json(recipe_path)
-        self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = Runnable.from_recipe(recipe_path)
+        open_mocked = unittest.mock.mock_open(read_data=runnable.get_json())
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
+            loaded_runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(loaded_runnable.kind, "noop")
 
     def test_runnable_to_recipe_uri(self):
         runnable = Runnable("exec-test", "/bin/true")
-        recipe_path = os.path.join(self.tmpdir.name, "recipe.json")
-        runnable.write_json(recipe_path)
-        self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = Runnable.from_recipe(recipe_path)
+        open_mocked = unittest.mock.mock_open(read_data=runnable.get_json())
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
+            loaded_runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(loaded_runnable.kind, "exec-test")
         self.assertEqual(loaded_runnable.uri, "/bin/true")
 
     def test_runnable_to_recipe_args(self):
         runnable = Runnable("exec-test", "/bin/sleep", "0.01")
-        recipe_path = os.path.join(self.tmpdir.name, "recipe.json")
-        runnable.write_json(recipe_path)
-        self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = Runnable.from_recipe(recipe_path)
+        open_mocked = unittest.mock.mock_open(read_data=runnable.get_json())
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
+            loaded_runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(loaded_runnable.kind, "exec-test")
         self.assertEqual(loaded_runnable.uri, "/bin/sleep")
         self.assertEqual(loaded_runnable.args, ("0.01",))
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 class Runner(unittest.TestCase):
