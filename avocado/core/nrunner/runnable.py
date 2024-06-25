@@ -32,6 +32,11 @@ STANDALONE_EXECUTABLE_CONFIG_USED = {}
 #: Location used for schemas when packaged (as in RPMs)
 SYSTEM_WIDE_SCHEMA_PATH = "/usr/share/avocado/schemas"
 
+#: Configuration used by all runnables, no matter what its kind.  The
+#: configuration that a kind uses in addition to this is set in their
+#: own class attribute "CONFIGURATION_USED"
+CONFIGURATION_USED = ["runner.identifier_format"]
+
 
 class RunnableRecipeInvalidError(Exception):
     """Signals that a runnable recipe is not well formed, contains
@@ -97,7 +102,7 @@ class Runnable:
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self._config = {}
         if config is None:
-            config = self.add_configuration_used(kind, {})
+            config = self.filter_runnable_config(kind, {})
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
@@ -193,10 +198,10 @@ class Runnable:
         configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
         if not set(configuration_used).issubset(set(config.keys())):
             LOG.warning(
-                "The runnable config should have values essential for its runner. "
-                "In this case, it's missing some of the used configuration.  In a "
-                "future avocado version this will raise a ValueError. Please "
-                "use avocado.core.nrunner.runnable.Runnable.add_configuration_used "
+                "The runnable config should have only values "
+                "essential for its runner. In the next version of "
+                "avocado, this will raise a Value Error. Please "
+                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
                 "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
             )
         self._config = config
@@ -297,7 +302,7 @@ class Runnable:
         """Creates runnable with only essential config for runner of specific kind."""
         if not config:
             config = {}
-        config = cls.add_configuration_used(kind, config)
+        config = cls.filter_runnable_config(kind, config)
         return cls(kind, uri, *args, config=config, **kwargs)
 
     @classmethod
@@ -321,30 +326,31 @@ class Runnable:
         return configuration_used
 
     @classmethod
-    def add_configuration_used(cls, kind, config):
+    def filter_runnable_config(cls, kind, config):
         """
-        Adds essential configuration values for specific runner.
+        Returns only essential values for specific runner.
 
-        It will add missing configuration in the given config,
-        complementing it with values from config file and avocado default
-        configuration.
+        It will use configuration from argument completed by values from
+        config file and avocado default configuration.
 
         :param kind: Kind of runner which should use the configuration.
         :type kind: str
-        :param config: Configuration values for runner. If any used configuration
-                       values are missing, the default ones and from config file
-                       will be used.
+        :param config: Configuration values for runner. If some values will be
+                       missing the default ones and from config file will be
+                       used.
         :type config: dict
-        :returns: Config dict, which has existing entries plus values
-                  essential for runner based on
-                  STANDALONE_EXECUTABLE_CONFIG_USED
+        :returns: Config dict, which has only values essential for runner
+                  based on STANDALONE_EXECUTABLE_CONFIG_USED
         :rtype: dict
         """
         whole_config = settings.as_dict()
-        for config_item in cls.get_configuration_used_by_kind(kind):
-            if config_item not in config:
-                config[config_item] = whole_config.get(config_item)
-        return config
+        filtered_config = {}
+        config_items = cls.get_configuration_used_by_kind(kind) + CONFIGURATION_USED
+        for config_item in config_items:
+            filtered_config[config_item] = config.get(
+                config_item, whole_config.get(config_item)
+            )
+        return filtered_config
 
     def read_dependencies(self, dependencies_dict):
         """
