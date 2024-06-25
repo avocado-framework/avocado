@@ -74,6 +74,17 @@ class TestSuiteTest(unittest.TestCase):
         self.suite = TestSuite.from_config(config=suite_config, job_config=job_config)
         self.assertEqual(self.suite.config.get("core.show"), ["none"])
 
+    def test_config_runnable(self):
+        config = {
+            "resolver.references": [
+                "examples/nrunner/recipes/runnable/noop.json",
+            ],
+            "runner.identifier_format": "NOT FOO",
+        }
+        suite = TestSuite.from_config(config)
+        runnable = suite.tests[0]
+        self.assertEqual(runnable.config.get("runner.identifier_format"), "NOT FOO")
+
     def tearDown(self):
         self.tmpdir.cleanup()
 
