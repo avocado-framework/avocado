@@ -158,9 +158,8 @@ class Runnable:
         """
         fmt = self.config.get("runner.identifier_format", "{uri}")
 
-        # For the cases where there is no config (when calling the Runnable
-        # directly
-        if not fmt:
+        # Optimize for the most common scenario
+        if fmt == "{uri}":
             return self.uri
 
         # For args we can use the entire list of arguments or with a specific
