@@ -10,7 +10,7 @@
 # See LICENSE for more details.
 #
 # Copyright: Red Hat Inc. 2024
-# Authors: Jan Richter <jarcihte@redhat.com>
+# Authors: Jan Richter <jarichte@redhat.com>
 
 
 class Dependency:
