@@ -235,7 +235,7 @@ def get_mpath_paths_status(wwid):
     """
     Return the status of all paths of mpath device.
 
-    :param wwid: wwid or user friedly name of mpath.
+    :param wwid: wwid or user friendly name of mpath.
                  Example: mpatha or 360050768108001b3a800000000000296
     :return: Dict in the format of {path: (dm status, dev status, checker status)}
     """
