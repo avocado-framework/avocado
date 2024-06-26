@@ -113,7 +113,6 @@ class Runnable:
         #: expressing assets that the test will require in order to run.
         self.assets = kwargs.pop("assets", None)
         self.kwargs = kwargs
-        self._identifier_format = config.get("runner.identifier_format", "{uri}")
 
     def __repr__(self):
         fmt = (
@@ -157,7 +156,7 @@ class Runnable:
         Since this is formatter, combined values can be used. Example:
         "{uri}-{args}".
         """
-        fmt = self._identifier_format
+        fmt = self.config.get("runner.identifier_format", "{uri}")
 
         # For the cases where there is no config (when calling the Runnable
         # directly
