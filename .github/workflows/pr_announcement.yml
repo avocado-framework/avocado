@@ -36,7 +36,7 @@ jobs:
           gh api graphql -f query='mutation {
                   addComment(input: {
                           subjectId: ${{ env.PR_ID }},
-                          body: """${{ env.PR_ANNOUNCEMENT }}"""}) {
+                          body: """${{ vars.PR_ANNOUNCEMENT }}"""}) {
 
                                   clientMutationId
                   }
