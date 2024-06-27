@@ -1,7 +1,6 @@
 # This container is used in selftests/pre_release/tests/check-copr-rpm-version.sh
-FROM fedora:38
+FROM fedora:40
 LABEL description "Fedora image used on COPR RPM version check"
-RUN dnf -y module disable avocado:latest
 RUN dnf -y install 'dnf-command(copr)'
 RUN dnf -y copr enable @avocado/avocado-latest
 RUN dnf -y clean all
