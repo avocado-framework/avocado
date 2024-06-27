@@ -26,7 +26,6 @@ import tempfile
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, JobFailFast
 from avocado.core.messages import MessageHandler
-from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init, SuiteRunner
@@ -212,18 +211,6 @@ class Runner(SuiteRunner):
         super().__init__()
         self.status_server_dir = None
 
-    @staticmethod
-    def _update_avocado_configuration_used_on_runnables(runnables, config):
-        """Updates the config used on runnables with this suite's config values
-
-        :param runnables: the tasks whose runner requirements will be checked
-        :type runnables: list of :class:`Runnable`
-        :param config: A config dict to be used on the desired test suite.
-        :type config: dict
-        """
-        for runnable in runnables:
-            runnable.config = Runnable.add_configuration_used(runnable.kind, config)
-
     def _determine_status_server(self, test_suite, config_key):
         if test_suite.config.get("run.status_server_auto"):
             # no UNIX domain sockets on Windows
@@ -301,10 +288,6 @@ class Runner(SuiteRunner):
 
         test_suite.tests, missing_requirements = check_runnables_runner_requirements(
             test_suite.tests
-        )
-
-        self._update_avocado_configuration_used_on_runnables(
-            test_suite.tests, test_suite.config
         )
 
         self._abort_if_missing_runners(missing_requirements)
