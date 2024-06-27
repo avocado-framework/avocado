@@ -147,7 +147,7 @@ class Podman(_Podman):
             ) from ex
         containers = json.loads(stdout.decode())
         for container in containers:
-            if container["Id"] == container_id:
+            if container.get("Id") == container_id:
                 return container
         return {}
 
