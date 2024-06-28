@@ -516,7 +516,10 @@ class NetworkInterface:
                         up again. Default is 30.
         """
         cmd = f"ip link set {self.name} mtu {mtu}"
-        run_command(cmd, self.host, sudo=True)
+        try:
+            run_command(cmd, self.host, sudo=True)
+        except Exception as ex:
+            raise NWException(f"Failed to set MTU. {ex}")
         wait_for(self.is_link_up, timeout=timeout)
         if int(mtu) != self.get_mtu():
             raise NWException("Failed to set MTU.")
@@ -694,8 +697,7 @@ class NetworkInterface:
         :param options: Type is List. Options such as -c, -f. Default is None
         :param sudo: If sudo permissions are needed. Default is False
         """
-        cmd = f"ping -I {self.name} {peer_ip}"
-        cmd = f"{cmd} "
+        cmd = f"ping -I {self.name} {peer_ip} "
         if options is not None:
             for elem in options:
                 cmd += f"{elem} "
@@ -772,7 +774,7 @@ class NetworkInterface:
             if not 0 <= num <= 255:
                 return False
         octet_bin = [format(int(i), "08b") for i in netmask_list]
-        binary_netmask = ("").join(octet_bin)
+        binary_netmask = "".join(octet_bin)
         accept_zero_only = False
         first_bit = True
         for symbol in binary_netmask:
