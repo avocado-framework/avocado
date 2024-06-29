@@ -1,0 +1,71 @@
+==================
+106.0 - Taking Off
+==================
+
+The Avocado team is proud to present another release: Avocado 106.0,
+AKA "Taking Off", is now available!
+
+Release documentation: `Avocado 106.0
+<http://avocado-framework.readthedocs.io/en/106.0/>`_
+
+Users/Test Writers
+==================
+
+* The usage of Coverage.py (the de-facto Python tool for for test
+  coverage) with Avocado received a number of improvements such as
+  support for ``python-unittest`` tests in addition to
+  ``avocado-instrumented`` tests.
+
+* When listing tests with ``avocado -V list``, the resolver that
+  handled the reference to test resolution is now shown.  The reason
+  is that with the introduction of resolvers such as
+  ``runnable-recipe`` and ``runnables-recipe`` the resolver may not be
+  the same as the test type.
+
+* Job log files can now use a memory buffer to reduce I/O pressure
+  when there's much log activity.  Users can set the
+  ``job.run.logging_buffer_size`` with the desired buffer size.
+
+Utility Modules
+===============
+
+* :func:`avocado.utils.disk.get_io_scheduler_list`: new utility
+  function that returns the I/O scheduler available for the I/O
+  device.
+
+* :func:`avocado.utils.disk.get_io_scheduler`: new utility function
+  that returns the I/O scheduler which is currently set for a device.
+
+Bug Fixes
+=========
+
+* The resolver could fail to check file permissions on systems such as
+  macOS due to limitations in :func:`os.access`.  A more robust check
+  is now used based on :func:`os.stat`.
+
+* A hardcoded reference and check for the "nrunner" runner plugin was
+  removed.
+
+* A regression that was adding the entire Avocado configuration to
+  every runnable was fixed.
+
+* The suite configuration is now applied to all runnables at suite
+  creation time, instead of at just before the test execution time
+  with the ``avocado run`` command/plugin.
+
+* The current configuration of a runnable is used to set its
+  identifier.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/105.0...106.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/32>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0067820/>`_.
