@@ -429,7 +429,7 @@ def del_last_configuration():
 
 
 def split_loggers_and_levels(loggers):
-    """Separates logger names and legger levels.
+    """Separates logger names and logger levels.
 
     :param loggers: Logger names with or without levels
     :type loggers: List of strings in format STREAM[:LEVEL][,STREAM[:LEVEL][,...]]
