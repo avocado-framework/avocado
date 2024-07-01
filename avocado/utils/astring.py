@@ -89,10 +89,9 @@ def shell_escape(command):
 
     See also: http://www.tldp.org/LDP/abs/html/escapingsection.html
     """
-    command = command.replace("\\", "\\\\")
-    command = command.replace("$", r"\$")
-    command = command.replace('"', r"\"")
-    command = command.replace("`", r"\`")
+    escape_chars = {"\\": "\\\\", "$": r"\$", '"': r"\"", "`": r"\`"}
+    for char, escaped_char in escape_chars.items():
+        command = command.replace(char, escaped_char)
     return command
 
 
