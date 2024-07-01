@@ -25,7 +25,13 @@ Linux OS utilities
 
 import os
 
-from avocado.utils import genio
+from avocado.utils import genio, process
+
+
+class UnsupportedMachineError(Exception):
+    """
+    Exception class for unsupported hardware
+    """
 
 
 def get_proc_sys(key):
@@ -71,4 +77,22 @@ def enable_selinux_enforcing():
     genio.write_one_line("/sys/fs/selinux/enforce", "1")
     if is_selinux_enforcing():
         return True
+    return False
+
+
+def is_os_secureboot_enabled():
+    """
+    Check whether the secure-boot is enabled at os level.
+    Check for "00000002" in "/proc/device-tree/ibm,secure-boot" file
+    If found, then secure-boot is enabled.
+
+    :return: True if secureboot is enabled, False if otherwise
+    """
+    try:
+        cmd = "lsprop /proc/device-tree/ibm,secure-boot"
+        for line in process.system_output(cmd).decode("utf-8").splitlines():
+            if "00000002" in line:
+                return True
+    except FileNotFoundError:
+        raise UnsupportedMachineError("lsprop not a supported command")
     return False
