@@ -143,11 +143,11 @@ class Podman(_Podman):
             )
         except PodmanException as ex:
             raise PodmanException(
-                f"Failed getting information about container:" f" {container_id}."
+                f"Failed getting information about container: {container_id}."
             ) from ex
         containers = json.loads(stdout.decode())
         for container in containers:
-            if container["Id"] == container_id:
+            if container.get("Id") == container_id:
                 return container
         return {}
 
