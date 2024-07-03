@@ -1,4 +1,4 @@
 #!/bin/sh -e
 echo "** Running black..."
 
-black --check --diff --color .
+python3 -m black --check --diff --color .
