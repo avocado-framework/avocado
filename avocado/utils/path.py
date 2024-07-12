@@ -133,8 +133,9 @@ class PathInspector:
         return first_line
 
     def has_exec_permission(self):
-        mode = os.stat(self.path)[stat.ST_MODE]
-        return mode & stat.S_IXUSR
+        if os.path.exists(self.path):
+            mode = os.stat(self.path)[stat.ST_MODE]
+            return mode & stat.S_IXUSR
 
     def is_empty(self):
         if os.path.exists(self.path):
