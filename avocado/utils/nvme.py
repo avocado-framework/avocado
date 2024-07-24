@@ -102,7 +102,7 @@ def get_current_ns_ids(controller_name):
     Returns the list of namespaces in the nvme controller
 
     :param controller_name: Name of the nvme controller like nvme0, nvme1
-    :rtyp: list
+    :rtype: list
     """
     cmd = f"nvme list-ns /dev/{controller_name}"
     namespaces = []
@@ -117,7 +117,7 @@ def get_current_ns_list(controller_name):
     Returns the list of namespaces in the nvme controller
 
     :param controller_name: Name of the nvme controller like nvme0, nvme1
-    :rtyp: list
+    :rtype: list
     """
     namespace_list = []
     namespaces_ids = get_current_ns_ids(controller_name)
@@ -283,7 +283,7 @@ def create_max_ns(controller_name, force):
     Creates maximum number of namespaces, with equal capacity
 
     :param controller_name: name of the controller like nvme0/nvme1 etc..
-    :param force: if wants to create the namespace foce, then pass force=True
+    :param force: if wants to create the namespace force, then pass force=True
     """
     if get_current_ns_list(controller_name) and not force:
         raise NvmeException("ns already exist, cannot create max_ns")
@@ -299,8 +299,8 @@ def get_equal_ns_size(controller_name, ns_count):
     more than one namespace with equal sizes
 
     :param controller_name: name of the controller like nvme0/nvme1 etc...
-    :param ns_count: Number of namespaces you want to create with equal sixe
-                     it should be less thans or eaqual to max ns supported
+    :param ns_count: Number of namespaces you want to create with equal sizes
+                     it should be less than or equal to max ns supported
                      on the controller
     :rtype: integer
     """
@@ -331,7 +331,7 @@ def get_free_space(controller_name):
 
 def create_namespaces(controller_name, ns_count):
     """
-    creates eaqual n number of namespaces on the specified controller
+    creates equal n number of namespaces on the specified controller
 
     :param controller_name: name of the controller like nvme0
     :param ns_count: number of namespaces to be created

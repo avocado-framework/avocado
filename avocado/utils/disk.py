@@ -417,7 +417,7 @@ def clean_disk(disk_name):
 
 def rescan_disk(disk_name):
     """
-    Rescans disk
+    Re-scans disk
 
     :param disk_name: disk name
     :type disk_name: str
