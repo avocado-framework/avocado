@@ -684,9 +684,14 @@ class Asset:
 
         :param asset_path: full path of the asset file.
         """
-        os.remove(asset_path)
-        filename = f"{asset_path}-CHECKSUM"
-        os.remove(filename)
+        try:
+            os.remove(asset_path)
+            filename = f"{asset_path}-CHECKSUM"
+            os.remove(filename)
+        except FileNotFoundError:
+            LOG.error(f"File not found: {asset_path} or its checksum file.")
+        except Exception as e:
+            LOG.error(f"An error occurred while removing files: {e}")
 
     @property
     def urls(self):
