@@ -89,7 +89,7 @@ class Runnable:
     execute a runnable.
     """
 
-    def __init__(self, kind, uri, *args, config=None, **kwargs):
+    def __init__(self, kind, uri, *args, config=None, identifier=None, **kwargs):
         self.kind = kind
         #: The main reference to what needs to be run.  This is free
         #: form, but commonly set to the path to a file containing the
@@ -113,6 +113,7 @@ class Runnable:
         #: expressing assets that the test will require in order to run.
         self.assets = kwargs.pop("assets", None)
         self.kwargs = kwargs
+        self._identifier = identifier
 
     def __repr__(self):
         fmt = (
@@ -156,27 +157,29 @@ class Runnable:
         Since this is formatter, combined values can be used. Example:
         "{uri}-{args}".
         """
-        fmt = self.config.get("runner.identifier_format", "{uri}")
+        if not self._identifier:
+            fmt = self.config.get("runner.identifier_format", "{uri}")
 
-        # Optimize for the most common scenario
-        if fmt == "{uri}":
-            return self.uri
+            # Optimize for the most common scenario
+            if fmt == "{uri}":
+                return self.uri
 
-        # For args we can use the entire list of arguments or with a specific
-        # index.
-        args = "-".join(self.args)
-        if "args" in fmt and "[" in fmt:
-            args = self.args
+            # For args we can use the entire list of arguments or with a specific
+            # index.
+            args = "-".join(self.args)
+            if "args" in fmt and "[" in fmt:
+                args = self.args
 
-        # For kwargs we can use the entire list of values or with a specific
-        # index.
-        kwargs = "-".join(str(self.kwargs.values()))
-        if "kwargs" in fmt and "[" in fmt:
-            kwargs = self.kwargs
+            # For kwargs we can use the entire list of values or with a specific
+            # index.
+            kwargs = "-".join(str(self.kwargs.values()))
+            if "kwargs" in fmt and "[" in fmt:
+                kwargs = self.kwargs
 
-        options = {"uri": self.uri, "args": args, "kwargs": kwargs}
+            options = {"uri": self.uri, "args": args, "kwargs": kwargs}
+            self._identifier = fmt.format(**options)
 
-        return fmt.format(**options)
+        return self._identifier
 
     @property
     def config(self):
@@ -255,7 +258,7 @@ class Runnable:
         """
         if not cls._validate_recipe_json_schema(recipe):
             # This is a simplified validation of the recipe
-            allowed = set(["kind", "uri", "args", "kwargs", "config"])
+            allowed = set(["kind", "uri", "args", "kwargs", "config", "identifier"])
             if not "kind" in recipe:
                 raise RunnableRecipeInvalidError('Missing required property "kind"')
             if not set(recipe.keys()).issubset(allowed):
@@ -279,6 +282,7 @@ class Runnable:
             recipe_dict.get("uri"),
             *recipe_dict.get("args", ()),
             config=config,
+            identifier=recipe_dict.get("identifier"),
             **recipe_dict.get("kwargs", {}),
         )
 
@@ -296,12 +300,14 @@ class Runnable:
         return cls.from_dict(recipe_dict)
 
     @classmethod
-    def from_avocado_config(cls, kind, uri, *args, config=None, **kwargs):
+    def from_avocado_config(
+        cls, kind, uri, *args, config=None, identifier=None, **kwargs
+    ):
         """Creates runnable with only essential config for runner of specific kind."""
         if not config:
             config = {}
         config = cls.filter_runnable_config(kind, config)
-        return cls(kind, uri, *args, config=config, **kwargs)
+        return cls(kind, uri, *args, config=config, identifier=identifier, **kwargs)
 
     @classmethod
     def get_configuration_used_by_kind(cls, kind):
@@ -423,6 +429,7 @@ class Runnable:
         if self.uri is not None:
             recipe["uri"] = self.uri
         recipe["config"] = self.config
+        recipe["identifier"] = self.identifier
         if self.args is not None:
             recipe["args"] = self.args
         kwargs = self.kwargs.copy()

@@ -83,6 +83,7 @@ class RunnableFromAPI(unittest.TestCase):
                 "uri": "_uri_",
                 "args": ("arg1", "arg2"),
                 "config": {"runner.identifier_format": "{uri}"},
+                "identifier": "_uri_",
             },
         )
 
@@ -92,6 +93,7 @@ class RunnableFromAPI(unittest.TestCase):
             '{"kind": "noop", '
             '"uri": "_uri_", '
             '"config": {"runner.identifier_format": "{uri}"}, '
+            '"identifier": "_uri_", '
             '"args": ["arg1", "arg2"]}'
         )
         self.assertEqual(runnable.get_json(), expected)
@@ -143,6 +145,19 @@ class RunnableFromRecipe(unittest.TestCase):
         self.assertEqual(
             runnable.config.get("runner.identifier_format"), "{uri}-{args[0]}"
         )
+
+    def test_identifier(self):
+        open_mocked = unittest.mock.mock_open(
+            read_data=(
+                '{"kind": "exec-test", "uri": "/bin/sh", '
+                '"args": ["/etc/profile"], '
+                '"config": {"runner.identifier_format": "{uri}-{args[0]}"}, '
+                '"identifier": "exec-test-1"}'
+            )
+        )
+        with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
+            runnable = Runnable.from_recipe("fake_path")
+        self.assertEqual(runnable.identifier, "exec-test-1")
 
 
 class RunnableFromCommandLineArgs(unittest.TestCase):
@@ -219,10 +234,11 @@ class RunnableToRecipe(unittest.TestCase):
         self.assertEqual(loaded_runnable.uri, "/bin/true")
 
     def test_runnable_to_recipe_args(self):
-        runnable = Runnable("exec-test", "/bin/sleep", "0.01")
+        runnable = Runnable("exec-test", "/bin/sleep", "0.01", identifier="exec-test-1")
         open_mocked = unittest.mock.mock_open(read_data=runnable.get_json())
         with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
             loaded_runnable = Runnable.from_recipe("fake_path")
         self.assertEqual(loaded_runnable.kind, "exec-test")
         self.assertEqual(loaded_runnable.uri, "/bin/sleep")
         self.assertEqual(loaded_runnable.args, ("0.01",))
+        self.assertEqual(loaded_runnable.identifier, "exec-test-1")

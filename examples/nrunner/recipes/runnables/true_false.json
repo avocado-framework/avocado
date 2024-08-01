@@ -1,7 +1,9 @@
 [
     {"kind": "exec-test",
-     "uri": "/bin/true"},
+     "uri": "/bin/true",
+     "identifier": "true-test"},
 
     {"kind": "exec-test",
-     "uri": "/bin/false"}
+     "uri": "/bin/false",
+     "identifier": "false-test"}
 ]
