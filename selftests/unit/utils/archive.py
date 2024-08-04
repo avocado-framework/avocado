@@ -7,7 +7,7 @@ import unittest
 from avocado.utils import archive, crypto, data_factory
 from selftests.utils import BASEDIR, temp_dir_prefix
 
-ZSTD_AVAILABLE = archive._probe_zstd_cmd() is not None
+ZSTD_AVAILABLE = archive.probe_zstd_cmd() is not None
 
 
 class ArchiveTest(unittest.TestCase):
