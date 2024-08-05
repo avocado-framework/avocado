@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2021
 # Authors: Willian Rampazzo <willianr@redhat.com>
 
-from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import PreTest
 
 
@@ -33,15 +32,7 @@ class DependencyResolver(PreTest):
         if not test_runnable.dependencies:
             return []
         dependency_runnables = []
-        for dependency in test_runnable.dependencies:
-            # make a copy to change the dictionary and do not affect the
-            # original `dependencies` dictionary from the test
-            dependency_copy = dependency.copy()
-            kind = dependency_copy.pop("type")
-            uri = dependency_copy.pop("uri", None)
-            args = dependency_copy.pop("args", ())
-            dependency_runnable = Runnable(
-                kind, uri, *args, config=test_runnable.config, **dependency_copy
-            )
-            dependency_runnables.append(dependency_runnable)
+        unique_dependencies = list(dict.fromkeys(test_runnable.dependencies))
+        for dependency in unique_dependencies:
+            dependency_runnables.append(dependency.to_runnable(test_runnable.config))
         return dependency_runnables

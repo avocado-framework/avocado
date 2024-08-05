@@ -116,7 +116,13 @@ def is_zstd_file(path):
         return zstd_file.read(len(ZSTD_MAGIC)) == ZSTD_MAGIC
 
 
-def _probe_zstd_cmd():
+def probe_zstd_cmd():
+    """
+    Attempts to find a suitable zstd tool that behaves as expected
+
+    :rtype: str or None
+    :returns: path to a suitable zstd executable or None if not found
+    """
     zstd_cmd = shutil.which("zstd")
     if zstd_cmd is not None:
         proc = subprocess.run(
@@ -136,7 +142,7 @@ def zstd_uncompress(path, output_path=None, force=False):
     """
     Extracts a zstd compressed file.
     """
-    zstd_cmd = _probe_zstd_cmd()
+    zstd_cmd = probe_zstd_cmd()
     if not zstd_cmd:
         raise ArchiveException("Unable to find a suitable zstd compression tool")
     output_path = _decide_on_path(path, ".zst", output_path)

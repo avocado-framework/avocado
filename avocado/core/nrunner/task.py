@@ -40,29 +40,46 @@ class TaskStatusService:
 
     def __init__(self, uri):
         self.uri = uri
-        self.connection = None
+        self._connection = None
 
-    def post(self, status):
+    @property
+    def connection(self):
+        if not self._connection:
+            self._create_connection()
+        return self._connection
+
+    def _create_connection(self):
+        """
+        Creates connection with `self.uri` based on `socket.create_connection`
+        """
         if ":" in self.uri:
             host, port = self.uri.split(":")
             port = int(port)
-            if self.connection is None:
-                for _ in range(600):
-                    try:
-                        self.connection = socket.create_connection((host, port))
-                        break
-                    except ConnectionRefusedError as error:
-                        LOG.warning(error)
-                        time.sleep(1)
-                else:
-                    self.connection = socket.create_connection((host, port))
+            for _ in range(600):
+                try:
+                    self._connection = socket.create_connection((host, port))
+                    break
+                except ConnectionRefusedError as error:
+                    LOG.warning(error)
+                    time.sleep(1)
+            else:
+                self._connection = socket.create_connection((host, port))
         else:
-            if self.connection is None:
-                self.connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                self.connection.connect(self.uri)
+            self._connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._connection.connect(self.uri)
 
+    def post(self, status):
         data = json_dumps(status)
-        self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+        try:
+            self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+        except BrokenPipeError:
+            try:
+                self._create_connection()
+                self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+            except ConnectionRefusedError:
+                LOG.warning(f"Connection with {self.uri} has been lost.")
+                return False
+        return True
 
     def close(self):
         if self.connection is not None:
@@ -203,12 +220,23 @@ class Task:
         self.setup_output_dir()
         runner_klass = self.runnable.pick_runner_class()
         runner = runner_klass()
+        running_status_services = self.status_services
+        damaged_status_services = []
         for status in runner.run(self.runnable):
             if status["status"] == "started":
                 status.update({"output_dir": self.runnable.output_dir})
             status.update({"id": self.identifier})
             if self.job_id is not None:
                 status.update({"job_id": self.job_id})
-            for status_service in self.status_services:
-                status_service.post(status)
+            for status_service in running_status_services:
+                if not status_service.post(status):
+                    damaged_status_services.append(status_service)
+            if damaged_status_services:
+                running_status_services = list(
+                    filter(
+                        lambda s: s not in damaged_status_services,
+                        running_status_services,
+                    )
+                )
+                damaged_status_services.clear()
             yield status

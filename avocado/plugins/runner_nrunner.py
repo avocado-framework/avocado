@@ -222,7 +222,7 @@ class Runner(SuiteRunner):
         :type config: dict
         """
         for runnable in runnables:
-            runnable.config = Runnable.filter_runnable_config(runnable.kind, config)
+            runnable.config = Runnable.add_configuration_used(runnable.kind, config)
 
     def _determine_status_server(self, test_suite, config_key):
         if test_suite.config.get("run.status_server_auto"):

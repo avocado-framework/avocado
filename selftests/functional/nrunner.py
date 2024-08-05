@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import unittest
 
 from avocado.core.job import Job
@@ -263,6 +264,25 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'id': 3", first_status)
         self.assertIn("'status': 'finished'", final_status)
         self.assertEqual(res.exit_status, 0)
+
+
+class TaskRunStatusService(TestCaseTmpDir):
+    @skipUnlessPathExists("/bin/sleep")
+    @skipUnlessPathExists("/bin/nc")
+    def test_task_status_service_lost(self):
+        nc_path = os.path.join(self.tmpdir.name, "socket")
+        nc_proc = process.SubProcess(f"nc -lU {nc_path}")
+        nc_proc.start()
+        task_proc = process.SubProcess(
+            f"avocado-runner-exec-test task-run -i 1 -u /bin/sleep -a 3 -s {nc_path}"
+        )
+        task_proc.start()
+        time.sleep(1)
+        nc_proc.kill()
+        time.sleep(1)
+        self.assertIn(
+            f"Connection with {nc_path} has been lost.".encode(), task_proc.get_stderr()
+        )
 
 
 class ResolveSerializeRun(TestCaseTmpDir):
