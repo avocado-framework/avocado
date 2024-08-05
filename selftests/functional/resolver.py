@@ -153,7 +153,7 @@ class ResolverFunctional(unittest.TestCase):
         cmd_line = f"{AVOCADO} -V list {test_path}"
         result = process.run(cmd_line)
         self.assertIn(
-            b"python-unittest selftests/unit/test.py:TestClassTestUnit.test_long_name runnable-recipe\n",
+            b"python-unittest selftests/unit/test.py:TestClassTestUnit.test_long_name selftests/unit/test.py:TestClassTestUnit.test_long_name runnable-recipe\n",
             result.stdout,
         )
 

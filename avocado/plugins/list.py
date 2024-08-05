@@ -52,7 +52,13 @@ class List(CLICmd):
             type_label = TERM_SUPPORT.healthy_str(kind)
             if verbose:
                 colored_matrix.append(
-                    (type_label, item[1], item[2], _get_tags_as_string(item[3] or {}))
+                    (
+                        type_label,
+                        item[1],
+                        item[2],
+                        item[3],
+                        _get_tags_as_string(item[4] or {}),
+                    )
                 )
             else:
                 colored_matrix.append((type_label, item[1]))
@@ -65,6 +71,7 @@ class List(CLICmd):
             header = (
                 TERM_SUPPORT.header_str("Type"),
                 TERM_SUPPORT.header_str("Test"),
+                TERM_SUPPORT.header_str("Uri"),
                 TERM_SUPPORT.header_str("Resolver"),
                 TERM_SUPPORT.header_str("Tag(s)"),
             )
@@ -140,10 +147,16 @@ class List(CLICmd):
                 if verbose:
                     tags = runnable.tags or {}
                     test_matrix.append(
-                        (runnable.kind, runnable.uri, resolution.origin, tags)
+                        (
+                            runnable.kind,
+                            runnable.identifier,
+                            runnable.uri,
+                            resolution.origin,
+                            tags,
+                        )
                     )
                 else:
-                    test_matrix.append((runnable.kind, runnable.uri))
+                    test_matrix.append((runnable.kind, runnable.identifier))
         return test_matrix
 
     @staticmethod
