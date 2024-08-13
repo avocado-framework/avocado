@@ -51,11 +51,14 @@ class TAPRunner(ExecTestRunner):
                     result = "skip"
                     break
             elif isinstance(event, TapParser.Test):
-                if event.result in (TestResult.XPASS, TestResult.FAIL):
+                if event.result == TestResult.FAIL:
                     result = "fail"
                     break
                 elif event.result == TestResult.SKIP:
                     result = "skip"
+                    break
+                elif event.result == TestResult.XPASS:
+                    result = "warn"
                     break
                 else:
                     result = "pass"
