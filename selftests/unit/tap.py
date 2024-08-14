@@ -118,6 +118,10 @@ class TapParserTests(unittest.TestCase):
         self.assert_test(events, number=1, name="abc", result=TestResult.XPASS)
         self.assert_last(events)
 
+        events = self.parse_tap("not ok 1 abc \\# TODO")
+        self.assert_test(events, number=1, name="abc \\# TODO", result=TestResult.FAIL)
+        self.assert_last(events)
+
     def test_one_test_skip(self):
         events = self.parse_tap("ok 1 abc # SKIP")
         self.assert_test(events, number=1, name="abc", result=TestResult.SKIP)

@@ -30,11 +30,11 @@ class TapParser:
 
     _RE_BAILOUT = re.compile(r"Bail out!\s*(.*)")
     _RE_DIRECTIVE = re.compile(
-        r"(?:\s*\#\s*([Ss][Kk][Ii][Pp]\S*|[Tt][Oo][Dd][Oo])\b\s*(.*))?"
+        r"(?:\s*(?:#|\\{2}#)\s*([Ss][Kk][Ii][Pp]\S*|[Tt][Oo][Dd][Oo])\b\s*(.*))?"
     )
     _RE_PLAN = re.compile(r"1\.\.([0-9]+)" + _RE_DIRECTIVE.pattern)
     _RE_TEST = re.compile(
-        r"((?:not )?ok)\s*(?:([0-9]+)\s*)?([^#]*)" + _RE_DIRECTIVE.pattern
+        r"((?:not )?ok)\s*(?:([0-9]+)\s*)?\s*(.*?(?=(?<!\\)#|(?<!\\)\\{2}#|$))" + _RE_DIRECTIVE.pattern
     )
     _RE_VERSION = re.compile(r"TAP version ([0-9]+)")
     _RE_YAML_START = re.compile(r"(\s+)---.*")
