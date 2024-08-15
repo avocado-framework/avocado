@@ -226,9 +226,9 @@ class Replay(CLI):
                         'ignore_missing_references',
                         'execution_order']
         if replay_config is None:
-            LOG_UI.warn('Source job config data not found. These options will '
-                        'not be loaded in this replay job: %s',
-                        ', '.join(overridables))
+            LOG_UI.warning('Source job config data not found. These options will '
+                           'not be loaded in this replay job: %s',
+                           ', '.join(overridables))
         else:
             for option in overridables:
                 optvalue = config.get(option, None)
@@ -242,16 +242,16 @@ class Replay(CLI):
                               'external_runner_testdir']:
                     optvalue = config.get('run.{}'.format(option))
                 if optvalue is not None:
-                    LOG_UI.warn("Overriding the replay %s with the --%s value "
-                                "given on the command line.",
-                                option.replace('_', '-'),
-                                option.replace('_', '-'))
+                    LOG_UI.warning("Overriding the replay %s with the --%s value "
+                                   "given on the command line.",
+                                   option.replace('_', '-'),
+                                   option.replace('_', '-'))
                 elif option in replay_config:
                     config[option] = replay_config[option]
 
         if config.get('run.references'):
-            LOG_UI.warn('Overriding the replay test references with test '
-                        'references given in the command line.')
+            LOG_UI.warning('Overriding the replay test references with test '
+                           'references given in the command line.')
         else:
             references = jobdata.retrieve_references(resultsdir)
             if references is None:
@@ -262,14 +262,14 @@ class Replay(CLI):
                 config['run.references'] = references
 
         if 'config' in replay_ignore:
-            LOG_UI.warn("Ignoring configuration from source job with "
-                        "--replay-ignore.")
+            LOG_UI.warning("Ignoring configuration from source job with "
+                           "--replay-ignore.")
         else:
             self.load_config(resultsdir)
 
         if 'variants' in replay_ignore:
-            LOG_UI.warn("Ignoring variants from source job with "
-                        "--replay-ignore.")
+            LOG_UI.warning("Ignoring variants from source job with "
+                           "--replay-ignore.")
         else:
             variants = jobdata.get_variants_path(resultsdir)
             if variants is None:
@@ -299,5 +299,5 @@ class Replay(CLI):
             if os.path.exists(pwd):
                 os.chdir(pwd)
             else:
-                LOG_UI.warn("Directory used in the replay source job '%s' does"
-                            " not exist, using '.' instead", pwd)
+                LOG_UI.warning("Directory used in the replay source job '%s' does"
+                               " not exist, using '.' instead", pwd)
