@@ -25,7 +25,7 @@ setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       url='http://avocado-framework.github.io/',
       packages=find_packages(exclude=('tests*',)),
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION, 'PyYAML>=4.2b2'],
+      install_requires=['avocado-framework==%s' % VERSION, 'PyYAML>=4.2b2,<6.0.2'],
       test_suite='tests',
       entry_points={
           "avocado.plugins.init": [
