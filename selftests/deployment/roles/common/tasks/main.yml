@@ -1,4 +1,4 @@
 ---
-- include: aexpect.yml
-- include: repos.yml
-- include: dependencies.yml
+- include_tasks: aexpect.yml
+- include_tasks: repos.yml
+- include_tasks: dependencies.yml

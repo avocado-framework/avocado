@@ -50,7 +50,7 @@
   yum_repository:
     name: avocado-latest
     description: Copr repo for avocado-latest
-    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-latest/fedora-$releasever-$basearch/
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-latest-92lts/fedora-$releasever-$basearch/
     gpgcheck: no
   when:
     - method == 'copr'
