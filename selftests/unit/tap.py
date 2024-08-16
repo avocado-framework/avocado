@@ -150,6 +150,20 @@ class TapParserTests(unittest.TestCase):
         self.assert_plan(events, count=4, late=True)
         self.assert_last(events)
 
+    def test_child_test(self):
+        events = self.parse_tap(
+            "1..4\nok 1\n    1..2\n    ok 1\n    not ok 2\nnot ok 2\nok 3\nnot ok 4"
+        )
+        self.assert_plan(events, count=4, late=False)
+        self.assert_test(events, number=1, name="", result=TestResult.PASS)
+        self.assert_plan(events, count=2, late=False)
+        self.assert_test(events, number=1, name="", result=TestResult.PASS)
+        self.assert_test(events, number=2, name="", result=TestResult.FAIL)
+        self.assert_test(events, number=2, name="", result=TestResult.FAIL)
+        self.assert_test(events, number=3, name="", result=TestResult.PASS)
+        self.assert_test(events, number=4, name="", result=TestResult.FAIL)
+        self.assert_last(events)
+
     def test_directive_case(self):
         events = self.parse_tap("ok 1 abc # skip")
         self.assert_test(events, number=1, name="abc", result=TestResult.SKIP)
