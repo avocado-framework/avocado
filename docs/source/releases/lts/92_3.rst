@@ -1,0 +1,40 @@
+========
+92.3 LTS
+========
+
+The Avocado team is proud to present a minor release in the 92.0 LTS
+(Long Term Stability) series, version 92.3 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 92.2 to 92.3
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==92.3
+
+To use the latest 92.x release, you can also always do::
+
+  $ pip install avocado-framework<93.0
+
+Changes since 92.2
+==================
+
+* Make it possible to run under Python 3.13, by replacing the use of
+  the depreated :func:`logging.warn` with :func:`logging.warning`.
+
+* Many fixes to the CI jobs.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (92.2) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/92.2...92.3>`_.
