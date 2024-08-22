@@ -22,7 +22,7 @@ class MailInit(Init):
         settings.register_option(
             section="plugins.mail",
             key="recipient",
-            default="root@localhost.localdomain",
+            default=None,
             help_msg=help_msg,
         )
 
@@ -38,7 +38,7 @@ class MailInit(Init):
         settings.register_option(
             section="plugins.mail",
             key="sender",
-            default="avocado@localhost.localdomain",
+            default=None,
             help_msg=help_msg,
         )
 
@@ -46,7 +46,7 @@ class MailInit(Init):
         settings.register_option(
             section="plugins.mail",
             key="server",
-            default="localhost",
+            default=None,
             help_msg=help_msg,
         )
 
@@ -54,7 +54,7 @@ class MailInit(Init):
         settings.register_option(
             section="plugins.mail",
             key="port",
-            default=587,
+            default=None,
             help_msg=help_msg,
         )
 
@@ -62,7 +62,7 @@ class MailInit(Init):
         settings.register_option(
             section="plugins.mail",
             key="password",
-            default="",
+            default=None,
             help_msg=help_msg,
         )
 
@@ -160,6 +160,10 @@ class Mail(JobPre, JobPost):
 
     @staticmethod
     def _smtp_login_and_send(job, msg):
+        if not Mail._validate_email_config(job):
+            job_log.error("Invalid email configuration. Plugin Disabled.")
+            return False
+
         server, port, sender, password = Mail._get_smtp_config(job)
         smtp = Mail._create_smtp_connection(server, port)
         if smtp:
@@ -257,6 +261,7 @@ class Mail(JobPre, JobPost):
 
     def pre(self, job):
         if not self.enabled:
+            job_log.info("Email plugin disabled, skipping start notification.")
             return
 
         phase = "Start"
@@ -268,6 +273,9 @@ class Mail(JobPre, JobPost):
 
     def post(self, job):
         if not self.enabled or not self.start_email_sent:
+            job_log.info(
+                "Email plugin disabled or start email not sent, skipping end notification."
+            )
             return
 
         phase = "Post"
@@ -282,17 +290,13 @@ class Mail(JobPre, JobPost):
         msg = self._build_message(job, time_content, phase, finishedtime, test_summary)
         self._smtp_login_and_send(job, msg)
 
-    def _validate_email_config(self, job):
-        required_keys = ["recipient", "sender", "server", "port"]
-        for key in required_keys:
-            if not job.config.get(f"plugins.mail.{key}"):
-                job_log.error(
-                    f"Email configuration {key} is missing. Disabling Plugin."
-                )
-                return False
+    @staticmethod
+    def _validate_email_config(job):
+        server, port, sender, password = Mail._get_smtp_config(job)
 
-        if job.config.get("plugins.mail.sender") == "avocado@localhost.localdomain":
-            job_log.error("Email sender is still set to default. Disabling Plugin.")
+        if not all([server, port, sender, password]):
+            job_log.error(
+                "Email configuration is missing or contains empty values. Disabling Plugin."
+            )
             return False
-
         return True
