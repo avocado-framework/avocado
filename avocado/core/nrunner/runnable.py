@@ -5,6 +5,7 @@ import logging
 import os
 import subprocess
 import sys
+import warnings
 
 import pkg_resources
 
@@ -192,8 +193,7 @@ class Runnable:
                 "The runnable config should have only values "
                 "essential for its runner. In the next version of "
                 "avocado, this will raise a ValueError. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
-                "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
+                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config"
             )
 
     @config.setter
@@ -214,7 +214,7 @@ class Runnable:
     def from_args(cls, args):
         """Returns a runnable from arguments"""
         decoded_args = [_arg_decode_base64(arg) for arg in args.get("arg", ())]
-        return cls.from_avocado_config(
+        return cls(
             args.get("kind"),
             args.get("uri"),
             *decoded_args,
@@ -280,7 +280,7 @@ class Runnable:
         """
         cls._validate_recipe(recipe_dict)
         config = ConfigDecoder.decode_set(recipe_dict.get("config", {}))
-        return cls.from_avocado_config(
+        return cls(
             recipe_dict.get("kind"),
             recipe_dict.get("uri"),
             *recipe_dict.get("args", ()),
@@ -307,6 +307,11 @@ class Runnable:
         cls, kind, uri, *args, config=None, identifier=None, **kwargs
     ):
         """Creates runnable with only essential config for runner of specific kind."""
+        warnings.warn(
+            "from_avocado_config() is deprecated, please use the regular "
+            "class initialization as it has the same behavior.",
+            DeprecationWarning,
+        )
         return cls(kind, uri, *args, config=config, identifier=identifier, **kwargs)
 
     @classmethod
