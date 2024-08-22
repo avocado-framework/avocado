@@ -102,8 +102,8 @@ class Runnable:
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self._config = {}
         if config is None:
-            config = self.filter_runnable_config(kind, {})
-        self.config = config or {}
+            config = {}
+        self.config = self.filter_runnable_config(kind, config)
         self.args = args
         self.tags = kwargs.pop("tags", None)
         self.dependencies = self.read_dependencies(kwargs.pop("dependencies", None))
@@ -307,9 +307,6 @@ class Runnable:
         cls, kind, uri, *args, config=None, identifier=None, **kwargs
     ):
         """Creates runnable with only essential config for runner of specific kind."""
-        if not config:
-            config = {}
-        config = cls.filter_runnable_config(kind, config)
         return cls(kind, uri, *args, config=config, identifier=identifier, **kwargs)
 
     @classmethod
