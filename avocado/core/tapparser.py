@@ -30,18 +30,23 @@ class TapParser:
 
     _RE_BAILOUT = re.compile(r"Bail out!\s*(.*)")
     _RE_DIRECTIVE = re.compile(
-        r"(?:\s*\#\s*([Ss][Kk][Ii][Pp]\S*|[Tt][Oo][Dd][Oo])\b\s*(.*))?"
+        r"(?:\s*(?:#|\\{2}#)\s*([Ss][Kk][Ii][Pp]\S*|[Tt][Oo][Dd][Oo])\b\s*(.*))?"
     )
-    _RE_PLAN = re.compile(r"1\.\.([0-9]+)" + _RE_DIRECTIVE.pattern)
+    _RE_PLAN = re.compile(r"(?: {4})*1\.\.([0-9]+)" + _RE_DIRECTIVE.pattern)
     _RE_TEST = re.compile(
-        r"((?:not )?ok)\s*(?:([0-9]+)\s*)?([^#]*)" + _RE_DIRECTIVE.pattern
+        r"(?: {4})*((?:not )?ok)\s*(?:([0-9]+)\s*)?\s*(.*?(?=(?<!\\)#|(?<!\\)\\{2}#|$))"
+        + _RE_DIRECTIVE.pattern
     )
     _RE_VERSION = re.compile(r"TAP version ([0-9]+)")
-    _RE_YAML_START = re.compile(r"(\s+)---.*")
-    _RE_YAML_END = re.compile(r"\s+\.\.\.\s*")
+    _RE_YAML_START = re.compile(r"(?: {4})*(\s+)---.*")
+    _RE_YAML_END = re.compile(r"(?: {4})*\s+\.\.\.\s*")
+
+    _RE_CHILD = re.compile(r"( {4})*")
 
     def __init__(self, tap_io):
         self.tap_io = tap_io
+        self.last_line = ""
+        self.lineno = 0
 
     def parse_test(self, ok, num, name, directive, explanation):
         name = name.strip()
@@ -62,30 +67,40 @@ class TapParser:
         result = TestResult.PASS if ok else TestResult.FAIL
         yield self.Test(num, name, result, explanation)
 
-    def parse(self):
+    def _parse(self, indent_size=0, version=12):
         found_late_test = False
         bailed_out = False
         plan = None
-        lineno = 0
         num_tests = 0
         yaml_lineno = 0
         yaml_indent = ""
         state = self._MAIN
-        version = 12
         while True:
-            lineno += 1
-            try:
-                line = next(self.tap_io).rstrip()
-            except StopIteration:
+            if self.last_line:
+                line = self.last_line
+                self.last_line = ""
+            else:
+                try:
+                    line = next(self.tap_io).rstrip()
+                except StopIteration:
+                    break
+            line_indent_size = len(self._RE_CHILD.match(line).group()) / 4
+            if indent_size < line_indent_size:
+                self.last_line = line
+                yield from self._parse(line_indent_size, version)
+                line = self.last_line
+                self.last_line = ""
+            elif indent_size > line_indent_size:
+                self.last_line = line
                 break
-
+            self.lineno += 1
             # YAML blocks are only accepted after a test
             if state == self._AFTER_TEST:
                 if version >= 13:
                     m = self._RE_YAML_START.match(line)
                     if m:
                         state = self._YAML
-                        yaml_lineno = lineno
+                        yaml_lineno = self.lineno
                         yaml_indent = m.group(1)
                         continue
                 state = self._MAIN
@@ -152,7 +167,7 @@ class TapParser:
             m = self._RE_VERSION.match(line)
             if m:
                 # The TAP version is only accepted as the first line
-                if lineno != 1:
+                if self.lineno != 1:
                     yield self.Error("version number must be on the first line")
                     continue
                 version = int(m.group(1))
@@ -181,3 +196,7 @@ class TapParser:
                     f"Too many tests run (expected "
                     f"{int(plan.count)}, got {int(num_tests)})"
                 )
+
+    def parse(self):
+        self.lineno = 0
+        yield from self._parse()
