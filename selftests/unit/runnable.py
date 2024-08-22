@@ -1,5 +1,6 @@
 import unittest.mock
 
+import avocado.core.nrunner.runnable as runnable_mod
 from avocado.core.nrunner.runnable import Runnable
 
 
@@ -159,6 +160,17 @@ class RunnableFromRecipe(unittest.TestCase):
                 ]
             ),
         )
+
+    def test_config_warn_if_not_used(self):
+        runnable = Runnable("exec-test", "/bin/sh")
+        with unittest.mock.patch.object(runnable_mod.LOG, "warning") as log_mock:
+            runnable.config = {"some-unused-config": "foo"}
+        log_mock.assert_called_once()
+
+    def test_config_dont_warn_if_used(self):
+        with unittest.mock.patch.object(runnable_mod.LOG, "warning") as log_mock:
+            Runnable("noop", "noop", config={"runner.identifier_format": "noop"})
+        log_mock.assert_not_called()
 
     def test_identifier(self):
         open_mocked = unittest.mock.mock_open(

@@ -185,6 +185,17 @@ class Runnable:
     def config(self):
         return self._config
 
+    def _config_setter_warning(self, config):
+        configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
+        if not set(configuration_used).issubset(set(config.keys())):
+            LOG.warning(
+                "The runnable config should have only values "
+                "essential for its runner. In the next version of "
+                "avocado, this will raise a ValueError. Please "
+                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
+                "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
+            )
+
     @config.setter
     def config(self, config):
         """Sets the config values based on the runnable kind.
@@ -196,15 +207,7 @@ class Runnable:
         :param config: A config dict with new values for Runnable.
         :type config: dict
         """
-        configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
-        if not set(configuration_used).issubset(set(config.keys())):
-            LOG.warning(
-                "The runnable config should have only values "
-                "essential for its runner. In the next version of "
-                "avocado, this will raise a ValueError. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
-                "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
-            )
+        self._config_setter_warning(config)
         self._config = config
 
     @classmethod
