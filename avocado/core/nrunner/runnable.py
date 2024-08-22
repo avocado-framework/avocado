@@ -201,7 +201,7 @@ class Runnable:
             LOG.warning(
                 "The runnable config should have only values "
                 "essential for its runner. In the next version of "
-                "avocado, this will raise a Value Error. Please "
+                "avocado, this will raise a ValueError. Please "
                 "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
                 "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
             )
