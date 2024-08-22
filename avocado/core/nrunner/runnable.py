@@ -327,7 +327,7 @@ class Runnable:
             if command is not None:
                 command = " ".join(command)
                 configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
-        return configuration_used
+        return configuration_used + CONFIGURATION_USED
 
     @classmethod
     def filter_runnable_config(cls, kind, config):
@@ -349,7 +349,7 @@ class Runnable:
         """
         whole_config = settings.as_dict()
         filtered_config = {}
-        config_items = cls.get_configuration_used_by_kind(kind) + CONFIGURATION_USED
+        config_items = cls.get_configuration_used_by_kind(kind)
         for config_item in config_items:
             filtered_config[config_item] = config.get(
                 config_item, whole_config.get(config_item)

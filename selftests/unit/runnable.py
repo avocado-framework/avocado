@@ -146,6 +146,20 @@ class RunnableFromRecipe(unittest.TestCase):
             runnable.config.get("runner.identifier_format"), "{uri}-{args[0]}"
         )
 
+    def test_config_at_init(self):
+        runnable = Runnable("exec-test", "/bin/sh")
+        self.assertEqual(
+            set(runnable.config.keys()),
+            set(
+                [
+                    "run.keep_tmp",
+                    "runner.exectest.exitcodes.skip",
+                    "runner.exectest.clear_env",
+                    "runner.identifier_format",
+                ]
+            ),
+        )
+
     def test_identifier(self):
         open_mocked = unittest.mock.mock_open(
             read_data=(
