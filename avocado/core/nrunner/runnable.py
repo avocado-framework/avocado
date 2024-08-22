@@ -1,5 +1,6 @@
 import base64
 import collections
+import copy
 import json
 import logging
 import os
@@ -105,10 +106,7 @@ class Runnable:
         #: that is passed to runners, as long as a runner declares
         #: its interest in using them with
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
-        self._config = {}
-        if config is None:
-            config = {}
-        self.config = self.filter_runnable_config(kind, config)
+        self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
         self.dependencies = self.read_dependencies(kwargs.pop("dependencies", None))
@@ -188,21 +186,30 @@ class Runnable:
 
     @property
     def config(self):
-        return self._config
+        if not self._config:
+            return self._default_config
+        config_with_defaults = copy.copy(self._default_config)
+        config_with_defaults.update(self._config)
+        return config_with_defaults
 
     @property
     def default_config(self):
         return self._default_config
 
-    def _config_setter_warning(self, config):
+    def _config_setter_warning(self, config, default_config=False):
         configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
-        if not set(configuration_used).issubset(set(config.keys())):
-            LOG.warning(
-                "The runnable config should have only values "
-                "essential for its runner. In the next version of "
-                "avocado, this will raise a ValueError. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config"
-            )
+        if default_config:
+            if set(configuration_used) == (set(config.keys())):
+                return
+        else:
+            if set(config.keys()).issubset(set(configuration_used)):
+                return
+        LOG.warning(
+            "The runnable config should have only values "
+            "essential for its runner. In the next version of "
+            "avocado, this will raise a ValueError. Please "
+            "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config"
+        )
 
     @config.setter
     def config(self, config):
@@ -232,7 +239,7 @@ class Runnable:
         :param config: A config dict with default values for this Runnable.
         :type config: dict
         """
-        self._config_setter_warning(config)
+        self._config_setter_warning(config, True)
         self._default_config = config
 
     @classmethod

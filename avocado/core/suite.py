@@ -76,7 +76,9 @@ def resolutions_to_runnables(resolutions, config):
         if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue
         for runnable in resolution.resolutions:
-            runnable.config = runnable.filter_runnable_config(runnable.kind, config)
+            runnable.default_config = runnable.filter_runnable_config(
+                runnable.kind, config
+            )
             result.append(runnable)
     return result
 
