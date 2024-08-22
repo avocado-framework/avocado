@@ -183,7 +183,7 @@ class ResolverFunctionalTmp(TestCaseTmpDir):
 ==================
 asset: 1
 exec-test: 3
-noop: 2
+noop: 3
 package: 1
 python-unittest: 1
 sysinfo: 1"""

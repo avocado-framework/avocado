@@ -1,10 +1,12 @@
 import base64
 import collections
+import copy
 import json
 import logging
 import os
 import subprocess
 import sys
+import warnings
 
 import pkg_resources
 
@@ -96,13 +98,14 @@ class Runnable:
         #: test or being the test, or an actual URI with multiple
         #: parts
         self.uri = uri
+        #: This attributes holds default configuration values that the
+        #: runner has determined that has interest in by setting it in
+        #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
+        self._default_config = self.filter_runnable_config(kind, {})
         #: This attributes holds configuration from Avocado proper
         #: that is passed to runners, as long as a runner declares
         #: its interest in using them with
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
-        self._config = {}
-        if config is None:
-            config = self.filter_runnable_config(kind, {})
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
@@ -183,7 +186,30 @@ class Runnable:
 
     @property
     def config(self):
-        return self._config
+        if not self._config:
+            return self._default_config
+        config_with_defaults = copy.copy(self._default_config)
+        config_with_defaults.update(self._config)
+        return config_with_defaults
+
+    @property
+    def default_config(self):
+        return self._default_config
+
+    def _config_setter_warning(self, config, default_config=False):
+        configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
+        if default_config:
+            if set(configuration_used) == (set(config.keys())):
+                return
+        else:
+            if set(config.keys()).issubset(set(configuration_used)):
+                return
+        LOG.warning(
+            "The runnable config should have only values "
+            "essential for its runner. In the next version of "
+            "avocado, this will raise a ValueError. Please "
+            "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config"
+        )
 
     @config.setter
     def config(self, config):
@@ -196,22 +222,31 @@ class Runnable:
         :param config: A config dict with new values for Runnable.
         :type config: dict
         """
-        configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
-        if not set(configuration_used).issubset(set(config.keys())):
-            LOG.warning(
-                "The runnable config should have only values "
-                "essential for its runner. In the next version of "
-                "avocado, this will raise a Value Error. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
-                "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
-            )
+        self._config_setter_warning(config)
         self._config = config
+
+    @default_config.setter
+    def default_config(self, config):
+        """Sets the default config values based on the runnable kind.
+
+        This is not avocado config, it is a runnable config which is a subset
+        of avocado config based on `STANDALONE_EXECUTABLE_CONFIG_USED` which
+        describes essential configuration values for each runner kind.
+
+        These values are used as convenience if other values are not set
+        in the actual :attr:`config` itself.
+
+        :param config: A config dict with default values for this Runnable.
+        :type config: dict
+        """
+        self._config_setter_warning(config, True)
+        self._default_config = config
 
     @classmethod
     def from_args(cls, args):
         """Returns a runnable from arguments"""
         decoded_args = [_arg_decode_base64(arg) for arg in args.get("arg", ())]
-        return cls.from_avocado_config(
+        return cls(
             args.get("kind"),
             args.get("uri"),
             *decoded_args,
@@ -277,7 +312,7 @@ class Runnable:
         """
         cls._validate_recipe(recipe_dict)
         config = ConfigDecoder.decode_set(recipe_dict.get("config", {}))
-        return cls.from_avocado_config(
+        return cls(
             recipe_dict.get("kind"),
             recipe_dict.get("uri"),
             *recipe_dict.get("args", ()),
@@ -304,9 +339,11 @@ class Runnable:
         cls, kind, uri, *args, config=None, identifier=None, **kwargs
     ):
         """Creates runnable with only essential config for runner of specific kind."""
-        if not config:
-            config = {}
-        config = cls.filter_runnable_config(kind, config)
+        warnings.warn(
+            "from_avocado_config() is deprecated, please use the regular "
+            "class initialization as it has the same behavior.",
+            DeprecationWarning,
+        )
         return cls(kind, uri, *args, config=config, identifier=identifier, **kwargs)
 
     @classmethod
@@ -327,7 +364,7 @@ class Runnable:
             if command is not None:
                 command = " ".join(command)
                 configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
-        return configuration_used
+        return configuration_used + CONFIGURATION_USED
 
     @classmethod
     def filter_runnable_config(cls, kind, config):
@@ -349,7 +386,7 @@ class Runnable:
         """
         whole_config = settings.as_dict()
         filtered_config = {}
-        config_items = cls.get_configuration_used_by_kind(kind) + CONFIGURATION_USED
+        config_items = cls.get_configuration_used_by_kind(kind)
         for config_item in config_items:
             filtered_config[config_item] = config.get(
                 config_item, whole_config.get(config_item)

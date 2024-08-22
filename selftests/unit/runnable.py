@@ -1,5 +1,6 @@
 import unittest.mock
 
+import avocado.core.nrunner.runnable as runnable_mod
 from avocado.core.nrunner.runnable import Runnable
 
 
@@ -144,6 +145,44 @@ class RunnableFromRecipe(unittest.TestCase):
             self.assertIn(conf, runnable.config)
         self.assertEqual(
             runnable.config.get("runner.identifier_format"), "{uri}-{args[0]}"
+        )
+
+    def test_config_at_init(self):
+        runnable = Runnable("exec-test", "/bin/sh")
+        self.assertEqual(
+            set(runnable.config.keys()),
+            set(
+                [
+                    "run.keep_tmp",
+                    "runner.exectest.exitcodes.skip",
+                    "runner.exectest.clear_env",
+                    "runner.identifier_format",
+                ]
+            ),
+        )
+
+    def test_config_warn_if_not_used(self):
+        runnable = Runnable("exec-test", "/bin/sh")
+        with unittest.mock.patch.object(runnable_mod.LOG, "warning") as log_mock:
+            runnable.config = {"some-unused-config": "foo"}
+        log_mock.assert_called_once()
+
+    def test_config_dont_warn_if_used(self):
+        with unittest.mock.patch.object(runnable_mod.LOG, "warning") as log_mock:
+            Runnable("noop", "noop", config={"runner.identifier_format": "noop"})
+        log_mock.assert_not_called()
+
+    def test_default_config(self):
+        runnable = Runnable("noop", "noop")
+        self.assertEqual(
+            runnable.default_config.get("runner.identifier_format"), "{uri}"
+        )
+
+    def test_default_and_actual_config(self):
+        runnable = Runnable("noop", "noop", config={"runner.identifier_format": "noop"})
+        self.assertEqual(runnable.config.get("runner.identifier_format"), "noop")
+        self.assertEqual(
+            runnable.default_config.get("runner.identifier_format"), "{uri}"
         )
 
     def test_identifier(self):
