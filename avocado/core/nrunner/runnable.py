@@ -97,6 +97,10 @@ class Runnable:
         #: test or being the test, or an actual URI with multiple
         #: parts
         self.uri = uri
+        #: This attributes holds default configuration values that the
+        #: runner has determined that has interest in by setting it in
+        #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
+        self._default_config = self.filter_runnable_config(kind, {})
         #: This attributes holds configuration from Avocado proper
         #: that is passed to runners, as long as a runner declares
         #: its interest in using them with
@@ -186,6 +190,10 @@ class Runnable:
     def config(self):
         return self._config
 
+    @property
+    def default_config(self):
+        return self._default_config
+
     def _config_setter_warning(self, config):
         configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
         if not set(configuration_used).issubset(set(config.keys())):
@@ -209,6 +217,23 @@ class Runnable:
         """
         self._config_setter_warning(config)
         self._config = config
+
+    @default_config.setter
+    def default_config(self, config):
+        """Sets the default config values based on the runnable kind.
+
+        This is not avocado config, it is a runnable config which is a subset
+        of avocado config based on `STANDALONE_EXECUTABLE_CONFIG_USED` which
+        describes essential configuration values for each runner kind.
+
+        These values are used as convenience if other values are not set
+        in the actual :attr:`config` itself.
+
+        :param config: A config dict with default values for this Runnable.
+        :type config: dict
+        """
+        self._config_setter_warning(config)
+        self._default_config = config
 
     @classmethod
     def from_args(cls, args):

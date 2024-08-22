@@ -172,6 +172,19 @@ class RunnableFromRecipe(unittest.TestCase):
             Runnable("noop", "noop", config={"runner.identifier_format": "noop"})
         log_mock.assert_not_called()
 
+    def test_default_config(self):
+        runnable = Runnable("noop", "noop")
+        self.assertEqual(
+            runnable.default_config.get("runner.identifier_format"), "{uri}"
+        )
+
+    def test_default_and_actual_config(self):
+        runnable = Runnable("noop", "noop", config={"runner.identifier_format": "noop"})
+        self.assertEqual(runnable.config.get("runner.identifier_format"), "noop")
+        self.assertEqual(
+            runnable.default_config.get("runner.identifier_format"), "{uri}"
+        )
+
     def test_identifier(self):
         open_mocked = unittest.mock.mock_open(
             read_data=(
