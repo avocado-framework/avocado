@@ -23,7 +23,10 @@ import os
 import shutil
 import tempfile
 
-from packaging.version import parse
+try:
+    import packaging
+except ImportError:
+    from pkg_resources import packaging
 
 from avocado.utils import archive, asset, build, distro, process
 
@@ -207,6 +210,6 @@ def check_version(version):
     :type version: string
     :param version: version to be compared with current kernel version
     """
-    os_version = parse(os.uname()[2])
-    version = parse(version)
+    os_version = packaging.version.parse(os.uname()[2])
+    version = packaging.version.parse(version)
     assert os_version > version, "Old kernel"
