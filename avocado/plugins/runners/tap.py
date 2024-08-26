@@ -38,7 +38,7 @@ class TAPRunner(ExecTestRunner):
     @staticmethod
     def _get_tap_result(stdout):
         parser = TapParser(io.StringIO(stdout.decode()))
-        result = "error"
+        result = ""
         fail_reason = None
         for event in parser.parse():
             if isinstance(event, TapParser.Bailout):
@@ -50,16 +50,18 @@ class TAPRunner(ExecTestRunner):
                 break
             elif isinstance(event, TapParser.Plan):
                 if event.skipped:
-                    result = "skip"
-                    break
+                    if not result:
+                        result = "skip"
+                    continue
             elif isinstance(event, TapParser.Test):
                 if event.result == TestResult.FAIL:
                     result = "fail"
                     fail_reason = event.explanation
                     break
                 elif event.result == TestResult.SKIP:
-                    result = "skip"
-                    break
+                    if not result:
+                        result = "skip"
+                    continue
                 elif event.result == TestResult.XPASS:
                     result = "warn"
                     if event.name:

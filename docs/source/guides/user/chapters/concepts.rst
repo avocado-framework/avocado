@@ -207,6 +207,21 @@ difference is that the test result will be decided based on the
 produced output, that should be in `Test Anything Protocol
 <https://testanything.org>`_ format.
 
+Even though such executable can be seen as test suite from avocado point of view,
+it will be considered as one standalone test. If you want to get result of each
+test of such executable, you can get generated tap output in debug.log file.
+:ref:`avocado-log-files`
+
+.. note::
+  The result of Tap test is based on the importance of individual results types
+  like this:
+
+  `SKIP -> PASS -> FAIL`.  
+
+  This means if one of the tests in TAP output
+  is `not ok` the TAP test result is `FAIL`. If all tests are `ok` or `skip`
+  the results is `PASS` and if all results are `skip` the result is `SKIP`.
+
 Test statuses
 -------------
 

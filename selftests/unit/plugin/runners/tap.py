@@ -69,7 +69,7 @@ echo 'ok 2 - description 2'"""
         results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result["status"], "finished")
-        self.assertEqual(last_result["result"], "skip")
+        self.assertEqual(last_result["result"], "pass")
         self.assertEqual(last_result["returncode"], 0)
 
     @skipUnlessPathExists("/bin/sh")
