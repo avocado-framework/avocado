@@ -11,3 +11,4 @@ the core parts.
    :maxdepth: 2
 
    chapters/runners
+   chapters/avocado_instrumented
