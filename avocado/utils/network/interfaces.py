@@ -49,13 +49,13 @@ class NetworkInterface:
         self.name = if_name
         self.if_type = if_type
         self.host = host
-        self.distro_is_rhel9 = False
+        self.distro_is_rhel9_or_later = False
 
     @property
     def config_filename(self):
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
-            if self.distro_is_rhel9:
+            if self.distro_is_rhel9_or_later:
                 path = "/etc/NetworkManager/system-connections"
             else:
                 path = "/etc/sysconfig/network-scripts"
@@ -64,7 +64,7 @@ class NetworkInterface:
         else:
             msg = "Distro not supported by API. Could not get interface filename."
             raise NWException(msg)
-        if self.distro_is_rhel9:
+        if self.distro_is_rhel9_or_later:
             return f"{path}/{self.name}.nmconnection"
         else:
             return f"{path}/ifcfg-{self.name}"
@@ -73,7 +73,7 @@ class NetworkInterface:
     def config_file_path(self):
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
-            if self.distro_is_rhel9:
+            if self.distro_is_rhel9_or_later:
                 return "/etc/NetworkManager/system-connections"
             else:
                 return "/etc/sysconfig/network-scripts"
@@ -87,7 +87,7 @@ class NetworkInterface:
     def slave_config_filename(self):
         try:
             slave_dict = self._get_bondinterface_details()
-            if self.distro_is_rhel9:
+            if self.distro_is_rhel9_or_later:
                 return [
                     f"{self.config_file_path}/{slave}.nmconnection"
                     for slave in slave_dict["slaves"]
@@ -405,13 +405,13 @@ class NetworkInterface:
             raise NWException(msg)
 
         current_distro = distro_detect()
-        if current_distro.name == "rhel" and current_distro.version == "9":
-            self.distro_is_rhel9 = "rhel9"
+        if current_distro.name == "rhel" and int(current_distro.version) >= 9:
+            self.distro_is_rhel9_or_later = True
 
         filename = f"ifcfg-{self.name}"
         prefix = self.netmask_to_cidr(netmask)
         if current_distro.name in ["rhel", "fedora"]:
-            if self.distro_is_rhel9:
+            if self.distro_is_rhel9_or_later:
                 filename = f"{self.name}.nmconnection"
                 path = "/etc/NetworkManager/system-connections"
             else:
@@ -422,7 +422,7 @@ class NetworkInterface:
             msg = "Distro not supported by API. Could not save ipaddr."
             raise NWException(msg)
 
-        if self.distro_is_rhel9:
+        if self.distro_is_rhel9_or_later:
             ifcfg_dict = ""
             if os.path.exists(f"{path}/{filename}") is False:
                 run_command(
@@ -461,7 +461,7 @@ class NetworkInterface:
 
         if self.if_type == "Bond":
             bond_dict = self._get_bondinterface_details()
-            if self.distro_is_rhel9:
+            if self.distro_is_rhel9_or_later:
                 if os.path.exists(f"{path}/{filename}") is False:
                     run_command(
                         f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
