@@ -585,7 +585,7 @@ class Test(unittest.TestCase, TestData):
             self.__skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise exceptions.TestSkipError(details)
-        except exceptions.TestCancel:
+        except (exceptions.TestCancel, exceptions.TestInterrupt):
             stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise
         except:  # Old-style exceptions are not inherited from Exception()
@@ -633,7 +633,7 @@ class Test(unittest.TestCase, TestData):
                 f"test. Original skip exception: {details}"
             )
             raise exceptions.TestError(skip_illegal_msg)
-        except exceptions.TestCancel:
+        except (exceptions.TestCancel, exceptions.TestInterrupt):
             stacktrace.log_exc_info(sys.exc_info(), logger=self.log)
             raise
         except:  # avoid old-style exception failures pylint: disable=W0702
