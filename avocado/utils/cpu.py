@@ -607,14 +607,14 @@ def _deprecated(newfunc, oldfuncname):
     Print a warning to user and return the new function.
 
     :param newfunc: new function to be assigned
-    :param oldfunctionname: Old function name string
+    :param oldfuncname: Old function name string
     :rtype: `function`
     """
 
     def wrap(*args, **kwargs):
         fmt_str = f"avocado.utils.cpu.{oldfuncname}() it is getting deprecat"
         fmt_str += f"ed, Use avocado.utils.cpu.{newfunc.__name__}() instead"
-        warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
+        warnings.warn(fmt_str, DeprecationWarning, stacklevel=2)
         return newfunc(*args, **kwargs)
 
     return wrap
