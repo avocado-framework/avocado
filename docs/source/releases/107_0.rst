@@ -1,0 +1,72 @@
+=====================
+107.0 - The Godfather
+=====================
+
+The Avocado team is proud to present another release: Avocado 107.0,
+AKA "The Godfather", is now available!
+
+Release documentation: `Avocado 107.0
+<http://avocado-framework.readthedocs.io/en/107.0/>`_
+
+Users/Test Writers
+==================
+
+* The Gmail Plugin for Avocado, a new optional plugin, allows results
+  to be sent to any email. The Origin email though at this time has to
+  come from a google account due to using App Passwords.
+
+* Added support for TAP14 format. The main differences between TAP13
+  and TAP14 important for the TAP runner are support for child tests as
+  4-space indented TAP streams, with a trailing test point and leading
+  comment line and escaping of ``\`` and ``#`` characters.
+
+* There's now a way how to explicitly specify runnable identifier
+  through Job API or runnable recipe. If the ``identifier`` key is
+  provided, it will be used, and if not, it will be generated based on
+  the ``runner.identifier_format`` config variable (which is the
+  previous behavior).
+
+* When a configuration key requires a list, and a string is given,
+  the error message is now much more descriptive.
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.archive` make probe function for zstd public
+
+* :mod:`avocado.utils.kernel` received a fix for compatibility issue
+  with ``setuptools`` >= 70.
+
+* New function :func:`avocado.utils.linux.is_os_secureboot_enabled`
+
+Bug Fixes
+=========
+
+* It's now possible for a runnable configuration and the suite and
+  default configuration to coexist with the correct behavior.
+  In short, if the suite has a configuration, it will become the new
+  default configuration for a runnable, while its own configuration
+  will not be touched.
+
+Internal changes
+================
+
+* Update to pylint 3.0.0
+
+* Refactor and reorganization of nrunner unittests
+
+* Fixes to the deployment test
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/106.0...107.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/33>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0068646/>`_.
