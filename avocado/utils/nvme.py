@@ -138,8 +138,8 @@ def get_block_size(controller_name):
     if namespaces:
         namespace = namespaces[0]
         cmd = f"nvme id-ns /dev/{namespace}"
-        out = process.run(cmd, shell=True, ignore_status=True)
-        for line in out.splitlines:
+        out = process.run(cmd, shell=True, ignore_status=True).stdout_text
+        for line in str(out.splitlines):
             if "in use" in line:
                 return pow(2, int(line.split()[4].split(":")[-1]))
     return 4096
