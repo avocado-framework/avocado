@@ -1,0 +1,158 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Avocado Framework
+Source: https://avocado-framework.github.io/
+
+Files: *
+Copyright: (C) 2013-2024 Red Hat Inc.
+License: GPL-2+
+
+Files: avocado/core/main.py
+  avocado/core/settings.py
+  avocado/core/sysinfo.py
+  avocado/core/test.py
+  avocado/libexec/avocado-bash-utils
+  avocado/utils/diff_validator.py
+  avocado/utils/download.py
+  avocado/utils/file_utils.py
+  avocado/utils/genio.py
+  contrib/scripts/avocado-bisect.sh
+  contrib/scripts/avocado-check-pr.sh
+  contrib/scripts/avocado-fetch-eggs.py
+  contrib/scripts/avocado-get-job-results-dir.py
+  contrib/scripts/avocado-safeloader-find-avocado-instrumented
+  contrib/scripts/avocado-safeloader-find-python-unittest
+  contrib/scripts/find-python-unittest
+  contrib/testsuites/run-kvm-unit-test.sh
+  scripts/avocado-run-testplan
+  scripts/external_runner.py
+  selftests/run_coverage
+Copyright: (C) 2013-2017, 2021 Red Hat Inc.
+License: GPL-2
+
+Files: avocado/core/tapparser.py
+Copyright: (C) 2019, 2021-2022 Red Hat Inc.
+License: Expat
+
+Files: debian/*
+Copyright: 2024 David Negreira <david.negreira@canonical.com>
+License: GPL-2+
+
+Files: avocado/utils/service.py
+Copyright: (C) 2013 Intel Corporation.
+License: GPL-2
+
+Files: optional_plugins/html/avocado_result_html/templates/bootstrap.min.css
+  optional_plugins/html/avocado_result_html/templates/bootstrap.min.css
+  optional_plugins/html/avocado_result_html/templates/bootstrap.min.js
+Copyright: (C) 2011-2016 Twitter, Inc.
+License: Expat
+
+Files: selftests/.data/jenkins-junit.xsd
+Copyright: (C) 2010 Thales Corporate Services SAS
+License: Expat
+
+Files: avocado/utils/external/spark.py
+Copyright: (C) 1998-2002 John Aycock
+License: Expat
+
+Files: selftests/unit/utils/service.py
+Copyright: (C) 2013 Intel Corporation
+License: GPL-2
+
+Files: optional_plugins/result_upload/avocado_result_upload/result_upload.py
+Copyright: Virtuozzo Inc. 2017
+License: GPL-2+
+
+Files: avocado/core/tree.py
+Copyright: (C) 2014 Red Hat Inc.
+  (C) 2009 Jaime Huerta-Cepas <jhcepas@gmail.com>
+License: GPL-2+
+
+Files: avocado/utils/dmesg.py
+  avocado/utils/softwareraid.py
+  avocado/utils/pmem.py
+  avocado/utils/multipath.py
+  avocado/utils/disk.py
+  avocado/utils/nvme.py
+  avocado/utils/pci.py
+  avocado/utils/linux_modules.py
+Copyright: (C) 2016, 2018-2020, 2022 IBM
+License: GPL-2+
+
+Files: avocado/utils/lv_utils.py
+Copyright: (C) IBM 2016 - Harish <harisrir@linux.vnet.ibm.com>
+  (C) Red Hat 2016 - Lukas Doktor <ldoktor@redhat.com>
+  (C) Intra2net AG 2018 - Plamen Dimitrov <pdimitrov@pevogam.com>
+License: GPL-2
+
+Files: avocado/utils/linux.py
+  avocado/utils/network/interfaces.py
+  avocado/utils/software_manager/inspector.py
+  avocado/utils/software_manager/main.py
+  avocado/utils/software_manager/backends/base.py
+Copyright: (C) IBM, 2008-2009, 2019-2020
+  (C) Red Hat Inc. 2009-2014, 2019-2020
+License: GPL-2+
+
+Files: avocado/utils/external/gdbmi_parser.py
+Copyright: (C) 2008 Michael Eddington
+License: Expat
+
+Files: avocado/utils/partition.py
+Copyright: (C) IBM 2016
+  (C) Red Hat Inc. 2016
+  (C) Google 2006-2008
+License: GPL-2+
+
+License: Expat
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so
+
+License: GPL
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; version 1.
+  .
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  General Public License for more details.
+  .
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+License: GPL-2+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at
+  your option) any later version.
+  .
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  General Public License for more details.
+  .
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301,
+  USA.
+
+License: GPL-2
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; version 2.
+  .
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+  .
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301,
+  USA.

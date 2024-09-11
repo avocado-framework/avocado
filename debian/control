@@ -1,0 +1,24 @@
+Source: python3-avocado
+Section: python
+Priority: optional
+Maintainer: David Negreira <david.negreira@canonical.com>
+Uploaders: Arif Ali <arif.ali@canonical.com>
+Homepage: https://github.com/avocado-framework/avocado
+Build-Depends:
+  debhelper-compat (=13),
+  dh-python,
+  python3-all,
+  python3-setuptools,
+  python3-pip,
+  python3-dev,
+  python3-sphinx,
+  python3-sphinx-rtd-theme,
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: python3-avocado
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: Avocado is a set of tools and libraries to help with automated testing.
+  One can call it a test framework with benefits.
+  Native tests are written in Python and they follow the unittest pattern, but any executable can serve as a test.

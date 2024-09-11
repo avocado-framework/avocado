@@ -1,0 +1,7 @@
+python3-avocado source: source-package-encodes-python-version
+python3-avocado source: debian-watch-does-not-check-openpgp-signature [debian/watch]
+python3-avocado source: source-is-missing [optional_plugins/html/avocado_result_html/templates/bootstrap.min.js]
+python3-avocado source: source-is-missing [optional_plugins/html/avocado_result_html/templates/datatables.min.js]
+python3-avocado source: source-is-missing [optional_plugins/html/avocado_result_html/templates/jquery.min.js]
+python3-avocado source: source-contains-prebuilt-javascript-object *
+python3-avocado source: very-long-line-length-in-source-file *

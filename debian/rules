@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+DH_VERBOSE = 1
+export PYBUILD_NAME = avocado-107
+export PYBUILD_INSTALL_ARGS=--install-layout=deb
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	mkdir -p /build/etc/avocado/
+	mkdir -p /build/avocado/data/job-results
+	mkdir -p /build/avocado/data/cache
+	cp examples/config/avocado-tests.conf /build/etc/avocado/avocado.conf
+	VIRTUAL_ENV="/build/" python3 setup.py test --select=unit
+endif
+
+override_dh_installman:
+	python3 setup.py man
+	dh_installman
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
