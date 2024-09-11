@@ -1,0 +1,3 @@
+[submodule "static-checks"]
+	path = static-checks
+	url = https://github.com/avocado-framework/avocado-static-checks
