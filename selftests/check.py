@@ -600,6 +600,7 @@ def create_suites(args):  # pylint: disable=W0621
         config_check_static["resolver.references"].append(
             "static-checks/check-import-order"
         )
+        config_check_static["resolver.references"].append("static-checks/check-style")
         suites.append(TestSuite.from_config(config_check_static, "static-checks"))
 
     # ========================================================================
