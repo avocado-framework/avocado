@@ -63,7 +63,13 @@ Git workflow
 
 - Clone from your fork::
 
-    $ git clone git@github.com:<username>/avocado.git
+    $ git clone --recurse-submodules git@github.com:<username>/avocado.git
+
+.. note:: The ``--recurse-submodules`` option is used to checkout the
+          contents from the `avocado-static-checks
+          <https://github.com/avocado-framework/avocado-static-checks>`_
+          repository, which is not needed for general Avocado installations,
+          but which is very important for development purposes.
 
 - Enter the directory::
 
