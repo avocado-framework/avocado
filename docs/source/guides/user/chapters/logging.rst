@@ -50,6 +50,8 @@ from all tests in one place.
  built-in streams in this function.
 
 
+.. _avocado-log-files:
+
 Avocado log files
 -----------------
 
