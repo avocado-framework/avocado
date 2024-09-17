@@ -773,6 +773,19 @@ runner task, making it raise a
 process is specific to spawner implementation, for more information
 see :class:`avocado.core.plugin_interfaces.Spawner.terminate_task`.
 
+
+Block Timeout
+-------------
+On more complex (and thus usually) longer tests, there may be multiple
+steps to complete. It may be known that some of these steps should not
+take more than a small percentage of the overall expected time for the
+test as a whole. Therefore, it is not convenient to set the timeout for
+the whole test, but it would be better to have timeout for each of those
+steps. For such use-case avocado supports `wait_max` context manager,
+which let you set specific timeout (in seconds) for a block of code:
+
+.. literalinclude:: ../../../../../examples/tests/blocktimeouttest.py
+
 Timeout Factor
 ~~~~~~~~~~~~~~
 
@@ -809,6 +822,9 @@ test logs.  For the previous test execution it shows::
    [stdlog] 2023-11-29 11:16:23,745 test             L0345 DEBUG| Test metadata:
    ...
    [stdlog] 2023-11-29 11:16:23,746 test             L0354 DEBUG|   actual timeout: 6.0
+
+
+.. note:: Be aweare that timeout factor will also affect timeouts created by `wait_max` context manager.
 
 Skipping Tests
 --------------
