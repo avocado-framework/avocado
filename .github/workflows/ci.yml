@@ -19,6 +19,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
+          submodules: true
       - name: Allow git to operate on directory checked out by GH Actions
         run: git config --global --add safe.directory `pwd`
       - name: Installing Avocado development dependencies

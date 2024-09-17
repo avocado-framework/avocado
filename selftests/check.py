@@ -597,6 +597,11 @@ def create_suites(args):  # pylint: disable=W0621
     if args.dict_tests["static-checks"]:
         config_check_static = copy.copy(config_check)
         config_check_static["resolver.references"] = glob.glob("selftests/*.sh")
+        config_check_static["resolver.references"].append(
+            "static-checks/check-import-order"
+        )
+        config_check_static["resolver.references"].append("static-checks/check-style")
+        config_check_static["resolver.references"].append("static-checks/check-lint")
         suites.append(TestSuite.from_config(config_check_static, "static-checks"))
 
     # ========================================================================
