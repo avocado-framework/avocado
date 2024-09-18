@@ -201,6 +201,27 @@ class ResolverFunctional(unittest.TestCase):
         )
         self.assertIn(b"exec-test: 2\n", result.stdout)
 
+    @skipUnlessPathExists("/bin/sh")
+    def test_exec_runnable_recipe_args(self):
+        resolver_path = os.path.join(
+            BASEDIR,
+            "examples",
+            "nrunner",
+            "resolvers",
+            "exec_runnables_recipe_kind.sh",
+        )
+        cmd_line = f"{AVOCADO} -V list --resolver-run-executables --resolver-exec-arguments tap {resolver_path}"
+        result = process.run(cmd_line)
+        self.assertIn(
+            b"tap  true-test  /bin/true  exec-runnables-recipe",
+            result.stdout,
+        )
+        self.assertIn(
+            b"tap  false-test /bin/false exec-runnables-recipe",
+            result.stdout,
+        )
+        self.assertIn(b"tap: 2\n", result.stdout)
+
 
 class ResolverFunctionalTmp(TestCaseTmpDir):
     def test_runnables_recipe(self):

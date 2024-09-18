@@ -274,6 +274,14 @@ class Run(CLICmd):
             allow_multiple=True,
         )
 
+        settings.add_argparser_to_option(
+            namespace="resolver.exec_runnables_recipe.arguments",
+            metavar="ARGS",
+            parser=parser,
+            long_arg="--resolver-exec-arguments",
+            allow_multiple=True,
+        )
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):

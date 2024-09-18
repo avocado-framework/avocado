@@ -19,6 +19,7 @@ Test resolver for builtin test types
 import json
 import os
 import re
+import shlex
 import subprocess
 
 from avocado.core.extension_manager import PluginPriority
@@ -218,6 +219,19 @@ class ExecRunnablesRecipeInit(Init):
             help_msg=help_msg,
         )
 
+        help_msg = (
+            "Command line options (space separated) that will be added "
+            "to the executable when executing it as a producer of "
+            "runnables-recipe JSON content."
+        )
+        settings.register_option(
+            section="resolver.exec_runnables_recipe",
+            key="arguments",
+            key_type=str,
+            default="",
+            help_msg=help_msg,
+        )
+
 
 class ExecRunnablesRecipeResolver(BaseExec, Resolver):
     name = "exec-runnables-recipe"
@@ -239,9 +253,14 @@ class ExecRunnablesRecipeResolver(BaseExec, Resolver):
         if exec_criteria is not None:
             return exec_criteria
 
+        args = self.config.get("resolver.exec_runnables_recipe.arguments")
+        if args:
+            cmd = [reference] + shlex.split(args)
+        else:
+            cmd = reference
         try:
             process = subprocess.Popen(
-                reference,
+                cmd,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

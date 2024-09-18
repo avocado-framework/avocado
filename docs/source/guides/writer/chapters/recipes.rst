@@ -110,6 +110,21 @@ run``.  Example::
   exec-test true-test
   exec-test false-test
 
+If the executable to be run needs arguments, you can pass it via the
+``--resolver-exec-arguments`` or the underlying
+``resolver.exec_runnable_recipe.arguments`` option.  The following
+script receives an optional parameter that can change the type of the
+tests it generates:
+
+.. literalinclude:: ../../../../../examples/nrunner/resolvers/exec_runnables_recipe_kind.sh
+
+In order to have those tests resolved as ``tap`` tests, one can run::
+
+  $ avocado list --resolver-run-executables --resolver-exec-arguments tap examples/nrunner/resolvers/exec_runnables_recipe_kind.sh
+
+  tap true-test
+  tap false-test
+
 Behavior of ``exec-runnables-recipe`` and ``exec-test`` resolvers
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
