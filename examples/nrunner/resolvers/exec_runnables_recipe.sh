@@ -1,0 +1,2 @@
+#!/bin/sh
+echo '[{"kind": "exec-test","uri": "/bin/true","identifier": "true-test"},{"kind": "exec-test","uri": "/bin/false","identifier": "false-test"}]'

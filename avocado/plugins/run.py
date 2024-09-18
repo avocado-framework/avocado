@@ -267,6 +267,13 @@ class Run(CLICmd):
             long_arg="--log-test-data-directories",
         )
 
+        settings.add_argparser_to_option(
+            namespace="resolver.run_executables",
+            parser=parser,
+            long_arg="--resolver-run-executables",
+            allow_multiple=True,
+        )
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):

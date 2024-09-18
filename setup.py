@@ -394,6 +394,7 @@ if __name__ == "__main__":
                 "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
                 "testlogsui = avocado.plugins.testlogs:TestLogsUIInit",
                 "human = avocado.plugins.human:HumanInit",
+                "exec-runnables-recipe = avocado.plugins.resolvers:ExecRunnablesRecipeInit",
             ],
             "avocado.plugins.cli": [
                 "xunit = avocado.plugins.xunit:XUnitCLI",
@@ -461,6 +462,7 @@ if __name__ == "__main__":
                 "tap = avocado.plugins.resolvers:TapResolver",
                 "runnable-recipe = avocado.plugins.resolvers:RunnableRecipeResolver",
                 "runnables-recipe = avocado.plugins.resolvers:RunnablesRecipeResolver",
+                "exec-runnables-recipe = avocado.plugins.resolvers:ExecRunnablesRecipeResolver",
             ],
             "avocado.plugins.suite.runner": [
                 "nrunner = avocado.plugins.runner_nrunner:Runner",
