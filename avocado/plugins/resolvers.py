@@ -33,14 +33,9 @@ from avocado.core.resolver import (
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
 
 
-class ExecTestResolver(Resolver):
-
-    name = "exec-test"
-    description = "Test resolver for executable files to be handled as tests"
-    priority = PluginPriority.VERY_LOW
-
-    def resolve(self, reference):
-
+class BaseExec:
+    @staticmethod
+    def check_exec(reference):
         criteria_check = check_file(
             reference,
             reference,
@@ -51,6 +46,18 @@ class ExecTestResolver(Resolver):
         )
         if criteria_check is not True:
             return criteria_check
+
+
+class ExecTestResolver(BaseExec, Resolver):
+
+    name = "exec-test"
+    description = "Test resolver for executable files to be handled as tests"
+    priority = PluginPriority.VERY_LOW
+
+    def resolve(self, reference):
+        exec_criteria = self.check_exec(reference)
+        if exec_criteria is not None:
+            return exec_criteria
 
         runnable = Runnable("exec-test", reference, assets=get_file_assets(reference))
         return ReferenceResolution(
@@ -121,24 +128,16 @@ class AvocadoInstrumentedResolver(Resolver):
         )
 
 
-class TapResolver(Resolver):
+class TapResolver(BaseExec, Resolver):
 
     name = "tap"
     description = "Test resolver for executable files to be handled as TAP tests"
     priority = PluginPriority.LAST_RESORT
 
     def resolve(self, reference):
-
-        criteria_check = check_file(
-            reference,
-            reference,
-            suffix=None,
-            type_name="executable file",
-            access_check=os.R_OK | os.X_OK,
-            access_name="executable",
-        )
-        if criteria_check is not True:
-            return criteria_check
+        exec_criteria = self.check_exec(reference)
+        if exec_criteria is not None:
+            return exec_criteria
 
         runnable = Runnable("tap", reference, assets=get_file_assets(reference))
         return ReferenceResolution(
