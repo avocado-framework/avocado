@@ -110,6 +110,28 @@ if [[ -n "${AVOCADO_VERSION}" ]]; then
 fi
 """
 
+TIMEOUT_TEST = """import time
+
+from avocado import Test
+
+
+class TimeoutTest(Test):
+
+    timeout = 3
+
+    def setUp(self):
+        sleep_time = float(self.params.get("sleep_time_setup", default=0.0))
+        time.sleep(sleep_time)
+
+    def test(self):
+        sleep_time = float(self.params.get("sleep_time", default=0.0))
+        time.sleep(sleep_time)
+
+    def tearDown(self):
+        sleep_time = float(self.params.get("sleep_time_teardown", default=0.0))
+        time.sleep(sleep_time)
+"""
+
 
 def probe_binary(binary):
     try:
@@ -544,6 +566,48 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"Avocado did not return rc {expected_rc}:\n{result}",
         )
         self.assertNotIn("timeout", result_json["tests"][0]["fail_reason"])
+
+    def test_runner_timeout_setup(self):
+        with script.TemporaryScript(
+            "timeout.py",
+            TIMEOUT_TEST,
+        ) as tst:
+            cmd_line = (
+                f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+                f"{self.tmpdir.name} -p sleep_time_setup=5 -- {tst}"
+            )
+            result = process.run(cmd_line, ignore_status=True)
+            json_path = os.path.join(self.tmpdir.name, "latest", "results.json")
+            with open(json_path, encoding="utf-8") as json_file:
+                result_json = json.load(json_file)
+            expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
+            self.assertEqual(
+                result.exit_status,
+                expected_rc,
+                f"Avocado did not return rc {expected_rc}:\n{result}",
+            )
+            self.assertNotIn("timeout", result_json["tests"][0]["fail_reason"])
+
+    def test_runner_timeout_teardown(self):
+        with script.TemporaryScript(
+            "timeout.py",
+            TIMEOUT_TEST,
+        ) as tst:
+            cmd_line = (
+                f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+                f"{self.tmpdir.name} -p sleep_time_teardown=5 -- {tst}"
+            )
+            result = process.run(cmd_line, ignore_status=True)
+            json_path = os.path.join(self.tmpdir.name, "latest", "results.json")
+            with open(json_path, encoding="utf-8") as json_file:
+                result_json = json.load(json_file)
+            expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
+            self.assertEqual(
+                result.exit_status,
+                expected_rc,
+                f"Avocado did not return rc {expected_rc}:\n{result}",
+            )
+            self.assertNotIn("timeout", result_json["tests"][0]["fail_reason"])
 
     def test_silent_output(self):
         cmd_line = (
