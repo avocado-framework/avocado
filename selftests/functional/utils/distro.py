@@ -53,3 +53,14 @@ class Distro(Test):
             + os.uname().machine.encode()
             + b") version 9 release 1\n",
         )
+
+    def test_debian_12_7(self):
+        """
+        :avocado: dependency={"type": "podman-image", "uri": "docker.io/library/python@sha256:785fef11f44b7393c03d77032fd72e56af8b05442b051a151229145e5fbbcb29"}
+        """
+        self.run_job(
+            "docker.io/library/python@sha256:785fef11f44b7393c03d77032fd72e56af8b05442b051a151229145e5fbbcb29",
+            b"Detected distribution: debian ("
+            + os.uname().machine.encode()
+            + b") version 12 release 7\n",
+        )
