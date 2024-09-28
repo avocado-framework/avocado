@@ -214,6 +214,21 @@ class List(CLICmd):
             allow_multiple=True,
         )
 
+        settings.add_argparser_to_option(
+            namespace="resolver.run_executables",
+            parser=parser,
+            long_arg="--resolver-run-executables",
+            allow_multiple=True,
+        )
+
+        settings.add_argparser_to_option(
+            namespace="resolver.exec_runnables_recipe.arguments",
+            metavar="ARGS",
+            parser=parser,
+            long_arg="--resolver-exec-arguments",
+            allow_multiple=True,
+        )
+
         help_msg = "Writes runnable recipe files to a directory."
         settings.register_option(
             section="list.recipes",
