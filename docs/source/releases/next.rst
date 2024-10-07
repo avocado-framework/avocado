@@ -1,12 +1,12 @@
 ========================
-105.0 - TBD
+109.0 - TBD
 ========================
 
-The Avocado team is proud to present another release: Avocado 105.0,
+The Avocado team is proud to present another release: Avocado 109.0,
 AKA "TBD", is now available!
 
-Release documentation: `Avocado 105.0
-<http://avocado-framework.readthedocs.io/en/105.0/>`_
+Release documentation: `Avocado 109.0
+<http://avocado-framework.readthedocs.io/en/109.0/>`_
 
 Users/Test Writers
 ==================
@@ -23,16 +23,21 @@ Bug Fixes
 
 *
 
+Internal changes
+================
+
+*
+
 Additional information
 ======================
 
 For more information, please check out the complete
 `Avocado changelog
-<https://github.com/avocado-framework/avocado/compare/104.0...105.0>`_.
+<https://github.com/avocado-framework/avocado/compare/108.0...109.0>`_.
 
 For more information on the actual issues addressed, please check out
 the `milestone information
-<https://github.com/avocado-framework/avocado/milestone/31>`_.
+<https://github.com/avocado-framework/avocado/milestone/35>`_.
 
 For more information on the release codename, please refer to `IMDb
 <TBD>`_.

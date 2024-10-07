@@ -1,0 +1,65 @@
+========================
+108.0 - Oppenheimer
+========================
+
+The Avocado team is proud to present another release: Avocado 108.0,
+AKA "Oppenheimer", is now available!
+
+Release documentation: `Avocado 108.0
+<http://avocado-framework.readthedocs.io/en/108.0/>`_
+
+Users/Test Writers
+==================
+
+* Avocado introduces new way how to resolve test references with
+  `exec-runnables-recipe`. It allows a user to point to a file that
+  will be executed, and that is expected to generate (on its ``STDOUT``)
+  content compatible with the Runnable recipe format. More info
+  abotu this new featrue can be found in `documentaion 
+  <https://avocado-framework.readthedocs.io/en/latest/guides/writer/chapters/recipes.html#using-dynamically-generated-recipes>`_
+
+* Documentaion about avocado-instrumented test lifecycle has been `improved
+  <https://avocado-framework.readthedocs.io/en/latest/guides/reference/chapters/avocado_instrumented.html>`_
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.network.interfaces` got RHEL10 support.
+
+* :func:`avocado.utils.nvme.get_block_size` has been fix to not raise
+  ``non iterable error``.
+
+Bug Fixes
+=========
+
+* Tap runner skipping test failures has been fixed. Now the test
+  failures will be always visible.
+
+* Fail reason for interuptions during setUp and tearDown has been fixed.
+
+Internal changes
+================
+
+* Avocado's static-checks has been moved to standalone repository and are
+  provided via submodule. If you are checking out a fresh clone of Avocado,
+  the instructions on how to proceed are already documented `here.
+  <https://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/how.html#git-workflow>`_
+  But if you already have a clone, then *now*, you'd also need to run::
+
+    git submodule update --init --recursive
+
+* Functinal tests for Debian has been added to test :mod:`avocado.utils.disto`
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/107.0...108.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/34>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt15398776/>`_.
