@@ -524,7 +524,7 @@ class FDDrainer:
                         try:
                             fileno = stream.fileno()
                             os.fsync(fileno)
-                        except UnsupportedOperation:
+                        except UnsupportedOperation, OSError:
                             pass
                 if hasattr(handler, "close"):
                     handler.close()
