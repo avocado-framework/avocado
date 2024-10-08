@@ -24,11 +24,14 @@ import inspect
 import logging
 import os
 import shutil
+import signal
 import sys
 import tempfile
+import threading
 import time
 import unittest
 import warnings
+from contextlib import contextmanager
 
 from avocado.core import exceptions, parameters
 from avocado.core.settings import settings
@@ -513,6 +516,29 @@ class Test(unittest.TestCase, TestData):
         Possible (string) values are: INIT, SETUP, TEST, TEARDOWN and FINISHED
         """
         return self.__phase
+
+    @contextmanager
+    def wait_max(self, timeout):
+        """
+        Context manager for getting block of code with its specific timeout.
+
+        Usage:
+            with self.wait_max(3):
+                # code which should take max 3 seconds
+                ...
+
+        :param timeout: Timeout in seconds for block of code.
+        :type timeout: int
+        """
+
+        def raise_timeout():
+            os.kill(os.getpid(), signal.SIGTERM)
+
+        timeout = timeout * self.params.get("timeout_factor", default=1.0)
+        alarm = threading.Timer(timeout, raise_timeout)
+        alarm.start()
+        yield timeout
+        alarm.cancel()
 
     def __str__(self):
         return str(self.name)
