@@ -261,7 +261,6 @@ def _extend_directory(path):
 
 def resolve(references, hint=None, ignore_missing=True, config=None):
     resolutions = []
-    hint_resolutions = []
     hint_references = {}
 
     if hint:
