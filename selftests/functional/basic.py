@@ -543,6 +543,32 @@ class RunnerOperationTest(TestCaseTmpDir):
         # Ensure no test aborted error messages show up
         self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
 
+    def test_runner_block_timeout(self):
+        cmd_line = (
+            f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+            f"{self.tmpdir.name} examples/tests/blocktimeouttest.py"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        json_path = os.path.join(self.tmpdir.name, "latest", "results.json")
+        with open(json_path, encoding="utf-8") as json_file:
+            result_json = json.load(json_file)
+        output = result.stdout
+        expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
+        unexpected_rc = exit_codes.AVOCADO_FAIL
+        self.assertNotEqual(
+            result.exit_status,
+            unexpected_rc,
+            f"Avocado crashed (rc {unexpected_rc}):\n{result}",
+        )
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+        self.assertIn("Timeout reached", result_json["tests"][0]["fail_reason"])
+        # Ensure no test aborted error messages show up
+        self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
+
     def test_runner_timeout_factor(self):
         cmd_line = (
             f"{AVOCADO} run --disable-sysinfo --job-results-dir "
