@@ -689,9 +689,9 @@ class Asset:
             filename = f"{asset_path}-CHECKSUM"
             os.remove(filename)
         except FileNotFoundError:
-            LOG.error(f"File not found: {asset_path} or its checksum file.")
+            LOG.error("File not found: %s or its checksum file.", asset_path)
         except Exception as e:
-            LOG.error(f"An error occurred while removing files: {e}")
+            LOG.error("An error occurred while removing files: %s", e)
 
     @property
     def urls(self):
