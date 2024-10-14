@@ -311,7 +311,6 @@ def vg_list(vg_name=None):
         lines = lines[1:]
     else:
         return vgroups
-    # TODO: Optimize this
     for line in lines:
         details = line.split()
         details_dict = {}

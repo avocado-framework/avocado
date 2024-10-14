@@ -295,9 +295,11 @@ def process_in_ptree_is_defunct(ppid):
     Attempt to verify if parent process and any children from PPID is defunct
     (zombie) or not.
 
+    This relies on the GNU version of "ps" and is not guaranteed to work in
+    MacOS.
+
     :param ppid: The parent PID of the process to verify.
     """
-    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
     defunct = False
     try:
         pids = get_children_pids(ppid)
@@ -455,9 +457,6 @@ class FDDrainer:
         self.fd = fd
         self.name = name
         self.data = BytesIO()
-        # TODO: check if, when the process finishes, the FD doesn't
-        # automatically close.  This may be used as the detection
-        # instead.
         self._result = result
         self._thread = None
         self._logger = logger
