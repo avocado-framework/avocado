@@ -109,7 +109,7 @@ def get_mpath_from_dm(dm_id):
     try:
         mpaths = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
-        raise MPException(f"Multipathd Command Failed : {ex} ")
+        raise MPException(f"Multipathd Command Failed : {ex} ") from ex
     for mpath in mpaths.splitlines():
         if dm_id in mpath:
             return mpath.split()[1]
@@ -139,7 +139,7 @@ def get_multipath_wwid(mpath):
     try:
         wwids = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
-        raise MPException(f"Multipathd Command Failed : {ex} ")
+        raise MPException(f"Multipathd Command Failed : {ex} ") from ex
     for wwid in wwids.splitlines():
         if mpath in wwid:
             return wwid.split()[1]
@@ -156,7 +156,7 @@ def is_mpath_dev(mpath):
     try:
         mpaths = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
-        raise MPException(f"Multipath Command Failed : {ex} ")
+        raise MPException(f"Multipath Command Failed : {ex} ") from ex
     if mpath in mpaths.strip("\n").split("\n"):
         return True
     return False

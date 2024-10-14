@@ -93,6 +93,6 @@ def is_os_secureboot_enabled():
         for line in process.system_output(cmd).decode("utf-8").splitlines():
             if "00000002" in line:
                 return True
-    except FileNotFoundError:
-        raise UnsupportedMachineError("lsprop not a supported command")
+    except FileNotFoundError as exc:
+        raise UnsupportedMachineError("lsprop not a supported command") from exc
     return False

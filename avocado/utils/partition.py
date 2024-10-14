@@ -63,7 +63,7 @@ class MtabLock:
             reason = (
                 f"Unable to obtain '{self.device}' " f"lock in {int(self.timeout)}s"
             )
-            raise PartitionError(self, reason, e)
+            raise PartitionError(self, reason, e) from e
         self.mtab = open(self.device)  # pylint: disable=W1514
         return self
 
@@ -194,7 +194,7 @@ class Partition:
         try:
             process.system_output(f"yes | {mkfs_cmd}", shell=True)
         except process.CmdError as error:
-            raise PartitionError(self, "Failed to mkfs", error)
+            raise PartitionError(self, "Failed to mkfs", error) from error
         else:
             self.fstype = fstype
 
@@ -244,7 +244,7 @@ class Partition:
                     ).stdout_text.strip()
                 process.system(f"mount {args} {self.device} {mountpoint}", sudo=True)
             except process.CmdError as details:
-                raise PartitionError(self, "Mount failed", details)
+                raise PartitionError(self, "Mount failed", details) from details
         # Update the fstype as the mount command passed
         self.fstype = fstype
 
@@ -259,11 +259,11 @@ class Partition:
         except OSError as details:
             msg = f'Could not run lsof to identify processes using "{mnt}"'
             LOG.error(msg)
-            raise PartitionError(self, msg, details)
+            raise PartitionError(self, msg, details) from details
         except process.CmdError as details:
             msg = f'Failure executing "{cmd}"'
             LOG.error(msg)
-            raise PartitionError(self, msg, details)
+            raise PartitionError(self, msg, details) from details
 
     def _unmount_force(self, mountpoint):
         """
@@ -276,7 +276,9 @@ class Partition:
             try:
                 process.system(f"kill -9 {int(pid)}", ignore_status=True, sudo=True)
             except process.CmdError as kill_details:
-                raise PartitionError(self, "Failed to kill processes", kill_details)
+                raise PartitionError(
+                    self, "Failed to kill processes", kill_details
+                ) from kill_details
         # Unmount
         try:
             process.run(f"umount -f {mountpoint}", sudo=True)
@@ -284,7 +286,9 @@ class Partition:
             try:
                 process.run(f"umount -l {mountpoint}", sudo=True)
             except process.CmdError as umount_details:
-                raise PartitionError(self, "Force unmount failed", umount_details)
+                raise PartitionError(
+                    self, "Force unmount failed", umount_details
+                ) from umount_details
 
     def unmount(self, force=True):
         """
@@ -315,11 +319,15 @@ class Partition:
                     self._unmount_force(mountpoint)
                     result = 2
                 else:
-                    raise PartitionError(self, "Unable to unmount gracefully", details)
+                    raise PartitionError(
+                        self, "Unable to unmount gracefully", details
+                    ) from details
         if self.loop:
             try:
                 process.run(f"losetup -d {self.device}", sudo=True)
             except process.CmdError as details:
-                raise PartitionError(self, "Unable to cleanup loop device", details)
+                raise PartitionError(
+                    self, "Unable to cleanup loop device", details
+                ) from details
 
         return result

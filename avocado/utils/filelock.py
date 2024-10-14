@@ -55,7 +55,7 @@ class FileLock:
                 os.close(fd)
                 self.locked = True
                 return self
-            except Exception:  # pylint: disable=W0703
+            except Exception as exc:  # pylint: disable=W0703
                 try:
                     # Read the file to realize what's happening.
                     with open(self.filename, "r", encoding="utf-8") as f:
@@ -80,9 +80,9 @@ class FileLock:
                 # to a running process and we are just waiting for the lock
                 # to be released.
                 if self.timeout <= 0:
-                    raise AlreadyLocked("File is already locked.")
+                    raise AlreadyLocked("File is already locked.") from exc
                 elif time.monotonic() > timelimit:
-                    raise AlreadyLocked("Timeout waiting for the lock.")
+                    raise AlreadyLocked("Timeout waiting for the lock.") from exc
                 else:
                     time.sleep(0.1)
 
