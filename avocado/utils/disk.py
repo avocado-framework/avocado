@@ -124,11 +124,11 @@ def get_disks():
     try:
         json_result = process.run("lsblk --json --paths --inverse")
     except process.CmdError as ce:
-        raise DiskError(f"Error occurred while executing lsblk command: {ce}")
+        raise DiskError(f"Error occurred while executing lsblk command: {ce}") from ce
     try:
         json_data = json.loads(json_result.stdout_text)
     except json.JSONDecodeError as je:
-        raise DiskError(f"Error occurred while parsing JSON data: {je}")
+        raise DiskError(f"Error occurred while parsing JSON data: {je}") from je
     disks = []
     for device in json_data["blockdevices"]:
         disks.append(device["name"])
@@ -359,10 +359,10 @@ def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
         part_output = process.getoutput(
             "sfdisk " + disk_name + " < " + disk_partition_file
         )
-    except:
+    except Exception as exc:
         msg = f"sfdisk partition creation command failed on disk {disk_name}"
         LOGGER.warning(msg)
-        raise DiskError(msg)
+        raise DiskError(msg) from exc
     rescan_disk(disk_name)
     if "The partition table has been altered" in part_output:
         return get_disk_partitions(disk_name)
@@ -395,10 +395,10 @@ def delete_partition(partition_name):
             + " "
             + partition_name[disk_index:]
         )
-    except:
+    except Exception as exc:
         msg = f"sfdisk --delete command failed on disk {partition_name}"
         LOGGER.warning(msg)
-        raise DiskError(msg)
+        raise DiskError(msg) from exc
 
 
 def clean_disk(disk_name):
