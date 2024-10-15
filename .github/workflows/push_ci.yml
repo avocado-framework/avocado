@@ -78,8 +78,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.11]
-    env:
-      CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -90,16 +88,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
-        run: |
-         pip install -r requirements-dev.txt
-         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-         chmod +x ./cc-test-reporter
-      - name: Run pre script
-        run: ./cc-test-reporter before-build
+        run: pip install -r requirements-dev.txt
+      - name: Avocado build
+        run: python setup.py develop --user
       - name: Run script
-        run: |
-         python setup.py develop --user
-         ./selftests/run_coverage
-      - name: Run post script
-        run: ./cc-test-reporter after-build --debug
-      - run: echo "🥑 This job's status is ${{ job.status }}."
+        run: ./selftests/run_coverage
+      - name: Push results to codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage1.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+      -  run: echo "🥑 This job's status is ${{ job.status }}."
