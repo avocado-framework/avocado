@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/avocado-framework
+      url: https://pypi.org/project/avocado-framework/${{ github.event.inputs.version }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
