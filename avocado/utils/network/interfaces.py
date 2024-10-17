@@ -554,6 +554,25 @@ class NetworkInterface:
             msg = f"Failed to flush ipaddr. {ex}"
             raise NWException(msg)
 
+    def nm_flush_ipaddr(self):
+        """Remove all the IPv4 address for this interface by using IP tool.
+
+        This method will explicitly identifies all available IP addresses with
+        netmask of interfaces and deletes them.
+
+        You must have sudo permissions to run this method on a host.
+        """
+        cmd = f"nmcli -g ip4.ADDRESS device show {self.name}"
+        ipaddresses = run_command(cmd, self.host, sudo=True).strip().split(" | ")
+        if ipaddresses:
+            try:
+                for ipaddr in ipaddresses:
+                    cmd = f"ip addr delete {ipaddr} dev {self.name}"
+                    run_command(cmd, self.host, sudo=True)
+            except Exception as ex:
+                msg = f"Failed to flush ipaddr. {ex}"
+                raise NWException(msg)
+
     def remove_link(self):
         """Deletes virtual interface link.
 
