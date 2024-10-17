@@ -113,7 +113,7 @@ jobs:
   check-macos:
 
     name: macOS with Python ${{ matrix.python-version }}
-    runs-on: macos-12
+    runs-on: macos-14
 
     strategy:
       matrix:
