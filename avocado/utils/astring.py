@@ -133,12 +133,12 @@ def strip_console_codes(output, custom_codes=None):
             continue
         try:
             special_code = re.findall(console_codes, tmp_word)[0]
-        except IndexError:
+        except IndexError as exc:
             if index + tmp_index < len(output):
                 raise ValueError(
                     f"{tmp_word} is not included in the known "
                     f"console codes list {console_codes}"
-                )
+                ) from exc
             continue
         if special_code == tmp_word:
             continue

@@ -113,10 +113,10 @@ class NetworkInterface:
                 if item.get("ifname") == self.name:
                     return item
             raise NWException("Interface not found")
-        except (NWException, json.JSONDecodeError):
+        except (NWException, json.JSONDecodeError) as exc:
             msg = f"Unable to get the details of interface {self.name}"
             LOG.error(msg)
-            raise NWException(msg)
+            raise NWException(msg) from exc
 
     def _get_bondinterface_details(self):
         cmd = (
@@ -126,8 +126,10 @@ class NetworkInterface:
         try:
             mode, slaves = run_command(cmd, self.host).splitlines()
             return {"mode": mode.split(), "slaves": slaves.split()}
-        except Exception:
-            raise NWException(f"Slave interface not found for " f"the bond {self.name}")
+        except Exception as exc:
+            raise NWException(
+                f"Slave interface not found for " f"the bond {self.name}"
+            ) from exc
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = f"{filename}.backup"
@@ -158,7 +160,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Adding hw address fails: {ex}")
+            raise NWException(f"Adding hw address fails: {ex}") from ex
 
     def add_ipaddr(self, ipaddr, netmask):
         """Add an IP Address (with netmask) to the interface.
@@ -177,7 +179,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Failed to add address {ex}")
+            raise NWException(f"Failed to add address {ex}") from ex
 
     @property
     def vlans(self):
@@ -218,7 +220,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Failed to add VLAN tag: {ex}")
+            raise NWException(f"Failed to add VLAN tag: {ex}") from ex
 
     def remove_vlan_by_tag(self, vlan_num):
         """Remove the VLAN of the interface by tag number.
@@ -240,7 +242,7 @@ class NetworkInterface:
             run_command(cmd, self.host, sudo=True)
             return True
         except Exception as ex:
-            raise NWException(f"Failed to remove VLAN interface: {ex}")
+            raise NWException(f"Failed to remove VLAN interface: {ex}") from ex
 
     def remove_all_vlans(self):
         """Remove all VLANs of this interface.
@@ -253,7 +255,7 @@ class NetworkInterface:
                 cmd = f"ip link delete {v}"
                 run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Failed to remove VLAN interface: {ex}")
+            raise NWException(f"Failed to remove VLAN interface: {ex}") from ex
 
     def bring_down(self):
         """Shutdown the interface.
@@ -268,7 +270,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Failed to bring down: {ex}")
+            raise NWException(f"Failed to bring down: {ex}") from ex
 
     def bring_up(self):
         """ "Wake-up the interface.
@@ -281,7 +283,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException(f"Failed to bring up: {ex}")
+            raise NWException(f"Failed to bring up: {ex}") from ex
 
     def is_admin_link_up(self):
         """Check the admin link state is up or not.
@@ -292,8 +294,8 @@ class NetworkInterface:
         try:
             if "UP" in self._get_interface_details().get("flags"):
                 return True
-        except (NWException, IndexError):
-            raise NWException("Could not get Administrative link state.")
+        except (NWException, IndexError) as exc:
+            raise NWException("Could not get Administrative link state.") from exc
         return False
 
     def is_operational_link_up(self):
@@ -305,8 +307,8 @@ class NetworkInterface:
         try:
             if "LOWER_UP" in self._get_interface_details().get("flags"):
                 return True
-        except (NWException, IndexError):
-            raise NWException("Could not get operational link state.")
+        except (NWException, IndexError) as exc:
+            raise NWException("Could not get operational link state.") from exc
         return False
 
     def is_link_up(self):
@@ -350,7 +352,7 @@ class NetworkInterface:
         try:
             return run_command(cmd, self.host)
         except Exception as ex:
-            raise NWException(f"Failed to get hw address: {ex}")
+            raise NWException(f"Failed to get hw address: {ex}") from ex
 
     def get_mtu(self):
         """Return the current MTU value of this interface.
@@ -360,8 +362,8 @@ class NetworkInterface:
         """
         try:
             return self._get_interface_details().get("mtu")
-        except (NWException, IndexError):
-            raise NWException("Could not get MUT value.")
+        except (NWException, IndexError) as exc:
+            raise NWException("Could not get MUT value.") from exc
 
     def ping_check(self, peer_ip, count=2, options=None):
         """This method will try to ping a peer address (IPv4 or IPv6).
@@ -380,7 +382,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host)
         except Exception as ex:
-            raise NWException(f"Failed to ping: {ex}")
+            raise NWException(f"Failed to ping: {ex}") from ex
 
     def save(self, ipaddr, netmask):
         """Save current interface IP Address to the system configuration file.
@@ -536,7 +538,7 @@ class NetworkInterface:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
             msg = f"Failed to remove ipaddr. {ex}"
-            raise NWException(msg)
+            raise NWException(msg) from ex
 
     def flush_ipaddr(self):
         """Flush all the IP address for this interface.
@@ -552,7 +554,7 @@ class NetworkInterface:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
             msg = f"Failed to flush ipaddr. {ex}"
-            raise NWException(msg)
+            raise NWException(msg) from ex
 
     def nm_flush_ipaddr(self):
         """Remove all the IPv4 address for this interface by using IP tool.
@@ -587,7 +589,7 @@ class NetworkInterface:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
             msg = f"Failed to delete link. {ex}"
-            raise NWException(msg)
+            raise NWException(msg) from ex
 
     def restore_from_backup(self):
         """Revert interface file from backup.
@@ -701,7 +703,7 @@ class NetworkInterface:
                 else:
                     os.remove(slave_config)
             except Exception as ex:
-                raise NWException(f"Could not restore the config file {ex}")
+                raise NWException(f"Could not restore the config file {ex}") from ex
 
     def are_packets_lost(self, peer_ip, options=None, sudo=False):
         """Check packet loss that occurs during ping.
@@ -725,7 +727,7 @@ class NetworkInterface:
             return True
         except Exception as ex:
             msg = f"Failed to ping. {ex}"
-            raise NWException(msg)
+            raise NWException(msg) from ex
 
     def netmask_to_cidr(self, netmask):
         """Function is used to check the netmask value and convert

@@ -58,7 +58,7 @@ class Host:
         try:
             names = run_command(cmd, self).split()
         except Exception as ex:
-            raise NWException(f"Failed to get interfaces: {ex}")
+            raise NWException(f"Failed to get interfaces: {ex}") from ex
 
         if "bonding_masters" in names:
             names.remove("bonding_masters")
@@ -88,7 +88,7 @@ class Host:
             result = json.loads(output)
             return [str(item["address"]) for item in result]
         except Exception as ex:
-            raise NWException(f"could not get mac addresses:" f" {ex}")
+            raise NWException(f"could not get mac addresses:" f" {ex}") from ex
 
     def validate_mac_addr(self, mac_id):
         """Check if mac address is valid.
@@ -131,7 +131,9 @@ class Host:
             result = json.loads(output)
             return [str(item["dev"]) for item in result]
         except Exception as ex:
-            raise NWException(f"could not get default route interface name:" f" {ex}")
+            raise NWException(
+                f"could not get default route interface name:" f" {ex}"
+            ) from ex
 
 
 class LocalHost(Host):

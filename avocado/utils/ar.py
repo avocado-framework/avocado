@@ -80,8 +80,8 @@ class Ar:
                 member = struct.unpack(
                     FILE_HEADER_FMT, open_file.read(FILE_HEADER_SIZE)
                 )
-            except struct.error:
-                raise StopIteration
+            except struct.error as exc:
+                raise StopIteration from exc
 
             # No support for extended file names
             identifier = member[0].decode("ascii").strip()

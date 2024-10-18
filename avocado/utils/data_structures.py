@@ -53,8 +53,8 @@ def geometric_mean(values):
     """
     try:
         values = [int(value) for value in values]
-    except ValueError:
-        raise ValueError(f"Invalid inputs {values}. Provide valid inputs")
+    except ValueError as exc:
+        raise ValueError(f"Invalid inputs {values}. Provide valid inputs") from exc
     no_values = len(values)
     if no_values == 0:
         return None
@@ -293,12 +293,12 @@ def time_to_seconds(time):
                 seconds = int(time[:-1]) * mult
             else:
                 seconds = int(time)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as exc:
             raise ValueError(
                 f"Invalid value '{time}' for time. Use a string "
                 f"with the number and optionally the time unit "
                 f"(s, m, h or d)."
-            )
+            ) from exc
     else:
         seconds = 0
     return seconds
@@ -339,10 +339,10 @@ class DataSize:
             if self._value < 0:
                 raise ValueError
 
-        except ValueError:
+        except ValueError as exc:
             raise InvalidDataSize(
                 'String not in size + unit format (i.e. "10M", "100k", ...)'
-            )
+            ) from exc
 
     @property
     def value(self):

@@ -284,7 +284,7 @@ class GDB:
             if details.errno == 2:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
-                raise exc
+                raise exc from details
             else:
                 raise
 
@@ -613,7 +613,7 @@ class GDBServer:
             if details.errno == 2:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
-                raise exc
+                raise exc from details
             else:
                 raise
 

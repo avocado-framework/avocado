@@ -121,8 +121,8 @@ def url_download_interactive(url, output_file, title="", chunk_size=102400):
 
         try:
             file_size = int(input_file.headers["Content-Length"])
-        except KeyError:
-            raise ValueError("Could not find file size in HTTP headers")
+        except KeyError as exc:
+            raise ValueError("Could not find file size in HTTP headers") from exc
 
         log.info(
             "Downloading %s, %s to %s",

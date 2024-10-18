@@ -422,7 +422,7 @@ def change_domain_check(dom, full_pci_address, def_dom):
             return False
         return True
     except OSError as details:
-        raise ValueError(f"Change domain check failed: {details}")
+        raise ValueError(f"Change domain check failed: {details}") from details
 
 
 def reset(full_pci_address):
