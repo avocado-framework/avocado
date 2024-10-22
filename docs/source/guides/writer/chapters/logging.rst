@@ -154,7 +154,7 @@ The very same ``avocado.test.progress`` logger, could be used across multiple te
 and across multiple test modules.
 
 By default avocado is creating ``full.log`` file in job_log directory with
-all avocado logs which were created during the job run::
+all avocado logs which were created during the job run, ie. ``--store-logging-stream=all`` is the default if not specified otherwise::
 
      $ avocado run examples/tests/logging_streams.py
 
