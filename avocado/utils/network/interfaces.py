@@ -573,7 +573,7 @@ class NetworkInterface:
                     run_command(cmd, self.host, sudo=True)
             except Exception as ex:
                 msg = f"Failed to flush ipaddr. {ex}"
-                raise NWException(msg)
+                raise NWException(msg) from ex
 
     def remove_link(self):
         """Deletes virtual interface link.
