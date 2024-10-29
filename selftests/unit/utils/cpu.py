@@ -201,9 +201,8 @@ class Cpu(Test):
                 "glob.glob",
                 return_value=["/sys/devices/system/cpu/cpu0/cpuidle/state1"],
             ):
-                with unittest.mock.patch(
-                    "builtins.open", return_value=io.BytesIO(b"0")
-                ):
+                mocked_open = unittest.mock.mock_open(read_data=b"0")
+                with unittest.mock.patch("builtins.open", mocked_open):
                     self.assertEqual(cpu.get_idle_state(), retval)
 
     def test_get_idle_state_on(self):
@@ -213,51 +212,62 @@ class Cpu(Test):
                 "glob.glob",
                 return_value=["/sys/devices/system/cpu/cpu0/cpuidle/state1"],
             ):
-                with unittest.mock.patch(
-                    "builtins.open", return_value=io.BytesIO(b"1")
-                ):
+                mocked_open = unittest.mock.mock_open(read_data=b"1")
+                with unittest.mock.patch("builtins.open", mocked_open):
                     self.assertEqual(cpu.get_idle_state(), retval)
 
     def test_set_idle_state_default(self):
-        output = io.BytesIO()
         with unittest.mock.patch("avocado.utils.cpu.online_list", return_value=[0]):
             with unittest.mock.patch(
                 "glob.glob",
                 return_value=["/sys/devices/system/cpu/cpu0/cpuidle/state1"],
             ):
-                with unittest.mock.patch("builtins.open", return_value=output):
+                mocked_open = unittest.mock.mock_open()
+                with unittest.mock.patch("builtins.open", mocked_open):
                     cpu.set_idle_state()
-                    self.assertEqual(output.getvalue(), b"1")
+                mocked_open.assert_called_with(
+                    "/sys/devices/system/cpu/cpu0/cpuidle/state0/disable", "wb"
+                )
+                mocked_fo = mocked_open()
+                mocked_fo.write.assert_called_once_with(b"1")
 
     def test_set_idle_state_withstateno(self):
-        output = io.BytesIO()
         with unittest.mock.patch("avocado.utils.cpu.online_list", return_value=[0]):
             with unittest.mock.patch(
                 "glob.glob",
                 return_value=["/sys/devices/system/cpu/cpu0/cpuidle/state2"],
             ):
-                with unittest.mock.patch("builtins.open", return_value=output):
+                mocked_open = unittest.mock.mock_open()
+                with unittest.mock.patch("builtins.open", mocked_open):
                     cpu.set_idle_state(disable=False, state_number="2")
-                    self.assertEqual(output.getvalue(), b"0")
+                mocked_open.assert_called_with(
+                    "/sys/devices/system/cpu/cpu0/cpuidle/state2/disable", "wb"
+                )
+                mocked_fo = mocked_open()
+                mocked_fo.write.assert_called_once_with(b"0")
 
     def test_set_idle_state_withsetstate(self):
-        output = io.BytesIO()
         with unittest.mock.patch("avocado.utils.cpu.online_list", return_value=[0, 2]):
             with unittest.mock.patch(
                 "glob.glob",
                 return_value=["/sys/devices/system/cpu/cpu0/cpuidle/state1"],
             ):
-                with unittest.mock.patch("builtins.open", return_value=output):
+                mocked_open = unittest.mock.mock_open()
+                with unittest.mock.patch("builtins.open", mocked_open):
                     cpu.set_idle_state(setstate={0: {0: True}, 2: {0: False}})
-                    self.assertEqual(output.getvalue(), b"10")
+                mocked_open.assert_called_with(
+                    "/sys/devices/system/cpu/cpu2/cpuidle/state0/disable", "wb"
+                )
+                mocked_fo = mocked_open()
+                mocked_fo.write.assert_called_with(b"0")
 
     def test_set_idle_state_disable(self):
-        output = io.BytesIO()
         function = "avocado.utils.cpu.online_list"
         state_file = "/sys/devices/system/cpu/cpu0/cpuidle/state1"
         with unittest.mock.patch(function, return_value=[0, 2]):
             with unittest.mock.patch("glob.glob", return_value=[state_file]):
-                with unittest.mock.patch("builtins.open", return_value=output):
+                mocked_open = unittest.mock.mock_open()
+                with unittest.mock.patch("builtins.open", mocked_open):
                     with self.assertRaises(TypeError):
                         cpu.set_idle_state(disable=1)
 
