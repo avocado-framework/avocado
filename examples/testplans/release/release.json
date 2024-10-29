@@ -16,8 +16,12 @@
         "description": "Run the GitHub Action 'Release' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/release.yml . All the jobs must pass. This action will update the `master` branch and a tag `VERSION`.\nIMPORTANT NOTE: the automatic tag won't be signed anymore by the release developer."
          },
          {
-	 "name": "Update the Fedora and EPEL RPM packages and module",
-         "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-epel-modules\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."
+	 "name": "Trigger an COPR build for avocado-latest-release",
+         "description": "Log into https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest-release/add_build/ and submit a new build using SCM as the source type, the clone URL being https://github.com/avocado-framework/avocado.git, the committish being the version tag (such as 109.0) and make srpm as the mechanism to build a SRPM."
+	 },
+         {
+	 "name": "Update the Fedora RPM packages",
+         "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-rawhide\n\nand work with the package maintainer by sending a PR to update the Avocado package on rawhide."
 	 },
          {
 	 "name": "Update website",

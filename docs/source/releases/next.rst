@@ -11,7 +11,11 @@ Release documentation: `Avocado 109.0
 Users/Test Writers
 ==================
 
-*
+* The installation of Avocado from distribution's packages, changed
+  when compared to the previous version due to changes in repositories
+  and support for "package modules" in some distributions.  Please
+  refer to the installation guide instructions
+  (:ref:`installing-from-packages`) for updated instructions
 
 Utility Modules
 ===============
