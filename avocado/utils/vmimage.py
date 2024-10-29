@@ -113,8 +113,8 @@ class ImageProviderBase:
         try:
             data = urlopen(url).read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError:
-            raise ImageProviderError(f"Cannot open {self.url_versions}")
+        except HTTPError as exc:
+            raise ImageProviderError(f"Cannot open {self.url_versions}") from exc
 
     @staticmethod
     def get_best_version(versions):

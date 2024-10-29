@@ -174,7 +174,7 @@ def write_file_or_fail(filename, data):
         with open(filename, "w", encoding="utf-8") as file_obj:
             file_obj.write(data)
     except OSError as details:
-        raise GenIOError(f"The write to {filename} failed: {details}")
+        raise GenIOError(f"The write to {filename} failed: {details}") from details
 
 
 def append_file(filename, data):

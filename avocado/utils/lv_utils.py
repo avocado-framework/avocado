@@ -153,7 +153,7 @@ def vg_ramdisk(
     except process.CmdError as ex:
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name, use_tmpfs)
-        raise LVException(f"Fail to create vg_ramdisk: {ex}")
+        raise LVException(f"Fail to create vg_ramdisk: {ex}") from ex
 
     if not disk:
         loop_device = result.stdout_text.rstrip()
@@ -172,7 +172,7 @@ def vg_ramdisk(
         vg_ramdisk_cleanup(
             ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device, use_tmpfs
         )
-        raise LVException(f"Fail to create vg_ramdisk: {ex}")
+        raise LVException(f"Fail to create vg_ramdisk: {ex}") from ex
     return ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
 
 
@@ -311,7 +311,6 @@ def vg_list(vg_name=None):
         lines = lines[1:]
     else:
         return vgroups
-    # TODO: Optimize this
     for line in lines:
         details = line.split()
         details_dict = {}
@@ -456,7 +455,7 @@ def lv_create(
                 process.run(tp_cmd, sudo=True)
             except process.CmdError as detail:
                 LOGGER.debug(detail)
-                raise LVException("Create thin volume pool failed.")
+                raise LVException("Create thin volume pool failed.") from detail
             LOGGER.debug("Created thin volume pool: %s", pool_name)
         lv_cmd += f" --virtualsize {lv_size}"
         lv_cmd += f" --thin {vg_name}/{pool_name} -y"
@@ -467,7 +466,7 @@ def lv_create(
         process.run(lv_cmd, sudo=True)
     except process.CmdError as detail:
         LOGGER.error(detail)
-        raise LVException("Create thin volume failed.")
+        raise LVException("Create thin volume failed.") from detail
     LOGGER.debug("Created thin volume:%s", lv_name)
 
 
@@ -625,12 +624,12 @@ def lv_reactivate(vg_name, lv_name, timeout=10):
         time.sleep(timeout)
         process.run(f"lvchange -ay /dev/{vg_name}/{lv_name}", sudo=True)
         time.sleep(timeout)
-    except process.CmdError:
+    except process.CmdError as exc:
         log_msg = (
             "Failed to reactivate %s - please, nuke the process that uses it first."
         )
         LOGGER.error(log_msg, lv_name)
-        raise LVException(f"The Logical volume {lv_name} is still active")
+        raise LVException(f"The Logical volume {lv_name} is still active") from exc
 
 
 def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
@@ -650,7 +649,7 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
             process.run(f"mkfs.{create_filesystem} /dev/{vg_name}/{lv_name}", sudo=True)
         process.run(f"mount /dev/{vg_name}/{lv_name} {mount_loc}", sudo=True)
     except process.CmdError as ex:
-        raise LVException(f"Fail to mount logical volume: {ex}")
+        raise LVException(f"Fail to mount logical volume: {ex}") from ex
 
 
 def vg_reactivate(vg_name, timeout=10, export=False):
@@ -675,12 +674,12 @@ def vg_reactivate(vg_name, timeout=10, export=False):
 
         process.run(f"vgchange -ay {vg_name}", sudo=True)
         time.sleep(timeout)
-    except process.CmdError:
+    except process.CmdError as exc:
         log_msg = (
             "Failed to reactivate %s - please, nuke the process that uses it first."
         )
         LOGGER.error(log_msg, vg_name)
-        raise LVException(f"The Volume group {vg_name} is still active")
+        raise LVException(f"The Volume group {vg_name} is still active") from exc
 
 
 def lv_umount(vg_name, lv_name):
@@ -694,4 +693,4 @@ def lv_umount(vg_name, lv_name):
     try:
         process.run(f"umount /dev/{vg_name}/{lv_name}", sudo=True)
     except process.CmdError as ex:
-        raise LVException(f"Fail to unmount logical volume: {ex}")
+        raise LVException(f"Fail to unmount logical volume: {ex}") from ex

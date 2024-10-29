@@ -256,7 +256,7 @@ def get_family():
         except FileNotFoundError as err:
             msg = f"Could not find micro-architecture/family, Error: {err}"
             LOG.warning(msg)
-            raise FamilyException(msg)
+            raise FamilyException(msg) from err
     elif arch == "powerpc":
         res = []
         try:
@@ -268,7 +268,7 @@ def get_family():
         except IndexError as err:
             msg = f"Unable to parse cpu family {err}"
             LOG.warning(msg)
-            raise FamilyException(msg)
+            raise FamilyException(msg) from err
     elif arch == "s390":
         zfamily_map = {"2964": "z13", "3906": "z14", "8561": "z15", "3931": "z16"}
         try:
@@ -276,7 +276,7 @@ def get_family():
         except KeyError as err:
             msg = f"Could not find family for {get_version()}\nError: {err}"
             LOG.warning(msg)
-            raise FamilyException(msg)
+            raise FamilyException(msg) from err
     else:
         raise NotImplementedError
     return family
