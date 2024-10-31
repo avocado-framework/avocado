@@ -22,6 +22,8 @@ import asyncio
 import functools
 import inspect
 import logging
+import multiprocessing
+import multiprocessing.pool
 import os
 import shutil
 import sys
@@ -654,14 +656,26 @@ class Test(unittest.TestCase, TestData):
 
     def _catch_test_status(self, method):
         """Wrapper around test methods for catching and logging failures."""
-        try:
+
+        def set_new_event_loop_for_method(method):
+            asyncio.set_event_loop(asyncio.new_event_loop())
             method()
-            if self.__log_warn_used and self.__status not in STATUSES_NOT_OK:
-                raise exceptions.TestWarn(
-                    "Test passed but there were warnings "
-                    "during execution. Check the log for "
-                    "details."
-                )
+
+        try:
+            pool = multiprocessing.pool.ThreadPool(1)
+            res = pool.apply_async(set_new_event_loop_for_method, [method])
+            pool.close()
+            try:
+                res.get(self.timeout)
+                if self.__log_warn_used and self.__status not in STATUSES_NOT_OK:
+                    raise exceptions.TestWarn(
+                        "Test passed but there were warnings "
+                        "during execution. Check the log for "
+                        "details."
+                    )
+            except multiprocessing.TimeoutError:
+                raise exceptions.TestInterrupt("Test interrupted: Timeout reached")
+
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
             self.__fail_class = detail.__class__.__name__
@@ -686,6 +700,8 @@ class Test(unittest.TestCase, TestData):
                 )
             for e_line in tb_info:
                 self.log.error(e_line)
+        finally:
+            pool.terminate()
 
     def run_avocado(self):
         """
