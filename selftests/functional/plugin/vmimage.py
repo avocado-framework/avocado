@@ -81,6 +81,17 @@ class VMImagePlugin(unittest.TestCase):
         result = process.run(cmd_line)
         self.assertIn(expected_output, result.stdout_text)
 
+    def test_get_debug(self):
+        cmd_line = (
+            f"{AVOCADO} --config {self.config_file.name} vmimage "
+            f"get --debug --distro=SHOULD_NEVER_EXIST --arch zzz_64"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
+        self.assertIn(
+            "Provider for should_never_exist not available", result.stdout_text
+        )
+
     def tearDown(self):
         self.base_dir.cleanup()
 
