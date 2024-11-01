@@ -822,6 +822,9 @@ class NetworkInterface:
         :rtype: boolean
         """
         cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f"
+        if os.getuid() != 0:
+            cmd = f"{cmd} -i 0.002"
+        print(cmd)
         ping_process = subprocess.Popen(
             cmd,
             shell=True,
