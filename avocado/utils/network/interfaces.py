@@ -821,7 +821,7 @@ class NetworkInterface:
                   returns False on ping flood failure.
         :rtype: boolean
         """
-        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
+        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f"
         ping_process = subprocess.Popen(
             cmd,
             shell=True,
