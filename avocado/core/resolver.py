@@ -261,12 +261,10 @@ def _extend_directory(path):
 
 def resolve(references, hint=None, ignore_missing=True, config=None):
     resolutions = []
-    hint_resolutions = []
     hint_references = {}
 
     if hint:
-        hint_resolutions = hint.get_resolutions()
-        hint_references = {r.reference: r for r in hint_resolutions}
+        hint_references = {r.reference: r for r in hint.get_resolutions()}
 
     if not references and hint_references:
         references = list(hint_references.keys())
