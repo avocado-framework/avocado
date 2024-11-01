@@ -829,7 +829,7 @@ class NetworkInterface:
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
         )
         pattern = r"\.{10}"
@@ -838,8 +838,10 @@ class NetworkInterface:
             match = re.search(pattern, char)
             if match:
                 ping_process.terminate()
-                msg = "ping flood failed to remote machine, Please check the logs"
-                LOG.debug(msg)
+                LOG.debug(
+                    "ping flood failed to remote machine, error output: %s",
+                    ping_process.stderr.read(),
+                )
                 return False
             return True
         ping_process.stdout.close()
