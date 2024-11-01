@@ -521,7 +521,6 @@ class Settings:
                 "argument or be a positional argument"
             )
 
-        option = None
         try:
             option = self._namespaces[namespace]
         except KeyError:
