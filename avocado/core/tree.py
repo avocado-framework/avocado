@@ -134,6 +134,8 @@ class TreeNodeEnvOnly:
         :param path: Path of this node (must not end with '/')
         :param environment: List of pair/key/value items
         """
+        if not path or path.endswith('/'):
+            raise ValueError("Path must be non-empty and not end with '/'")
         self.name = path.rsplit("/")[-1]
         self.path = path
         self.environment = TreeEnvironment()
