@@ -16,6 +16,7 @@
 Provides VM images acquired from official repositories
 """
 
+import logging
 import os
 import re
 import tempfile
@@ -28,6 +29,8 @@ from urllib.request import urlopen
 from avocado.utils import archive, asset, astring
 from avocado.utils import path as utils_path
 from avocado.utils import process
+
+LOG = logging.getLogger(__name__)
 
 # pylint: disable=C0401
 #: The "qemu-img" binary used when creating the snapshot images.  If
@@ -114,7 +117,7 @@ class ImageProviderBase:
             data = urlopen(url).read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError as exc:
-            raise ImageProviderError(f"Cannot open {self.url_versions}") from exc
+            raise ImageProviderError(f"Cannot open {url}") from exc
 
     @staticmethod
     def get_best_version(versions):
@@ -670,8 +673,8 @@ class Image:
                 cache_dir=cache_dir,
                 snapshot_dir=snapshot_dir,
             )
-        except ImageProviderError:
-            pass
+        except ImageProviderError as e:
+            LOG.debug(e)
 
         raise AttributeError("Provider not available")
 
@@ -726,9 +729,10 @@ def get_best_provider(name=None, version=None, build=None, arch=None):
         if name is None or name == provider.name.lower():
             try:
                 return provider(**provider_args)
-            except ImageProviderError:
-                pass
+            except ImageProviderError as e:
+                LOG.debug(e)
 
+    LOG.debug("Provider for %s not available", name)
     raise AttributeError("Provider not available")
 
 
