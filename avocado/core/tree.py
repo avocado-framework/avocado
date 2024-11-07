@@ -32,7 +32,6 @@ Jaime Huerta-Cepas <jhcepas@gmail.com> to take ideas/use snippets from his
 original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 (used in some avocado files) are incompatible.
 """
-
 import collections
 import copy
 import itertools
@@ -132,11 +131,17 @@ class TreeNodeEnvOnly:
     def __init__(self, path, environment=None):
         """
         :param path: Path of this node (must not end with '/')
-        :param environment: List of pair/key/value items
+        :param environment: List of triple/path/key/value items
         """
-        if not path or path.endswith('/'):
-            raise ValueError("Path must be non-empty and not end with '/'")
-        self.name = path.rsplit("/")[-1]
+        if not path:
+            raise ValueError("Path must be non-empty")
+        if path != "/" and (path.endswith('/') or '//' in path):
+            raise ValueError(
+                "Path must not end with '/' unless it is the root path '/', and must not contain consecutive slashes.")
+        if path == "/":
+            self.name = path
+        else:
+            self.name = path.rsplit("/", 1)[-1]
         self.path = path
         self.environment = TreeEnvironment()
         if environment:
@@ -544,3 +549,64 @@ def tree_view(root, verbose=None, use_utf8=None):
     return "\n".join(out).encode(
         "utf-8" if use_utf8 else "ascii", errors="xmlcharrefreplace"
     )
+
+
+import unittest
+
+
+class TestTreeNodeEnvOnly(unittest.TestCase):
+    def test_valid_paths(self):
+        valid_paths = ["/", "/root", "/root/node"]
+        for path in valid_paths:
+            try:
+                node = TreeNodeEnvOnly(path)
+                self.assertEqual(node.path, path)
+            except ValueError as e:
+                self.fail(f"Unexpected error for path '{path}': {e}")
+
+    def test_invalid_paths(self):
+        invalid_paths = ["", "/root/", "/root//node"]
+        for path in invalid_paths:
+            with self.assertRaises(ValueError, msg=f"Path '{path}' should raise ValueError"):
+                TreeNodeEnvOnly(path)
+
+    def test_environment_loading(self):
+        environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2", "value2")
+        ]
+        node = TreeNodeEnvOnly("/root", environment=environment)
+        self.assertEqual(node.environment["key1"], "value1")
+        self.assertEqual(node.environment.origin["key1"].path, "/root")
+        self.assertEqual(node.environment["key2"], "value2")
+        self.assertEqual(node.environment.origin["key2"].path, "/root/node")
+
+    def test_invalid_environment_items(self):
+        invalid_environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2")
+        ]
+        with self.assertRaises(ValueError):
+            TreeNodeEnvOnly("/root", environment=invalid_environment)
+
+    def test_root_path(self):
+        node = TreeNodeEnvOnly("/")
+        self.assertEqual(node.name, "/")
+        self.assertEqual(node.path, "/")
+
+    def test_path_ending_with_slash(self):
+        with self.assertRaises(ValueError):
+            TreeNodeEnvOnly("/root/")
+
+    def test_fingerprint(self):
+        environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2", "value2")
+        ]
+        node = TreeNodeEnvOnly("/root", environment=environment)
+        expected_fingerprint = "/root{key1: value1, key2: value2},{key1: /root, key2: /root/node},FilterSet([]),FilterSet([])"
+        self.assertEqual(node.fingerprint(), expected_fingerprint)
+
+
+if __name__ == "__main__":
+    unittest.main()
