@@ -29,7 +29,7 @@ TEST_SIZE = {
     "nrunner-requirement": 28,
     "unit": 678,
     "jobs": 11,
-    "functional-parallel": 313,
+    "functional-parallel": 315,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -864,9 +864,10 @@ def main(args):  # pylint: disable=W0621
                     f" it has {suite.size}."
                 )
                 print(
-                    "If you made some changes into selftests please update `TEST_SIZE`"
-                    " variable in `check.py`. If you haven't done any changes to"
-                    " selftests this behavior is an ERROR, and it needs to be fixed."
+                    f"If you made some changes into selftests please update the "
+                    f"value for the `{suite.name}` key in the `TEST_SIZE` "
+                    f"dictionary in `check.py`. If you haven't done any changes to "
+                    f"selftests this behavior is an ERROR, and it needs to be fixed."
                 )
 
     # tmp dirs clean up check

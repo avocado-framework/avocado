@@ -821,12 +821,15 @@ class NetworkInterface:
                   returns False on ping flood failure.
         :rtype: boolean
         """
-        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
+        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f"
+        if os.getuid() != 0:
+            cmd = f"{cmd} -i 0.002"
+        print(cmd)
         ping_process = subprocess.Popen(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
         )
         pattern = r"\.{10}"
@@ -835,8 +838,10 @@ class NetworkInterface:
             match = re.search(pattern, char)
             if match:
                 ping_process.terminate()
-                msg = "ping flood failed to remote machine, Please check the logs"
-                LOG.debug(msg)
+                LOG.debug(
+                    "ping flood failed to remote machine, error output: %s",
+                    ping_process.stderr.read(),
+                )
                 return False
             return True
         ping_process.stdout.close()
