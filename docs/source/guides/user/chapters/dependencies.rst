@@ -159,6 +159,17 @@ Following is an example of a test using the Package dependency:
 
 .. literalinclude:: ../../../../../examples/tests/passtest_with_dependency.py
 
+Pip
++++
+
+Support managing python packages via pip. The
+parameters available to use the asset `type` of dependencies are:
+
+ * `type`: `pip`
+ * `name`: the package name (required)
+ * `action`: `install` or `uninstall`
+   (optional, defaults to `install`)
+
 Asset
 +++++
 

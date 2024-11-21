@@ -25,11 +25,11 @@ TEST_SIZE = {
     "job-api-check-file-exists": 11,
     "job-api-check-output-file": 4,
     "job-api-check-tmp-directory-exists": 1,
-    "nrunner-interface": 70,
+    "nrunner-interface": 80,
     "nrunner-requirement": 28,
     "unit": 682,
     "jobs": 11,
-    "functional-parallel": 314,
+    "functional-parallel": 317,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -626,6 +626,9 @@ def create_suites(args):  # pylint: disable=W0621
             },
             {
                 "runner": "avocado-runner-podman-image",
+            },
+            {
+                "runner": "avocado-runner-pip",
             },
         ],
     }
