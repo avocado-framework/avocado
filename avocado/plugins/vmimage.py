@@ -3,7 +3,7 @@ import os
 import re
 
 from avocado.core import exit_codes, output
-from avocado.core.output import LOG_UI
+from avocado.core.output import LOG_UI, add_log_handler
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
 from avocado.utils import astring, vmimage
@@ -70,7 +70,7 @@ def download_image(distro, version=None, arch=None):
     :rtype: dict
     """
     cache_dir = settings.as_dict().get("datadir.paths.cache_dirs")[0]
-    image_info = vmimage.get(
+    image_info = vmimage.Image.from_parameters(
         name=distro, version=version, arch=arch, cache_dir=cache_dir
     )
     file_path = image_info.base_image
@@ -155,6 +155,17 @@ class VMimage(CLICmd):
             long_arg="--arch",
         )
 
+        help_msg = "More information about failures"
+        settings.register_option(
+            section="vmimage.get",
+            key="debug",
+            default=False,
+            help_msg=help_msg,
+            key_type=bool,
+            parser=get_parser,
+            long_arg="--debug",
+        )
+
     def run(self, config):
         subcommand = config.get("vmimage_subcommand")
         if subcommand == "list":
@@ -164,6 +175,9 @@ class VMimage(CLICmd):
             name = config.get("vmimage.get.distro")
             version = config.get("vmimage.get.version")
             arch = config.get("vmimage.get.arch")
+            debug = config.get("vmimage.get.debug")
+            if debug:
+                add_log_handler(vmimage.LOG)
             try:
                 image = download_image(name, version, arch)
             except AttributeError:
