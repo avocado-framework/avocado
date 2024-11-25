@@ -27,7 +27,7 @@ TEST_SIZE = {
     "job-api-7": 1,
     "nrunner-interface": 70,
     "nrunner-requirement": 20,
-    "unit": 668,
+    "unit": 671,
     "jobs": 11,
     "functional-parallel": 298,
     "functional-serial": 5,
