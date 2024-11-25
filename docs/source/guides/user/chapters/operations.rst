@@ -191,16 +191,16 @@ tests::
     Type Test Tag(s)
 
     Resolver             Reference                                Info
-    avocado-instrumented examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".py"
+    avocado-instrumented examples/gdb-prerun-scripts/README       File name "examples/gdb-prerun-scripts/README" does not end with suffix ".py"
     exec-test            examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not exist or is not executable
     golang               examples/gdb-prerun-scripts/README
-    python-unittest      examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".py"
+    python-unittest      examples/gdb-prerun-scripts/README       File name "examples/gdb-prerun-scripts/README" does not end with suffix ".py"
     robot                examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".robot"
     tap                  examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not exist or is not executable
-    avocado-instrumented examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".py"
+    avocado-instrumented examples/gdb-prerun-scripts/pass-sigusr1 File name "examples/gdb-prerun-scripts/pass-sigusr1" does not end with suffix ".py"
     exec-test            examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not exist or is not executable
     golang               examples/gdb-prerun-scripts/pass-sigusr1
-    python-unittest      examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".py"
+    python-unittest      examples/gdb-prerun-scripts/pass-sigusr1 File name "examples/gdb-prerun-scripts/pass-sigusr1" does not end with suffix ".py"
     robot                examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".robot"
     tap                  examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not exist or is not executable
 

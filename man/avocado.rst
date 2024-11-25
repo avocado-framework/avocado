@@ -538,8 +538,8 @@ resolution details::
     $ avocado -V list null
     ...
     Resolver             Reference Info
-    avocado-instrumented null      File "null" does not end with ".py"
-    python-unittest      null      File "null" does not end with ".py"
+    avocado-instrumented null      File name "null" does not end with suffix ".py"
+    python-unittest      null      File name "null" does not end with suffix ".py"
     exec-test            null      File "null" does not exist or is not a executable file
     tap                  null      File "null" does not exist or is not a executable file
     ...

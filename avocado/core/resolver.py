@@ -187,7 +187,7 @@ def check_file(
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info=f'File "{path}" does not end with "{suffix}"',
+                info=f'File name "{path}" does not end with suffix "{suffix}"',
             )
 
     if not type_check(path):

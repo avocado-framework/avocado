@@ -373,18 +373,18 @@ list magic:pass magic:fail magic:foo something-else``::
   magic magic:fail
 
   Resolver             Reference      Info
-  avocado-instrumented magic:pass     File "magic" does not end with ".py"
+  avocado-instrumented magic:pass     File name "magic" does not end with suffix ".py"
   golang               magic:pass     go binary not found
-  avocado-instrumented magic:fail     File "magic" does not end with ".py"
+  avocado-instrumented magic:fail     File name "magic" does not end with suffix ".py"
   golang               magic:fail     go binary not found
-  avocado-instrumented magic:foo    File "magic" does not end with ".py"
+  avocado-instrumented magic:foo    File name "magic" does not end with suffix ".py"
   golang               magic:foo    go binary not found
   magic                magic:foo    Word "magic:foo" is magic type but the foo is not a valid magic word
-  avocado-instrumented something-else File "something-else" does not end with ".py"
+  avocado-instrumented something-else File name "something-else" does not end with suffix ".py"
   golang               something-else go binary not found
   magic                something-else Word "something-else" is not a valid magic word
-  python-unittest      something-else File "something-else" does not end with ".py"
-  robot                something-else File "something-else" does not end with ".robot"
+  python-unittest      something-else File name "something-else" does not end with suffix ".py"
+  robot                something-else File name "something-else" does not end with suffix ".robot"
   rogue                something-else Word "something-else" is not the magic word
   exec-test            something-else File "something-else" does not exist or is not a executable file
   tap                  something-else File "something-else" does not exist or is not a executable file

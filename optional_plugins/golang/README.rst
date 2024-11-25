@@ -63,7 +63,7 @@ Then you can ``list`` and ``run`` the countavocados tests provided with the plug
     golang countavocados:ExampleContainers
 
     Resolver             Reference     Info
-    avocado-instrumented countavocados File "countavocados" does not end with ".py"
+    avocado-instrumented countavocados File name "countavocados" does not end with suffix ".py"
     exec-test            countavocados File "countavocados" does not exist or is not a executable file
 
     TEST TYPES SUMMARY
