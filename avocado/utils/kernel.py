@@ -20,13 +20,9 @@ Provides utilities for the Linux kernel.
 import logging
 import multiprocessing
 import os
+import re
 import shutil
 import tempfile
-
-try:
-    import packaging
-except ImportError:
-    from pkg_resources import packaging
 
 from avocado.utils import archive, asset, build, distro, process
 
@@ -201,6 +197,14 @@ class KernelBuild:
         shutil.rmtree(self.work_dir)
 
 
+def _parse_kernel_version(version):
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)-(\d+).*", version)
+    if match:
+        return tuple(map(int, match.groups()))
+    else:
+        raise AssertionError(f'Malformed kernel version "{version}"')
+
+
 def check_version(version):
     """
     This utility function compares the current kernel version with
@@ -210,6 +214,6 @@ def check_version(version):
     :type version: string
     :param version: version to be compared with current kernel version
     """
-    os_version = packaging.version.parse(os.uname()[2])
-    version = packaging.version.parse(version)
+    os_version = _parse_kernel_version(os.uname()[2])
+    version = _parse_kernel_version(version)
     assert os_version > version, "Old kernel"
