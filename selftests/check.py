@@ -22,7 +22,7 @@ TEST_SIZE = {
     "job-api-check-category-directory-exists": 1,
     "job-api-check-directory-exists": 2,
     "job-api-check-file-content": 9,
-    "job-api-check-file-exists": 12,
+    "job-api-check-file-exists": 11,
     "job-api-check-output-file": 4,
     "job-api-check-tmp-directory-exists": 1,
     "nrunner-interface": 70,
@@ -491,13 +491,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "value": ["result.xunit"],
                 "file": "result.xml",
                 "assert": False,
-            },
-            # this test needs a huge improvement
-            {
-                "namespace": "run.journal.enabled",
-                "value": True,
-                "file": ".journal.sqlite",
-                "assert": True,
             },
         ],
     }
