@@ -18,13 +18,13 @@ from selftests.utils import python_module_available
 
 TEST_SIZE = {
     "static-checks": 7,
-    "job-api-1": 1,
-    "job-api-2": 1,
-    "job-api-3": 2,
-    "job-api-4": 9,
-    "job-api-5": 12,
-    "job-api-6": 4,
-    "job-api-7": 1,
+    "job-api-check-archive-file-exists": 1,
+    "job-api-check-category-directory-exists": 1,
+    "job-api-check-directory-exists": 2,
+    "job-api-check-file-content": 9,
+    "job-api-check-file-exists": 12,
+    "job-api-check-output-file": 4,
+    "job-api-check-tmp-directory-exists": 1,
     "nrunner-interface": 70,
     "nrunner-requirement": 28,
     "unit": 681,
@@ -289,7 +289,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 
     suites.append(
         TestSuite.from_config(
-            config_check_archive_file_exists, f"job-api-{len(suites) + 1}"
+            config_check_archive_file_exists, "job-api-check-archive-file-exists"
         )
     )
 
@@ -306,7 +306,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 
     suites.append(
         TestSuite.from_config(
-            config_check_category_directory_exists, f"job-api-{len(suites) + 1}"
+            config_check_category_directory_exists,
+            "job-api-check-category-directory-exists",
         )
     )
 
@@ -334,7 +335,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 
     suites.append(
         TestSuite.from_config(
-            config_check_directory_exists, f"job-api-{len(suites) + 1}"
+            config_check_directory_exists, "job-api-check-directory-exists"
         )
     )
 
@@ -427,7 +428,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(
-        TestSuite.from_config(config_check_file_content, f"job-api-{len(suites) + 1}")
+        TestSuite.from_config(config_check_file_content, "job-api-check-file-content")
     )
 
     # ========================================================================
@@ -525,7 +526,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         )
 
     suites.append(
-        TestSuite.from_config(config_check_file_exists, f"job-api-{len(suites) + 1}")
+        TestSuite.from_config(config_check_file_exists, "job-api-check-file-exists")
     )
 
     # ========================================================================
@@ -568,7 +569,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         )
 
     suites.append(
-        TestSuite.from_config(config_check_output_file, f"job-api-{len(suites) + 1}")
+        TestSuite.from_config(config_check_output_file, "job-api-check-output-file")
     )
 
     # ========================================================================
@@ -584,7 +585,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 
     suites.append(
         TestSuite.from_config(
-            config_check_tmp_directory_exists, f"job-api-{len(suites) + 1}"
+            config_check_tmp_directory_exists, "job-api-check-tmp-directory-exists"
         )
     )
     return suites
