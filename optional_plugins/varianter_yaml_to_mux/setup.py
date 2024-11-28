@@ -48,7 +48,7 @@ setup(
     url="http://avocado-framework.github.io/",
     packages=packages,
     include_package_data=True,
-    install_requires=[f"avocado-framework=={VERSION}", "PyYAML>=4.2b2"],
+    install_requires=[f"avocado-framework=={VERSION}", "PyYAML<6.0.0"],
     zip_safe=False,
     test_suite="tests",
     entry_points={

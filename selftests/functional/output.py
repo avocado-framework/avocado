@@ -2,7 +2,6 @@ import json
 import os
 import re
 import shlex
-import tempfile
 import unittest
 from xml.dom import minidom
 
@@ -362,7 +361,7 @@ class OutputPluginTest(TestCaseTmpDir):
         )
 
     def test_output_compatible_setup(self):
-        tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"avocado_{__name__}.xml")
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo --journal --xunit {tmpfile} "
@@ -380,7 +379,7 @@ class OutputPluginTest(TestCaseTmpDir):
         minidom.parse(tmpfile)
 
     def test_output_compatible_setup_2(self):
-        tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"avocado_{__name__}.json")
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo --xunit - --json {tmpfile} "
@@ -401,8 +400,8 @@ class OutputPluginTest(TestCaseTmpDir):
         minidom.parseString(result.stdout_text)
 
     def test_output_compatible_setup_nooutput(self):
-        tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
-        tmpfile2 = tempfile.mktemp(dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"avocado_{__name__}.xml")
+        tmpfile2 = os.path.join(self.tmpdir.name, f"avocado_{__name__}.json")
         # Verify --show=none can be supplied as app argument
         cmd_line = (
             f"{AVOCADO} --show=none run "
@@ -490,7 +489,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.stdout, b"")
 
     def test_verify_whiteboard_save(self):
-        tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"avocado_{__name__}.json")
         config = os.path.join(self.tmpdir.name, "conf.ini")
         content = (
             "[datadir.paths]\nlogs_dir = %s"  # pylint: disable=C0209
@@ -527,7 +526,7 @@ class OutputPluginTest(TestCaseTmpDir):
                 )
 
     def test_gendata(self):
-        tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
+        tmpfile = os.path.join(self.tmpdir.name, f"avocado_{__name__}.json")
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo "
@@ -555,7 +554,9 @@ class OutputPluginTest(TestCaseTmpDir):
             )
 
     def test_redirect_output(self):
-        redirected_output_path = tempfile.mktemp(dir=self.tmpdir.name)
+        redirected_output_path = os.path.join(
+            self.tmpdir.name, f"avocado_{__name__}_output"
+        )
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"--disable-sysinfo examples/tests/passtest.py > {redirected_output_path}"

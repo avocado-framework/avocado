@@ -39,7 +39,11 @@ setup(
     url="http://avocado-framework.github.io/",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[f"avocado-framework=={VERSION}", "jinja2"],
+    install_requires=[
+        f"avocado-framework=={VERSION}",
+        "jinja2",
+        "markupsafe<3.0.0",
+    ],
     entry_points={
         "avocado.plugins.cli": [
             "html = avocado_result_html:HTML",

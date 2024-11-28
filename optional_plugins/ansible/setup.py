@@ -41,6 +41,7 @@ setup(
         "cffi",
         "pycparser",
         "ansible-core",
+        "markupsafe<3.0.0",
     ],
     test_suite="tests",
     entry_points={

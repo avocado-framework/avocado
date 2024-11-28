@@ -80,7 +80,7 @@ class Runnable:
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self._config = {}
         if config is None:
-            config = self.filter_runnable_config(kind, {})
+            config = self.add_configuration_used(kind, {})
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop("tags", None)
@@ -176,10 +176,10 @@ class Runnable:
         configuration_used = Runnable.get_configuration_used_by_kind(self.kind)
         if not set(configuration_used).issubset(set(config.keys())):
             LOG.warning(
-                "The runnable config should have only values "
-                "essential for its runner. In the next version of "
-                "avocado, this will raise a Value Error. Please "
-                "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
+                "The runnable config should have values essential for its runner. "
+                "In this case, it's missing some of the used configuration.  In a "
+                "future avocado version this will raise a ValueError. Please "
+                "use avocado.core.nrunner.runnable.Runnable.add_configuration_used "
                 "or avocado.core.nrunner.runnable.Runnable.from_avocado_config"
             )
         self._config = config
@@ -221,7 +221,7 @@ class Runnable:
         """Creates runnable with only essential config for runner of specific kind."""
         if not config:
             config = {}
-        config = cls.filter_runnable_config(kind, config)
+        config = cls.add_configuration_used(kind, config)
         return cls(kind, uri, *args, config=config, **kwargs)
 
     @classmethod
@@ -245,30 +245,30 @@ class Runnable:
         return configuration_used
 
     @classmethod
-    def filter_runnable_config(cls, kind, config):
+    def add_configuration_used(cls, kind, config):
         """
-        Returns only essential values for specific runner.
+        Adds essential configuration values for specific runner.
 
-        It will use configuration from argument completed by values from
-        config file and avocado default configuration.
+        It will add missing configuration in the given config,
+        complementing it with values from config file and avocado default
+        configuration.
 
         :param kind: Kind of runner which should use the configuration.
         :type kind: str
-        :param config: Configuration values for runner. If some values will be
-                       missing the default ones and from config file will be
-                       used.
+        :param config: Configuration values for runner. If any used configuration
+                       values are missing, the default ones and from config file
+                       will be used.
         :type config: dict
-        :returns: Config dict, which has only values essential for runner
-                  based on STANDALONE_EXECUTABLE_CONFIG_USED
+        :returns: Config dict, which has existing entries plus values
+                  essential for runner based on
+                  STANDALONE_EXECUTABLE_CONFIG_USED
         :rtype: dict
         """
         whole_config = settings.as_dict()
-        filtered_config = {}
         for config_item in cls.get_configuration_used_by_kind(kind):
-            filtered_config[config_item] = config.get(
-                config_item, whole_config.get(config_item)
-            )
-        return filtered_config
+            if config_item not in config:
+                config[config_item] = whole_config.get(config_item)
+        return config
 
     def get_command_args(self):
         """
