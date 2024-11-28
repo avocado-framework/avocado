@@ -15,7 +15,9 @@ echo "Using coverage utility: $COVERAGE"
 
 $COVERAGE erase
 rm -f .coverage.*
-$COVERAGE run selftests/check.py --skip=static-checks
+echo -e "import coverage\ncoverage.process_startup()" >> sitecustomize.py
+env COVERAGE_PROCESS_START=.coveragerc $COVERAGE run selftests/check.py --skip=static-checks
+rm -f sitecustomize.py
 $COVERAGE combine
 echo
 $COVERAGE report -m --include "avocado/core/*"
