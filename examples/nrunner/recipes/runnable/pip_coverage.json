@@ -1,0 +1,1 @@
+{"kind": "pip", "kwargs": {"action": "install", "name": "coverage"}}

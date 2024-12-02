@@ -250,6 +250,7 @@ asset: 1
 exec-test: 3
 noop: 3
 package: 1
+pip: 1
 python-unittest: 1
 sysinfo: 1"""
         cmd_line = f"{AVOCADO} -V list {runnables_recipe_path}"
