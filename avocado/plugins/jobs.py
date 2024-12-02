@@ -50,28 +50,56 @@ class Jobs(CLICmd):
             LOG_UI.info("%-12s: %s", key, value)
 
     @staticmethod
-    def _print_job_tests(tests):
-        test_matrix = []
+    def _format_test_status(status):
+        """Format the test status with appropriate decorator."""
+        if status is None:
+            raise ValueError("Test status is missing - corrupted test data")
+
+        decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
+        if decorator is None:
+            raise ValueError(f"Unknown test status '{status}' - corrupted test data")
+
+        return decorator(status, "") if decorator else "<unknown>"
+
+    @staticmethod
+    def _format_end_time(test):
+        """Format the test end time."""
         date_fmt = "%Y/%m/%d %H:%M:%S"
-        for test in tests:
-            status = test.get("status")
-            decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
-            # Retrieve "end" for backward compatibility
-            end = datetime.fromtimestamp(test.get("actual_end", test.get("end")))
-            test_matrix.append(
-                (
-                    test.get("id"),
-                    end.strftime(date_fmt),
-                    f"{float(test.get('time')):5f}",
-                    decorator(status, ""),
-                )
-            )
+        end_timestamp = test.get("actual_end", test.get("end"))
+        if end_timestamp is not None:
+            return datetime.fromtimestamp(end_timestamp).strftime(date_fmt)
+        return "<unknown>"
+
+    @staticmethod
+    def _format_run_time(test):
+        """Format the test run time."""
+        time_taken = test.get("time")
+        if time_taken is not None:
+            return f"{float(time_taken):5f}"
+        return "<unknown>"
+
+    @staticmethod
+    def _create_matrix_row(test):
+        """Create a matrix row for a single test."""
+        return (
+            test.get("id", "<unknown>"),
+            Jobs._format_end_time(test),
+            Jobs._format_run_time(test),
+            Jobs._format_test_status(test.get("status")),
+        )
+
+    @staticmethod
+    def _print_job_tests(tests):
+        """Print formatted test results in a table."""
+        test_matrix = [Jobs._create_matrix_row(test) for test in tests]
+
         header = (
             output.TERM_SUPPORT.header_str("Test ID"),
             output.TERM_SUPPORT.header_str("End Time"),
             output.TERM_SUPPORT.header_str("Run Time"),
             output.TERM_SUPPORT.header_str("Status"),
         )
+
         for line in astring.iter_tabular_output(test_matrix, header=header, strip=True):
             LOG_UI.debug(line)
 
@@ -118,13 +146,13 @@ class Jobs(CLICmd):
                 job = json.load(fp)
                 LOG_UI.info(
                     "%-40s %-26s %3s (%s/%s/%s/%s)",
-                    job["job_id"],
-                    job["start"],
-                    job["total"],
-                    job["pass"],
-                    job["skip"],
-                    job["errors"],
-                    job["failures"],
+                    job.get("job_id", "<unknown>"),
+                    job.get("start", "<unknown>"),
+                    job.get("total", "<unknown>"),
+                    job.get("pass", "<unknown>"),
+                    job.get("skip", "<unknown>"),
+                    job.get("errors", "<unknown>"),
+                    job.get("failures", "<unknown>"),
                 )
 
         return exit_codes.AVOCADO_ALL_OK
