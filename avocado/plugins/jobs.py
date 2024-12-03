@@ -55,15 +55,33 @@ class Jobs(CLICmd):
         date_fmt = "%Y/%m/%d %H:%M:%S"
         for test in tests:
             status = test.get("status")
+            if status is None:
+                raise ValueError("Test status is missing - corrupted test data")
+
             decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
-            # Retrieve "end" for backward compatibility
-            end = datetime.fromtimestamp(test.get("actual_end", test.get("end")))
+            if decorator is None:
+                raise ValueError(
+                    f"Unknown test status '{status}' - corrupted test data"
+                )
+
+            end_timestamp = test.get("actual_end", test.get("end"))
+            if end_timestamp is not None:
+                end = datetime.fromtimestamp(end_timestamp).strftime(date_fmt)
+            else:
+                end = "<unknown>"
+
+            time_taken = test.get("time")
+            if time_taken is not None:
+                time_str = f"{float(time_taken):5f}"
+            else:
+                time_str = "<unknown>"
+
             test_matrix.append(
                 (
-                    test.get("id"),
-                    end.strftime(date_fmt),
-                    f"{float(test.get('time')):5f}",
-                    decorator(status, ""),
+                    test.get("id", "<unknown>"),
+                    end,
+                    time_str,
+                    decorator(status, "") if decorator else "<unknown>",
                 )
             )
         header = (
@@ -118,13 +136,13 @@ class Jobs(CLICmd):
                 job = json.load(fp)
                 LOG_UI.info(
                     "%-40s %-26s %3s (%s/%s/%s/%s)",
-                    job["job_id"],
-                    job["start"],
-                    job["total"],
-                    job["pass"],
-                    job["skip"],
-                    job["errors"],
-                    job["failures"],
+                    job.get("job_id", "N/A"),
+                    job.get("start", "N/A"),
+                    job.get("total", "N/A"),
+                    job.get("pass", "N/A"),
+                    job.get("skip", "N/A"),
+                    job.get("errors", "N/A"),
+                    job.get("failures", "N/A"),
                 )
 
         return exit_codes.AVOCADO_ALL_OK
