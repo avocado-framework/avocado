@@ -10,6 +10,8 @@ import warnings
 
 import pkg_resources
 
+from copy import deepcopy
+
 try:
     import jsonschema
 
@@ -402,13 +404,14 @@ class Runnable:
         :returns: Runnable dependencies in avocado.core.dependencies.dependency.Dependency format.
         :rtype: list of Dependency
         """
-        if isinstance(dependencies_dict, list):
+        new_dependencies_dict = deepcopy(dependencies_dict)
+        if isinstance(new_dependencies_dict, list):
             return list(
                 map(
                     lambda d: (
                         Dependency.from_dictionary(d) if isinstance(d, dict) else d
                     ),
-                    dependencies_dict,
+                    new_dependencies_dict,
                 )
             )
 
