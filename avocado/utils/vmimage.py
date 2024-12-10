@@ -218,8 +218,11 @@ class FedoraImageProviderBase(ImageProviderBase):
         if self.url_old_images and int(self.version) <= 38:
             self.url_versions = self.url_old_images
 
-        self.url_images = self.url_versions + "{version}/" + cloud + "/{arch}/images/"
-        return super().get_image_url()
+        self.url_images = (
+            self.url_versions + f"{self.version}/" + cloud + f"/{self.arch}/images/"
+        )
+        image_url = super().get_image_url()
+        return image_url
 
 
 class FedoraImageProvider(FedoraImageProviderBase):
@@ -235,7 +238,7 @@ class FedoraImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/"
         )
-        self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
 
 
 class FedoraSecondaryImageProvider(FedoraImageProviderBase):
@@ -254,7 +257,7 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/"
         )
-        self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
 
 
 class CentOSImageProvider(ImageProviderBase):
@@ -585,6 +588,7 @@ class Image:
             cache_dirs = [self.cache_dir]
         else:
             cache_dirs = self.cache_dir
+        print(f"Attempting to download image from URL: {self.url}")
         asset_path = asset.Asset(
             name=self.url,
             asset_hash=self.checksum,
@@ -657,6 +661,9 @@ class Image:
         :returns: Image instance that can provide the image
                   according to the parameters.
         """
+        # Use the current system architecture if arch is not provided
+        if arch is None:
+            arch = DEFAULT_ARCH
         provider = get_best_provider(name, version, build, arch)
 
         if cache_dir is None:
@@ -728,11 +735,12 @@ def get_best_provider(name=None, version=None, build=None, arch=None):
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
             try:
-                return provider(**provider_args)
+                selected_provider = provider(**provider_args)
+                return selected_provider
             except ImageProviderError as e:
-                LOG.debug(e)
+                print(f"Error instantiating provider {provider.name}: {e}")
 
-    LOG.debug("Provider for %s not available", name)
+    print(f"Provider for {name} not available")
     raise AttributeError("Provider not available")
 
 
