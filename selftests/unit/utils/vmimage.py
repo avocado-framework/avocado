@@ -523,13 +523,14 @@ class FedoraImageProvider(unittest.TestCase):
         urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         provider = vmimage.FedoraImageProvider(
-            expected_version, expected_build, expected_arch
+            version=expected_version, build=expected_build, arch=expected_arch
         )
-        image = f"Fedora-Cloud-Base-{expected_version}-{expected_build}.{expected_arch}.qcow2"
+        image = f"Fedora-Cloud-Base-Generic-{expected_version}-{expected_build}.{expected_arch}.qcow2"
         parameters = provider.get_image_parameters(image)
-        self.assertEqual(expected_version, parameters["version"])
-        self.assertEqual(expected_build, parameters["build"])
-        self.assertEqual(expected_arch, parameters["arch"])
+        self.assertIsNotNone(parameters, "get_image_parameters() returned None")
+        self.assertEqual(expected_version, parameters.get("version"))
+        self.assertEqual(expected_build, parameters.get("build"))
+        self.assertEqual(expected_arch, parameters.get("arch"))
 
     @unittest.mock.patch("avocado.utils.vmimage.urlopen")
     def test_get_image_parameters_not_match(self, urlopen_mock):
