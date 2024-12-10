@@ -235,7 +235,10 @@ class FedoraImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/"
         )
-        self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        if int(self.version) >= 40:
+            self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        else:
+            self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
 
 
 class FedoraSecondaryImageProvider(FedoraImageProviderBase):
@@ -254,7 +257,10 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/"
         )
-        self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        if int(self.version) >= 40:
+            self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        else:
+            self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
 
 
 class CentOSImageProvider(ImageProviderBase):
@@ -585,6 +591,7 @@ class Image:
             cache_dirs = [self.cache_dir]
         else:
             cache_dirs = self.cache_dir
+        LOG.debug("Attempting to download image from URL: %s", self.url)
         asset_path = asset.Asset(
             name=self.url,
             asset_hash=self.checksum,
@@ -657,6 +664,9 @@ class Image:
         :returns: Image instance that can provide the image
                   according to the parameters.
         """
+        # Use the current system architecture if arch is not provided
+        if arch is None:
+            arch = DEFAULT_ARCH
         provider = get_best_provider(name, version, build, arch)
 
         if cache_dir is None:

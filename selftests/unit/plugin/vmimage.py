@@ -63,6 +63,25 @@ CIRROS_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 
 
 class VMImagePlugin(unittest.TestCase):
+    def _configure_provider(self, provider_class, expected_images):
+        """Configure a provider with the correct version information."""
+        with unittest.mock.patch.object(
+            provider_class, "get_version", return_value="30"
+        ):
+            provider = provider_class()
+            provider._best_version = "30"
+
+            # Find matching image config
+            for image in expected_images:
+                if image["name"] == provider.name:
+                    provider._best_version = image["mock_version"]
+                    provider.get_version = unittest.mock.Mock(
+                        return_value=image["mock_version"]
+                    )
+                    break
+
+            return provider
+
     def _get_temporary_dirs_mapping_and_config(self):
         """
         Creates a temporary bogus base data dir
@@ -99,20 +118,28 @@ class VMImagePlugin(unittest.TestCase):
                     "name": "Fedora",
                     "file": "Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2",
                     "url": FEDORA_PAGE,
+                    "mock_version": "30",
                 },
                 {
                     "name": "JeOS",
                     "file": "jeos-{version}-{arch}.qcow2.xz",
                     "url": JEOS_PAGE,
+                    "mock_version": "27",
                 },
                 {
                     "name": "CirrOS",
                     "file": "cirros-{version}-{arch}-disk.img",
                     "url": CIRROS_PAGE,
+                    "mock_version": "0.4.0",
                 },
             ]
             cache_dir = self.mapping.get("cache_dirs")[0]
-            providers = [provider() for provider in vmimage_util.list_providers()]
+
+            providers = []
+            for provider_class in vmimage_util.list_providers():
+
+                provider = self._configure_provider(provider_class, expected_images)
+                providers.append(provider)
 
             for provider in providers:
                 for image in expected_images:
@@ -156,10 +183,19 @@ class VMImagePlugin(unittest.TestCase):
         with unittest.mock.patch("avocado.core.data_dir.settings", self.stg):
             with unittest.mock.patch(
                 "avocado.utils.vmimage.ImageProviderBase.get_version"
-            ):
-                images = sorted(
-                    vmimage_plugin.list_downloaded_images(), key=lambda i: i["name"]
-                )
+            ) as mock_base_version:
+                mock_base_version.return_value = "30"
+                with unittest.mock.patch(
+                    "avocado.utils.vmimage.FedoraImageProvider.get_image_parameters"
+                ) as mock_get_params:
+                    mock_get_params.return_value = {
+                        "version": "30",
+                        "build": "1234",
+                        "arch": "x86_64",
+                    }
+                    images = sorted(
+                        vmimage_plugin.list_downloaded_images(), key=lambda i: i["name"]
+                    )
                 for index, image in enumerate(images):
                     for key in image:
                         self.assertEqual(
