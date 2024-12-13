@@ -153,6 +153,23 @@ class ListTestFunctional(TestCaseTmpDir):
             (f"Avocado did not return rc " f"{exit_codes.AVOCADO_ALL_OK}:\n{result}"),
         )
         stdout_lines = result.stdout_text.splitlines()
+        self.assertRegex(
+            stdout_lines[1],
+            r"avocado-instrumented\s+.*examples/tests/cit_parameters.py:CitParameters.test\s+.*examples/tests/cit_parameters.py:CitParameters.test\s+avocado-instrumented\s+fast",
+        )
+        self.assertRegex(
+            stdout_lines[2],
+            r"avocado-instrumented\s+.*examples/tests/passtest.py:PassTest.test\s+.*examples/tests/passtest.py:PassTest.test\s+avocado-instrumented\s+fast",
+        )
+        self.assertRegex(
+            stdout_lines[3],
+            r"avocado-instrumented\s+.*examples/tests/tags.py:FastTest.test_fast\s+.*examples/tests/tags.py:FastTest.test_fast\s+avocado-instrumented\s+net,fast",
+        )
+        self.assertRegex(
+            stdout_lines[4],
+            r"avocado-instrumented\s+.*examples/tests/tags.py:FastTest.test_fast_other\s+.*examples/tests/tags.py:FastTest.test_fast_other\s+avocado-instrumented\s+net,fast",
+        )
+        self.assertEqual("", stdout_lines[5])
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
         self.assertIn("avocado-instrumented: 4", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)

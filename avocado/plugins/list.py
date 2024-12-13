@@ -22,6 +22,7 @@ from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite
+from avocado.core.tags import filter_tags_on_runnables
 from avocado.utils.astring import iter_tabular_output
 
 
@@ -76,11 +77,7 @@ class List(CLICmd):
                 TERM_SUPPORT.header_str("Tag(s)"),
             )
 
-        # Any kind of color, string format and term specific should be applied
-        # only during output/display phase. So this seems to be a better place
-        # for this:
         matrix = self._prepare_matrix_for_display(matrix, verbose)
-
         for line in iter_tabular_output(matrix, header=header, strip=True):
             LOG_UI.debug(line)
 
@@ -142,21 +139,35 @@ class List(CLICmd):
         """
         test_matrix = []
         verbose = suite.config.get("core.verbose")
+        tags = suite.config.get("filter.by_tags.tags")
+        include_empty = suite.config.get("filter.by_tags.include_empty")
+        include_empty_key = suite.config.get("filter.by_tags.include_empty_key")
+
         for resolution in suite.resolutions:
-            for runnable in resolution.resolutions:
+            if resolution.result != ReferenceResolutionResult.SUCCESS:
+                continue
+
+            if tags:
+                runnables = filter_tags_on_runnables(
+                    [resolution], tags, include_empty, include_empty_key
+                )
+            else:
+                runnables = resolution.resolutions
+
+            for runnable in runnables:
                 if verbose:
-                    tags = runnable.tags or {}
                     test_matrix.append(
                         (
                             runnable.kind,
                             runnable.identifier,
                             runnable.uri,
                             resolution.origin,
-                            tags,
+                            runnable.tags or {},
                         )
                     )
                 else:
                     test_matrix.append((runnable.kind, runnable.identifier))
+
         return test_matrix
 
     @staticmethod
