@@ -236,6 +236,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-tap
 %{_bindir}/avocado-runner-asset
 %{_bindir}/avocado-runner-package
+%{_bindir}/avocado-runner-pip
 %{_bindir}/avocado-runner-podman-image
 %{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
