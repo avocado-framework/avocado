@@ -137,9 +137,9 @@ def get_block_size(controller_name):
     namespaces = get_current_ns_list(controller_name)
     if namespaces:
         namespace = namespaces[0]
-        cmd = f"nvme id-ns /dev/{namespace}"
+        cmd = f"nvme id-ns {namespace}"
         out = process.run(cmd, shell=True, ignore_status=True).stdout_text
-        for line in str(out.splitlines):
+        for line in out.splitlines():
             if "in use" in line:
                 return pow(2, int(line.split()[4].split(":")[-1]))
     return 4096
@@ -211,7 +211,7 @@ def ns_rescan(controller_name):
 
     :param controller_name: controller name on which re-scan is applied
     """
-    cmd = f"nvme ns-rescan {controller_name}"
+    cmd = f"nvme ns-rescan /dev/{controller_name}"
     try:
         process.run(cmd, shell=True, ignore_status=True)
     except process.CmdError as detail:
