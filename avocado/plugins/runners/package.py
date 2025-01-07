@@ -1,12 +1,17 @@
 import sys
-import time
-from multiprocessing import Process, SimpleQueue, set_start_method
+from multiprocessing import set_start_method
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.utils import messages
 from avocado.utils.software_manager.main import MESSAGES
 from avocado.utils.software_manager.manager import SoftwareManager
+
+
+class PackageRunnerError(Exception):
+    """
+    Generic error for PackageRunner.
+    """
 
 
 class PackageRunner(BaseRunner):
@@ -84,17 +89,11 @@ class PackageRunner(BaseRunner):
             stdout = MESSAGES["check-installed"]["fail"] % package
         return result, stdout, stderr
 
-    def _run_software_manager(self, cmd, package, queue):
+    def _run_software_manager(self, cmd, package):
         software_manager = SoftwareManager()
 
         if not software_manager.is_capable():
-            output = {
-                "result": "error",
-                "stdout": "",
-                "stderr": ("Package manager not supported or not available."),
-            }
-            queue.put(output)
-            return
+            raise PackageRunnerError("Package manager not supported or not available.")
 
         if cmd == "install":
             result, stdout, stderr = self._install(software_manager, cmd, package)
@@ -105,55 +104,32 @@ class PackageRunner(BaseRunner):
         elif cmd == "check":
             result, stdout, stderr = self._check(software_manager, package)
 
-        output = {"result": result, "stdout": stdout, "stderr": stderr}
-        queue.put(output)
+        return result, stdout, stderr
 
-    def run(self, runnable):
+    def _run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
-        yield messages.StartedMessage.get()
         # check if there is a valid 'action' argument
         cmd = self.runnable.kwargs.get("action", "install")
         # avoid invalid arguments
         if cmd not in ["install", "check", "remove"]:
-            stderr = (
+            raise PackageRunnerError(
                 f"Invalid action {cmd}. Use one of 'install', 'check' " f"or 'remove'"
             )
-            yield messages.StderrMessage.get(stderr.encode())
-            yield messages.FinishedMessage.get("error")
-            return
 
         package = self.runnable.kwargs.get("name")
         # if package was passed correctly, run avocado-software-manager
         if package is not None:
-            # let's spawn it to another process to be able to update the
-            # status messages and avoid the software-manager to lock this
-            # process
-            queue = SimpleQueue()
-            process = Process(
-                target=self._run_software_manager, args=(cmd, package, queue)
-            )
-            process.start()
+            result, stdout, stderr = self._run_software_manager(cmd, package)
+            yield messages.StdoutMessage.get(stdout.encode())
+            yield messages.StderrMessage.get(stderr.encode())
+            yield messages.FinishedMessage.get(result)
 
-            while queue.empty():
-                time.sleep(RUNNER_RUN_STATUS_INTERVAL)
-                yield messages.RunningMessage.get()
-
-            output = queue.get()
-            result = output["result"]
-            stdout = output["stdout"]
-            stderr = output["stderr"]
         else:
             # Otherwise, log the missing package name
-            result = "error"
-            stdout = ""
-            stderr = (
+            raise PackageRunnerError(
                 'Package name should be passed as kwargs using name="package_name".'
             )
-
-        yield messages.StdoutMessage.get(stdout.encode())
-        yield messages.StderrMessage.get(stderr.encode())
-        yield messages.FinishedMessage.get(result)
 
 
 class RunnerApp(BaseRunnerApp):

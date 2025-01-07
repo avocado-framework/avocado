@@ -1,7 +1,12 @@
+import multiprocessing
+import signal
 import time
+import traceback
 
+from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.runnable import RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
+from avocado.core.utils import messages
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -47,6 +52,11 @@ class BaseRunner(RunnableRunner):
     CONFIGURATION_USED = []
 
     @staticmethod
+    def signal_handler(signum, frame):  # pylint: disable=W0613
+        if signum == signal.SIGTERM.value:
+            raise TestInterrupt("Test interrupted: Timeout reached")
+
+    @staticmethod
     def prepare_status(status_type, additional_info=None):
         """Prepare a status dict with some basic information.
 
@@ -66,23 +76,80 @@ class BaseRunner(RunnableRunner):
         status.update({"status": status_type, "time": time.monotonic()})
         return status
 
-    def running_loop(self, condition):
-        """Produces timely running messages until end condition is found.
-
-        :param condition: a callable that will be evaluated as a
-                          condition for continuing the loop
-        """
-        most_current_execution_state_time = None
-        while not condition():
-            now = time.monotonic()
-            if most_current_execution_state_time is not None:
-                next_execution_state_mark = (
-                    most_current_execution_state_time + RUNNER_RUN_STATUS_INTERVAL
-                )
-            if (
-                most_current_execution_state_time is None
-                or now > next_execution_state_mark
-            ):
-                most_current_execution_state_time = now
-                yield self.prepare_status("running")
+    @staticmethod
+    def _monitor(queue):
+        most_recent_status_time = None
+        while True:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            if queue.empty():
+                now = time.monotonic()
+                if (
+                    most_recent_status_time is None
+                    or now >= most_recent_status_time + RUNNER_RUN_STATUS_INTERVAL
+                ):
+                    most_recent_status_time = now
+                    yield messages.RunningMessage.get()
+                continue
+            else:
+                message = queue.get()
+                yield message
+                if message.get("status") == "finished":
+                    break
+
+    def _catch_errors(self, runnable, queue):
+        """Wrapper around runners methods for catching and logging failures."""
+        try:
+            messages.start_logging(runnable.config, queue)
+            signal.signal(signal.SIGTERM, self.signal_handler)
+            for message in self._run(runnable):
+                queue.put(message)
+        except TestInterrupt as e:
+            queue.put(messages.StderrMessage.get(str(e)))
+            queue.put(messages.FinishedMessage.get("interrupted", fail_reason=str(e)))
+        except Exception as e:
+            queue.put(messages.StderrMessage.get(traceback.format_exc()))
+            queue.put(
+                messages.FinishedMessage.get(
+                    "error",
+                    fail_reason=str(e),
+                    fail_class=e.__class__.__name__,
+                    traceback=traceback.format_exc(),
+                )
+            )
+
+    def run(self, runnable):
+        # pylint: disable=W0201
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        self.runnable = runnable
+        yield messages.StartedMessage.get()
+        try:
+            queue = multiprocessing.SimpleQueue()
+            process = multiprocessing.Process(
+                target=self._catch_errors, args=(self.runnable, queue)
+            )
+
+            process.start()
+
+            for message in self._monitor(queue):
+                yield message
+
+        except TestInterrupt:
+            process.terminate()
+            for message in self._monitor(queue):
+                yield message
+        except Exception as e:
+            yield messages.StderrMessage.get(traceback.format_exc())
+            yield messages.FinishedMessage.get(
+                "error",
+                fail_reason=str(e),
+                fail_class=e.__class__.__name__,
+                traceback=traceback.format_exc(),
+            )
+
+    def _run(self, runnable):
+        """
+        Run the Runnable
+
+        :param runnable: the runnable object
+        :type runnable: :class:`Runnable`
+        """
