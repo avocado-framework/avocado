@@ -1,7 +1,13 @@
+import abc
+import multiprocessing
+import signal
 import time
+import traceback
 
+from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.runnable import RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
+from avocado.core.utils import messages
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -86,3 +92,77 @@ class BaseRunner(RunnableRunner):
                 most_current_execution_state_time = now
                 yield self.prepare_status("running")
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+
+
+class PythonBaseRunner(BaseRunner, abc.ABC):
+    """
+    Base class for Python runners
+    """
+
+    @staticmethod
+    def signal_handler(signum, frame):  # pylint: disable=W0613
+        if signum == signal.SIGTERM.value:
+            raise TestInterrupt("Test interrupted: Timeout reached")
+
+    @staticmethod
+    def _monitor(proc, time_started, queue):
+        timeout = float("inf")
+        next_status_time = None
+        while True:
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            now = time.monotonic()
+            if queue.empty():
+                if next_status_time is None or now > next_status_time:
+                    next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
+                    yield messages.RunningMessage.get()
+                if (now - time_started) > timeout:
+                    proc.terminate()
+            else:
+                message = queue.get()
+                if message.get("type") == "early_state":
+                    timeout = float(message.get("timeout") or float("inf"))
+                else:
+                    yield message
+                if message.get("status") == "finished":
+                    break
+
+    def run(self, runnable):
+        # pylint: disable=W0201
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        self.runnable = runnable
+        yield messages.StartedMessage.get()
+        try:
+            queue = multiprocessing.SimpleQueue()
+            process = multiprocessing.Process(
+                target=self._run, args=(self.runnable, queue)
+            )
+
+            process.start()
+
+            time_started = time.monotonic()
+            for message in self._monitor(process, time_started, queue):
+                yield message
+
+        except TestInterrupt:
+            process.terminate()
+            for message in self._monitor(process, time_started, queue):
+                yield message
+        except Exception as e:
+            yield messages.StderrMessage.get(traceback.format_exc())
+            yield messages.FinishedMessage.get(
+                "error",
+                fail_reason=str(e),
+                fail_class=e.__class__.__name__,
+                traceback=traceback.format_exc(),
+            )
+
+    @abc.abstractmethod
+    def _run(self, runnable, queue):
+        """
+        Run the test
+
+        :param runnable: the runnable object
+        :type runnable: :class:`Runnable`
+        :param queue: the queue to put messages
+        :type queue: :class:`multiprocessing.SimpleQueue`
+        """
