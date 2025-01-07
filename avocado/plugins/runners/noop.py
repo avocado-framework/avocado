@@ -18,8 +18,7 @@ class NoOpRunner(BaseRunner):
         "Sample runner that performs no action before reporting FINISHED status"
     )
 
-    def run(self, runnable):
-        yield self.prepare_status("started")
+    def _run(self, runnable):
         yield self.prepare_status("finished", {"result": "pass"})
 
 

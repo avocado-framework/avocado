@@ -2,17 +2,17 @@ import io
 import multiprocessing
 import os
 import sys
-import time
-import traceback
 from unittest import TestLoader, TextTestRunner
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import (
-    RUNNER_RUN_CHECK_INTERVAL,
-    RUNNER_RUN_STATUS_INTERVAL,
-    BaseRunner,
-)
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.utils import messages
+
+
+class PythonUnittestRunnerError(Exception):
+    """
+    Generic error for PythonUnittestRunner.
+    """
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -87,26 +87,25 @@ class PythonUnittestRunner(BaseRunner):
 
         return ".".join(unittest)
 
-    @classmethod
-    def _run_unittest(cls, module_path, module_class_method, queue):
+    def _run(self, runnable):
         def run_and_load_test():
-            sys.path.insert(0, module_path)
+            sys.path.insert(0, self.module_path)
             try:
                 loader = TestLoader()
-                suite = loader.loadTestsFromName(module_class_method)
+                suite = loader.loadTestsFromName(self.module_class_method)
             except ValueError as ex:
-                msg = "loadTestsFromName error finding unittest {}: {}"
-                queue.put(messages.StderrMessage.get(traceback.format_exc()))
-                queue.put(
-                    messages.FinishedMessage.get(
-                        "error",
-                        fail_reason=msg.format(module_class_method, str(ex)),
-                        fail_class=ex.__class__.__name__,
-                        traceback=traceback.format_exc(),
-                    )
+                raise PythonUnittestRunnerError(
+                    f"loadTestsFromName error finding unittest {self.module_class_method}: {str(ex)}"
                 )
-                return None
             return runner.run(suite)
+
+        # pylint: disable=W0201
+        self.runnable = runnable
+
+        if not self.module_class_method:
+            raise PythonUnittestRunnerError(
+                "Invalid URI: could not be converted to an unittest dotted name."
+            )
 
         stream = io.StringIO()
         runner = TextTestRunner(stream=stream, verbosity=0)
@@ -123,7 +122,7 @@ class PythonUnittestRunner(BaseRunner):
             unittest_result = run_and_load_test()
 
         if not unittest_result:
-            return
+            return None
 
         unittest_result_entries = None
         if len(unittest_result.errors) > 0:
@@ -139,7 +138,7 @@ class PythonUnittestRunner(BaseRunner):
             result = "pass"
 
         stream.seek(0)
-        queue.put(messages.StdoutMessage.get(stream.read()))
+        yield messages.StdoutMessage.get(stream.read())
         fail_reason = None
         if unittest_result_entries is not None:
             last_entry = unittest_result_entries[-1]
@@ -147,56 +146,7 @@ class PythonUnittestRunner(BaseRunner):
             fail_reason = lines[-1]
 
         stream.close()
-        queue.put(messages.FinishedMessage.get(result, fail_reason=fail_reason))
-
-    def run(self, runnable):
-        # pylint: disable=W0201
-        self.runnable = runnable
-        try:
-            yield messages.StartedMessage.get()
-            queue = multiprocessing.SimpleQueue()
-            process = multiprocessing.Process(
-                target=self._run_unittest,
-                args=(self.module_path, self.module_class_method, queue),
-            )
-
-            if not self.module_class_method:
-                raise ValueError(
-                    "Invalid URI: could not be converted to an unittest dotted name."
-                )
-            process.start()
-
-            most_current_execution_state_time = None
-            while True:
-                if queue.empty():
-                    time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-                    now = time.monotonic()
-                    if most_current_execution_state_time is not None:
-                        next_execution_state_mark = (
-                            most_current_execution_state_time
-                            + RUNNER_RUN_STATUS_INTERVAL
-                        )
-                    if (
-                        most_current_execution_state_time is None
-                        or now > next_execution_state_mark
-                    ):
-                        most_current_execution_state_time = now
-                        yield messages.RunningMessage.get()
-
-                else:
-                    message = queue.get()
-                    yield message
-                    if message.get("status") == "finished":
-                        break
-
-        except Exception as e:
-            yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get(
-                "error",
-                fail_reason=str(e),
-                fail_class=e.__class__.__name__,
-                traceback=traceback.format_exc(),
-            )
+        yield messages.FinishedMessage.get(result, fail_reason=fail_reason)
 
 
 class RunnerApp(BaseRunnerApp):

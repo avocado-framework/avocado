@@ -56,6 +56,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             proc = await asyncio.create_subprocess_exec(
                 runner,
                 *args,
+                stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
                 env=get_python_path_env_if_egg(),
