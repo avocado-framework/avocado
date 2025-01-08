@@ -53,12 +53,16 @@ class ProcessSpawner(Spawner, SpawnerMixin):
 
         # pylint: disable=E1133
         try:
+            preexec_fn = None
+            if "setpgrp" in dir(os):
+                preexec_fn = os.setpgrp
             proc = await asyncio.create_subprocess_exec(
                 runner,
                 *args,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
                 env=get_python_path_env_if_egg(),
+                preexec_fn=preexec_fn
             )
         except (FileNotFoundError, PermissionError):
             return False
