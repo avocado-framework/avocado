@@ -47,7 +47,11 @@ setup(
     url="http://avocado-framework.github.io/",
     packages=packages,
     include_package_data=True,
-    install_requires=[f"avocado-framework=={VERSION}", "resultsdb-api==2.1.5"],
+    install_requires=[
+        f"avocado-framework=={VERSION}",
+        "resultsdb-api==2.1.5",
+        "urllib3<2.3.0; python_version < '3.9'",
+    ],
     entry_points={
         "avocado.plugins.cli": [
             "resultsdb = avocado_resultsdb.resultsdb:ResultsdbCLI",
