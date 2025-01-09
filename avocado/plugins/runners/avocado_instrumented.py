@@ -8,11 +8,7 @@ import traceback
 
 from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import (
-    RUNNER_RUN_CHECK_INTERVAL,
-    RUNNER_RUN_STATUS_INTERVAL,
-    BaseRunner,
-)
+from avocado.core.nrunner.runner import RUNNER_RUN_CHECK_INTERVAL, BaseRunner
 from avocado.core.test import TestID
 from avocado.core.tree import TreeNodeEnvOnly
 from avocado.core.utils import loader, messages
@@ -138,23 +134,14 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             )
 
     @staticmethod
-    def _monitor(proc, time_started, queue):
-        timeout = float("inf")
-        next_status_time = None
+    def _monitor(queue):
         while True:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            now = time.monotonic()
             if queue.empty():
-                if next_status_time is None or now > next_status_time:
-                    next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
-                    yield messages.RunningMessage.get()
-                if (now - time_started) > timeout:
-                    proc.terminate()
+                yield messages.RunningMessage.get()
             else:
                 message = queue.get()
-                if message.get("type") == "early_state":
-                    timeout = float(message.get("timeout") or float("inf"))
-                else:
+                if message.get("type") != "early_state":
                     yield message
                 if message.get("status") == "finished":
                     break
@@ -172,13 +159,12 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
             process.start()
 
-            time_started = time.monotonic()
-            for message in self._monitor(process, time_started, queue):
+            for message in self._monitor(queue):
                 yield message
 
         except TestInterrupt:
             process.terminate()
-            for message in self._monitor(process, time_started, queue):
+            for message in self._monitor(queue):
                 yield message
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
