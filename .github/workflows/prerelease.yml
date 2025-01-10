@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
       - name: Install avocado
         run: |
-          sudo python3 -m pip install -r requirements-dev.txt
+          pip install -r requirements-dev.txt
           python3 setup.py develop --user
       - name: Avocado pre-release job
         run: ./selftests/pre_release/jobs/pre_release.py
