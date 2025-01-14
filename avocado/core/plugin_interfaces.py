@@ -376,6 +376,28 @@ class Spawner(Plugin):
         :rtype: bool
         """
 
+    async def stop_task(self, runtime_task):
+        """Stop already spawned task.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :returns: whether the task has been stopped or not.
+        :rtype: bool
+        """
+        raise NotImplementedError()
+
+    async def resume_task(self, runtime_task):
+        """Resume already stopped task.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :returns: whether the task has been resumed or not.
+        :rtype: bool
+        """
+        raise NotImplementedError()
+
     @staticmethod
     @abc.abstractmethod
     async def check_task_requirements(runtime_task):
