@@ -21,6 +21,7 @@ import multiprocessing
 import os
 import platform
 import random
+import signal
 import tempfile
 
 from avocado.core.dispatcher import SpawnerDispatcher
@@ -269,6 +270,10 @@ class Runner(SuiteRunner):
             )
             raise JobError(msg)
 
+    @staticmethod
+    def signal_handler(spawner, state_machine):
+        asyncio.create_task(Worker.stop_resume_tasks(state_machine, spawner))
+
     def run_suite(self, job, test_suite):
         summary = set()
 
@@ -335,6 +340,11 @@ class Runner(SuiteRunner):
         ]
         asyncio.ensure_future(self._update_status(job))
         loop = asyncio.get_event_loop()
+        if hasattr(signal, "SIGTSTP"):
+            loop.add_signal_handler(
+                signal.SIGTSTP,
+                lambda: self.signal_handler(spawner, self.tsm),
+            )
         try:
             try:
                 loop.run_until_complete(
