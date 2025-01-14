@@ -21,7 +21,9 @@ import multiprocessing
 import os
 import platform
 import random
+import signal
 import tempfile
+import threading
 
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, JobFailFast
@@ -269,6 +271,10 @@ class Runner(SuiteRunner):
             )
             raise JobError(msg)
 
+    @staticmethod
+    def signal_handler(spawner, state_machine):
+        asyncio.create_task(Worker.stop_resume_tasks(state_machine, spawner))
+
     def run_suite(self, job, test_suite):
         summary = set()
 
@@ -335,6 +341,14 @@ class Runner(SuiteRunner):
         ]
         asyncio.ensure_future(self._update_status(job))
         loop = asyncio.get_event_loop()
+        if (
+            hasattr(signal, "SIGTSTP")
+            and threading.current_thread() is threading.main_thread()
+        ):
+            loop.add_signal_handler(
+                signal.SIGTSTP,
+                lambda: self.signal_handler(spawner, self.tsm),
+            )
         try:
             try:
                 loop.run_until_complete(
