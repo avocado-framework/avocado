@@ -30,7 +30,7 @@ TEST_SIZE = {
     "unit": 661,
     "jobs": 11,
     "functional-parallel": 314,
-    "functional-serial": 7,
+    "functional-serial": 8,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
     "optional-plugins-html": 3,

@@ -1,5 +1,6 @@
 import abc
 import multiprocessing
+import os
 import signal
 import time
 import traceback
@@ -8,6 +9,7 @@ from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.runnable import RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
 from avocado.core.utils import messages
+from avocado.utils import process
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -99,16 +101,37 @@ class PythonBaseRunner(BaseRunner, abc.ABC):
     Base class for Python runners
     """
 
-    @staticmethod
-    def signal_handler(signum, frame):  # pylint: disable=W0613
+    def __init__(self):
+        super().__init__()
+        self.proc = None
+        self.process_stopped = False
+        self.stop_signal = False
+
+    def signal_handler(self, signum, frame):  # pylint: disable=W0613
         if signum == signal.SIGTERM.value:
             raise TestInterrupt("Test interrupted: Timeout reached")
+        elif signum == signal.SIGTSTP.value:
+            self.stop_signal = True
 
-    @staticmethod
-    def _monitor(queue):
+    def pause_process(self):
+        if self.process_stopped:
+            self.process_stopped = False
+            sign = signal.SIGCONT
+        else:
+            self.process_stopped = True
+            sign = signal.SIGSTOP
+        processes = process.get_children_pids(self.proc.pid, recursive=True)
+        processes.append(self.proc.pid)
+        for pid in processes:
+            os.kill(pid, sign)
+
+    def _monitor(self, queue):
         most_recent_status_time = None
         while True:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            if self.stop_signal:
+                self.stop_signal = False
+                self.pause_process()
             if queue.empty():
                 now = time.monotonic()
                 if (
@@ -126,23 +149,26 @@ class PythonBaseRunner(BaseRunner, abc.ABC):
                     break
 
     def run(self, runnable):
-        # pylint: disable=W0201
+        if hasattr(signal, "SIGTSTP"):
+            signal.signal(signal.SIGTSTP, signal.SIG_IGN)
+            signal.signal(signal.SIGTSTP, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
+        # pylint: disable=W0201
         self.runnable = runnable
         yield messages.StartedMessage.get()
         try:
             queue = multiprocessing.SimpleQueue()
-            process = multiprocessing.Process(
+            self.proc = multiprocessing.Process(
                 target=self._run, args=(self.runnable, queue)
             )
 
-            process.start()
+            self.proc.start()
 
             for message in self._monitor(queue):
                 yield message
 
         except TestInterrupt:
-            process.terminate()
+            self.proc.terminate()
             for message in self._monitor(queue):
                 yield message
         except Exception as e:
