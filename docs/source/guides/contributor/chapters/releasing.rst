@@ -25,11 +25,10 @@ following commands::
 
 Just follow the steps and have a nice release!
 
-How to refresh Fedora/EPEL modules
-----------------------------------
+How to refresh Fedora rawhide
+-----------------------------
 
-This is an outline of the steps to update the Fedora/EPEL ``avocado:latest``
-module stream when there is a new upstream release of ``avocado``.
+This is an outline of the steps to update the Fedora rawhide packages.
 This example is based on updating from 82.0 to 83.0.
 
 Update downstream python-avocado package
@@ -42,10 +41,9 @@ Update downstream python-avocado package
 
 #. Clone your personal fork repository to your local workspace.
 
-#. Checkout the ``latest`` branch--which is the stream branch used by the
-   ``avocado:latest`` module definition.
-   Make sure your ``latest`` branch is in sync with the most recent commits
-   from the official dist-git repo you forked from.
+#. Checkout the ``latest`` branch, and make sure your ``latest``
+   branch is in sync with the most recent commits from the official
+   dist-git repo you forked from.
 
 #. Locate the official upstream commit hash and date corresponding to the
    upstream GitHub release tag.
@@ -108,90 +106,3 @@ Update downstream python-avocado package
 
 #. When you have successful builds for all releases,
    ``git add``, ``git commit``, and ``git push`` your updates.
-
-
-Update downstream avocado module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#. Use pagure to create a personal fork of the downstream Fedora dist-git
-   ``avocado`` module source repository
-   https://src.fedoraproject.org/modules/avocado
-   if you don’t already have one.
-
-#. Clone your personal fork repository to your local workspace.
-
-#. Checkout the ``latest`` branch--which the stream branch used for the
-   ``avocado:latest`` module definition.
-   Make sure your ``latest`` branch is in sync with the latest commits to
-   the official dist-git repo you forked from.
-
-#. If there are any new or removed ``python-avocado`` sub-packages,
-   adjust the ``avocado.yaml`` modulemd file accordingly.
-
-#. Test with a scratch module build for the latest supported Fedora
-   release (f33), including the SRPM created earlier::
-
-    fedpkg module-scratch-build --requires platform:f33 --buildrequires platform:f33 --file avocado.yaml --srpm .../python-avocado/python-avocado-83.0-1.fc33.src.rpm
-
-   You can use https://release-engineering.github.io/mbs-ui/ to monitor the
-   build progress.
-
-#. If the module build fails, go back and fix the modulemd file and try again.
-   Depending on the error, it may necessary to go back and revise the package
-   SPEC file.
-
-#. Repeat the scratch module build for all other supported Fedora releases,
-   Fedora Rawhide, and EPEL8 (``platform:el8``).
-   If you’re feeling confident, you can skip this step.
-
-#. When you have successful scratch module builds for all releases,
-   ``git add``, ``git commit``, ``git push`` your update.
-   Note: if ``avocado.yaml`` didn’t need modifying, it is still necessary to
-   make a new commit since official module builds are tracked internally by
-   their git commit hash.
-   Recall that ``git commit`` has an ``--allow-empty`` option.
-
-Release revised module
-~~~~~~~~~~~~~~~~~~~~~~
-
-#. Create PRs to merge the ``python-avocado`` rpm and ``avocado`` module changes
-   into the ``latest`` branches of the master dist-git repositories.
-   If you have commit privileges to the master repositories, you could also opt
-   to push directly.
-
-#. After the ``python-avocado`` rpm and ``avocado`` module changes have been merged...
-
-#. From the ``latest`` branch of your module repository in your local workspace,
-   submit the module build using ``fedpkg module-build``.
-   The MBS (Module Build Service) will use stream expansion to automatically
-   build the module for all current Fedora/EPEL releases.
-   Again, you can use https://release-engineering.github.io/mbs-ui/
-   to monitor the progress of the builds.
-
-#. If you want to test the built modules at this point, use ``odcs``
-   (On Demand Compose Service) to create a temporary compose for your
-   Fedora release::
-
-    odcs create module avocado:latest:3120200121201503:f636be4b
-
-   You can then use ``wget`` to download the repofile from the URL referenced
-   in the output to ``/etc/yum.repos.d/`` and then you’ll be able to install
-   your newly built ``avocado:latest`` module.
-   Don't forget to remove the odcs repofile when you are done testing.
-
-#. Use https://bodhi.fedoraproject.org/ to create new updates for
-   ``avocado:latest`` (using options type=enhancement, severity=low,
-   default for everything else) for each Fedora release and EPEL8 --
-   except Rawhide which happens automatically.
-
-#. Bodhi will push the updates to the testing repositories in a day or two.
-   Following the push and after the Fedora mirrors have had a chance
-   to sync, you'll be able to install the new module by including the
-   ``dnf`` option ``--enablerepo=updates-testing-modular``
-   (``epel-testing-modular`` for EPEL).
-
-#. After receiving enough bodhi karma votes (three by default) or after
-   enough days have elapsed (seven for Fedora, twelve for EPEL), bodhi
-   will push the updated modules to the stable repositories.
-   At that point, the updated modules will be available by default without any
-   extra arguments to ``dnf``.
