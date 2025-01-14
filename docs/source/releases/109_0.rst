@@ -1,0 +1,76 @@
+========================
+109.0 - 9
+========================
+
+The Avocado team is proud to present another release: Avocado 109.0,
+AKA "9", is now available!
+
+Release documentation: `Avocado 109.0
+<http://avocado-framework.readthedocs.io/en/109.0/>`_
+
+Users/Test Writers
+==================
+
+* New test dependency for installing pip packages. The new PIP runner
+  has been introduced to install pip packages before the test execution
+  in the test environment. More info about this new feature can be found
+  in `documentaion <https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/dependencies.html#Pip>`_
+
+* VMimage get --debug option has been added to show more information
+  about possible failures during image download.
+
+* The message given by the avocado-instrumented and python-unittest
+  resolvers, resolvers that share a lot of code and require Python
+  files has been improved. Now it informs about missing Python suffix `.py`
+  instead of missing file.
+
+* The installation of the avocado-framework via Fedora (and EPEL)
+  modules has been removed. More info in updated `installation guide <https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/installing.html>`_
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.kernel` kernel version parsing removes dependency
+  to packaging module and uses its own implementation based on regex matching.
+
+Bug Fixes
+=========
+
+* `avocado jobs` command has been fixed to not crash on corrupted data.
+
+* `avocado list --filter-by-tags` command has been fixed to filter tests
+  based on provided tags.
+
+* :mod:`avocado.utils.vmimage` has been updated to match
+  the available Fedora image file names for the s390x architecture. This resolves
+  the issue where the vmimage utility could not download the correct image due to
+  a pattern mismatch.
+
+Internal changes
+================
+
+* HTML plugin has new dependency 'markupsafe<3.0.0' to keep
+  compatibility with setuptools on RHEL9.
+
+* resultsdb plugin has new dependency `urllib3<2.3.0; python_version < '3.9'`
+  to ensure compatibility with Python 3.8.
+
+* Test coverage testing has been moved from codeclimate to codecov.
+
+* New lint warnings has been added to static-checks and code refactored.
+
+* MacOS has been updated from 12 to 14 in CI 
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/108.0...109.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/35>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0472033/>`_.
