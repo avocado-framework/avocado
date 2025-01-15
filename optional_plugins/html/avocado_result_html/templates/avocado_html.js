@@ -77,8 +77,12 @@
     // this should be called each table we have a redrawn
     this.setupResizers = function() {
       var self = this;
-      table.find('.resizer').each(function() {
-        var resizerElement = $(this);
+      table.find('th').each(function() {
+        if ($(this).find('.resizer').length == 0) {
+          // we only need one resizer per header cell
+          $(this).append('<div class="resizer"></div>')
+        }
+        var resizerElement = $(this).find('.resizer');
         // the resizer must have the same size as the header cell to be detectable
         resizerElement.height(resizerElement.parent().outerHeight())
         // we detach and reattach each event to prevent them from being triggered
