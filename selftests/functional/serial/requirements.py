@@ -131,11 +131,11 @@ DEPENDENCY_FILE = """
 """
 
 DEPENDENCY_RECIPE_FMT = """
-{
+{{
   "kind": "avocado-instrumented",
   "uri": "{path}",
-  "kwargs": {"dependencies": [{"type": "package", "name": "hello"}]}
-}
+  "kwargs": {{"dependencies": [{{"type": "package", "name": "hello"}}]}}
+}}
 """
 
 
@@ -320,7 +320,7 @@ class BasicTest(TestCaseTmpDir, Test):
                 result = process.run(command, ignore_status=True)
                 self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
                 self.assertIn(
-                    "PASS 3",
+                    "PASS 1",
                     result.stdout_text,
                 )
                 self.assertNotIn(
