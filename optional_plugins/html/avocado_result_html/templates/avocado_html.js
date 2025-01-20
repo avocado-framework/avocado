@@ -13,18 +13,17 @@
 
   function onDatatablesInitialized() {
     var statusColumn = this.api().column(4);
-    var select = $('<select class="form-control input-sm"><option value="">ALL</option></select>')
+    var select = $('<select id="dt-status-0" class="form-control input-sm"><option value="">ALL</option></select>')
       .on('change', function () {
         statusColumn.search($(this).val().trim()).draw();
       });
 
-    $('#results_length').wrap('<div class="row"><div class="col-sm-4"></div></div>');
-    $('#results_length').parent().parent()
+    $('#dt-length-0').parent().parent()
       .append(
-        $('<div class="col-sm-8"></div>')
+        $('<div class="dt-search"></div>')
         .append(
-          $('<label class="font-weight-normal">Status </label>').append(select)
-        )
+          $('<label for="dt-status-0" style="margin-right: 0.5em;">Status:</label>')
+        ).append(select)
       );
 
     // Add all possible status to the select
@@ -78,8 +77,12 @@
     // this should be called each table we have a redrawn
     this.setupResizers = function() {
       var self = this;
-      table.find('.resizer').each(function() {
-        var resizerElement = $(this);
+      table.find('th').each(function() {
+        if ($(this).find('.resizer').length == 0) {
+          // we only need one resizer per header cell
+          $(this).append('<div class="resizer"></div>')
+        }
+        var resizerElement = $(this).find('.resizer');
         // the resizer must have the same size as the header cell to be detectable
         resizerElement.height(resizerElement.parent().outerHeight())
         // we detach and reattach each event to prevent them from being triggered
