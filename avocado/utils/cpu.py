@@ -36,6 +36,7 @@ VENDORS_MAP = {
     "ibm": (
         rb"POWER\d",
         rb"IBM/S390",
+        rb"Power\d",
     ),
 }
 
@@ -216,6 +217,8 @@ def get_arch():
     ]
     cpuinfo = _get_info()
     for pattern, arch in cpu_table:
+        pattern = re.compile(pattern, re.IGNORECASE)
+        
         if _list_matches(cpuinfo, pattern):
             if arch == "arm":
                 # ARM is a special situation, which matches both 32 bits
@@ -261,7 +264,7 @@ def get_family():
         res = []
         try:
             for line in _get_info():
-                res = re.findall(rb"cpu\s+:\s+(POWER\d+)", line)
+                res = re.findall(rb"cpu\s+:\s+(POWER\d+)", line, re.IGNORECASE)
                 if res:
                     break
             family = res[0].decode("utf-8").lower()
