@@ -102,7 +102,7 @@ these days a framework) to perform automated testing.
 
 %build
 %if 0%{?rhel}
-sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.12"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
+sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.13"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %if 0%{?fedora} >= 42
 sed -e '/"markupsafe<3.0.0"/d' -i optional_plugins/html/setup.py
