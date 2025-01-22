@@ -5,7 +5,7 @@
     "tests": [
          {
 	 "name": "Write the release notes",
-         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, add the new release to the list of releases at `docs/source/releases/index.rst`. Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label. Commit your changes directly in the master branch."
+         "description": "Under `docs/source/releases/` from next.rst create a new .rst file describing the release changes. Also, add the new release to the list of releases at `docs/source/releases/index.rst` and update the next.rts for next release. Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label. Commit your changes directly in the master branch."
 	 },
          {
 	 "name": "Check secrets are set in GitHub",
@@ -20,12 +20,12 @@
          "description": "Log into https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest-release/add_build/ and submit a new build using SCM as the source type, the clone URL being https://github.com/avocado-framework/avocado.git, the committish being the version tag (such as 109.0) and make srpm as the mechanism to build a SRPM."
 	 },
          {
-	 "name": "Update the Fedora RPM packages",
+	 "name": "Update the Fedora RPM packages (LTS only)",
          "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-rawhide\n\nand work with the package maintainer by sending a PR to update the Avocado package on rawhide."
 	 },
          {
 	 "name": "Update website",
-         "description": "Update https://github.com/avocado-framework/avocado-framework.github.io/blob/master/index.md and add the new release."
+         "description": "Update https://github.com/avocado-framework/avocado-framework.github.io/blob/master/_data/releases/versions.yml, add the new release and remove the oldest one."
 	 },
          {
 	 "name": "Send e-emails",
