@@ -887,7 +887,7 @@ class RunnerOperationTest(TestCaseTmpDir):
     )
     def test_store_logging_stream_external(self):
         """
-        :avocado: dependency={"type": "ansible-module", "uri": "pip", "name": "matplotlib"}
+        :avocado: dependency={"type": "pip", "action": "install", "name": "matplotlib"}
         """
 
         def check_matplotlib_logs(file_path):
@@ -933,7 +933,7 @@ class RunnerOperationTest(TestCaseTmpDir):
     )
     def test_show_external_log(self):
         """
-        :avocado: dependency={"type": "ansible-module", "uri": "pip", "name": "matplotlib"}
+        :avocado: dependency={"type": "pip", "action": "install", "name": "matplotlib"}
         """
         cmd = (
             f"{AVOCADO} --show=matplotlib run --job-results-dir {self.tmpdir.name} "
