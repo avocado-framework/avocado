@@ -1,7 +1,14 @@
+import abc
+import multiprocessing
+import signal
 import time
+import traceback
 
+from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.runnable import RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
+from avocado.core.utils import messages
+from avocado.utils import process
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -86,3 +93,98 @@ class BaseRunner(RunnableRunner):
                 most_current_execution_state_time = now
                 yield self.prepare_status("running")
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+
+
+class PythonBaseRunner(BaseRunner, abc.ABC):
+    """
+    Base class for Python runners
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.proc = None
+        self.sigtstp = multiprocessing.Lock()
+        self.sigstopped = False
+        self.timeout = float("inf")
+
+    def signal_handler(self, signum, frame):  # pylint: disable=W0613
+        if signum == signal.SIGTERM.value:
+            raise TestInterrupt("Test interrupted: Timeout reached")
+        elif signum == signal.SIGTSTP.value:
+            if self.sigstopped:
+                self.sigstopped = False
+                sign = signal.SIGCONT
+            else:
+                self.sigstopped = True
+                sign = signal.SIGSTOP
+            if not self.proc:  # Ignore ctrl+z when proc not yet started
+                return
+            with self.sigtstp:
+                self.timeout = float("inf")
+                process.kill_process_tree(self.proc.pid, sign, False)
+
+    def _monitor(self, time_started, queue):
+        next_status_time = None
+        while True:
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+            now = time.monotonic()
+            if queue.empty():
+                if next_status_time is None or now > next_status_time:
+                    next_status_time = now + RUNNER_RUN_STATUS_INTERVAL
+                    yield messages.RunningMessage.get()
+                if (now - time_started) > self.timeout:
+                    self.proc.terminate()
+            else:
+                message = queue.get()
+                if message.get("type") == "early_state":
+                    self.timeout = float(message.get("timeout") or float("inf"))
+                else:
+                    yield message
+                if message.get("status") == "finished":
+                    break
+            while self.sigstopped:
+                time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+
+    def run(self, runnable):
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGTSTP, self.signal_handler)
+        # pylint: disable=W0201
+        self.runnable = runnable
+        yield messages.StartedMessage.get()
+        try:
+            queue = multiprocessing.SimpleQueue()
+            self.proc = multiprocessing.Process(
+                target=self._run, args=(self.runnable, queue)
+            )
+            while self.sigstopped:
+                pass
+            with self.sigtstp:
+                self.proc.start()
+            time_started = time.monotonic()
+            for message in self._monitor(time_started, queue):
+                yield message
+
+        except TestInterrupt:
+            self.proc.terminate()
+            for message in self._monitor(time_started, queue):
+                yield message
+        except Exception as e:
+            yield messages.StderrMessage.get(traceback.format_exc())
+            yield messages.FinishedMessage.get(
+                "error",
+                fail_reason=str(e),
+                fail_class=e.__class__.__name__,
+                traceback=traceback.format_exc(),
+            )
+
+    @abc.abstractmethod
+    def _run(self, runnable, queue):
+        """
+        Run the test
+
+        :param runnable: the runnable object
+        :type runnable: :class:`Runnable`
+        :param queue: the queue to put messages
+        :type queue: :class:`multiprocessing.SimpleQueue`
+        """
