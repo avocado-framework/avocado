@@ -1,5 +1,5 @@
 #!/bin/sh
-if [[ -z ${SLEEP_LENGTH} ]]; then
+if [ -z ${SLEEP_LENGTH} ]; then
   SLEEP_LENGTH=1
 fi
 
