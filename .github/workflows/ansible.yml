@@ -12,7 +12,7 @@ jobs:
     name: Ansible (${{matrix.extra}})
     runs-on: ubuntu-latest
     container:
-      image: fedora:38
+      image: fedora:40
     env:
       RUN_BEFORE: 'dnf install -y git ansible'
       GIT_URL: 'https://github.com/${{github.repository}}'

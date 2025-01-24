@@ -10,7 +10,7 @@ jobs:
     name: Static checks
     runs-on: ubuntu-20.04
     container:
-      image: quay.io/avocado-framework/avocado-ci-fedora-38
+      image: quay.io/avocado-framework/avocado-ci-fedora-40
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -254,12 +254,12 @@ jobs:
           retention-days: 1
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
-  version_task_fedora_37:
+  version_task_fedora_40:
 
-    name: Version task fedora:37
+    name: Version task fedora:40
     runs-on: ubuntu-20.04
     container:
-      image: fedora:37
+      image: fedora:40
     steps:
       - name: Install Python dependencies
         run: dnf -y install python3 python3-setuptools
@@ -267,12 +267,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  version_task_fedora_38:
+  version_task_fedora_41:
 
-    name: Version task fedora:38
+    name: Version task fedora:41
     runs-on: ubuntu-20.04
     container:
-      image: fedora:38
+      image: fedora:41
     steps:
       - name: Install Python dependencies
         run: dnf -y install python3-setuptools
@@ -356,12 +356,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  egg_task_fedora_37:
+  egg_task_fedora_40:
 
-    name: Egg task fedora:37
+    name: Egg task fedora:40
     runs-on: ubuntu-20.04
     container:
-      image: fedora:37
+      image: fedora:40
     steps:
       - name: Install Python dependencies
         run: dnf -y install python3 python3-setuptools
@@ -369,12 +369,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_fedora_38:
+  egg_task_fedora_41:
 
-    name: Egg task fedora:38
+    name: Egg task fedora:41
     runs-on: ubuntu-20.04
     container:
-      image: fedora:38
+      image: fedora:41
     steps:
       - name: Install Python dependencies
         run: dnf -y install python3-setuptools
@@ -471,7 +471,7 @@ jobs:
          python3 setup.py bdist_egg
          mv dist/avocado_framework-*egg /tmp/avocado_framework.egg
          python3 setup.py clean --all
-         python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:38 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
+         python3 -c 'import sys; sys.path.insert(0, "/tmp/avocado_framework.egg"); from avocado.core.main import main; sys.exit(main())' run --spawner=podman --spawner-podman-image=fedora:40 --spawner-podman-avocado-egg=file:///tmp/avocado_framework.egg -- /bin/true
 
   podman_external_runner_task:
 
@@ -498,7 +498,7 @@ jobs:
     name: Fedora develop install/uninstall task
     runs-on: ubuntu-latest
     container:
-      image: fedora:38
+      image: fedora:40
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -520,7 +520,7 @@ jobs:
     name: Fedora selftests
     runs-on: ubuntu-latest
     container:
-      image: quay.io/avocado-framework/avocado-ci-fedora-36
+      image: quay.io/avocado-framework/avocado-ci-fedora-40
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
