@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest.mock
@@ -5,9 +6,26 @@ from urllib.error import URLError
 
 from avocado.core.settings import Settings
 from avocado.plugins import vmimage as vmimage_plugin
+from avocado.utils import path
 from avocado.utils import vmimage as vmimage_util
-from selftests.functional.plugin.vmimage import create_metadata_file, missing_binary
 from selftests.utils import skipOnLevelsInferiorThan, temp_dir_prefix
+
+
+def missing_binary(binary):
+    try:
+        path.find_command(binary)
+        return False
+    except path.CmdNotFoundError:
+        return True
+
+
+def create_metadata_file(image_file, metadata):
+    basename = os.path.splitext(image_file)[0]
+    metadata_file = f"{basename}_metadata.json"
+    metadata = json.dumps(metadata)
+    with open(metadata_file, "w", encoding="utf-8") as f:
+        f.write(metadata)
+
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
 FEDORA_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
