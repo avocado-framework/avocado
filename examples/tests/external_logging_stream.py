@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 
 from avocado import Test
@@ -5,6 +6,7 @@ from avocado import Test
 
 class MatplotlibTest(Test):
     def test(self):
+        matplotlib.use("agg")
         _, ax = plt.subplots()
 
         fruits = ["apple", "blueberry", "cherry", "orange"]
