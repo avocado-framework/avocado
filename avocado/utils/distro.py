@@ -387,7 +387,7 @@ class DebianProbe(Probe):
 
     CHECK_FILE = "/etc/debian_version"
     CHECK_FILE_DISTRO_NAME = "debian"
-    CHECK_VERSION_REGEX = re.compile(r"(\d+)\.(\d+)")
+    CHECK_VERSION_REGEX = re.compile(r".+/(.+)|(\d+)\.\d+")
 
 
 class UbuntuProbe(Probe):
@@ -399,7 +399,7 @@ class UbuntuProbe(Probe):
     CHECK_FILE_CONTAINS = "ubuntu"
     CHECK_FILE_DISTRO_NAME = "Ubuntu"
     CHECK_VERSION_REGEX = re.compile(
-        r".*VERSION_ID=\"(\d+)\.(\d+)\".*", re.MULTILINE | re.DOTALL
+        r".*VERSION_ID=\"(\d+\.\d+)\".*", re.MULTILINE | re.DOTALL
     )
 
 
