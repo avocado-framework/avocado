@@ -113,7 +113,7 @@ def cpu_has_flags(flags):
         flags = [flags]
 
     for flag in flags:
-        if not any([flag.encode() in line for line in cpu_info]):
+        if not any(flag.encode() in line for line in cpu_info):
             return False
     return True
 

@@ -178,6 +178,6 @@ def skip_dmesg_messages(dmesg_stdout, skip_messages):
     """
 
     def filter_strings(line):
-        return not any([string in line for string in skip_messages])
+        return not any(string in line for string in skip_messages)
 
     return "\n".join(filter(None, filter(filter_strings, dmesg_stdout.splitlines())))
