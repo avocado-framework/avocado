@@ -395,7 +395,7 @@ class GdbMiRecord:
         return pprint.pformat(self.__dict__)
 
 
-class session:
+class session:  # pylint: disable=C0103
     def __init__(self):
         self.the_scanner = GdbMiScanner()
         self.the_parser = GdbMiParser()

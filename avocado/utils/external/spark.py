@@ -45,7 +45,7 @@ class GenericScanner:
         for name, number in self.re.groupindex.items():
             self.index2func[number - 1] = getattr(self, "t_" + name)
 
-    def makeRE(self, name):
+    def makeRE(self, name):  # pylint: disable=C0103
         doc = getattr(self, name).__doc__
         rv = f"(?P<{name[2:]}>{doc})"
         return rv
@@ -92,7 +92,7 @@ class GenericScanner:
 
 class _State:
     def __init__(self, stateno, items):
-        self.T, self.complete, self.items = [], [], items
+        self.t, self.complete, self.items = [], [], items
         self.stateno = stateno
 
 
@@ -158,16 +158,16 @@ class GenericParser:
         del rv["cores"]
         return rv
 
-    def __setstate__(self, D):
+    def __setstate__(self, d):
         self.rules = {}
         self.rule2func = {}
         self.rule2name = {}
         self.collectRules()
-        start = D["rules"][self._START][0][1][1]  # Blech.
+        start = d["rules"][self._START][0][1][1]  # Blech.
         self.augment(start)
-        D["rule2func"] = self.rule2func
-        D["makeSet"] = self.makeSet_fast
-        self.__dict__ = D  # pylint: disable=W0201
+        d["rule2func"] = self.rule2func
+        d["makeSet"] = self.makeSet_fast
+        self.__dict__ = d  # pylint: disable=W0201
 
     #
     #  A hook for GenericASTBuilder and GenericASTMatcher.  Mess
@@ -178,7 +178,7 @@ class GenericParser:
     def preprocess(rule, func):
         return rule, func
 
-    def addRule(self, doc, func, _preprocess=1):
+    def addRule(self, doc, func, _preprocess=1):  # pylint: disable=C0103
         fn = func
         rules = doc.split()
 
@@ -204,7 +204,7 @@ class GenericParser:
             self.rule2name[rule] = func.__name__[2:]
         self.ruleschanged = 1
 
-    def collectRules(self):
+    def collectRules(self):  # pylint: disable=C0103
         for name in _namelist(self):
             if name[:2] == "p_":
                 func = getattr(self, name)
@@ -215,7 +215,7 @@ class GenericParser:
         rule = f"{self._START} ::= {self._BOF} {start}"
         self.addRule(rule, lambda args: args[1], 0)
 
-    def computeNull(self):
+    def computeNull(self):  # pylint: disable=C0103
         self.nullable = {}  # pylint: disable=W0201
         tbd = []
 
@@ -251,13 +251,13 @@ class GenericParser:
                     self.nullable[lhs] = 1
                     changes = 1
 
-    def makeState0(self):
+    def makeState0(self):  # pylint: disable=C0103
         s0 = _State(0, [])
         for rule in self.newrules[self._START]:
             s0.items.append((rule, 0))
         return s0
 
-    def finalState(self, tokens):
+    def finalState(self, tokens):  # pylint: disable=C0103
         #
         #  Yuck.
         #
@@ -266,7 +266,7 @@ class GenericParser:
         start = self.rules[self._START][0][1][1]
         return self.goto(1, start)
 
-    def makeNewRules(self):
+    def makeNewRules(self):  # pylint: disable=C0103
         worklist = []
         for rulelist in self.rules.values():
             for rule in rulelist:
@@ -356,7 +356,7 @@ class GenericParser:
             pos += 1
         return pos
 
-    def makeState(self, state, sym): # pylint: disable=R0914
+    def makeState(self, state, sym):  # pylint: disable=R0914,C0103
         assert sym is not None
         #
         #  Compute \epsilon-kernel state's core and see if
@@ -378,35 +378,35 @@ class GenericParser:
         #  \epsilon-nonkernel state together; we'll need it right away.
         #
         k = self.cores[tcore] = len(self.states)
-        K, NK = _State(k, kitems), _State(k + 1, [])
-        self.states[k] = K
+        ks, nk = _State(k, kitems), _State(k + 1, [])
+        self.states[k] = ks
         predicted = {}
 
         edges = self.edges
         rules = self.newrules
-        for X in K, NK:
-            worklist = X.items
+        for x in ks, nk:
+            worklist = x.items
             for item in worklist:
                 rule, pos = item
                 _, rhs = rule
                 if pos == len(rhs):
-                    X.complete.append(rule)
+                    x.complete.append(rule)
                     continue
 
-                nextSym = rhs[pos]
-                key = (X.stateno, nextSym)
-                if nextSym not in rules:
+                next_sym = rhs[pos]
+                key = (x.stateno, next_sym)
+                if next_sym not in rules:
                     if key not in edges:
                         edges[key] = None
-                        X.T.append(nextSym)
+                        x.t.append(next_sym)
                 else:
                     edges[key] = None
-                    if nextSym not in predicted:
-                        predicted[nextSym] = 1
-                        for prule in rules[nextSym]:
+                    if next_sym not in predicted:
+                        predicted[next_sym] = 1
+                        for prule in rules[next_sym]:
                             ppos = self.skip(prule)
                             new = (prule, ppos)
-                            NK.items.append(new)
+                            nk.items.append(new)
             #
             #  Problem: we know K needs generating, but we
             #  don't yet know about NK.  Can't commit anything
@@ -414,10 +414,10 @@ class GenericParser:
             #  we delay committing on both K and NK to avoid this
             #  hacky code?  This creates other problems..
             #
-            if X is K:
+            if x is ks:
                 edges = {}
 
-        if NK.items == []:
+        if nk.items == []:
             return k
 
         #
@@ -431,9 +431,9 @@ class GenericParser:
             self.edges[(k, None)] = self.cores[tcore]
             return k
 
-        nk = self.cores[tcore] = self.edges[(k, None)] = NK.stateno
+        nk = self.cores[tcore] = self.edges[(k, None)] = nk.stateno
         self.edges.update(edges)
-        self.states[nk] = NK
+        self.states[nk] = nk
         return k
 
     def goto(self, state, sym):
@@ -453,12 +453,12 @@ class GenericParser:
             self.edges[key] = rv
         return rv
 
-    def gotoT(self, state, t):
+    def gotoT(self, state, t):  # pylint: disable=C0103
         return [self.goto(state, t)]
 
-    def gotoST(self, state, st):
+    def gotoST(self, state, st):  # pylint: disable=C0103
         rv = []
-        for t in self.states[state].T:
+        for t in self.states[state].t:
             if st == t:
                 rv.append(self.goto(state, t))
         return rv
@@ -474,7 +474,7 @@ class GenericParser:
                 input_set.append(item)
             self.links[key].append((predecessor, causal))
 
-    def makeSet(self, token, sets, i): # pylint: disable=R0914
+    def makeSet(self, token, sets, i):  # pylint: disable=R0914,C0103
         cur, next_item = sets[i], sets[i + 1]
 
         ttype = (  # pylint: disable=R1709
@@ -512,7 +512,7 @@ class GenericParser:
                         if nk is not None:
                             self.add(cur, (nk, i))
 
-    def makeSet_fast(self, token, sets, i): # pylint: disable=R0914
+    def makeSet_fast(self, token, sets, i):  # pylint: disable=R0914,C0103
         #
         #  Call *only* when the entire state machine has been built!
         #  It relies on self.edges being filled in completely, and
@@ -608,7 +608,7 @@ class GenericParser:
             rule2cause[rule] = c
         return rule2cause[self.ambiguity(choices)]
 
-    def deriveEpsilon(self, nt):
+    def deriveEpsilon(self, nt):  # pylint: disable=C0103
         if len(self.newrules[nt]) > 1:
             rule = self.ambiguity(self.newrules[nt])
         else:
@@ -621,7 +621,7 @@ class GenericParser:
             attr[i] = self.deriveEpsilon(rhs[i])
         return self.rule2func[self.new2old[rule]](attr)
 
-    def buildTree(self, nt, item, tokens, k):
+    def buildTree(self, nt, item, tokens, k):  # pylint: disable=C0103
         state, _ = item
 
         choices = []
@@ -691,7 +691,7 @@ class GenericParser:
 class GenericASTBuilder(GenericParser):
     def __init__(self, AST, start):
         GenericParser.__init__(self, start)
-        self.AST = AST
+        self.ast = AST
 
     def preprocess(self, rule, func):  # pylint: disable=W0221
         # pylint: disable=C3001
@@ -703,10 +703,10 @@ class GenericASTBuilder(GenericParser):
         lhs, _ = rule
         return rule, rebind(lhs)
 
-    def buildASTNode(self, args, lhs):
+    def buildASTNode(self, args, lhs):  # pylint: disable=C0103
         children = []
         for arg in args:
-            if isinstance(arg, self.AST):
+            if isinstance(arg, self.ast):
                 children.append(arg)
             else:
                 children.append(self.terminal(arg))
@@ -717,7 +717,7 @@ class GenericASTBuilder(GenericParser):
         return token
 
     def nonterminal(self, token_type, args):
-        rv = self.AST(token_type)
+        rv = self.ast(token_type)
         rv[: len(args)] = args
         return rv
 
@@ -816,7 +816,7 @@ class GenericASTMatcher(GenericParser):
         return (lhs, tuple(rhslist)), rebind(func)
 
     @staticmethod
-    def foundMatch(args, func):
+    def foundMatch(args, func):  # pylint: disable=C0103
         func(args[-1])
         return args[-1]
 

@@ -852,7 +852,7 @@ class NetworkInterface:
         ping_process.stdout.close()
         ping_process.wait()
 
-    def get_device_IPI_name(self):
+    def get_device_IPI_name(self):  # pylint: disable=C0103
         """
         Function to convert IO device name to device_ipi names according to
         "/proc/interrupts" context.
