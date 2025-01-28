@@ -129,6 +129,7 @@ class Podman(_Podman):
         if stdout:
             output = stdout.decode().strip().split()
             return int(output[0]), int(output[1]), output[2]
+        return None
 
     def get_container_info(self, container_id):
         """Return all information about specific container.

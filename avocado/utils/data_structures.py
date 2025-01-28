@@ -179,6 +179,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
     else:
         if dict1 != dict2:
             diff_btw_dict.append(f"{level} - dict1 value:{dict1}, dict2 value:{dict2}")
+    return None
 
 
 class Borg:

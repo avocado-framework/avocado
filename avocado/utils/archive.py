@@ -136,6 +136,7 @@ def probe_zstd_cmd():
             return zstd_cmd
         else:
             LOG.error("zstd command does not seem to be the Zstandard compression tool")
+    return None
 
 
 def zstd_uncompress(path, output_path=None, force=False):

@@ -329,6 +329,7 @@ class GDB:
                 raise ValueError("Could not read GDB response")
             else:
                 time.sleep(timeout)
+        return None
 
     def read_until_break(self, max_lines=100):
         """

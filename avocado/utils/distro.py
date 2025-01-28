@@ -163,6 +163,7 @@ class Probe:
                 return self.CHECK_FILE_DISTRO_NAME
             elif os.path.exists(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
+        return None
 
     def check_name_for_file_contains(self):
         """
@@ -208,6 +209,7 @@ class Probe:
             for line in check_file:
                 if self.CHECK_FILE_CONTAINS in line:
                     return self.CHECK_FILE_DISTRO_NAME
+        return None
 
     def check_version(self):
         """
@@ -248,6 +250,7 @@ class Probe:
                     return None
 
             return self.CHECK_VERSION_REGEX.match(version_file_content)
+        return None
 
     def version(self):
         """

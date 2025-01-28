@@ -261,6 +261,7 @@ class Asset:
                     os.symlink(path, asset_path)
                     self._create_hash_file(asset_path)
                     return self._verify_hash(asset_path)
+        return False
 
     def _get_relative_dir(self):
         """
@@ -494,6 +495,7 @@ class Asset:
             with open(metadata_file, "r", encoding="utf-8") as f:
                 metadata = json.load(f)
                 return metadata
+        return None
 
     @property
     def asset_name(self):
@@ -651,6 +653,7 @@ class Asset:
         parsed = self.parsed_name
         if parsed:
             return parsed.scheme
+        return None
 
     @property
     def name_url(self):
@@ -660,6 +663,7 @@ class Asset:
         """
         if self.name_scheme:
             return self.parsed_name.geturl()
+        return None
 
     @staticmethod
     def parse_name(name):

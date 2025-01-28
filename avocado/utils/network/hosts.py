@@ -70,12 +70,14 @@ class Host:
         for interface in self.interfaces:
             if ipaddr in interface.get_ipaddrs():
                 return interface
+        return None
 
     def get_interface_by_hwaddr(self, mac):
         """Return an interface that has a specific mac."""
         for interface in self.interfaces:
             if mac in interface.get_hwaddr():
                 return interface
+        return None
 
     def get_all_hwaddr(self):
         """Get a list of all mac address in the host

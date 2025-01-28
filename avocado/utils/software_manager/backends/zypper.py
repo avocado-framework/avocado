@@ -164,7 +164,7 @@ class ZypperBackend(RpmBackend):
                 return f"/usr/src/packages/SPECS/{name}.spec"
         except process.CmdError:
             log.error("Installing source failed")
-            return ""
+        return ""
 
     def get_source(self, name, dest_path, build_option=None):
         """

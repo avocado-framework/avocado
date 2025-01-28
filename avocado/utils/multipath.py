@@ -95,6 +95,7 @@ def get_mpath_name(wwid):
     if device_exists(wwid):
         cmd = f"multipath -l {wwid}"
         return process.run(cmd, sudo=True).stdout_text.split()[0]
+    return None
 
 
 def get_mpath_from_dm(dm_id):
@@ -113,6 +114,7 @@ def get_mpath_from_dm(dm_id):
     for mpath in mpaths.splitlines():
         if dm_id in mpath:
             return mpath.split()[1]
+    return None
 
 
 def get_multipath_wwids():
@@ -143,6 +145,7 @@ def get_multipath_wwid(mpath):
     for wwid in wwids.splitlines():
         if mpath in wwid:
             return wwid.split()[1]
+    return None
 
 
 def is_mpath_dev(mpath):
@@ -170,7 +173,7 @@ def get_paths(wwid):
     :rtype: list of str
     """
     if not device_exists(wwid):
-        return
+        return None
     cmd = f"multipath -ll {wwid}"
     lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
     paths = []
@@ -229,6 +232,7 @@ def get_path_status(disk_path):
             for paths in path_groups["paths"]:
                 if paths["dev"] == disk_path:
                     return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
+    return None
 
 
 def get_mpath_paths_status(wwid):
@@ -241,7 +245,7 @@ def get_mpath_paths_status(wwid):
     """
     mpath_op = get_multipath_details()
     if not mpath_op:
-        return
+        return None
     wwid_paths = {}
     for maps in mpath_op["maps"]:
         if maps["name"] == wwid or maps["uuid"] == wwid:
@@ -254,7 +258,7 @@ def get_mpath_paths_status(wwid):
                     )
     if len(wwid_paths) != 0:
         return wwid_paths
-    return
+    return None
 
 
 def fail_path(path):
@@ -311,6 +315,7 @@ def get_policy(wwid):
         for line in lines.split("\n"):
             if "policy" in line:
                 return line.split("'")[1].split()[0]
+    return None
 
 
 def get_size(wwid):
@@ -326,6 +331,7 @@ def get_size(wwid):
         for line in lines.split("\n"):
             if "size" in line:
                 return line.split("=")[1].split()[0]
+    return None
 
 
 def flush_path(path_name):

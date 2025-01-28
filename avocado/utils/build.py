@@ -46,6 +46,7 @@ def configure(path, configure=None):  # pylint: disable=W0621
                 return process.run(os.path.join(path, configure)).exit_status
     finally:
         os.chdir(cwd)
+    return None
 
 
 def run_make(

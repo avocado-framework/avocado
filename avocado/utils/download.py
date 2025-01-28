@@ -147,7 +147,7 @@ def url_download_interactive(url, output_file, title="", chunk_size=102400):
 
 def _get_file(src, dst, permissions=None):
     if src == dst:
-        return
+        return None
 
     if aurl.is_url(src):
         url_download(src, dst)

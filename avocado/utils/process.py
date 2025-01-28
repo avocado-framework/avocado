@@ -187,6 +187,7 @@ def _get_pid_from_proc_pid_stat(proc_path):
     match = re.match(r"\/proc\/([0-9]+)\/.*", proc_path)
     if match is not None:
         return int(match.group(1))
+    return None
 
 
 def get_children_pids(parent_pid, recursive=False):

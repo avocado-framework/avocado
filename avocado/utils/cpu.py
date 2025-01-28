@@ -297,6 +297,7 @@ def get_model():
             if re.search(pattern, line):
                 model = int(line.split(":")[1])
                 return model
+        return None
     else:
         raise NotImplementedError
 
@@ -330,6 +331,7 @@ def get_x86_amd_zen(family=None, model=None):
             for _zen, _model in _zen_model.items():
                 if any(lower <= model <= upper for (lower, upper) in _model):
                     return _zen
+    return None
 
 
 def online_list():

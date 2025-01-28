@@ -218,6 +218,7 @@ def get_filesystem_type(mount_point="/"):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+    return None
 
 
 def is_root_device(device):
@@ -366,6 +367,7 @@ def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
     rescan_disk(disk_name)
     if "The partition table has been altered" in part_output:
         return get_disk_partitions(disk_name)
+    return None
 
 
 def get_size_of_disk(disk):

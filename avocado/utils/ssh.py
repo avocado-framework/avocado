@@ -189,6 +189,7 @@ class Session:
         control = os.path.expanduser(control)
         if os.path.exists(control):
             return control
+        return None
 
     def get_raw_ssh_command(self, command):
         """

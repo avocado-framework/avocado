@@ -135,6 +135,7 @@ class AptBackend(DpkgBackend):
                 tmp_file.write(new_file_contents)
                 tmp_file.flush()  # Sync the content
                 process.system(f"cp {tmp_file.name} {self.repo_file_path}", sudo=True)
+                return True
         except (OSError, process.CmdError) as details:
             log.error(details)
             return False
@@ -239,7 +240,7 @@ class AptBackend(DpkgBackend):
                         return os.path.join(path, subdir)
         except process.CmdError as details:
             log.error("Apt package source failed %s", details)
-            return ""
+        return ""
 
     def build_dep(self, name):
         """

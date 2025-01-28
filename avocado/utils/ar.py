@@ -105,3 +105,4 @@ class Ar:
                 with self as open_file:
                     open_file.seek(member.offset)
                     return open_file.read(member.size)
+        return None

@@ -132,6 +132,7 @@ def read_from_meminfo(key):
     for line in genio.read_file("/proc/meminfo").splitlines():
         if key in line:
             return int(re.search(r"(\d+)\s*(?:kB)?$", line).group(1))
+    return None
 
 
 def memtotal():
