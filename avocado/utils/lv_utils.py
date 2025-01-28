@@ -377,8 +377,7 @@ def lv_check(vg_name, lv_name):
     if match:
         LOGGER.debug("Provided Logical volume %s exists in %s", lv_name, vg_name)
         return True
-    else:
-        return False
+    return False
 
 
 def lv_list(vg_name=None):

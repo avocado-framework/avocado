@@ -77,10 +77,9 @@ def can_sudo(cmd=None):
     try:
         if cmd:  # Am I able to run the cmd or plain sudo id?
             return not system(cmd, ignore_status=True, sudo=True)
-        elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
+        if system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
             return True
-        else:
-            return False
+        return False
     except OSError:  # Broken sudo binary
         return False
 
@@ -254,11 +253,11 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
         killed_pids.extend(kill_process_tree(int(child), sig, False))
     safe_kill(pid, sig)
     if send_sigcont:
-        for pid in killed_pids:
-            safe_kill(pid, signal.SIGCONT)
+        for killed_pid in killed_pids:
+            safe_kill(killed_pid, signal.SIGCONT)
     if timeout == 0:
         return killed_pids
-    elif timeout > 0:
+    if timeout > 0:
         if not wait_for(
             _all_pids_dead,
             timeout + start - time.monotonic(),

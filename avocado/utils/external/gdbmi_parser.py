@@ -354,8 +354,7 @@ class GdbDynamicObject:
     def __getitem__(self, i):
         if i == 0 and len(self.__dict__) > 0:
             return self
-        else:
-            raise IndexError
+        raise IndexError
 
     def __getattr__(self, name):
         if name.startswith("__"):

@@ -165,7 +165,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
                 dict1[k], dict2[k], level=f"{level}.{k}", diff_btw_dict=diff_btw_dict
             )
         return diff_btw_dict
-    elif isinstance(dict1, list) and isinstance(dict2, list):
+    if isinstance(dict1, list) and isinstance(dict2, list):
         if len(dict1) != len(dict2):
             diff_btw_dict.append(f"{level} + {len(dict1)} - {len(dict2)}")
         common_len = min(len(dict1), len(dict2))

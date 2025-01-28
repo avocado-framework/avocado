@@ -119,8 +119,7 @@ class Host:
             return False
         if re.search(check, mac_id):
             return True
-        else:
-            return False
+        return False
 
     def get_default_route_interface(self):
         """Get a list of default routes interfaces

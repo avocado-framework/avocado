@@ -132,10 +132,9 @@ def probe_zstd_cmd():
             stderr=subprocess.PIPE,
             check=False,
         )
-        if proc.returncode == 0 and proc.stdout == b"avocado\n":
-            return zstd_cmd
-        else:
+        if proc.returncode != 0 or proc.stdout != b"avocado\n":
             LOG.error("zstd command does not seem to be the Zstandard compression tool")
+        return zstd_cmd
     return None
 
 
@@ -260,8 +259,7 @@ class ArchiveFile:
             files = self._engine.namelist()
             if files:
                 return files[0].strip(os.sep)
-            else:
-                return None
+            return None
 
         files = self._engine.getnames()
         if files:
@@ -359,13 +357,12 @@ def uncompress(filename, path):
     is_tar = tarfile.is_tarfile(filename)
     if is_gzip_file(filename) and not is_tar:
         return gzip_uncompress(filename, path)
-    elif is_lzma_file(filename) and not is_tar:
+    if is_lzma_file(filename) and not is_tar:
         return lzma_uncompress(filename, path)
-    elif is_zstd_file(filename) and not is_tar:
+    if is_zstd_file(filename) and not is_tar:
         return zstd_uncompress(filename, path)
-    else:
-        with ArchiveFile.open(filename) as x:
-            return x.extract(path)
+    with ArchiveFile.open(filename) as x:
+        return x.extract(path)
 
 
 # Some aliases

@@ -322,6 +322,6 @@ def to_text(data, encoding=ENCODING, errors="strict"):
         if encoding is None:
             encoding = ENCODING
         return data.decode(encoding, errors=errors)
-    elif not isinstance(data, str):
+    if not isinstance(data, str):
         return str(data)
     return data

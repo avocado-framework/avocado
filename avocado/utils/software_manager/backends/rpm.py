@@ -58,15 +58,14 @@ class RpmBackend(BaseBackend):
                     return self._check_installed_version(name, version)
             return False
 
-        elif version:
+        if version:
             return self._check_installed_version(name, version)
-        else:
-            cmd = "rpm -q " + name
-            try:
-                process.system(cmd)
-                return True
-            except process.CmdError:
-                return False
+        cmd = "rpm -q " + name
+        try:
+            process.system(cmd)
+            return True
+        except process.CmdError:
+            return False
 
     def list_all(self, software_components=True):
         """
@@ -158,9 +157,8 @@ class RpmBackend(BaseBackend):
         if match:
             LOG.info("Verification successful.")
             return True
-        else:
-            LOG.info(result.stdout_text.rstrip())
-            return False
+        LOG.info(result.stdout_text.rstrip())
+        return False
 
     @staticmethod
     def rpm_erase(package_name):

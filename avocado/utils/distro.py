@@ -135,8 +135,7 @@ class Probe:
         """
         if self.session and self.session.cmd(f"test -f {file_name}").exit_status == 0:
             return True
-        else:
-            return False
+        return False
 
     def check_name_for_file(self):
         """
@@ -161,7 +160,7 @@ class Probe:
         if self.check_name_for_file():
             if self.check_for_remote_file(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
-            elif os.path.exists(self.CHECK_FILE):
+            if os.path.exists(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
         return None
 

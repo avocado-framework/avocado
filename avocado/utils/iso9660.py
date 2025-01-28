@@ -58,10 +58,9 @@ def has_userland_tool(executable):
     """
     if os.path.isabs(executable):
         return os.path.isfile(executable)
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            if os.path.isfile(os.path.join(path, executable)):
-                return True
+    for path in os.environ["PATH"].split(os.pathsep):
+        if os.path.isfile(os.path.join(path, executable)):
+            return True
     return False
 
 

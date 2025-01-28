@@ -100,8 +100,7 @@ class Script:
             os.remove(self.path)
             self.stored = False
             return True
-        else:
-            return False
+        return False
 
 
 class TemporaryScript(Script):

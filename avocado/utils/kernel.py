@@ -201,8 +201,7 @@ def _parse_kernel_version(version):
     match = re.match(r"(\d+)\.(\d+)\.(\d+)-(\d+).*", version)
     if match:
         return tuple(map(int, match.groups()))
-    else:
-        raise AssertionError(f'Malformed kernel version "{version}"')
+    raise AssertionError(f'Malformed kernel version "{version}"')
 
 
 def check_version(version):

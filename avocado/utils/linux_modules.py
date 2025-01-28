@@ -88,9 +88,8 @@ def parse_lsmod_for_module(l_raw, module_name, escape=True):
         if module_info["submodules"]:
             module_info["submodules"] = module_info["submodules"].split(",")
         return module_info
-    else:
-        # return empty dict to be consistent
-        return {}
+    # return empty dict to be consistent
+    return {}
 
 
 def loaded_module_info(module_name):
@@ -237,8 +236,7 @@ def check_kernel_config(config_name):
                 option = line[1].strip()
                 if option == "m":
                     return ModuleConfig.MODULE
-                else:
-                    return ModuleConfig.BUILTIN
+                return ModuleConfig.BUILTIN
     return ModuleConfig.NOT_SET
 
 

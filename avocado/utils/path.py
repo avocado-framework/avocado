@@ -56,8 +56,7 @@ def get_path(base_path, user_path):
     """
     if os.path.isabs(user_path) or aurl.is_url(user_path):
         return user_path
-    else:
-        return os.path.join(base_path, user_path)
+    return os.path.join(base_path, user_path)
 
 
 def init_dir(*args):
@@ -116,9 +115,8 @@ def find_command(cmd, default=None, check_exec=True):
 
     if default is not None:
         return default
-    else:
-        path_paths.sort()
-        raise CmdNotFoundError(cmd, path_paths)
+    path_paths.sort()
+    raise CmdNotFoundError(cmd, path_paths)
 
 
 class PathInspector:
@@ -150,7 +148,7 @@ class PathInspector:
             if first_line.startswith(SHEBANG):
                 if language is None:
                     return True
-                elif language in first_line:
+                if language in first_line:
                     return True
         return False
 
@@ -257,11 +255,10 @@ def get_max_file_name_length(path):
     if hasattr(os, "pathconf"):
         mount_point = get_path_mount_point(path)
         return os.pathconf(mount_point, "PC_NAME_MAX")
-    else:
-        # Given the unavailability of os.pathconf(), always available
-        # under Unix, it should be safe to assume this is Windows.
-        # About Windows, versions and configurations can yield different
-        # file name length limits.  The value hardcoded here (248) is
-        # calculated from the 260 MAX_PATH limit, plus the provision
-        # for directories names allowing a 8.3 filename inside it.
-        return 248
+    # Given the unavailability of os.pathconf(), always available
+    # under Unix, it should be safe to assume this is Windows.
+    # About Windows, versions and configurations can yield different
+    # file name length limits.  The value hardcoded here (248) is
+    # calculated from the 260 MAX_PATH limit, plus the provision
+    # for directories names allowing a 8.3 filename inside it.
+    return 248

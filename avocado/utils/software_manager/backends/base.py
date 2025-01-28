@@ -38,6 +38,5 @@ class BaseBackend:
         provides = self.provides(path)
         if provides is not None:
             return self.install(provides)
-        else:
-            log.warning("No package seems to provide %s", path)
-            return False
+        log.warning("No package seems to provide %s", path)
+        return False

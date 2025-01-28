@@ -64,7 +64,7 @@ class Collectible(ABC):
     def __eq__(self, other):
         if hash(self) == hash(other):
             return True
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -100,7 +100,7 @@ class Logfile(Collectible):
     def __eq__(self, other):
         if isinstance(other, Logfile):
             return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -147,7 +147,7 @@ class Command(Collectible):
     def __eq__(self, other):
         if isinstance(other, Command):
             return (self.cmd, self.log_path) == (other.cmd, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -212,7 +212,7 @@ class Daemon(Command):
     def __eq__(self, other):
         if isinstance(other, Daemon):
             return (self.cmd, self.log_path) == (other.cmd, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -292,7 +292,7 @@ class JournalctlWatcher(Collectible):
     def __eq__(self, other):
         if isinstance(other, JournalctlWatcher):
             return self.log_path == other.log_path
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -366,7 +366,7 @@ class LogWatcher(Collectible):
     def __eq__(self, other):
         if isinstance(other, LogWatcher):
             return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 

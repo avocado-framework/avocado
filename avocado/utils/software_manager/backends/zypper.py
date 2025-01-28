@@ -189,9 +189,8 @@ class ZypperBackend(RpmBackend):
             spec_path = self._source_install(name)
             if spec_path:
                 return self.prepare_source(spec_path, dest_path, build_option)
-            else:
-                log.error("Source not installed properly")
-                return ""
+            log.error("Source not installed properly")
+            return ""
         except process.CmdError as details:
             log.error(details)
             return ""

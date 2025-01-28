@@ -152,10 +152,7 @@ class ImageProviderBase:
         if resulting_versions:
             self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
-        else:
-            raise ImageProviderError(
-                f"Version not available at " f"{self.url_versions}"
-            )
+        raise ImageProviderError(f"Version not available at " f"{self.url_versions}")
 
     def get_image_url(self):
         """
@@ -178,10 +175,9 @@ class ImageProviderBase:
 
         if parser.items:
             return url_images + max(parser.items)
-        else:
-            raise ImageProviderError(
-                f"No images matching '{image}' " f"at '{url_images}'. Wrong arch?"
-            )
+        raise ImageProviderError(
+            f"No images matching '{image}' " f"at '{url_images}'. Wrong arch?"
+        )
 
     def get_image_parameters(self, image_file_name):
         """

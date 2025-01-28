@@ -41,9 +41,9 @@ def configure(path, configure=None):  # pylint: disable=W0621
             return process.run(os.path.join(path, configure)).exit_status
 
         candidates = ["autogen.sh", "configure"]
-        for configure in candidates:
-            if os.access(configure, os.R_OK | os.X_OK):
-                return process.run(os.path.join(path, configure)).exit_status
+        for candidate in candidates:
+            if os.access(candidate, os.R_OK | os.X_OK):
+                return process.run(os.path.join(path, candidate)).exit_status
     finally:
         os.chdir(cwd)
     return None

@@ -476,8 +476,7 @@ def get_thp_value(feature):
     value = genio.read_file(thp_feature_to_get)
     if feature in ("enabled", "defrag", "shmem_enabled"):
         return (re.search(r"\[(\w+)\]", value)).group(1)
-    else:
-        return value
+    return value
 
 
 class _MemInfoItem:

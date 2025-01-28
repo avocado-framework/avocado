@@ -227,9 +227,8 @@ def get_arch():
                         version = int(line.split(b":", 1)[1])
                         if version >= 8:
                             return "aarch64"
-                        else:
-                            # For historical reasons return arm
-                            return "arm"
+                        # For historical reasons return arm
+                        return "arm"
             return arch
     return platform.machine()
 
@@ -298,8 +297,7 @@ def get_model():
                 model = int(line.split(":")[1])
                 return model
         return None
-    else:
-        raise NotImplementedError
+    raise NotImplementedError
 
 
 def get_x86_amd_zen(family=None, model=None):

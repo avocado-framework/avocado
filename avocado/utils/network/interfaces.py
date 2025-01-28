@@ -70,8 +70,7 @@ class NetworkInterface:
             raise NWException(msg)
         if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
             return f"{path}/{self.name}.nmconnection"
-        else:
-            return f"{path}/ifcfg-{self.name}"
+        return f"{path}/ifcfg-{self.name}"
 
     @property
     def config_file_path(self):
@@ -79,16 +78,14 @@ class NetworkInterface:
         if current_distro.name in ["rhel", "fedora"]:
             if self.distro_is_rhel9_or_later:
                 return "/etc/NetworkManager/system-connections"
-            else:
-                return "/etc/sysconfig/network-scripts"
-        elif current_distro.name == "SuSE":
+            return "/etc/sysconfig/network-scripts"
+        if current_distro.name == "SuSE":
             if self.distro_is_suse16_or_later:
                 return "/etc/NetworkManager/system-connections"
             else:
                 return "/etc/sysconfig/network"
-        else:
-            msg = "Distro not supported by API. Could not get interface filename."
-            LOG.error(msg)
+        msg = "Distro not supported by API. Could not get interface filename."
+        LOG.error(msg)
         return None
 
     @property
@@ -100,11 +97,10 @@ class NetworkInterface:
                     f"{self.config_file_path}/{slave}.nmconnection"
                     for slave in slave_dict["slaves"]
                 ]
-            else:
-                return [
-                    f"{self.config_file_path}/ifcfg-{slave}"
-                    for slave in slave_dict["slaves"]
-                ]
+            return [
+                f"{self.config_file_path}/ifcfg-{slave}"
+                for slave in slave_dict["slaves"]
+            ]
         except Exception:
             msg = "Slave config filename not available"
             LOG.debug(msg)
@@ -813,7 +809,7 @@ class NetworkInterface:
         for symbol in binary_netmask:
             if accept_zero_only and symbol == "1":
                 return False
-            elif symbol == "0":
+            if symbol == "0":
                 accept_zero_only = True
             if first_bit and symbol == "0":
                 return False
@@ -879,6 +875,6 @@ class NetworkInterface:
                 cmd, shell=True, ignore_status=True
             ).decode("utf-8")
             return interface_type
-        elif self.is_veth():
+        if self.is_veth():
             return self.name
         return None

@@ -217,8 +217,7 @@ class YumBackend(RpmBackend):
         provides_list = [key for key in d_provides]
         if provides_list:
             return str(provides_list[0])
-        else:
-            return None
+        return None
 
     @staticmethod
     def build_dep(name):
@@ -282,12 +281,10 @@ class YumBackend(RpmBackend):
                     )
                     if self.build_dep(spec_path):
                         return self.prepare_source(spec_path, dest_path, build_option)
-                    else:
-                        log.error("Installing build dependencies failed")
-                        return ""
-                else:
-                    log.error("Installing source rpm failed")
+                    log.error("Installing build dependencies failed")
                     return ""
+                log.error("Installing source rpm failed")
+                return ""
             except process.CmdError as details:
                 log.error(details)
                 return ""
