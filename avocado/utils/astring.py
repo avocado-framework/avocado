@@ -160,23 +160,12 @@ def iter_tabular_output(matrix, header=None, strip=False):
     :param strip:  Optionally remove trailing whitespace from each row.
     """
 
-    def _get_matrix_with_header():
-        return itertools.chain([header], matrix)
-
-    def _get_matrix_no_header():
-        return matrix
-
-    if header is None:
-        header = []
-    if header:
-        get_matrix = _get_matrix_with_header
-    else:
-        get_matrix = _get_matrix_no_header
-
     lengths = []
     len_matrix = []
     str_matrix = []
-    for row in get_matrix():
+    if header:
+        matrix = itertools.chain([header], matrix)
+    for row in matrix:
         len_matrix.append([])
         str_matrix.append([string_safe_encode(column) for column in row])
         for i, column in enumerate(str_matrix[-1]):

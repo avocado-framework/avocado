@@ -356,7 +356,7 @@ class GenericParser:
             pos += 1
         return pos
 
-    def makeState(self, state, sym):
+    def makeState(self, state, sym): # pylint: disable=R0914
         assert sym is not None
         #
         #  Compute \epsilon-kernel state's core and see if
@@ -474,7 +474,7 @@ class GenericParser:
                 input_set.append(item)
             self.links[key].append((predecessor, causal))
 
-    def makeSet(self, token, sets, i):
+    def makeSet(self, token, sets, i): # pylint: disable=R0914
         cur, next_item = sets[i], sets[i + 1]
 
         ttype = (  # pylint: disable=R1709
@@ -512,7 +512,7 @@ class GenericParser:
                         if nk is not None:
                             self.add(cur, (nk, i))
 
-    def makeSet_fast(self, token, sets, i):
+    def makeSet_fast(self, token, sets, i): # pylint: disable=R0914
         #
         #  Call *only* when the entire state machine has been built!
         #  It relies on self.edges being filled in completely, and

@@ -314,7 +314,7 @@ class PMem:
             raise PMemException(f'Namespace enable failed for "{namespace}"')
         return True
 
-    def create_namespace(
+    def create_namespace(  # pylint: disable=R0914
         self,
         region="",
         bus="",
