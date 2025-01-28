@@ -224,7 +224,7 @@ class GenericParser:
             self.nullable[lhs] = 0
             for rule in rulelist:
                 rhs = rule[1]
-                if len(rhs) == 0:
+                if not rhs:
                     self.nullable[lhs] = 1
                     continue
                 #
@@ -261,7 +261,7 @@ class GenericParser:
         #
         #  Yuck.
         #
-        if len(self.newrules[self._START]) == 2 and len(tokens) == 0:
+        if len(self.newrules[self._START]) == 2 and not tokens:
             return 1
         start = self.rules[self._START][0][1][1]
         return self.goto(1, start)
@@ -825,7 +825,7 @@ class GenericASTMatcher(GenericParser):
         children = 0
 
         for child in node:
-            if children == 0:
+            if not children:
                 self.input.insert(0, "(")
             children += 1
             self.match_r(child)

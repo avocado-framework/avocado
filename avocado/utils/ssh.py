@@ -126,7 +126,7 @@ class Session:
     def _master_command(self, command):
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ("-O", command))
         result = process.run(cmd, ignore_status=True)
-        return result.exit_status == 0
+        return not result.exit_status
 
     def _check(self):
         return self._master_command("check")
@@ -178,7 +178,7 @@ class Session:
             master.wait()
             if self.password is not None:
                 os.unlink(ssh_askpass_path)
-            if master.returncode != 0:
+            if master.returncode:
                 return False
             self._connection = master
         return self._check()
@@ -279,9 +279,9 @@ class Session:
             options += " -r"
         options += f" {source} {destination}"
         try:
-            if self.cmd(f"test -d {path}").exit_status != 0:
+            if self.cmd(f"test -d {path}").exit_status:
                 self.cmd(f"mkdir -p {path}")
             result = process.run(f"{cmd} {options}", ignore_status=True)
-            return result.exit_status == 0
+            return not result.exit_status
         except process.CmdError as exc:
             raise NWException(f"failed to copy file {exc}") from exc

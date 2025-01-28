@@ -86,7 +86,7 @@ class Podman(_Podman):
             LOG.error("%s: %s", msg, str(ex))
             raise PodmanException(msg) from ex
 
-        if proc.returncode != 0:
+        if proc.returncode:
             command_args = " ".join(args)
             msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
             LOG.error(msg)
@@ -203,7 +203,7 @@ class AsyncPodman(_Podman):
             LOG.error("%s: %s", msg, str(ex))
             raise PodmanException(msg) from ex
 
-        if proc.returncode != 0:
+        if proc.returncode:
             command_args = " ".join(args)
             msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
             LOG.error(msg)

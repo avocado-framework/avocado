@@ -153,8 +153,7 @@ class RpmBackend(BaseBackend):
         # unstable approach but currently works
         # installed_pattern = r"\s" + package_name + r" is installed\s+"
         # match = re.search(installed_pattern, result)
-        match = result.exit_status == 0
-        if match:
+        if not result.exit_status:
             LOG.info("Verification successful.")
             return True
         LOG.info(result.stdout_text.rstrip())
@@ -238,7 +237,7 @@ class RpmBackend(BaseBackend):
             result = process.run(f"rpm -qp {abs_path}")
         except process.CmdError:
             return False
-        if result.exit_status == 0:
+        if not result.exit_status:
             return True
         return False
 

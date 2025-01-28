@@ -66,7 +66,7 @@ def can_sudo(cmd=None):
 
     :param cmd: unicode string with the commands
     """
-    if os.getuid() == 0:  # Root
+    if not os.getuid():  # Root
         return True
 
     try:  # Does sudo binary exists?
@@ -105,7 +105,7 @@ def get_capabilities(pid=None):
         result = run(f"getpcaps {int(pid)}", ignore_status=True)
     except FileNotFoundError:
         return []
-    if result.exit_status != 0:
+    if result.exit_status:
         return []
     if result.stderr_text.startswith("Capabilities "):
         info = result.stderr_text
@@ -152,7 +152,7 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
     :param signal: Signal number.
     """
-    if get_owner_id(int(pid)) == 0:
+    if not get_owner_id(int(pid)):
         kill_cmd = f"kill -{int(signal)} {int(pid)}"
         try:
             run(kill_cmd, sudo=True)
@@ -255,7 +255,7 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     if send_sigcont:
         for killed_pid in killed_pids:
             safe_kill(killed_pid, signal.SIGCONT)
-    if timeout == 0:
+    if not timeout:
         return killed_pids
     if timeout > 0:
         if not wait_for(
@@ -627,7 +627,7 @@ class SubProcess:
 
     @staticmethod
     def _prepend_sudo(cmd, shell):
-        if os.getuid() != 0:
+        if os.getuid():
             try:
                 sudo_cmd = f"{path.find_command('sudo', check_exec=False)} -n"
             except path.CmdNotFoundError as details:
@@ -708,7 +708,7 @@ class SubProcess:
     def _fill_results(self, rc):
         self._init_subprocess()
         self.result.exit_status = rc
-        if self.result.duration == 0:
+        if not self.result.duration:
             self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
             LOG.info(
@@ -916,7 +916,7 @@ class SubProcess:
         Returns whether the subprocess is running with sudo enabled
         """
         self._init_subprocess()
-        return self.get_user_id() == 0
+        return not self.get_user_id()
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
@@ -1007,7 +1007,7 @@ def run(
         logger=logger,
     )
     cmd_result = sp.run(timeout=timeout)
-    fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
+    fail_condition = cmd_result.exit_status or cmd_result.interrupted
     if fail_condition and not ignore_status:
         raise CmdError(cmd, sp.result)
     return cmd_result

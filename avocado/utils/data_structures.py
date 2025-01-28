@@ -56,7 +56,7 @@ def geometric_mean(values):
     except ValueError as exc:
         raise ValueError(f"Invalid inputs {values}. Provide valid inputs") from exc
     no_values = len(values)
-    if no_values == 0:
+    if not no_values:
         return None
     return math.exp(sum(math.log(number) for number in values) / no_values)
 
@@ -98,7 +98,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
             try:
                 ratio = float(element2) / float(element1)
             except ZeroDivisionError:  # For 0s, allow exact match or error
-                if float(element2) == 0:
+                if not float(element2):
                     new_line.append(".")
                     same += 1
                 else:

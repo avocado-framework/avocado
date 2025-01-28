@@ -256,7 +256,7 @@ def get_mpath_paths_status(wwid):
                         paths["dev_st"],
                         paths["chk_st"],
                     )
-    if len(wwid_paths) != 0:
+    if len(wwid_paths):
         return wwid_paths
     return None
 
@@ -277,7 +277,7 @@ def fail_path(path):
         return False
 
     cmd = f'multipathd -k"fail path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_failed, timeout=10) or False
     return False
 
@@ -297,7 +297,7 @@ def reinstate_path(path):
         return False
 
     cmd = f'multipathd -k"reinstate path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_reinstated, timeout=10) or False
     return False
 
@@ -372,7 +372,7 @@ def suspend_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"suspend map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_suspended, timeout=10) or False
     return False
 
@@ -391,7 +391,7 @@ def resume_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"resume map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_resumed, timeout=10) or False
     return False
 
@@ -410,7 +410,7 @@ def remove_mpath(mpath):
         return True
 
     cmd = f'multipathd -k"remove map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_removed, timeout=10) or False
     return False
 
@@ -429,7 +429,7 @@ def add_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"add map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_added, timeout=10) or False
     return False
 
@@ -448,7 +448,7 @@ def remove_path(path):
         return False
 
     cmd = f'multipathd -k"remove path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_path_removed, timeout=10) or False
     return False
 
@@ -467,6 +467,6 @@ def add_path(path):
         return True
 
     cmd = f'multipathd -k"add path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_path_added, timeout=10) or False
     return False

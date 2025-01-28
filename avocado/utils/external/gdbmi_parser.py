@@ -352,7 +352,7 @@ class GdbDynamicObject:
         return len(self.__dict__) > 0
 
     def __getitem__(self, i):
-        if i == 0 and len(self.__dict__) > 0:
+        if not i and len(self.__dict__) > 0:
             return self
         raise IndexError
 

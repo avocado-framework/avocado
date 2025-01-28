@@ -132,7 +132,7 @@ def probe_zstd_cmd():
             stderr=subprocess.PIPE,
             check=False,
         )
-        if proc.returncode != 0 or proc.stdout != b"avocado\n":
+        if proc.returncode or proc.stdout != b"avocado\n":
             LOG.error("zstd command does not seem to be the Zstandard compression tool")
         return zstd_cmd
     return None
@@ -154,7 +154,7 @@ def zstd_uncompress(path, output_path=None, force=False):
         stderr=subprocess.PIPE,
         check=False,
     )
-    if not proc.returncode == 0:
+    if proc.returncode:
         raise ArchiveException(
             f"Unable to decompress {path} into {output_path}: {proc.stderr}"
         )

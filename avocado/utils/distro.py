@@ -133,7 +133,7 @@ class Probe:
         :returns: whether the file exists in remote machine or not
         :rtype: bool
         """
-        if self.session and self.session.cmd(f"test -f {file_name}").exit_status == 0:
+        if self.session and not self.session.cmd(f"test -f {file_name}").exit_status:
             return True
         return False
 
@@ -228,7 +228,7 @@ class Probe:
         """
         if self.check_version():
             if self.session:
-                if self.session.cmd(f"test -f {self.CHECK_FILE}").exit_status != 0:
+                if self.session.cmd(f"test -f {self.CHECK_FILE}").exit_status:
                     return None
             elif not os.path.exists(self.CHECK_FILE):
                 return None

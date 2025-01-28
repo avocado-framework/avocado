@@ -105,13 +105,13 @@ def parse_unified_diff_output(lines):
         # gather adds
         elif len(line) > 0 and line[0] == "+":
             added_line = line[1:].lstrip().rstrip()
-            if len(added_line) == 0:
+            if not added_line:
                 continue
             adds = adds + [added_line]
         # gather removes
         elif len(line) > 0 and line[0] == "-":
             removed_line = line[1:].lstrip().rstrip()
-            if len(removed_line) == 0:
+            if not removed_line:
                 continue
             removes = removes + [removed_line]
     return (adds, removes)
@@ -204,7 +204,7 @@ def assert_change(actual_result, expected_result):
     change_diffs = assert_change_dict(actual_result, expected_result)
     for file_change in change_diffs.values():
         for line_change in file_change:
-            if len(line_change) != 0:
+            if len(line_change):
                 return False
     return True
 
@@ -227,7 +227,7 @@ def create_diff_report(change_diffs):
         diff_strings.append(f"+++ {file_path}")
         for iter_category in range(4):
             change_category = change_diff[iter_category]
-            if iter_category == 0 and change_category:
+            if not iter_category and change_category:
                 diff_strings.append("*++ Additional unexpected adds")
             elif iter_category == 1 and change_category:
                 diff_strings.append("/++ Not present expected adds")

@@ -51,7 +51,7 @@ class SoftwareRaid:
         self.spare_disks = spare_disks or []
 
     def _run_command(self, cmd, log_details=True, check_recovery=False):
-        if process.system(cmd, ignore_status=True, shell=True) != 0:
+        if process.system(cmd, ignore_status=True, shell=True):
             if log_details:
                 self.get_detail()
             return False

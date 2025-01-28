@@ -139,7 +139,7 @@ class PathInspector:
     def is_empty(self):
         if os.path.exists(self.path):
             size = os.stat(self.path)[stat.ST_SIZE]
-            return size == 0
+            return not size
         return False
 
     def is_script(self, language=None):

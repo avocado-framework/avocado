@@ -177,7 +177,7 @@ def unload_module(module_name):
         except KeyError:
             LOG.info("Module %s is already unloaded", module_name)
             return
-        if module_used != 0:
+        if module_used:
             raise RuntimeError(
                 f"Module {module_name} is still in use. " f"Can not unload it."
             )

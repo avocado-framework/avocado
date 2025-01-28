@@ -212,7 +212,7 @@ def vg_ramdisk_cleanup(
 
     if loop_device is not None:
         result = process.run(f"pvremove {loop_device}", ignore_status=True, sudo=True)
-        if result.exit_status != 0:
+        if result.exit_status:
             errs.append("wipe pv")
             LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
@@ -230,7 +230,7 @@ def vg_ramdisk_cleanup(
                     f"losetup -d {loop_device}", ignore_status=True, sudo=True
                 )
                 if b"resource busy" not in result.stderr:
-                    if result.exit_status != 0:
+                    if result.exit_status:
                         errs.append("remove loop device")
                         LOGGER.error(
                             "Unexpected failure when removing loop"
@@ -255,7 +255,7 @@ def vg_ramdisk_cleanup(
                     f"umount {vg_ramdisk_dir}", ignore_status=True, sudo=True
                 )
                 time.sleep(0.1)
-                if result.exit_status == 0:
+                if not result.exit_status:
                     break
             else:
                 errs.append("umount")

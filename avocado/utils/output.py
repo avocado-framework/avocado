@@ -116,7 +116,7 @@ class ProgressBar:
         hashes = (done / 100.0) * all_full
         hashes = int(round(hashes))
 
-        if hashes == 0:
+        if not hashes:
             screen_text = f"[>{' ' * (all_full - 1)}]"
         elif hashes == all_full:
             screen_text = f"[{'=' * all_full}]"
