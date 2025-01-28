@@ -219,17 +219,17 @@ def get_arch():
     cpuinfo = _get_info()
     for pattern, arch in cpu_table:
         if _list_matches(cpuinfo, pattern):
-            if arch == "arm":
-                # ARM is a special situation, which matches both 32 bits
-                # (v7) and 64 bits (v8).
-                for line in cpuinfo:
-                    if line.startswith(b"CPU architecture"):
-                        version = int(line.split(b":", 1)[1])
-                        if version >= 8:
-                            return "aarch64"
-                        # For historical reasons return arm
-                        return "arm"
-            return arch
+            if arch != "arm":
+                return arch
+            # ARM is a special situation, which matches both 32 bits
+            # (v7) and 64 bits (v8).
+            for line in cpuinfo:
+                if line.startswith(b"CPU architecture"):
+                    version = int(line.split(b":", 1)[1])
+                    if version >= 8:
+                        return "aarch64"
+                    # For historical reasons return arm
+                    return "arm"
     return platform.machine()
 
 

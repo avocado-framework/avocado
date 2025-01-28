@@ -524,7 +524,7 @@ class GenericParser:
             token is not None and self.typestring(token) or None
         )
 
-        for item in cur:
+        for item in cur:  # pylint: disable=R1702
             ptr = (item, i)
             state, parent = item
             if ttype is not None:
