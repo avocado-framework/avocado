@@ -237,7 +237,7 @@ def get_family():
     """Get family name of the cpu like Broadwell, Haswell, power8, power9."""
     family = None
     arch = get_arch()
-    if arch == "x86_64" or arch == "i386":
+    if arch in ("x86_64", "i386"):
         if get_vendor() == "amd":
             cpu_info = _get_info()
             pattern = r"cpu family\s*:"

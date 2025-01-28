@@ -210,7 +210,7 @@ class RpmBackend(BaseBackend):
         subpaths = os.listdir(rpm_dir)
         subpacks = []
         for subpath in subpaths:
-            if subpath == "." or subpath == "..":
+            if subpath in (".", ".."):
                 continue
             new_filepath = rpm_dir + "/" + subpath
             LOG.debug("Checking path for rpm %s", new_filepath)

@@ -248,7 +248,7 @@ def get_mpath_paths_status(wwid):
         return None
     wwid_paths = {}
     for maps in mpath_op["maps"]:
-        if maps["name"] == wwid or maps["uuid"] == wwid:
+        if wwid in (maps["name"], maps["uuid"]):
             for path_groups in maps["path_groups"]:
                 for paths in path_groups["paths"]:
                     wwid_paths[paths["dev"]] = (

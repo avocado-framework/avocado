@@ -115,7 +115,7 @@ def loaded_module_info(module_name):
             key = items[0].rstrip(":")
             value = None
             if len(items) > 1:
-                if key == "filename" or key == "version":
+                if key in ("filename", "version"):
                     value = str(items[-1])
                 elif key == "depends":
                     value = items[1].split(",")
