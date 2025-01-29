@@ -201,7 +201,6 @@ class MixInMntDirMount:
         """
         Cleanups and frees any resources being used
         """
-        super().close()
         if self._mount_instance:
             self._mount_instance.close()
             self._mount_instance = None

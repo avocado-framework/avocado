@@ -66,8 +66,8 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     # multipath.conf file to take effect.
     time.sleep(5)
     mpath_svc = service.SpecificServiceManager(get_svc_name())
-    mpath_svc.restart()
-    wait.wait_for(mpath_svc.status, timeout=10)
+    mpath_svc.restart()  # pylint: disable=E1101
+    wait.wait_for(mpath_svc.status, timeout=10)  # pylint: disable=E1101
 
 
 def device_exists(mpath):

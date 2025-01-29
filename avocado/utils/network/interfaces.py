@@ -162,7 +162,7 @@ class NetworkInterface:
         """
         cmd = f"ip link set dev {self.name} address {hwaddr}"
         try:
-            run_command(cmd, self.self.host, sudo=True)
+            run_command(cmd, self.host, sudo=True)
         except Exception as ex:
             raise NWException(f"Adding hw address fails: {ex}") from ex
 

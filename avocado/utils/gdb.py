@@ -255,6 +255,7 @@ class CommandResult:
         return f"{self.command} at {self.timestamp:.9f}"
 
 
+# pylint: disable=E1101
 class GDB:
     """
     Wraps a GDB subprocess for easier manipulation

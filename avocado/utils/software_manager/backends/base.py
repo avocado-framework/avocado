@@ -35,8 +35,8 @@ class BaseBackend:
 
         :param path: Path to file.
         """
-        provides = self.provides(path)
+        provides = self.provides(path)  # pylint: disable=E1101
         if provides is not None:
-            return self.install(provides)
+            return self.install(provides)  # pylint: disable=E1101
         log.warning("No package seems to provide %s", path)
         return False
