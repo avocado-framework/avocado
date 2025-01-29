@@ -198,19 +198,8 @@ def vg_ramdisk_cleanup(
     :rtype: (str, str, str, str)
     :raises: :py:class:`LVException` on intolerable failure at any stage
     """
-    warnings.warn(
-        "deprecated, use existing methods: vg_remove, lv_remove", DeprecationWarning
-    )
-    errs = []
-    if vg_name is not None:
-        loop_device = re.search(
-            rf"([/\w-]+) +{vg_name} +lvm2", process.run("pvs", sudo=True).stdout_text
-        )
-        if loop_device is not None:
-            loop_device = loop_device.group(1)
-        process.run(f"vgremove -f {vg_name}", ignore_status=True, sudo=True)
 
-    if loop_device is not None:
+    def pvremove(loop_device):
         result = process.run(f"pvremove {loop_device}", ignore_status=True, sudo=True)
         if result.exit_status:
             errs.append("wipe pv")
@@ -240,13 +229,7 @@ def vg_ramdisk_cleanup(
                     break
                 time.sleep(0.1)
 
-    if ramdisk_filename is not None:
-        if os.path.exists(ramdisk_filename):
-            os.unlink(ramdisk_filename)
-            LOGGER.debug("Ramdisk filename %s deleted", ramdisk_filename)
-            vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
-
-    if vg_ramdisk_dir is not None:
+    def unmount():
         if use_tmpfs and not process.system(
             f"mountpoint {vg_ramdisk_dir}", ignore_status=True
         ):
@@ -270,6 +253,30 @@ def vg_ramdisk_cleanup(
             except OSError as details:
                 errs.append("rm-ramdisk-dir")
                 LOGGER.error("Failed to remove ramdisk_dir: %s", details)
+
+    warnings.warn(
+        "deprecated, use existing methods: vg_remove, lv_remove", DeprecationWarning
+    )
+    errs = []
+    if vg_name is not None:
+        loop_device = re.search(
+            rf"([/\w-]+) +{vg_name} +lvm2", process.run("pvs", sudo=True).stdout_text
+        )
+        if loop_device is not None:
+            loop_device = loop_device.group(1)
+        process.run(f"vgremove -f {vg_name}", ignore_status=True, sudo=True)
+
+    if loop_device is not None:
+        pvremove(loop_device)
+
+    if ramdisk_filename is not None:
+        if os.path.exists(ramdisk_filename):
+            os.unlink(ramdisk_filename)
+            LOGGER.debug("Ramdisk filename %s deleted", ramdisk_filename)
+            vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
+
+    if vg_ramdisk_dir is not None:
+        unmount()
     if errs:
         raise LVException(f"vg_ramdisk_cleanup failed: {', '.join(errs)}")
 

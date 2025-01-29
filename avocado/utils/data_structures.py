@@ -61,7 +61,7 @@ def geometric_mean(values):
     return math.exp(sum(math.log(number) for number in values) / no_values)
 
 
-def compare_matrices(matrix1, matrix2, threshold=0.05):
+def compare_matrices(matrix1, matrix2, threshold=0.05):  # pylint: disable=R0912
     """
     Compare 2 matrices nxm and return a matrix nxm with comparison data and
     stats. When the first columns match, they are considered as header and

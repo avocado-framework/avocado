@@ -67,8 +67,78 @@ MESSAGES = {
 }
 
 
+# pylint: disable=R0914
 def main():
-    exitcode = exit_codes.UTILITY_OK
+    def install():
+        if software_manager.install(args):
+            log.info(MESSAGES[action]["success"], args)
+            return exit_codes.UTILITY_OK
+        else:
+            log.error(MESSAGES[action]["fail"], args)
+            return exit_codes.UTILITY_FAIL
+
+    def remove():
+        if software_manager.remove(args):
+            log.info(MESSAGES[action]["success"], args)
+            return exit_codes.UTILITY_OK
+        else:
+            log.error(MESSAGES[action]["fail"], args)
+            return exit_codes.UTILITY_FAIL
+
+    def check_installed():
+        if software_manager.check_installed(args):
+            log.info(MESSAGES[action]["success"], args)
+            return exit_codes.UTILITY_OK
+        else:
+            log.info(MESSAGES[action]["fail"], args)
+            return exit_codes.UTILITY_FAIL
+
+    def list_all():
+        for pkg in software_manager.list_all():
+            log.info(pkg)
+        return exit_codes.UTILITY_OK
+
+    def list_files():
+        for f in software_manager.list_files(args):
+            log.info(f)
+        return exit_codes.UTILITY_OK
+
+    def add_repo():
+        if software_manager.add_repo(args):
+            log.info(MESSAGES[action]["success"], args)
+            return exit_codes.UTILITY_OK
+        else:
+            log.error(MESSAGES[action]["fail"], args)
+            return exit_codes.UTILITY_FAIL
+
+    def remove_repo():
+        if software_manager.remove_repo(args):
+            log.info(MESSAGES[action]["success"], args)
+            return exit_codes.UTILITY_OK
+        else:
+            log.error(MESSAGES[action]["fail"], args)
+            return exit_codes.UTILITY_FAIL
+
+    def upgrade():
+        if software_manager.upgrade():
+            log.info(MESSAGES[action])
+        return exit_codes.UTILITY_OK
+
+    def what_provides():
+        provides = software_manager.provides(args)
+        if provides is not None:
+            log.info(MESSAGES[action], provides, args)
+        return exit_codes.UTILITY_OK
+
+    def install_what_provides():
+        if software_manager.install_what_provides(args):
+            log.info(MESSAGES[action], args)
+        return exit_codes.UTILITY_OK
+
+    def show_help():
+        parser.print_help()
+        return exit_codes.UTILITY_OK
+
     parser = argparse.ArgumentParser(
         "install|remove|check-installed|list-all|list-files|add-repo|"
         "remove-repo|upgrade|what-provides|install-what-provides arguments"
@@ -95,69 +165,24 @@ def main():
         )
         return exit_codes.UTILITY_FAIL
 
+    options = {
+        "install": install,
+        "remove": remove,
+        "check-installed": check_installed,
+        "list-all": list_all,
+        "list-files": list_files,
+        "add-repo": add_repo,
+        "remove-repo": remove_repo,
+        "upgrade": upgrade,
+        "what-provides": what_provides,
+        "install-what-provides": install_what_provides,
+        "show-help": show_help,
+    }
+
     if args:
         action = args[0]
         args = " ".join(args[1:])
     else:
         action = "show-help"
 
-    if action == "install":
-        if software_manager.install(args):
-            log.info(MESSAGES[action]["success"], args)
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            exitcode = exit_codes.UTILITY_FAIL
-
-    elif action == "remove":
-        if software_manager.remove(args):
-            log.info(MESSAGES[action]["success"], args)
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            exitcode = exit_codes.UTILITY_FAIL
-
-    elif action == "check-installed":
-        if software_manager.check_installed(args):
-            log.info(MESSAGES[action]["success"], args)
-        else:
-            log.info(MESSAGES[action]["fail"], args)
-            exitcode = exit_codes.UTILITY_FAIL
-
-    elif action == "list-all":
-        for pkg in software_manager.list_all():
-            log.info(pkg)
-
-    elif action == "list-files":
-        for f in software_manager.list_files(args):
-            log.info(f)
-
-    elif action == "add-repo":
-        if software_manager.add_repo(args):
-            log.info(MESSAGES[action]["success"], args)
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            exitcode = exit_codes.UTILITY_FAIL
-
-    elif action == "remove-repo":
-        if software_manager.remove_repo(args):
-            log.info(MESSAGES[action]["success"], args)
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            exitcode = exit_codes.UTILITY_FAIL
-
-    elif action == "upgrade":
-        if software_manager.upgrade():
-            log.info(MESSAGES[action])
-
-    elif action == "what-provides":
-        provides = software_manager.provides(args)
-        if provides is not None:
-            log.info(MESSAGES[action], provides, args)
-
-    elif action == "install-what-provides":
-        if software_manager.install_what_provides(args):
-            log.info(MESSAGES[action], args)
-
-    elif action == "show-help":
-        parser.print_help()
-
-    return exitcode
+    return options[action]()

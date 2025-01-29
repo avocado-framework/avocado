@@ -34,23 +34,14 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     distro_specs = [spec for spec in distro_pkg_map if isinstance(spec, distro.Spec)]
 
     for distro_spec in distro_specs:
-        if distro_spec.name != detected_distro.name:
-            continue
-
-        if distro_spec.arch is not None and distro_spec.arch != detected_distro.arch:
-            continue
-
-        if int(detected_distro.version) < distro_spec.min_version:
-            continue
-
         if (
-            distro_spec.min_release is not None
-            and int(detected_distro.release) < distro_spec.min_release
+            distro_spec.name == detected_distro.name
+            and distro_spec.arch == detected_distro.arch
+            and int(detected_distro.version) >= distro_spec.min_version
+            and int(detected_distro.release) >= distro_spec.min_release
         ):
-            continue
-
-        pkgs = distro_pkg_map[distro_spec]
-        break
+            pkgs = distro_pkg_map[distro_spec]
+            break
 
     if not pkgs:
         log.info("No specific distro release package list")
@@ -63,6 +54,13 @@ def install_distro_packages(distro_pkg_map, interactive=False):
 
         if not pkgs:
             log.error("No generic distro package list")
+            log.error(
+                "No packages found for %s %s %s %s",
+                detected_distro.name,
+                detected_distro.arch,
+                detected_distro.version,
+                detected_distro.release,
+            )
 
     if pkgs:
         needed_pkgs = []
@@ -74,12 +72,4 @@ def install_distro_packages(distro_pkg_map, interactive=False):
             text = " ".join(needed_pkgs)
             log.info('Installing packages "%s"', text)
             result = software_manager.install(text)
-    else:
-        log.error(
-            "No packages found for %s %s %s %s",
-            detected_distro.name,
-            detected_distro.arch,
-            detected_distro.version,
-            detected_distro.release,
-        )
     return result
