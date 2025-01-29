@@ -195,8 +195,7 @@ class Partition:
             process.system_output(f"yes | {mkfs_cmd}", shell=True)
         except process.CmdError as error:
             raise PartitionError(self, "Failed to mkfs", error) from error
-        else:
-            self.fstype = fstype
+        self.fstype = fstype
 
     def mount(self, mountpoint=None, fstype=None, args="", mnt_check=True):
         """

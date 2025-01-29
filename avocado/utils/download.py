@@ -212,7 +212,6 @@ def get_file(
                 f"problems or incorrect hash_expected "
                 f"provided -> '{hash_expected}'"
             )
-        else:
-            log.error("Retrying download of src %s", src)
+        log.error("Retrying download of src %s", src)
 
     return dst

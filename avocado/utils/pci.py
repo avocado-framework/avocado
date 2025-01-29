@@ -162,11 +162,10 @@ def get_pci_class_name(pci_address):
             raise ValueError(
                 f"Unable to get 'Class' property of given pci " f"address {pci_address}"
             )
-        else:
-            raise ValueError(
-                f"Class ID {pci_class_id} is not defined "
-                f"in this library please send an update"
-            )
+        raise ValueError(
+            f"Class ID {pci_class_id} is not defined "
+            f"in this library please send an update"
+        )
     return pci_class_dic.get(pci_class_id)
 
 

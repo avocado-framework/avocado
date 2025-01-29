@@ -448,7 +448,7 @@ def lv_create(
         raise LVException("Volume group could not be found")
     if lv_check(vg_name, lv_name) and not force_flag:
         raise LVException("Logical volume already exists")
-    elif lv_check(vg_name, lv_name) and force_flag:
+    if lv_check(vg_name, lv_name) and force_flag:
         lv_remove(vg_name, lv_name)
 
     lv_cmd = f"lvcreate --name {lv_name}"

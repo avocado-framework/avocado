@@ -285,8 +285,7 @@ class GDB:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc from details
-            else:
-                raise
+            raise
 
         fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         self.read_until_break()
@@ -327,8 +326,7 @@ class GDB:
                 current_try += 1
             if current_try >= max_tries:
                 raise ValueError("Could not read GDB response")
-            else:
-                time.sleep(timeout)
+            time.sleep(timeout)
         return None
 
     def read_until_break(self, max_lines=100):
@@ -618,8 +616,7 @@ class GDBServer:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc from details
-            else:
-                raise
+            raise
 
         if wait_until_running:
             self._wait_until_running()
