@@ -235,7 +235,9 @@ class FedoraImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/"
         )
-        if int(self.version) >= 40:
+        if int(self.version) == 40:
+            self.image_pattern = "Fedora-Cloud-Base-Generic.(?P<arch>{arch})-(?P<version>{version})-(?P<build>{build}).qcow2$"
+        elif int(self.version) >= 41:
             self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
         else:
             self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
@@ -257,7 +259,9 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/"
         )
-        if int(self.version) >= 40:
+        if int(self.version) == 40:
+            self.image_pattern = "Fedora-Cloud-Base-Generic.(?P<arch>{arch})-(?P<version>{version})-(?P<build>{build}).qcow2$"
+        elif int(self.version) >= 41:
             self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
         else:
             self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"

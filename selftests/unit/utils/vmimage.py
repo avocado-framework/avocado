@@ -542,7 +542,7 @@ class FedoraImageProvider(unittest.TestCase):
         provider = vmimage.FedoraImageProvider(
             version=expected_version, build=expected_build, arch=expected_arch
         )
-        image = f"Fedora-Cloud-Base-Generic-{expected_version}-{expected_build}.{expected_arch}.qcow2"
+        image = f"Fedora-Cloud-Base-Generic-{expected_arch}-{expected_version}-{expected_build}.qcow2"
         parameters = provider.get_image_parameters(image)
         self.assertEqual(expected_version, parameters["version"])
         self.assertEqual(expected_build, parameters["build"])
