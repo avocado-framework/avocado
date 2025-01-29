@@ -92,7 +92,8 @@ class Host:
         except Exception as ex:
             raise NWException(f"could not get mac addresses:" f" {ex}") from ex
 
-    def validate_mac_addr(self, mac_id):
+    @staticmethod
+    def validate_mac_addr(mac_id):
         """Check if mac address is valid.
         This method checks if the mac address is 12 digit hexadecimal number.
 
