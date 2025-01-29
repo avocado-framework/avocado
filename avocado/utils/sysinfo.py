@@ -202,7 +202,7 @@ class Daemon(Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.daemon_process = None
-        self.temp_file = tempfile.NamedTemporaryFile()
+        self.temp_file = tempfile.NamedTemporaryFile()  # pylint: disable=R1732
 
     def __repr__(self):
         r = "Daemon(%r, %r)"
@@ -233,10 +233,11 @@ class Daemon(Command):
         if self.locale:
             env["LC_ALL"] = self.locale
         logf_path = self.temp_file.name
-        stdin = open(os.devnull, "r")  # pylint: disable=W1514
-        stdout = open(logf_path, "w")  # pylint: disable=W1514
+        stdin = open(os.devnull, "r")  # pylint: disable=W1514, R1732
+        stdout = open(logf_path, "w")  # pylint: disable=W1514, R1732
 
         try:
+            # pylint: disable=R1732
             self.daemon_process = subprocess.Popen(
                 shlex.split(self.cmd),
                 stdin=stdin,

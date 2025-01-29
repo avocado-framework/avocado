@@ -168,6 +168,7 @@ class Session:
                     preexec_fn=os.setsid,
                 )
             else:
+                # pylint: disable=R1732
                 master = subprocess.Popen(
                     cmd,
                     stdin=subprocess.DEVNULL,

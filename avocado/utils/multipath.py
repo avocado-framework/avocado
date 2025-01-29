@@ -60,7 +60,8 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
             mpath_fp.write("blacklist {\n")
             mpath_fp.write(f"    {blacklist}\n")
             mpath_fp.write("}\n")
-    LOG.debug(open(conf_file, "r", encoding="utf-8").read())
+    with open(conf_file, "r", encoding="utf-8") as fl:
+        LOG.debug(fl.read())
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)

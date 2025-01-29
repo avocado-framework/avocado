@@ -832,25 +832,25 @@ class NetworkInterface:
         :rtype: boolean
         """
         cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
-        ping_process = subprocess.Popen(
+        with subprocess.Popen(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
-        )
-        pattern = r"\.{10}"
-        while True:
-            char = ping_process.stdout.read(100)
-            match = re.search(pattern, char)
-            if match:
-                ping_process.terminate()
-                msg = "ping flood failed to remote machine, Please check the logs"
-                LOG.debug(msg)
-                return False
-            return True
-        ping_process.stdout.close()
-        ping_process.wait()
+        ) as ping_process:
+            pattern = r"\.{10}"
+            while True:
+                char = ping_process.stdout.read(100)
+                match = re.search(pattern, char)
+                if match:
+                    ping_process.terminate()
+                    msg = "ping flood failed to remote machine, Please check the logs"
+                    LOG.debug(msg)
+                    return False
+                return True
+            ping_process.stdout.close()
+            ping_process.wait()
 
     def get_device_IPI_name(self):  # pylint: disable=C0103
         """

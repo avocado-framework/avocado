@@ -460,8 +460,8 @@ def get_io_scheduler_list(device_name):
     :param device_name: Device  name example like sda
     :return: list of IO scheduler
     """
-    names = open(__sched_path(device_name), "r", encoding="utf-8").read()
-    return names.translate(str.maketrans("[]", " ")).split()
+    with open(__sched_path(device_name), "r", encoding="utf-8") as fl:
+        return fl.read().translate(str.maketrans("[]", " ")).split()
 
 
 def get_io_scheduler(device_name):

@@ -273,7 +273,7 @@ class GDB:
         args += extra_args
 
         try:
-            self.process = subprocess.Popen(
+            self.process = subprocess.Popen(  # pylint: disable=R1732
                 args,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -598,11 +598,14 @@ class GDBServer:
 
         prefix = f"avocado_gdbserver_{self.port}_"
         _, self.stdout_path = tempfile.mkstemp(prefix=prefix + "stdout_")
+        # pylint: disable=R1732
         self.stdout = open(self.stdout_path, "w", encoding="utf-8")
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + "stderr_")
+        # pylint: disable=R1732
         self.stderr = open(self.stderr_path, "w", encoding="utf-8")
 
         try:
+            # pylint: disable=R1732
             self.process = subprocess.Popen(
                 args,
                 stdin=subprocess.PIPE,

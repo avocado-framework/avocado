@@ -402,9 +402,8 @@ def get_idle_state():
                 f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
             )
             try:
-                cpu_idlestate[cpu][state_no] = bool(
-                    int(open(state_file, "rb").read())
-                )  # pylint: disable=W1514
+                with open(state_file, "rb") as fl:  # pylint: disable=W1514
+                    cpu_idlestate[cpu][state_no] = bool(int(fl.read()))
             except IOError as err:
                 LOG.warning(
                     "Failed to read idle state on cpu %s for state %s:\n%s",
@@ -456,7 +455,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                     f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
                 )
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    with open(state_file, "wb") as fl:  # pylint: disable=W1514
+                        fl.write(disable)
                 except IOError as err:
                     LOG.warning(
                         "Failed to set idle state on cpu %s for state %s:\n%s",
@@ -472,7 +472,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 )
                 disable = _bool_to_binary(value)
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    with open(state_file, "wb") as fl:  # pylint: disable=W1514
+                        fl.write(disable)
                 except IOError as err:
                     LOG.warning(
                         "Failed to set idle state on cpu %s for state %s:\n%s",

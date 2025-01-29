@@ -114,7 +114,8 @@ class ImageProviderBase:
 
     def _feed_html_parser(self, url, parser):
         try:
-            data = urlopen(url).read()
+            with urlopen(url) as u:
+                data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError as exc:
             raise ImageProviderError(f"Cannot open {url}") from exc

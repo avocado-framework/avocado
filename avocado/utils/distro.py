@@ -196,6 +196,7 @@ class Probe:
                 ).stdout_text.split("/n")
             elif os.path.exists(self.CHECK_FILE):
                 try:
+                    # pylint: disable=R1732
                     check_file = open(self.CHECK_FILE, encoding="utf-8")
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
@@ -240,9 +241,8 @@ class Probe:
                 ).stdout_text
             else:
                 try:
-                    version_file_content = open(
-                        self.CHECK_FILE, encoding="utf-8"
-                    ).read()
+                    with open(self.CHECK_FILE, encoding="utf-8") as check_file:
+                        version_file_content = check_file.read()
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))

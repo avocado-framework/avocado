@@ -660,7 +660,7 @@ class SubProcess:
         else:
             cmd = self.cmd
         try:
-            self._popen = subprocess.Popen(
+            self._popen = subprocess.Popen(  # pylint: disable=R1732
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
