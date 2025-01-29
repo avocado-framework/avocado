@@ -359,7 +359,6 @@ class GdbDynamicObject:
     def __getattr__(self, name):
         if name.startswith("__"):
             raise AttributeError
-        return None
 
     def graft(self, dict_):
         for name, value in list(dict_.items()):
