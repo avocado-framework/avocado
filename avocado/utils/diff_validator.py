@@ -132,20 +132,20 @@ def extract_changes(file_paths, compared_file_paths=None):
     if compared_file_paths is None:
         compared_file_paths = []
 
-    for i in range(len(file_paths)):
-        temp_file_path = get_temp_file_path(file_paths[i])
+    for i, file_path in enumerate(file_paths):
+        temp_file_path = get_temp_file_path(file_path)
 
         if len(compared_file_paths) > i:
-            file1, file2 = compared_file_paths[i], file_paths[i]
+            file1, file2 = compared_file_paths[i], file_path
         else:
-            file1, file2 = temp_file_path, file_paths[i]
+            file1, file2 = temp_file_path, file_path
         with open(file1, encoding="utf-8") as f1:
             lines1 = f1.readlines()
         with open(file2, encoding="utf-8") as f2:
             lines2 = f2.readlines()
         lines = difflib.unified_diff(lines1, lines2, fromfile=file1, tofile=file2, n=0)
 
-        changes[file_paths[i]] = parse_unified_diff_output(lines)
+        changes[file_path] = parse_unified_diff_output(lines)
     return changes
 
 

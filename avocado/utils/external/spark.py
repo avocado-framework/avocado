@@ -73,9 +73,9 @@ class GenericScanner:
                 self.error(s, pos)
 
             groups = m.groups()
-            for i in range(len(groups)):
-                if groups[i] and i in self.index2func:
-                    self.index2func[i](groups[i])
+            for i, group in enumerate(groups):
+                if group and i in self.index2func:
+                    self.index2func[i](group)
             pos = m.end()
 
     @staticmethod
@@ -183,8 +183,8 @@ class GenericParser:
         rules = doc.split()
 
         index = []
-        for i in range(len(rules)):
-            if rules[i] == "::=":
+        for i, rule in enumerate(rules):
+            if rule == "::=":
                 index.append(i - 1)
         index.append(len(rules))
 
@@ -322,12 +322,12 @@ class GenericParser:
             self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
 
-        for i in range(len(tokens)):
+        for i, token in enumerate(tokens):
             sets.append([])
 
             if sets[i] == []:
                 break
-            self.makeSet(tokens[i], sets, i)
+            self.makeSet(token, sets, i)
         else:
             sets.append([])
             self.makeSet(None, sets, len(tokens))
@@ -660,8 +660,8 @@ class GenericParser:
         #
         sortlist = []
         name2index = {}
-        for i in range(len(rules)):
-            _, rhs = rule = rules[i]
+        for i, rule in enumerate(rules):
+            _, rhs = rule = rule
             name = self.rule2name[self.new2old[rule]]
             sortlist.append((len(rhs), name))
             name2index[name] = i
