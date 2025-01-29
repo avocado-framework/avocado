@@ -100,10 +100,10 @@ def parse_unified_diff_output(lines):
         if len(line) > 2 and (line[:3] == "+++" or line[:3] == "---"):
             continue
         # ignore line range information in the output
-        elif len(line) > 1 and line[:2] == "@@":
+        if len(line) > 1 and line[:2] == "@@":
             continue
         # gather adds
-        elif len(line) > 0 and line[0] == "+":
+        if len(line) > 0 and line[0] == "+":
             added_line = line[1:].lstrip().rstrip()
             if not added_line:
                 continue
