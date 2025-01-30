@@ -53,6 +53,7 @@ class Session:
 
     MASTER_OPTIONS = (("ControlMaster", "yes"), ("ControlPersist", "yes"))
 
+    # pylint: disable=R0913
     def __init__(self, host, port=None, user=None, key=None, password=None):
         """
         :param host: a host name or IP address

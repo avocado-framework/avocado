@@ -86,6 +86,7 @@ def get_devices_total_space(devices):
     return size
 
 
+# pylint: disable=R0913
 def vg_ramdisk(
     disk,
     vg_name,
@@ -423,6 +424,7 @@ def lv_list(vg_name=None):
     return volumes
 
 
+# pylint: disable=R0913
 def lv_create(
     vg_name, lv_name, lv_size, force_flag=True, pool_name=None, pool_size="1G"
 ):

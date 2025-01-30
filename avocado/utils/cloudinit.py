@@ -76,6 +76,7 @@ phone_home:
 """
 
 
+# pylint: disable=R0913
 def iso(
     output_path,
     instance_id,

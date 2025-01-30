@@ -463,6 +463,7 @@ class GenericParser:
                 rv.append(self.goto(state, t))
         return rv
 
+    # pylint: disable=R0913
     def add(self, input_set, item, i=None, predecessor=None, causal=None):
         if predecessor is None:
             if item not in input_set:

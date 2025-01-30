@@ -518,6 +518,7 @@ class FreeBSDImageProvider(ImageProviderBase):
 
 
 class Image:
+    # pylint: disable=R0913
     def __init__(
         self,
         name,
@@ -633,6 +634,7 @@ class Image:
         return new_image
 
     @classmethod
+    # pylint: disable=R0913
     def from_parameters(
         cls,
         name=None,
@@ -690,6 +692,7 @@ class Image:
         raise AttributeError("Provider not available")
 
 
+# pylint: disable=R0913
 def get(
     name=None,
     version=None,

@@ -31,6 +31,7 @@ class GitRepoHelper:
     Helps to deal with git repos, mostly fetching content from a repo
     """
 
+    # pylint: disable=R0913
     def __init__(
         self,
         uri,
@@ -206,6 +207,7 @@ class GitRepoHelper:
             self.submodule_checkout()
 
 
+# pylint: disable=R0913
 def get_repo(
     uri,
     branch="master",

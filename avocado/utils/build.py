@@ -89,7 +89,7 @@ def run_make(
     return make_process
 
 
-# pylint: disable=W0621
+# pylint: disable=W0621, R0913
 def make(
     path,
     make="make",

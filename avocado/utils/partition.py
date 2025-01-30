@@ -78,6 +78,7 @@ class Partition:
     Class for handling partitions and filesystems
     """
 
+    # pylint: disable=R0913
     def __init__(
         self, device, loop_size=0, mountpoint=None, mkfs_flags="", mount_options=None
     ):

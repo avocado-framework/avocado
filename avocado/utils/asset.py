@@ -63,6 +63,7 @@ class Asset:
     Try to fetch/verify an asset file from multiple locations.
     """
 
+    # pylint: disable=R0913
     def __init__(
         self,
         name=None,

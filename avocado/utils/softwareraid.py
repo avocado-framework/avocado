@@ -42,6 +42,7 @@ class SoftwareRaid:
     :type spare_disks: list
     """
 
+    # pylint: disable=R0913
     def __init__(self, name, level, disks, metadata, spare_disks=None):
         self.name = name
         self.level = level

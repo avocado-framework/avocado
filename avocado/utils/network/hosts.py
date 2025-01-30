@@ -170,6 +170,7 @@ class RemoteHost(Host):
     You can also provide a key instead of a password.
     """
 
+    # pylint: disable=R0913
     def __init__(self, host, username, port=22, key=None, password=None):
         super().__init__(host)
         self.port = port

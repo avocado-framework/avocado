@@ -4,6 +4,7 @@ import time
 LOG = logging.getLogger(__name__)
 
 
+# pylint: disable=R0913
 def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=None):
     """
     Wait until func() evaluates to True.

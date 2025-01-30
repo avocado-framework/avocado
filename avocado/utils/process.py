@@ -359,6 +359,7 @@ class CmdResult:
     :type encoding: str
     """
 
+    # pylint: disable=R0913
     def __init__(
         self,
         command="",
@@ -415,6 +416,7 @@ class CmdResult:
 
 
 class FDDrainer:
+    # pylint: disable=R0913
     def __init__(
         self,
         fd,
@@ -534,6 +536,7 @@ class SubProcess:
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
+    # pylint: disable=R0913
     def __init__(
         self,
         cmd,
@@ -943,6 +946,7 @@ class SubProcess:
         return self.result
 
 
+# pylint: disable=R0913
 def run(
     cmd,
     timeout=None,
@@ -1013,6 +1017,7 @@ def run(
     return cmd_result
 
 
+# pylint: disable=R0913
 def system(
     cmd,
     timeout=None,
@@ -1078,6 +1083,7 @@ def system(
     return cmd_result.exit_status
 
 
+# pylint: disable=R0913
 def system_output(
     cmd,
     timeout=None,
@@ -1150,6 +1156,7 @@ def system_output(
     return cmd_result.stdout
 
 
+# pylint: disable=R0913
 def getoutput(
     cmd,
     timeout=None,
@@ -1211,6 +1218,7 @@ def getoutput(
     )[1]
 
 
+# pylint: disable=R0913
 def getstatusoutput(
     cmd,
     timeout=None,
