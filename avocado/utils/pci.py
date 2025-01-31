@@ -371,7 +371,7 @@ def get_vendor_id(full_pci_address):
     """
     cmd = f"lspci -n -s {full_pci_address}"
     out = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if out == "":
+    if not out:
         raise ValueError(f"Not able to get {full_pci_address} vendor id")
     return out.split(" ")[2].strip()
 
@@ -386,7 +386,7 @@ def reset_check(full_pci_address):
     """
     cmd = f"lspci -vvs {full_pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if output != "":
+    if not output:
         return False
     return True
 
@@ -401,7 +401,7 @@ def rescan_check(full_pci_address):
     """
     cmd = f"lspci -vvs {full_pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if output == "":
+    if not output:
         return False
     return True
 
