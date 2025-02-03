@@ -214,7 +214,7 @@ class YumBackend(RpmBackend):
             log.error("Error searching for package that provides %s: %s", name, exc)
             d_provides = []
 
-        provides_list = [key for key in d_provides]
+        provides_list = list(d_provides)
         if provides_list:
             return str(provides_list[0])
         return None
