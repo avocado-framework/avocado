@@ -29,6 +29,12 @@ from avocado.utils import archive, asset, build, distro, process
 LOG = logging.getLogger(__name__)
 
 
+class KernelBuildError(Exception):
+    """
+    Exception raised when there is an error building the kernel.
+    """
+
+
 class KernelBuild:
     """
     Build the Linux Kernel from official tarballs.
@@ -117,7 +123,7 @@ class KernelBuild:
             LOG.info("Uncompressing tarball")
             archive.extract(self.asset_path, self.work_dir)
         else:
-            raise Exception("Unable to find the tarball")
+            raise KernelBuildError("Unable to find the tarball")
 
     def configure(self, targets=("defconfig"), extra_configs=None):
         """

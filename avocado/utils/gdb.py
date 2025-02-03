@@ -395,7 +395,9 @@ class GDB:
                 if result_response_received:
                     # raise an exception here, because no two result
                     # responses should come from a single command AFAIK
-                    raise Exception("Many result responses to a single cmd")
+                    raise gdbmi_parser.GdbMiError(
+                        "Many result responses to a single cmd"
+                    )
                 result_response_received = True
                 cmd.result = parsed_response
             else:

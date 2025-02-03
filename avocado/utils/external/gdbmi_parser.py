@@ -30,6 +30,12 @@ import re
 from avocado.utils.external import spark
 
 
+class GdbMiError(Exception):
+    """
+    Exception raised when there is an error parsing GDB/MI output.
+    """
+
+
 class Token:
     def __init__(self, token_type, value=None):
         self.type = token_type
@@ -127,7 +133,7 @@ class GdbMiScannerBase(spark.GenericScanner):
 
     def t_default(self, s):  # pylint: disable=W0221
         r"( . | \n )+"
-        raise Exception(f"Specification error: unmatched input for '{s}'")
+        raise GdbMiError(f"Specification error: unmatched input for '{s}'")
 
     @staticmethod
     def __unescape(s):
@@ -201,7 +207,7 @@ class GdbMiParser(spark.GenericASTBuilder):
     def error(self, token, i=0, tokens=None):  # pylint: disable=W0221
         if i > 2:
             print(f"{tokens[i - 3]} {tokens[i - 2]} " f"{tokens[i - 1]} {tokens[i]}")
-        raise Exception(f"Syntax error at or near {int(i)}:'{token}' token")
+        raise GdbMiError(f"Syntax error at or near {int(i)}:'{token}' token")
 
 
 class GdbMiInterpreter(spark.GenericASTTraversal):
@@ -250,7 +256,7 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
                     else:
                         node.value[n] = v
         else:
-            raise Exception("Invalid tuple")
+            raise GdbMiError("Invalid tuple")
         # print 'tuple: %s' % node.value
 
     @staticmethod
