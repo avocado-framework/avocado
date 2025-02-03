@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+# pylint: disable=C0302
+
 """
 Functions dedicated to find and run external commands.
 """
