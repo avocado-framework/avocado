@@ -96,7 +96,7 @@ class _State:
         self.stateno = stateno
 
 
-# pylint: disable=R0902
+# pylint: disable=R0902,R0904
 class GenericParser:
     #
     #  An Earley parser, as per J. Earley, "An Efficient Context-Free

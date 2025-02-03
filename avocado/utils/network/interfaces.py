@@ -33,6 +33,7 @@ from avocado.utils.wait import wait_for
 LOG = logging.getLogger(__name__)
 
 
+# pylint: disable=R0904
 class NetworkInterface:
     """
     This class represents a network card interface (NIC).
