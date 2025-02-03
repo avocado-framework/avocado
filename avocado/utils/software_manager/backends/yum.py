@@ -274,19 +274,17 @@ class YumBackend(RpmBackend):
                         path,
                         next(os.walk(path))[2],
                     )
-                    return ""
-                if self.rpm_install(os.path.join(path, src_rpms[-1])):
+                elif self.rpm_install(os.path.join(path, src_rpms[-1])):
                     spec_path = os.path.join(
                         os.environ["HOME"], "rpmbuild", "SPECS", f"{name}.spec"
                     )
                     if self.build_dep(spec_path):
                         return self.prepare_source(spec_path, dest_path, build_option)
                     log.error("Installing build dependencies failed")
-                    return ""
-                log.error("Installing source rpm failed")
-                return ""
+                else:
+                    log.error("Installing source rpm failed")
             except process.CmdError as details:
                 log.error(details)
-                return ""
+            return ""
         finally:
             shutil.rmtree(path)
