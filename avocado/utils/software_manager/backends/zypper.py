@@ -38,11 +38,7 @@ class ZypperBackend(RpmBackend):
         :param name: Package Name.
         """
         i_cmd = self.base_command + " install -l " + name
-        try:
-            process.system(i_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(i_cmd)
 
     def add_repo(self, url):
         """
@@ -51,11 +47,7 @@ class ZypperBackend(RpmBackend):
         :param url: URL for the package repository.
         """
         ar_cmd = self.base_command + " addrepo " + url
-        try:
-            process.system(ar_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(ar_cmd)
 
     def remove_repo(self, url):
         """
@@ -64,11 +56,7 @@ class ZypperBackend(RpmBackend):
         :param url: URL for the package repository.
         """
         rr_cmd = self.base_command + " removerepo " + url
-        try:
-            process.system(rr_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        self._run_cmd(rr_cmd)
 
     def remove(self, name):
         """
@@ -76,11 +64,7 @@ class ZypperBackend(RpmBackend):
         """
         r_cmd = self.base_command + " " + "erase" + " " + name
 
-        try:
-            process.system(r_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(r_cmd)
 
     def upgrade(self, name=None):
         """
@@ -96,12 +80,9 @@ class ZypperBackend(RpmBackend):
         else:
             u_cmd = self.base_command + " " + "update" + " " + name
 
-        try:
-            process.system(u_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(u_cmd)
 
+    # pylint: disable=R0801
     def provides(self, name):
         """
         Searches for what provides a given file.

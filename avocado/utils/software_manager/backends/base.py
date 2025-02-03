@@ -21,6 +21,8 @@
 
 import logging
 
+from avocado.utils import process
+
 log = logging.getLogger("avocado.utils.software_manager")
 
 
@@ -40,3 +42,17 @@ class BaseBackend:
             return self.install(provides)  # pylint: disable=E1101
         log.warning("No package seems to provide %s", path)
         return False
+
+    @staticmethod
+    def _run_cmd(cmd):
+        """
+        Helper for running a backend command.
+
+        :param cmd: Command to run.
+        """
+        try:
+            process.system(cmd, sudo=True)
+            return True
+        except process.CmdError as details:
+            log.error("Failed to run command: %s", details)
+            return False

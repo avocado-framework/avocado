@@ -82,11 +82,7 @@ class AptBackend(DpkgBackend):
         flag = "--purge"
         r_cmd = self.base_command + " " + command + " " + flag + " " + name
 
-        try:
-            process.system(r_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(r_cmd)
 
     def add_repo(self, repo):
         """

@@ -90,12 +90,7 @@ class YumBackend(RpmBackend):
         Installs package [name]. Handles local installs.
         """
         i_cmd = self.base_command + "install" + " " + name
-
-        try:
-            process.system(i_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(i_cmd)
 
     def remove(self, name):
         """
@@ -104,11 +99,7 @@ class YumBackend(RpmBackend):
         :param name: Package name (eg. 'ipython').
         """
         r_cmd = self.base_command + "erase" + " " + name
-        try:
-            process.system(r_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(r_cmd)
 
     def add_repo(self, url, **opt_params):
         """
@@ -187,11 +178,7 @@ class YumBackend(RpmBackend):
         else:
             r_cmd = self.base_command + "update" + " " + name
 
-        try:
-            process.system(r_cmd, sudo=True)
-            return True
-        except process.CmdError:
-            return False
+        return self._run_cmd(r_cmd)
 
     def provides(self, name):
         """
