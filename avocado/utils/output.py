@@ -72,7 +72,6 @@ class ProgressBar:
 
         self.minimum = minimum
         self.maximum = maximum
-        self.range = maximum - minimum
         self.width = width
         self.title = title
 
@@ -109,7 +108,7 @@ class ProgressBar:
         Builds the actual progress bar text.
         """
         diff = float(self.current_amount - self.minimum)
-        done = (diff / float(self.range)) * 100.0
+        done = (diff / float(self.maximum - self.minimum)) * 100.0
         done = int(round(done))
 
         all_full = self.width - 2

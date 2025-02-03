@@ -77,6 +77,7 @@ class VMImageHtmlParser(HTMLParser):  # pylint: disable=W0223
                     self.items.append(match)
 
 
+# pylint: disable=R0902
 class ImageProviderBase:
     """
     Base class to define the common methods and attributes of an
@@ -518,7 +519,7 @@ class FreeBSDImageProvider(ImageProviderBase):
 
 
 class Image:
-    # pylint: disable=R0913
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         name,

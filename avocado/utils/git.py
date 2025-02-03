@@ -31,7 +31,7 @@ class GitRepoHelper:
     Helps to deal with git repos, mostly fetching content from a repo
     """
 
-    # pylint: disable=R0913
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         uri,

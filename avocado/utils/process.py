@@ -359,7 +359,7 @@ class CmdResult:
     :type encoding: str
     """
 
-    # pylint: disable=R0913
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         command="",
@@ -416,7 +416,7 @@ class CmdResult:
 
 
 class FDDrainer:
-    # pylint: disable=R0913
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         fd,
@@ -536,7 +536,7 @@ class SubProcess:
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    # pylint: disable=R0913
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         cmd,
