@@ -22,7 +22,7 @@ import os
 import re
 import shutil
 import subprocess
-from ipaddress import IPv4Address, ip_interface
+from ipaddress import AddressValueError, IPv4Address, ip_interface
 
 from avocado.utils import process
 from avocado.utils.distro import detect as distro_detect
@@ -101,7 +101,7 @@ class NetworkInterface:
                 f"{self.config_file_path}/ifcfg-{slave}"
                 for slave in slave_dict["slaves"]
             ]
-        except Exception:
+        except NWException:
             msg = "Slave config filename not available"
             LOG.debug(msg)
             return None
@@ -632,7 +632,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host)
             return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0718
             msg = f"Interface {self.name} is not available. {ex}"
             LOG.debug(msg)
             return False
@@ -648,7 +648,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host)
             return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0718
             msg = f"{self.name} is not a bond device. {ex}"
             LOG.debug(msg)
             return False
@@ -781,7 +781,7 @@ class NetworkInterface:
         """
         try:
             IPv4Address(ip)
-        except Exception as ex:
+        except AddressValueError as ex:
             LOG.debug("Failed to validate IP format %s", ex)
             return False
         return True

@@ -295,7 +295,7 @@ class ArchiveFile:
                 try:
                     os.remove(dst)
                     os.symlink(src, dst)
-                except Exception as e:
+                except (OSError, FileNotFoundError) as e:
                     LOG.warning("Failed to update symlink '%s': %s", dst, e)
                     continue
                 continue  # Don't override any other attributes on links
@@ -303,7 +303,7 @@ class ArchiveFile:
             if mode and mode != 436:  # If mode is stored and is not default
                 try:
                     os.chmod(dst, mode)
-                except Exception as e:
+                except (OSError, FileNotFoundError) as e:
                     LOG.warning("Failed to update permissions for '%s'", e)
 
     def close(self):

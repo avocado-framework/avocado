@@ -695,7 +695,7 @@ class Asset:
             os.remove(filename)
         except FileNotFoundError:
             LOG.error("File not found: %s or its checksum file.", asset_path)
-        except Exception as e:
+        except OSError as e:
             LOG.error("An error occurred while removing files: %s", e)
 
     @property
