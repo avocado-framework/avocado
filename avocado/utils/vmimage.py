@@ -364,12 +364,11 @@ class DebianImageProvider(ImageProviderBase):
             version = "bullseye"
 
         # User provided a numerical version
-        if version in table_codename.keys():
-            version = table_codename[version]
+        version = table_codename.get(version, version)
 
         # If version is not a codename by now, it's wrong or unknown,
         # so let's fail early
-        if version not in table_version.keys():
+        if version not in table_version:
             raise ImageProviderError("Unknown version", version)
 
         super().__init__(version, build, arch)

@@ -69,7 +69,6 @@ enable=all
 disable=C0114,
   C0115,
   C0116,
-  C0201,
   C0301,
   C0321,
   C0325,
