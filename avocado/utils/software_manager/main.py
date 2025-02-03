@@ -73,25 +73,22 @@ def main():
         if software_manager.install(args):
             log.info(MESSAGES[action]["success"], args)
             return exit_codes.UTILITY_OK
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            return exit_codes.UTILITY_FAIL
+        log.error(MESSAGES[action]["fail"], args)
+        return exit_codes.UTILITY_FAIL
 
     def remove():
         if software_manager.remove(args):
             log.info(MESSAGES[action]["success"], args)
             return exit_codes.UTILITY_OK
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            return exit_codes.UTILITY_FAIL
+        log.error(MESSAGES[action]["fail"], args)
+        return exit_codes.UTILITY_FAIL
 
     def check_installed():
         if software_manager.check_installed(args):
             log.info(MESSAGES[action]["success"], args)
             return exit_codes.UTILITY_OK
-        else:
-            log.info(MESSAGES[action]["fail"], args)
-            return exit_codes.UTILITY_FAIL
+        log.info(MESSAGES[action]["fail"], args)
+        return exit_codes.UTILITY_FAIL
 
     def list_all():
         for pkg in software_manager.list_all():
@@ -107,17 +104,15 @@ def main():
         if software_manager.add_repo(args):
             log.info(MESSAGES[action]["success"], args)
             return exit_codes.UTILITY_OK
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            return exit_codes.UTILITY_FAIL
+        log.error(MESSAGES[action]["fail"], args)
+        return exit_codes.UTILITY_FAIL
 
     def remove_repo():
         if software_manager.remove_repo(args):
             log.info(MESSAGES[action]["success"], args)
             return exit_codes.UTILITY_OK
-        else:
-            log.error(MESSAGES[action]["fail"], args)
-            return exit_codes.UTILITY_FAIL
+        log.error(MESSAGES[action]["fail"], args)
+        return exit_codes.UTILITY_FAIL
 
     def upgrade():
         if software_manager.upgrade():

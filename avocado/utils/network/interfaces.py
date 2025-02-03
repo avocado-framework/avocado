@@ -83,8 +83,7 @@ class NetworkInterface:
         if current_distro.name == "SuSE":
             if self.distro_is_suse16_or_later:
                 return "/etc/NetworkManager/system-connections"
-            else:
-                return "/etc/sysconfig/network"
+            return "/etc/sysconfig/network"
         msg = "Distro not supported by API. Could not get interface filename."
         LOG.error(msg)
         return None
