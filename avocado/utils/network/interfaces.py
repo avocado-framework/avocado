@@ -389,6 +389,7 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException(f"Failed to ping: {ex}") from ex
 
+    # pylint: disable=R0915
     def save(self, ipaddr, netmask):
         """Save current interface IP Address to the system configuration file.
 
