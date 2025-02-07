@@ -34,7 +34,7 @@ class Hello(Test):
     def test_gpg_signature(self):
         keyring = os.path.join(self.workdir, "tempring.gpg")
         gpg_cmd = f"gpg --no-default-keyring --keyring {keyring}"
-        signer_pubkey = self.get_data("gnu_hello_signer.gpg")
+        signer_pubkey = self.get_data("gnu_hello_signer.pgp")
         import_cmd = f"{gpg_cmd} --import {signer_pubkey}"
         # gpg will not return 0 when creating a new keyring and
         # importing the public key
