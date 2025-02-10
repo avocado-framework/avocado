@@ -35,6 +35,11 @@ class RemoteSpawnerInit(Init):
             section=section, key="setup_hook", help_msg=help_msg, default=""
         )
 
+        help_msg = "Test timeout enforced for remote host setup hook"
+        settings.register_option(
+            section=section, key="setup_timeout", help_msg=help_msg, default=3600
+        )
+
         help_msg = "Test timeout enforced for sessions (just for this spawner)"
         settings.register_option(
             section=section, key="test_timeout", help_msg=help_msg, default=14400
@@ -162,8 +167,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         setup_hook = self.config.get("spawner.remote.setup_hook")
         # Customize and deploy test data to the container
         if setup_hook:
+            setup_timeout = self.config.get("spawner.remote.setup_timeout")
             status, output = await RemoteSpawner.run_remote_cmd_async(
-                session, setup_hook
+                session, setup_hook, setup_timeout
             )
             LOG.debug(f"Customization command exited with code {status}")
             if status != 0:
