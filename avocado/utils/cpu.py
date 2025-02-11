@@ -36,6 +36,7 @@ VENDORS_MAP = {
     "ibm": (
         rb"POWER\d",
         rb"IBM/S390",
+        rb"Power\d",
     ),
 }
 
@@ -198,6 +199,7 @@ def get_arch():
     cpu_table = [
         (b"^cpu.*(RS64|Broadband Engine)", "powerpc"),
         (rb"^cpu.*POWER\d+", "powerpc"),
+        (rb"^cpu.*Power\d+", "powerpc"),
         (b"^cpu.*PPC970", "powerpc"),
         (
             b"(ARM|^CPU implementer|^CPU part|^CPU variant"
@@ -261,7 +263,7 @@ def get_family():
         res = []
         try:
             for line in _get_info():
-                res = re.findall(rb"cpu\s+:\s+(POWER\d+)", line)
+                res = re.findall(rb"cpu\s+:\s+(POWER\d+|Power\d+)", line, re.IGNORECASE)
                 if res:
                     break
             family = res[0].decode("utf-8").lower()
