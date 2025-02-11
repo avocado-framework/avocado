@@ -12,6 +12,7 @@ all:
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-dev:      Install development requirements"
+	@echo "requirements-static-checks:      Install development requirements for static checks"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
 	@echo "install:      Install on local system"
@@ -38,6 +39,9 @@ uninstall:
 
 requirements-dev: pip
 	$(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
+
+requirements-static-checks: pip
+	$(PYTHON) -m pip install -r static-checks/requirements.txt $(PYTHON_DEVELOP_ARGS)
 
 smokecheck: clean uninstall develop
 	$(PYTHON) -m avocado run examples/tests/passtest.py
