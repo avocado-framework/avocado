@@ -63,6 +63,14 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
     @staticmethod
     def _run_avocado(runnable, queue):
+        def load_and_run_test(test_factory):
+            instance = loader.load_test(test_factory)
+            early_state = instance.get_state()
+            early_state["type"] = "early_state"
+            queue.put(early_state)
+            instance.run_avocado()
+            return instance.get_state()
+
         try:
             # This assumes that a proper resolution (see resolver module)
             # was performed, and that a URI contains:
@@ -94,23 +102,17 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
             messages.start_logging(runnable.config, queue)
 
-            instance = loader.load_test(test_factory)
-            early_state = instance.get_state()
-            early_state["type"] = "early_state"
-            queue.put(early_state)
-
             # running the actual test
             if "COVERAGE_RUN" in os.environ:
                 from coverage import Coverage
 
                 coverage = Coverage(data_suffix=True)
                 with coverage.collect():
-                    instance.run_avocado()
+                    state = load_and_run_test(test_factory)
                 coverage.save()
             else:
-                instance.run_avocado()
+                state = load_and_run_test(test_factory)
 
-            state = instance.get_state()
             fail_reason = state.get("fail_reason")
             queue.put(messages.WhiteboardMessage.get(state["whiteboard"]))
             queue.put(

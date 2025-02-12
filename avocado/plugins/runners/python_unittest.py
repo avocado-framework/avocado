@@ -89,36 +89,41 @@ class PythonUnittestRunner(BaseRunner):
 
     @classmethod
     def _run_unittest(cls, module_path, module_class_method, queue):
-        sys.path.insert(0, module_path)
-        stream = io.StringIO()
-
-        try:
-            loader = TestLoader()
-            suite = loader.loadTestsFromName(module_class_method)
-        except ValueError as ex:
-            msg = "loadTestsFromName error finding unittest {}: {}"
-            queue.put(messages.StderrMessage.get(traceback.format_exc()))
-            queue.put(
-                messages.FinishedMessage.get(
-                    "error",
-                    fail_reason=msg.format(module_class_method, str(ex)),
-                    fail_class=ex.__class__.__name__,
-                    traceback=traceback.format_exc(),
+        def run_and_load_test():
+            sys.path.insert(0, module_path)
+            try:
+                loader = TestLoader()
+                suite = loader.loadTestsFromName(module_class_method)
+            except ValueError as ex:
+                msg = "loadTestsFromName error finding unittest {}: {}"
+                queue.put(messages.StderrMessage.get(traceback.format_exc()))
+                queue.put(
+                    messages.FinishedMessage.get(
+                        "error",
+                        fail_reason=msg.format(module_class_method, str(ex)),
+                        fail_class=ex.__class__.__name__,
+                        traceback=traceback.format_exc(),
+                    )
                 )
-            )
-            return
+                return None
+            return runner.run(suite)
 
+        stream = io.StringIO()
         runner = TextTestRunner(stream=stream, verbosity=0)
+
         # running the actual test
         if "COVERAGE_RUN" in os.environ:
             from coverage import Coverage
 
             coverage = Coverage(data_suffix=True)
             with coverage.collect():
-                unittest_result = runner.run(suite)
+                unittest_result = run_and_load_test()
             coverage.save()
         else:
-            unittest_result = runner.run(suite)
+            unittest_result = run_and_load_test()
+
+        if not unittest_result:
+            return
 
         unittest_result_entries = None
         if len(unittest_result.errors) > 0:
