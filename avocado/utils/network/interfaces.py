@@ -50,6 +50,7 @@ class NetworkInterface:
         self.if_type = if_type
         self.host = host
         self.distro_is_rhel9_or_later = False
+        self.distro_is_suse16_or_later = False
 
     @property
     def config_filename(self):
@@ -60,11 +61,14 @@ class NetworkInterface:
             else:
                 path = "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
-            path = "/etc/sysconfig/network"
+            if self.distro_is_suse16_or_later:
+                path = "/etc/NetworkManager/system-connections"
+            else:
+                path = "/etc/sysconfig/network"
         else:
             msg = "Distro not supported by API. Could not get interface filename."
             raise NWException(msg)
-        if self.distro_is_rhel9_or_later:
+        if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
             return f"{path}/{self.name}.nmconnection"
         else:
             return f"{path}/ifcfg-{self.name}"
@@ -78,7 +82,10 @@ class NetworkInterface:
             else:
                 return "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
-            return "/etc/sysconfig/network"
+            if self.distro_is_suse16_or_later:
+                return "/etc/NetworkManager/system-connections"
+            else:
+                return "/etc/sysconfig/network"
         else:
             msg = "Distro not supported by API. Could not get interface filename."
             LOG.error(msg)
@@ -87,7 +94,7 @@ class NetworkInterface:
     def slave_config_filename(self):
         try:
             slave_dict = self._get_bondinterface_details()
-            if self.distro_is_rhel9_or_later:
+            if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
                 return [
                     f"{self.config_file_path}/{slave}.nmconnection"
                     for slave in slave_dict["slaves"]
@@ -409,6 +416,8 @@ class NetworkInterface:
         current_distro = distro_detect()
         if current_distro.name == "rhel" and int(current_distro.version) >= 9:
             self.distro_is_rhel9_or_later = True
+        if current_distro.name == "SuSE" and int(current_distro.version) >= 16:
+            self.distro_is_suse16_or_later = True
 
         filename = f"ifcfg-{self.name}"
         prefix = self.netmask_to_cidr(netmask)
@@ -419,12 +428,16 @@ class NetworkInterface:
             else:
                 path = "/etc/sysconfig/network-scripts"
         elif current_distro.name == "SuSE":
-            path = "/etc/sysconfig/network"
+            if self.distro_is_suse16_or_later:
+                filename = f"{self.name}.nmconnection"
+                path = "/etc/NetworkManager/system-connections"
+            else:
+                path = "/etc/sysconfig/network"
         else:
             msg = "Distro not supported by API. Could not save ipaddr."
             raise NWException(msg)
 
-        if self.distro_is_rhel9_or_later:
+        if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
             ifcfg_dict = ""
             if os.path.exists(f"{path}/{filename}") is False:
                 run_command(
@@ -463,7 +476,7 @@ class NetworkInterface:
 
         if self.if_type == "Bond":
             bond_dict = self._get_bondinterface_details()
-            if self.distro_is_rhel9_or_later:
+            if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
                 if os.path.exists(f"{path}/{filename}") is False:
                     run_command(
                         f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
