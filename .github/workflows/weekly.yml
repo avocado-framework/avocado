@@ -12,7 +12,7 @@ jobs:
 
   latest-python:
     name: Linux with Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
@@ -56,7 +56,7 @@ jobs:
 
   without-plugins-latest-python:
     name: Test with Python without plugins ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: latest-python
     if: "always()&&(needs.latest-python.outputs.job_status=='failure')"
     strategy:

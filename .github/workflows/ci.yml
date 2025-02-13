@@ -8,7 +8,7 @@ jobs:
   static-checks:
 
     name: Static checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: quay.io/avocado-framework/avocado-ci-fedora-38
 
@@ -42,11 +42,11 @@ jobs:
   smokecheck-linux:
 
     name: Smokecheck on Linux with Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10.0, 3.11, 3.12.0, 3.13.0]
+        python-version: [3.8, 3.9, 3.10.16, 3.11, 3.12.0, 3.13.0]
       fail-fast: false
 
     steps:
@@ -67,12 +67,12 @@ jobs:
   check-linux:
 
     name: Linux with Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: smokecheck-linux
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10.0, 3.11, 3.12.0, 3.13.0]
+        python-version: [3.8, 3.9, 3.10.16, 3.11, 3.12.0, 3.13.0]
       fail-fast: false
 
     steps:
@@ -180,11 +180,11 @@ jobs:
 
   package-build:
     name: Build Package (wheel/tarball) for Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10.0, 3.11, 3.12.0, 3.13.0]
+        python-version: [3.8, 3.9, 3.10.16, 3.11, 3.12.0, 3.13.0]
       fail-fast: false
 
     steps:
@@ -207,11 +207,11 @@ jobs:
 
   egg-build:
     name: Build Egg for Python ${{ matrix.python-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10.0, 3.11, 3.12.0, 3.13.0]
+        python-version: [3.8, 3.9, 3.10.16, 3.11, 3.12.0, 3.13.0]
       fail-fast: false
 
     steps:
@@ -234,7 +234,7 @@ jobs:
 
   experimental-checks:
     name: Experimental checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
@@ -257,7 +257,7 @@ jobs:
   version_task_fedora_37:
 
     name: Version task fedora:37
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: fedora:37
     steps:
@@ -270,7 +270,7 @@ jobs:
   version_task_fedora_38:
 
     name: Version task fedora:38
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: fedora:38
     steps:
@@ -283,7 +283,7 @@ jobs:
   version_task_ubi_8:
 
     name: Version task ubi:8.8
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
@@ -296,7 +296,7 @@ jobs:
   version_task_ubi_9:
 
     name: Version task ubi:9.2
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
@@ -307,7 +307,7 @@ jobs:
   version_task_debian_12:
 
     name: Version task debian:12.4
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: debian:12.4
     steps:
@@ -320,7 +320,7 @@ jobs:
   version_task_debian_11:
 
     name: Version task debian:11.0
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: debian:11.0
     steps:
@@ -333,7 +333,7 @@ jobs:
   version_task_ubuntu_22:
 
     name: Version task ubuntu:22.04
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: ubuntu:22.04
     steps:
@@ -346,7 +346,7 @@ jobs:
   version_task_ubuntu_20:
 
     name: Version task ubuntu:20.04
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: ubuntu:20.04
     steps:
@@ -359,7 +359,7 @@ jobs:
   egg_task_fedora_37:
 
     name: Egg task fedora:37
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: fedora:37
     steps:
@@ -372,7 +372,7 @@ jobs:
   egg_task_fedora_38:
 
     name: Egg task fedora:38
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: fedora:38
     steps:
@@ -385,7 +385,7 @@ jobs:
   egg_task_ubi_8:
 
     name: Egg task ubi:8.8
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
@@ -398,7 +398,7 @@ jobs:
   egg_task_ubi_9:
 
     name: Egg task ubi:9.2
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
@@ -409,7 +409,7 @@ jobs:
   egg_task_debian_12:
 
     name: Egg task debian:12.4
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: debian:12.4
     steps:
@@ -422,7 +422,7 @@ jobs:
   egg_task_debian_11:
 
     name: Egg task debian:11.0
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: debian:11.0
     steps:
@@ -435,7 +435,7 @@ jobs:
   egg_task_ubuntu_22:
 
     name: Egg task ubuntu:22.04
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: ubuntu:22.04
     steps:
@@ -448,7 +448,7 @@ jobs:
   egg_task_ubuntu_20:
 
     name: Egg task ubuntu:20.04
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     container:
       image: ubuntu:20.04
     steps:

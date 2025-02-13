@@ -12,7 +12,7 @@ jobs:
 
   user-installation:
     name: User installation commands
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -52,7 +52,7 @@ jobs:
 
   system-wide-installation:
     name: System wide installation commands
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -92,7 +92,7 @@ jobs:
 
   devel-user-installation:
     name: Developer user commands
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -128,7 +128,7 @@ jobs:
 
   devel-wide-system-installation:
     name: Developer system wide commands
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -164,7 +164,7 @@ jobs:
 
   virtualenv-installation:
     name: Virtualenv installation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -196,7 +196,7 @@ jobs:
 
   devel-virtualenv-installation:
     name: Developer Virtualenv installation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
