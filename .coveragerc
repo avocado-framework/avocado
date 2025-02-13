@@ -1,4 +1,4 @@
 [run]
 source = avocado/, optional_plugins/
-concurrency = multiprocessing
+concurrency = multiprocessing, thread
 parallel = true
