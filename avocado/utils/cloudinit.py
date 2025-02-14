@@ -220,6 +220,7 @@ class PhoneHomeServer(HTTPServer):
         """
         s = cls(address, instance_id)
         s.wait_for_phone_home()
+        s.server_close()
 
 
 def wait_for_phone_home(address, instance_id):

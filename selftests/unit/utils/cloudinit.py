@@ -1,7 +1,9 @@
 import http.client
 import os
+import socket
 import tempfile
 import threading
+import time
 import unittest.mock
 
 from avocado.utils import cloudinit, data_factory, iso9660
@@ -123,6 +125,20 @@ class PhoneHome(unittest.TestCase):
     def test_phone_home_bad_good(self):
         self.test_phone_home_bad()
         self.test_phone_home_good()
+
+    def test_phone_home_set_up(self):
+        sock = socket.socket()
+        sock.bind((self.ADDRESS, 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        server_thread = threading.Thread(
+            target=cloudinit.PhoneHomeServer.set_up_and_wait_for_phone_home,
+            args=((self.ADDRESS, port), self.instance_id),
+        )
+        server_thread.start()
+        # Wait for the server to start
+        time.sleep(1)
+        self.post_response("/" + self.instance_id, port)
 
     def tearDown(self):
         self.server.server_close()
