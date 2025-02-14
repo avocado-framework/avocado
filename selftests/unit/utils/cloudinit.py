@@ -93,16 +93,14 @@ class PhoneHome(unittest.TestCase):
 
     ADDRESS = "127.0.0.1"
 
-    def post_ignore_response(self, url):
-        port = self.server.socket.getsockname()[1]
+    def post_response(self, url, port=None):
+        if not port:
+            port = self.server.socket.getsockname()[1]
         conn = http.client.HTTPConnection(self.ADDRESS, port)
         conn.request("POST", url)
-        try:
-            conn.getresponse()
-        except Exception:
-            pass
-        finally:
-            conn.close()
+        response = conn.getresponse()
+        self.assertIs(response.status, 200)
+        conn.close()
 
     def setUp(self):
         self.instance_id = data_factory.generate_random_string(12)
@@ -112,14 +110,14 @@ class PhoneHome(unittest.TestCase):
         self.assertFalse(self.server.instance_phoned_back)
         server_thread = threading.Thread(target=self.server.handle_request)
         server_thread.start()
-        self.post_ignore_response("/BAD_INSTANCE_ID")
+        self.post_response("/BAD_INSTANCE_ID")
         self.assertFalse(self.server.instance_phoned_back)
 
     def test_phone_home_good(self):
         self.assertFalse(self.server.instance_phoned_back)
         server_thread = threading.Thread(target=self.server.handle_request)
         server_thread.start()
-        self.post_ignore_response("/" + self.instance_id)
+        self.post_response("/" + self.instance_id)
         self.assertTrue(self.server.instance_phoned_back)
 
     def test_phone_home_bad_good(self):
