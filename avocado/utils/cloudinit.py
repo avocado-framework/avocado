@@ -96,18 +96,24 @@ def iso(
 
     :param output_path: the location of the resulting (to be created) ISO
                         image containing the cloudinit configuration
+    :type output_path: str
     :param instance_id: the ID of the cloud instance, a form of identification
                         for the dynamically created executing instances
+    :type instance_id: str
     :param username: the username to be used when logging interactively on the
                      instance
+    :type username: str
     :param password: the password to be used along with username when
                      authenticating with the login services on the instance
+    :type password: str
     :param phone_home_host: the address of the host the instance
                             should contact once it has finished
                             booting
+    :type phone_home_host: str
     :param phone_home_port: the port acting as an HTTP phone home
                             server that the instance should contact
                             once it has finished booting
+    :type phone_home_port: str
     :param authorized_key: a SSH public key to be added as an authorized key
                            for the default user, similar to "ssh-rsa ..."
     :type authorized_key: str
