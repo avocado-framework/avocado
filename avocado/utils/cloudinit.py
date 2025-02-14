@@ -161,6 +161,7 @@ class PhoneHomeServerHandler(BaseHTTPRequestHandler):
         if path == self.server.instance_id:
             self.server.instance_phoned_back = True
         self.send_response(200)
+        self.end_headers()
 
     def log_message(self, format_, *args):  # pylint: disable=W0221
         """Logs an arbitrary message.
