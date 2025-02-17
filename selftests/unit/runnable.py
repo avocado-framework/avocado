@@ -108,7 +108,6 @@ class RunnableFromAPI(unittest.TestCase):
 
 
 class RunnableFromRecipe(unittest.TestCase):
-
     def test(self):
         open_mocked = unittest.mock.mock_open(read_data='{"kind": "noop"}')
         with unittest.mock.patch("avocado.core.nrunner.runnable.open", open_mocked):
@@ -256,7 +255,6 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
 
 
 class RunnableToRecipe(unittest.TestCase):
-
     def test_runnable_to_recipe_noop(self):
         runnable = Runnable("noop", None)
         open_mocked = unittest.mock.mock_open(read_data=runnable.get_json())

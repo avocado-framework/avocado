@@ -1,11 +1,8 @@
 # Avocado development requirements
 
 # static and style checks
-isort==5.10.1
 pyenchant==3.2.2
-pylint==3.0.0
 autopep8==1.6.0
-black==24.3.0
 
 coverage==7.5
 
