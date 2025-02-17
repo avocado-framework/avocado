@@ -50,7 +50,10 @@ class StatusServer:
 
     async def cb(self, reader, _):
         while True:
-            raw_message = await reader.readline()
+            try:
+                raw_message = await reader.readline()
+            except ConnectionResetError:
+                continue
             if not raw_message:
                 return
             self._repo.process_raw_message(raw_message)
