@@ -30,7 +30,7 @@ jobs:
     name: Release pipeline
     runs-on: ubuntu-latest
     container:
-      image: fedora:34
+      image: fedora:40
     env:
       VERSION: ${{ github.event.inputs.version }}
       DEVEL_NAME: ${{ github.event.inputs.devel_name }}

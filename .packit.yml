@@ -9,7 +9,7 @@ jobs:
       - fedora-all
       - centos-stream-9
       - epel-9
-      - fedora-38-aarch64
-      - fedora-38-ppc64le
-      - fedora-38-s390x
+      - fedora-41-aarch64
+      - fedora-41-ppc64le
+      - fedora-41-s390x
       enable_net: False

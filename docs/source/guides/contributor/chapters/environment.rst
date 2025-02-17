@@ -15,12 +15,12 @@ pretty good starting point for development too (it's actually intended
 to be used on some CI checks, but don't mind that).  You can pull the
 image from::
 
-    quay.io/avocado-framework/avocado-ci-fedora-38
+    quay.io/avocado-framework/avocado-ci-fedora-40
 
 It's a simple image, with just a number of known needed packages
 installed.  This is the full definition of the image:
 
-.. literalinclude:: ../../../../../contrib/containers/ci/selftests/fedora-38.docker
+.. literalinclude:: ../../../../../contrib/containers/ci/selftests/fedora-40.docker
 
 You can use the information there to apply to your own environment if
 you choose not to use the container image itself.
