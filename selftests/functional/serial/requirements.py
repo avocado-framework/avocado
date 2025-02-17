@@ -131,11 +131,11 @@ DEPENDENCY_FILE = """
 """
 
 DEPENDENCY_RECIPE_FMT = """
-{
+{{
   "kind": "avocado-instrumented",
   "uri": "{path}",
-  "kwargs": {"dependencies": [{"type": "package", "name": "hello"}]}
-}
+  "kwargs": {{"dependencies": [{{"type": "package", "name": "hello"}}]}}
+}}
 """
 
 
