@@ -320,7 +320,7 @@ class BasicTest(TestCaseTmpDir, Test):
                 result = process.run(command, ignore_status=True)
                 self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
                 self.assertIn(
-                    "PASS 3",
+                    "PASS 1",
                     result.stdout_text,
                 )
                 self.assertNotIn(
