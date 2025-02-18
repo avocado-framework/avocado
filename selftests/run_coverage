@@ -20,13 +20,5 @@ env COVERAGE_PROCESS_START=.coveragerc $COVERAGE run selftests/check.py --skip=s
 rm -f sitecustomize.py
 $COVERAGE combine
 echo
-$COVERAGE report -m --include "avocado/core/*"
-echo
-$COVERAGE report -m --include "avocado/utils/*"
-echo
-$COVERAGE report -m --include "avocado/plugins/*"
-echo
-$COVERAGE report -m --include "optional_plugins/*"
-echo
 $COVERAGE report
 $COVERAGE xml
