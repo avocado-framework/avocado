@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
-        python-version: [3.11.0]
+        python-version: [3.11]
       fail-fast: false
     outputs:
       job_status: ${{ job.status }}
@@ -62,7 +62,7 @@ jobs:
     strategy:
       matrix:
         # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
-        python-version: [3.11.0]
+        python-version: [3.11]
       fail-fast: false
 
     steps:
