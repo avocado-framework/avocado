@@ -46,7 +46,7 @@ jobs:
           pip install -r requirements-dev.txt
           python3 setup.py develop --user
       - name: Avocado pre-release job
-        run: ./selftests/pre_release/jobs/pre_release.py
+        run: python3 setup.py test --select=pre-release,vmimage
       - name: Save artifacts
         if: failure()
         uses: actions/upload-artifact@v4
