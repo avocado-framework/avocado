@@ -71,7 +71,7 @@ build-wheel: pip
 	done
 
 check-wheel: build-wheel
-	$(PYTHON) -m pip install twine
+	$(PYTHON) -m pip install twine packaging>=24.2
 	twine check --strict ./PYPI_UPLOAD/*
 
 build-egg:
@@ -92,7 +92,7 @@ endif
 ifndef TWINE_PASSWORD
 	$(error TWINE_PASSWORD is undefined)
 endif
-	pip install twine
+	pip install twine packaging>=24.2
 	export TWINE_NON_INTERACTIVE=true
 	twine upload PYPI_UPLOAD/*.{tar.gz,whl}
 
