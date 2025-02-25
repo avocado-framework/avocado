@@ -37,6 +37,8 @@ TEST_SIZE = {
     "optional-plugins-robot": 3,
     "optional-plugins-varianter_cit": 40,
     "optional-plugins-varianter_yaml_to_mux": 50,
+    "vmimage": 248,
+    "pre-release": 19,
 }
 
 
@@ -741,6 +743,28 @@ def create_suites(args):  # pylint: disable=W0621
 
         suites.append(TestSuite.from_config(config_check_optional, "optional-plugins"))
 
+    if args.dict_tests.get("vmimage"):
+        test_dir = os.path.join("selftests", "pre_release", "tests")
+        vmimage_config = {
+            "resolver.references": [os.path.join(test_dir, "vmimage.py")],
+            "yaml_to_mux.files": [
+                os.path.join(test_dir, "vmimage.py.data", "variants.yml")
+            ],
+            "run.max_parallel_tasks": 1,
+        }
+        suites.append(TestSuite.from_config(vmimage_config, "vmimage"))
+    if args.dict_tests.get("pre-release"):
+        os.environ["AVOCADO_CHECK_LEVEL"] = "3"
+        pre_release_config = {
+            "resolver.references": [
+                os.path.join("selftests", "unit"),
+                os.path.join("selftests", "functional"),
+            ],
+            "filter.by_tags.tags": ["parallel:1"],
+            "run.max_parallel_tasks": 1,
+        }
+        suites.append(TestSuite.from_config(pre_release_config, "pre-release"))
+
     return suites
 
 
@@ -755,6 +779,10 @@ def main(args):  # pylint: disable=W0621
         "jobs": False,
         "functional": False,
         "optional-plugins": False,
+    }
+    select_only = {
+        "vmimage": False,
+        "pre-release": False,
     }
 
     if python_module_available("avocado-framework-plugin-golang"):
@@ -796,7 +824,7 @@ def main(args):  # pylint: disable=W0621
     # Will only run the test you select, --select must be followed by list of tests
     elif args.select:
         for elem in args.select:
-            if elem not in args.dict_tests.keys():
+            if elem not in args.dict_tests.keys() and elem not in select_only.keys():
                 print(elem, "is not in the list of valid tests.")
                 exit(0)
             else:
