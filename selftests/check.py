@@ -25,11 +25,11 @@ TEST_SIZE = {
     "job-api-check-file-exists": 11,
     "job-api-check-output-file": 4,
     "job-api-check-tmp-directory-exists": 1,
-    "nrunner-interface": 80,
+    "nrunner-interface": 90,
     "nrunner-requirement": 28,
     "unit": 682,
     "jobs": 11,
-    "functional-parallel": 318,
+    "functional-parallel": 325,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -589,7 +589,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 def create_suites(args):  # pylint: disable=W0621
     suites = []
     config_check = {"run.ignore_missing_references": True}
-
     if args.dict_tests["static-checks"]:
         config_check_static = copy.copy(config_check)
         config_check_static["resolver.references"] = glob.glob("selftests/*.sh")
@@ -631,6 +630,12 @@ def create_suites(args):  # pylint: disable=W0621
             },
             {
                 "runner": "avocado-runner-pip",
+            },
+            {
+                "runner": "avocado-runner-vmimage",
+                "extra_config": {
+                    "run.max_parallel_tasks": 1
+                }
             },
         ],
     }
