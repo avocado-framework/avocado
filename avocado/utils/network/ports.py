@@ -65,6 +65,7 @@ def is_port_free(port, address):
     return is_port_available(port, address)
 
 
+# pylint: disable=R0913
 def find_free_port(
     start_port=1024,
     end_port=65535,
@@ -95,6 +96,7 @@ def find_free_port(
     return None
 
 
+# pylint: disable=R0913
 def find_free_ports(
     start_port,
     end_port,

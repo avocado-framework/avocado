@@ -133,10 +133,9 @@ class Probe:
         :returns: whether the file exists in remote machine or not
         :rtype: bool
         """
-        if self.session and self.session.cmd(f"test -f {file_name}").exit_status == 0:
+        if self.session and not self.session.cmd(f"test -f {file_name}").exit_status:
             return True
-        else:
-            return False
+        return False
 
     def check_name_for_file(self):
         """
@@ -161,8 +160,9 @@ class Probe:
         if self.check_name_for_file():
             if self.check_for_remote_file(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
-            elif os.path.exists(self.CHECK_FILE):
+            if os.path.exists(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
+        return None
 
     def check_name_for_file_contains(self):
         """
@@ -196,6 +196,7 @@ class Probe:
                 ).stdout_text.split("/n")
             elif os.path.exists(self.CHECK_FILE):
                 try:
+                    # pylint: disable=R1732
                     check_file = open(self.CHECK_FILE, encoding="utf-8")
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
@@ -208,6 +209,7 @@ class Probe:
             for line in check_file:
                 if self.CHECK_FILE_CONTAINS in line:
                     return self.CHECK_FILE_DISTRO_NAME
+        return None
 
     def check_version(self):
         """
@@ -227,7 +229,7 @@ class Probe:
         """
         if self.check_version():
             if self.session:
-                if self.session.cmd(f"test -f {self.CHECK_FILE}").exit_status != 0:
+                if self.session.cmd(f"test -f {self.CHECK_FILE}").exit_status:
                     return None
             elif not os.path.exists(self.CHECK_FILE):
                 return None
@@ -239,15 +241,15 @@ class Probe:
                 ).stdout_text
             else:
                 try:
-                    version_file_content = open(
-                        self.CHECK_FILE, encoding="utf-8"
-                    ).read()
+                    with open(self.CHECK_FILE, encoding="utf-8") as check_file:
+                        version_file_content = check_file.read()
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))
                     return None
 
             return self.CHECK_VERSION_REGEX.match(version_file_content)
+        return None
 
     def version(self):
         """

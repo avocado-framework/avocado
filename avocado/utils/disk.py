@@ -74,11 +74,11 @@ def create_loop_device(size, blocksize=4096, directory="./"):
         f"dd if=/dev/zero of={loop_file} bs={blocksize} "
         f"count={int(size / blocksize)}"
     )
-    if process.system(cmd, ignore_status=True, sudo=True) != 0:
+    if process.system(cmd, ignore_status=True, sudo=True):
         raise DiskError("Unable to create backing file for loop device")
 
     cmd = f"losetup {loop} {loop_file} -P"
-    if process.system(cmd, ignore_status=True, sudo=True) != 0:
+    if process.system(cmd, ignore_status=True, sudo=True):
         raise DiskError("Unable to create the loop device")
     return loop
 
@@ -102,7 +102,7 @@ def delete_loop_device(device):
     if not loop_file:
         raise DiskError("Unable to find backing file for loop device")
     cmd = f"losetup -d {device}"
-    if process.system(cmd, ignore_status=True, sudo=True) != 0:
+    if process.system(cmd, ignore_status=True, sudo=True):
         raise DiskError("Unable to delete the loop device")
     os.remove(loop_file)
     return True
@@ -218,6 +218,7 @@ def get_filesystem_type(mount_point="/"):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+    return None
 
 
 def is_root_device(device):
@@ -366,6 +367,7 @@ def create_linux_raw_partition(disk_name, size=None, num_of_par=1):
     rescan_disk(disk_name)
     if "The partition table has been altered" in part_output:
         return get_disk_partitions(disk_name)
+    return None
 
 
 def get_size_of_disk(disk):
@@ -458,8 +460,8 @@ def get_io_scheduler_list(device_name):
     :param device_name: Device  name example like sda
     :return: list of IO scheduler
     """
-    names = open(__sched_path(device_name), "r", encoding="utf-8").read()
-    return names.translate(str.maketrans("[]", " ")).split()
+    with open(__sched_path(device_name), "r", encoding="utf-8") as fl:
+        return fl.read().translate(str.maketrans("[]", " ")).split()
 
 
 def get_io_scheduler(device_name):

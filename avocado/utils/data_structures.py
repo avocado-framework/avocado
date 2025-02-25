@@ -56,12 +56,12 @@ def geometric_mean(values):
     except ValueError as exc:
         raise ValueError(f"Invalid inputs {values}. Provide valid inputs") from exc
     no_values = len(values)
-    if no_values == 0:
+    if not no_values:
         return None
     return math.exp(sum(math.log(number) for number in values) / no_values)
 
 
-def compare_matrices(matrix1, matrix2, threshold=0.05):
+def compare_matrices(matrix1, matrix2, threshold=0.05):  # pylint: disable=R0912
     """
     Compare 2 matrices nxm and return a matrix nxm with comparison data and
     stats. When the first columns match, they are considered as header and
@@ -98,7 +98,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
             try:
                 ratio = float(element2) / float(element1)
             except ZeroDivisionError:  # For 0s, allow exact match or error
-                if float(element2) == 0:
+                if not float(element2):
                     new_line.append(".")
                     same += 1
                 else:
@@ -165,7 +165,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
                 dict1[k], dict2[k], level=f"{level}.{k}", diff_btw_dict=diff_btw_dict
             )
         return diff_btw_dict
-    elif isinstance(dict1, list) and isinstance(dict2, list):
+    if isinstance(dict1, list) and isinstance(dict2, list):
         if len(dict1) != len(dict2):
             diff_btw_dict.append(f"{level} + {len(dict1)} - {len(dict2)}")
         common_len = min(len(dict1), len(dict2))
@@ -179,6 +179,7 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
     else:
         if dict1 != dict2:
             diff_btw_dict.append(f"{level} - dict1 value:{dict1}, dict2 value:{dict2}")
+    return None
 
 
 class Borg:

@@ -60,13 +60,14 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
             mpath_fp.write("blacklist {\n")
             mpath_fp.write(f"    {blacklist}\n")
             mpath_fp.write("}\n")
-    LOG.debug(open(conf_file, "r", encoding="utf-8").read())
+    with open(conf_file, "r", encoding="utf-8") as fl:
+        LOG.debug(fl.read())
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)
     mpath_svc = service.SpecificServiceManager(get_svc_name())
-    mpath_svc.restart()
-    wait.wait_for(mpath_svc.status, timeout=10)
+    mpath_svc.restart()  # pylint: disable=E1101
+    wait.wait_for(mpath_svc.status, timeout=10)  # pylint: disable=E1101
 
 
 def device_exists(mpath):
@@ -95,6 +96,7 @@ def get_mpath_name(wwid):
     if device_exists(wwid):
         cmd = f"multipath -l {wwid}"
         return process.run(cmd, sudo=True).stdout_text.split()[0]
+    return None
 
 
 def get_mpath_from_dm(dm_id):
@@ -113,6 +115,7 @@ def get_mpath_from_dm(dm_id):
     for mpath in mpaths.splitlines():
         if dm_id in mpath:
             return mpath.split()[1]
+    return None
 
 
 def get_multipath_wwids():
@@ -143,6 +146,7 @@ def get_multipath_wwid(mpath):
     for wwid in wwids.splitlines():
         if mpath in wwid:
             return wwid.split()[1]
+    return None
 
 
 def is_mpath_dev(mpath):
@@ -170,7 +174,7 @@ def get_paths(wwid):
     :rtype: list of str
     """
     if not device_exists(wwid):
-        return
+        return None
     cmd = f"multipath -ll {wwid}"
     lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
     paths = []
@@ -229,6 +233,7 @@ def get_path_status(disk_path):
             for paths in path_groups["paths"]:
                 if paths["dev"] == disk_path:
                     return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
+    return None
 
 
 def get_mpath_paths_status(wwid):
@@ -241,10 +246,10 @@ def get_mpath_paths_status(wwid):
     """
     mpath_op = get_multipath_details()
     if not mpath_op:
-        return
+        return None
     wwid_paths = {}
     for maps in mpath_op["maps"]:
-        if maps["name"] == wwid or maps["uuid"] == wwid:
+        if wwid in (maps["name"], maps["uuid"]):
             for path_groups in maps["path_groups"]:
                 for paths in path_groups["paths"]:
                     wwid_paths[paths["dev"]] = (
@@ -252,9 +257,9 @@ def get_mpath_paths_status(wwid):
                         paths["dev_st"],
                         paths["chk_st"],
                     )
-    if len(wwid_paths) != 0:
+    if len(wwid_paths):
         return wwid_paths
-    return
+    return None
 
 
 def fail_path(path):
@@ -273,7 +278,7 @@ def fail_path(path):
         return False
 
     cmd = f'multipathd -k"fail path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_failed, timeout=10) or False
     return False
 
@@ -293,7 +298,7 @@ def reinstate_path(path):
         return False
 
     cmd = f'multipathd -k"reinstate path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_reinstated, timeout=10) or False
     return False
 
@@ -311,6 +316,7 @@ def get_policy(wwid):
         for line in lines.split("\n"):
             if "policy" in line:
                 return line.split("'")[1].split()[0]
+    return None
 
 
 def get_size(wwid):
@@ -326,6 +332,7 @@ def get_size(wwid):
         for line in lines.split("\n"):
             if "size" in line:
                 return line.split("=")[1].split()[0]
+    return None
 
 
 def flush_path(path_name):
@@ -366,7 +373,7 @@ def suspend_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"suspend map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_suspended, timeout=10) or False
     return False
 
@@ -385,7 +392,7 @@ def resume_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"resume map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_resumed, timeout=10) or False
     return False
 
@@ -404,7 +411,7 @@ def remove_mpath(mpath):
         return True
 
     cmd = f'multipathd -k"remove map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_removed, timeout=10) or False
     return False
 
@@ -423,7 +430,7 @@ def add_mpath(mpath):
         return False
 
     cmd = f'multipathd -k"add map {mpath}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_mpath_added, timeout=10) or False
     return False
 
@@ -442,7 +449,7 @@ def remove_path(path):
         return False
 
     cmd = f'multipathd -k"remove path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_path_removed, timeout=10) or False
     return False
 
@@ -461,6 +468,6 @@ def add_path(path):
         return True
 
     cmd = f'multipathd -k"add path {path}"'
-    if process.system(cmd) == 0:
+    if not process.system(cmd):
         return wait.wait_for(is_path_added, timeout=10) or False
     return False

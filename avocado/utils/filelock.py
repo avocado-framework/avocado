@@ -81,10 +81,9 @@ class FileLock:
                 # to be released.
                 if self.timeout <= 0:
                     raise AlreadyLocked("File is already locked.") from exc
-                elif time.monotonic() > timelimit:
+                if time.monotonic() > timelimit:
                     raise AlreadyLocked("Timeout waiting for the lock.") from exc
-                else:
-                    time.sleep(0.1)
+                time.sleep(0.1)
 
     def __exit__(self, *args):
         if self.locked:

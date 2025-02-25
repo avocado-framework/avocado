@@ -77,6 +77,7 @@ class VMImageHtmlParser(HTMLParser):  # pylint: disable=W0223
                     self.items.append(match)
 
 
+# pylint: disable=R0902
 class ImageProviderBase:
     """
     Base class to define the common methods and attributes of an
@@ -114,7 +115,8 @@ class ImageProviderBase:
 
     def _feed_html_parser(self, url, parser):
         try:
-            data = urlopen(url).read()
+            with urlopen(url) as u:
+                data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError as exc:
             raise ImageProviderError(f"Cannot open {url}") from exc
@@ -152,10 +154,7 @@ class ImageProviderBase:
         if resulting_versions:
             self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
-        else:
-            raise ImageProviderError(
-                f"Version not available at " f"{self.url_versions}"
-            )
+        raise ImageProviderError(f"Version not available at " f"{self.url_versions}")
 
     def get_image_url(self):
         """
@@ -178,10 +177,9 @@ class ImageProviderBase:
 
         if parser.items:
             return url_images + max(parser.items)
-        else:
-            raise ImageProviderError(
-                f"No images matching '{image}' " f"at '{url_images}'. Wrong arch?"
-            )
+        raise ImageProviderError(
+            f"No images matching '{image}' " f"at '{url_images}'. Wrong arch?"
+        )
 
     def get_image_parameters(self, image_file_name):
         """
@@ -366,12 +364,11 @@ class DebianImageProvider(ImageProviderBase):
             version = "bullseye"
 
         # User provided a numerical version
-        if version in table_codename.keys():
-            version = table_codename[version]
+        version = table_codename.get(version, version)
 
         # If version is not a codename by now, it's wrong or unknown,
         # so let's fail early
-        if version not in table_version.keys():
+        if version not in table_version:
             raise ImageProviderError("Unknown version", version)
 
         super().__init__(version, build, arch)
@@ -521,6 +518,7 @@ class FreeBSDImageProvider(ImageProviderBase):
 
 
 class Image:
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         name,
@@ -636,6 +634,7 @@ class Image:
         return new_image
 
     @classmethod
+    # pylint: disable=R0913
     def from_parameters(
         cls,
         name=None,
@@ -693,6 +692,7 @@ class Image:
         raise AttributeError("Provider not available")
 
 
+# pylint: disable=R0913
 def get(
     name=None,
     version=None,

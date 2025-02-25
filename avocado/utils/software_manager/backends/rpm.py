@@ -58,15 +58,14 @@ class RpmBackend(BaseBackend):
                     return self._check_installed_version(name, version)
             return False
 
-        elif version:
+        if version:
             return self._check_installed_version(name, version)
-        else:
-            cmd = "rpm -q " + name
-            try:
-                process.system(cmd)
-                return True
-            except process.CmdError:
-                return False
+        cmd = "rpm -q " + name
+        try:
+            process.system(cmd)
+            return True
+        except process.CmdError:
+            return False
 
     def list_all(self, software_components=True):
         """
@@ -154,13 +153,11 @@ class RpmBackend(BaseBackend):
         # unstable approach but currently works
         # installed_pattern = r"\s" + package_name + r" is installed\s+"
         # match = re.search(installed_pattern, result)
-        match = result.exit_status == 0
-        if match:
+        if not result.exit_status:
             LOG.info("Verification successful.")
             return True
-        else:
-            LOG.info(result.stdout_text.rstrip())
-            return False
+        LOG.info(result.stdout_text.rstrip())
+        return False
 
     @staticmethod
     def rpm_erase(package_name):
@@ -213,7 +210,7 @@ class RpmBackend(BaseBackend):
         subpaths = os.listdir(rpm_dir)
         subpacks = []
         for subpath in subpaths:
-            if subpath == "." or subpath == "..":
+            if subpath in (".", ".."):
                 continue
             new_filepath = rpm_dir + "/" + subpath
             LOG.debug("Checking path for rpm %s", new_filepath)
@@ -240,7 +237,7 @@ class RpmBackend(BaseBackend):
             result = process.run(f"rpm -qp {abs_path}")
         except process.CmdError:
             return False
-        if result.exit_status == 0:
+        if not result.exit_status:
             return True
         return False
 

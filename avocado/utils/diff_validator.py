@@ -100,18 +100,18 @@ def parse_unified_diff_output(lines):
         if len(line) > 2 and (line[:3] == "+++" or line[:3] == "---"):
             continue
         # ignore line range information in the output
-        elif len(line) > 1 and line[:2] == "@@":
+        if len(line) > 1 and line[:2] == "@@":
             continue
         # gather adds
-        elif len(line) > 0 and line[0] == "+":
+        if len(line) > 0 and line[0] == "+":
             added_line = line[1:].lstrip().rstrip()
-            if len(added_line) == 0:
+            if not added_line:
                 continue
             adds = adds + [added_line]
         # gather removes
         elif len(line) > 0 and line[0] == "-":
             removed_line = line[1:].lstrip().rstrip()
-            if len(removed_line) == 0:
+            if not removed_line:
                 continue
             removes = removes + [removed_line]
     return (adds, removes)
@@ -132,20 +132,20 @@ def extract_changes(file_paths, compared_file_paths=None):
     if compared_file_paths is None:
         compared_file_paths = []
 
-    for i in range(len(file_paths)):
-        temp_file_path = get_temp_file_path(file_paths[i])
+    for i, file_path in enumerate(file_paths):
+        temp_file_path = get_temp_file_path(file_path)
 
         if len(compared_file_paths) > i:
-            file1, file2 = compared_file_paths[i], file_paths[i]
+            file1, file2 = compared_file_paths[i], file_path
         else:
-            file1, file2 = temp_file_path, file_paths[i]
+            file1, file2 = temp_file_path, file_path
         with open(file1, encoding="utf-8") as f1:
             lines1 = f1.readlines()
         with open(file2, encoding="utf-8") as f2:
             lines2 = f2.readlines()
         lines = difflib.unified_diff(lines1, lines2, fromfile=file1, tofile=file2, n=0)
 
-        changes[file_paths[i]] = parse_unified_diff_output(lines)
+        changes[file_path] = parse_unified_diff_output(lines)
     return changes
 
 
@@ -204,7 +204,7 @@ def assert_change(actual_result, expected_result):
     change_diffs = assert_change_dict(actual_result, expected_result)
     for file_change in change_diffs.values():
         for line_change in file_change:
-            if len(line_change) != 0:
+            if len(line_change):
                 return False
     return True
 
@@ -227,7 +227,7 @@ def create_diff_report(change_diffs):
         diff_strings.append(f"+++ {file_path}")
         for iter_category in range(4):
             change_category = change_diff[iter_category]
-            if iter_category == 0 and change_category:
+            if not iter_category and change_category:
                 diff_strings.append("*++ Additional unexpected adds")
             elif iter_category == 1 and change_category:
                 diff_strings.append("/++ Not present expected adds")

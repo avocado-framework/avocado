@@ -88,9 +88,8 @@ def parse_lsmod_for_module(l_raw, module_name, escape=True):
         if module_info["submodules"]:
             module_info["submodules"] = module_info["submodules"].split(",")
         return module_info
-    else:
-        # return empty dict to be consistent
-        return {}
+    # return empty dict to be consistent
+    return {}
 
 
 def loaded_module_info(module_name):
@@ -116,7 +115,7 @@ def loaded_module_info(module_name):
             key = items[0].rstrip(":")
             value = None
             if len(items) > 1:
-                if key == "filename" or key == "version":
+                if key in ("filename", "version"):
                     value = str(items[-1])
                 elif key == "depends":
                     value = items[1].split(",")
@@ -178,7 +177,7 @@ def unload_module(module_name):
         except KeyError:
             LOG.info("Module %s is already unloaded", module_name)
             return
-        if module_used != 0:
+        if module_used:
             raise RuntimeError(
                 f"Module {module_name} is still in use. " f"Can not unload it."
             )
@@ -237,8 +236,7 @@ def check_kernel_config(config_name):
                 option = line[1].strip()
                 if option == "m":
                     return ModuleConfig.MODULE
-                else:
-                    return ModuleConfig.BUILTIN
+                return ModuleConfig.BUILTIN
     return ModuleConfig.NOT_SET
 
 

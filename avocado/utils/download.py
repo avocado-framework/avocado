@@ -45,7 +45,7 @@ def url_open(url, data=None, timeout=5):
     :raises: `URLError`.
     """
     try:
-        result = urlopen(url, data=data, timeout=timeout)
+        result = urlopen(url, data=data, timeout=timeout)  # pylint: disable=R1732
     except (socket.timeout, HTTPError) as ex:
         msg = f"Failed downloading file: {str(ex)}"
         log.error(msg)
@@ -117,37 +117,36 @@ def url_download_interactive(url, output_file, title="", chunk_size=102400):
     """
     output_dir = os.path.dirname(output_file)
     with open(output_file, "w+b") as open_output_file:
-        input_file = urlopen(url)
+        with urlopen(url) as input_file:
+            try:
+                file_size = int(input_file.headers["Content-Length"])
+            except KeyError as exc:
+                raise ValueError("Could not find file size in HTTP headers") from exc
 
-        try:
-            file_size = int(input_file.headers["Content-Length"])
-        except KeyError as exc:
-            raise ValueError("Could not find file size in HTTP headers") from exc
+            log.info(
+                "Downloading %s, %s to %s",
+                os.path.basename(url),
+                output.display_data_size(file_size),
+                output_dir,
+            )
 
-        log.info(
-            "Downloading %s, %s to %s",
-            os.path.basename(url),
-            output.display_data_size(file_size),
-            output_dir,
-        )
+            progress_bar = output.ProgressBar(maximum=file_size, title=title)
 
-        progress_bar = output.ProgressBar(maximum=file_size, title=title)
-
-        # Download the file, while interactively updating the progress
-        progress_bar.draw()
-        while True:
-            data = input_file.read(chunk_size)
-            if data:
-                progress_bar.append_amount(len(data))
-                open_output_file.write(data)
-            else:
-                progress_bar.update_amount(file_size)
-                break
+            # Download the file, while interactively updating the progress
+            progress_bar.draw()
+            while True:
+                data = input_file.read(chunk_size)
+                if data:
+                    progress_bar.append_amount(len(data))
+                    open_output_file.write(data)
+                else:
+                    progress_bar.update_amount(file_size)
+                    break
 
 
 def _get_file(src, dst, permissions=None):
     if src == dst:
-        return
+        return None
 
     if aurl.is_url(src):
         url_download(src, dst)
@@ -159,6 +158,7 @@ def _get_file(src, dst, permissions=None):
     return dst
 
 
+# pylint: disable=R0913
 def get_file(
     src,
     dst,
@@ -213,7 +213,6 @@ def get_file(
                 f"problems or incorrect hash_expected "
                 f"provided -> '{hash_expected}'"
             )
-        else:
-            log.error("Retrying download of src %s", src)
+        log.error("Retrying download of src %s", src)
 
     return dst

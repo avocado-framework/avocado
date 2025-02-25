@@ -69,30 +69,29 @@ class Podman(_Podman):
             LOG.debug("Executing %s", args)
 
             cmd = [self.podman_bin, *args]
-            proc = subprocess.Popen(
+            with subprocess.Popen(
                 cmd,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-            )
-            stdout, stderr = proc.communicate()
-            LOG.debug("Return code: %s", proc.returncode)
-            LOG.debug("Stdout: %s", stdout.decode("utf-8", "replace"))
-            LOG.debug("Stderr: %s", stderr.decode("utf-8", "replace"))
+            ) as proc:
+                stdout, stderr = proc.communicate()
+                LOG.debug("Return code: %s", proc.returncode)
+                LOG.debug("Stdout: %s", stdout.decode("utf-8", "replace"))
+                LOG.debug("Stderr: %s", stderr.decode("utf-8", "replace"))
+                if proc.returncode:
+                    command_args = " ".join(args)
+                    msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
+                    LOG.error(msg)
+                    raise PodmanException(msg)
+
+                return proc.returncode, stdout, stderr
         except (FileNotFoundError, PermissionError) as ex:
             # Since this method is also used by other methods, let's
             # log here as well.
             msg = "Could not execute the command."
             LOG.error("%s: %s", msg, str(ex))
             raise PodmanException(msg) from ex
-
-        if proc.returncode != 0:
-            command_args = " ".join(args)
-            msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
-            LOG.error(msg)
-            raise PodmanException(msg)
-
-        return proc.returncode, stdout, stderr
 
     def copy_to_container(self, container_id, src, dst):
         """Copy artifacts from src to container:dst.
@@ -129,6 +128,7 @@ class Podman(_Podman):
         if stdout:
             output = stdout.decode().strip().split()
             return int(output[0]), int(output[1]), output[2]
+        return None
 
     def get_container_info(self, container_id):
         """Return all information about specific container.
@@ -202,7 +202,7 @@ class AsyncPodman(_Podman):
             LOG.error("%s: %s", msg, str(ex))
             raise PodmanException(msg) from ex
 
-        if proc.returncode != 0:
+        if proc.returncode:
             command_args = " ".join(args)
             msg = f'Failure from command "{self.podman_bin} {command_args}": returned code "{proc.returncode}" stderr: "{stderr}"'
             LOG.error(msg)

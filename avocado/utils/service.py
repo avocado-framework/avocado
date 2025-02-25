@@ -108,7 +108,7 @@ def sys_v_init_result_parser(command):
     """
     if command == "status":
 
-        def method(cmd_result):
+        def status_method(cmd_result):
             """
             Parse method for `service $name status`.
 
@@ -130,10 +130,10 @@ def sys_v_init_result_parser(command):
             # If output does not contain a dead flag, check it with "running".
             return bool(re.search(b"running", output))
 
-        return method
-    elif command == "list":
+        return status_method
+    if command == "list":
 
-        def method(cmd_result):
+        def list_method(cmd_result):
             """
             Parse method for `service $name list`.
 
@@ -181,7 +181,7 @@ def sys_v_init_result_parser(command):
             services_statuses_dict["xinetd"] = xinet_services_dict
             return services_statuses_dict
 
-        return method
+        return list_method
     return _ServiceResultParser.default_method
 
 
@@ -200,7 +200,7 @@ def systemd_result_parser(command):
     """
     if command == "status":
 
-        def method(cmd_result):
+        def status_method(cmd_result):
             """
             Parse method for `systemctl status $name.service`.
 
@@ -217,10 +217,10 @@ def systemd_result_parser(command):
             # Check it with Active status.
             return output.count(b"Active: active") > 0
 
-        return method
-    elif command == "list":
+        return status_method
+    if command == "list":
 
-        def method(cmd_result):
+        def list_method(cmd_result):
             """
             Parse method for `systemctl list $name.service`.
 
@@ -248,7 +248,7 @@ def systemd_result_parser(command):
                 _service2status_dict[service_name] = status
             return _service2status_dict
 
-        return method
+        return list_method
     return _ServiceResultParser.default_method
 
 

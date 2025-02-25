@@ -147,7 +147,7 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
     dmsg_log = ""
     cmd = f"dmesg -T -l {','.join(map(str, range(0, int(level_check))))}" f"|grep ."
     out = process.run(cmd, timeout=30, ignore_status=True, verbose=False, shell=True)
-    if out.exit_status == 0:
+    if not out.exit_status:
         err = "Found failures in dmesg"
         if skip_errors:
             dmsg_log = skip_dmesg_messages(out.stdout_text, skip_errors)
@@ -178,6 +178,6 @@ def skip_dmesg_messages(dmesg_stdout, skip_messages):
     """
 
     def filter_strings(line):
-        return not any([string in line for string in skip_messages])
+        return not any(string in line for string in skip_messages)
 
     return "\n".join(filter(None, filter(filter_strings, dmesg_stdout.splitlines())))

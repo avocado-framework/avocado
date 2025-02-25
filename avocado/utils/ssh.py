@@ -53,6 +53,7 @@ class Session:
 
     MASTER_OPTIONS = (("ControlMaster", "yes"), ("ControlPersist", "yes"))
 
+    # pylint: disable=R0913
     def __init__(self, host, port=None, user=None, key=None, password=None):
         """
         :param host: a host name or IP address
@@ -126,7 +127,7 @@ class Session:
     def _master_command(self, command):
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ("-O", command))
         result = process.run(cmd, ignore_status=True)
-        return result.exit_status == 0
+        return not result.exit_status
 
     def _check(self):
         return self._master_command("check")
@@ -168,6 +169,7 @@ class Session:
                     preexec_fn=os.setsid,
                 )
             else:
+                # pylint: disable=R1732
                 master = subprocess.Popen(
                     cmd,
                     stdin=subprocess.DEVNULL,
@@ -178,7 +180,7 @@ class Session:
             master.wait()
             if self.password is not None:
                 os.unlink(ssh_askpass_path)
-            if master.returncode != 0:
+            if master.returncode:
                 return False
             self._connection = master
         return self._check()
@@ -189,6 +191,7 @@ class Session:
         control = os.path.expanduser(control)
         if os.path.exists(control):
             return control
+        return None
 
     def get_raw_ssh_command(self, command):
         """
@@ -278,9 +281,9 @@ class Session:
             options += " -r"
         options += f" {source} {destination}"
         try:
-            if self.cmd(f"test -d {path}").exit_status != 0:
+            if self.cmd(f"test -d {path}").exit_status:
                 self.cmd(f"mkdir -p {path}")
             result = process.run(f"{cmd} {options}", ignore_status=True)
-            return result.exit_status == 0
+            return not result.exit_status
         except process.CmdError as exc:
             raise NWException(f"failed to copy file {exc}") from exc

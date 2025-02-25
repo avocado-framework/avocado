@@ -113,7 +113,7 @@ def cpu_has_flags(flags):
         flags = [flags]
 
     for flag in flags:
-        if not any([flag.encode() in line for line in cpu_info]):
+        if not any(flag.encode() in line for line in cpu_info):
             return False
     return True
 
@@ -219,18 +219,17 @@ def get_arch():
     cpuinfo = _get_info()
     for pattern, arch in cpu_table:
         if _list_matches(cpuinfo, pattern):
-            if arch == "arm":
-                # ARM is a special situation, which matches both 32 bits
-                # (v7) and 64 bits (v8).
-                for line in cpuinfo:
-                    if line.startswith(b"CPU architecture"):
-                        version = int(line.split(b":", 1)[1])
-                        if version >= 8:
-                            return "aarch64"
-                        else:
-                            # For historical reasons return arm
-                            return "arm"
-            return arch
+            if arch != "arm":
+                return arch
+            # ARM is a special situation, which matches both 32 bits
+            # (v7) and 64 bits (v8).
+            for line in cpuinfo:
+                if line.startswith(b"CPU architecture"):
+                    version = int(line.split(b":", 1)[1])
+                    if version >= 8:
+                        return "aarch64"
+                    # For historical reasons return arm
+                    return "arm"
     return platform.machine()
 
 
@@ -238,7 +237,7 @@ def get_family():
     """Get family name of the cpu like Broadwell, Haswell, power8, power9."""
     family = None
     arch = get_arch()
-    if arch == "x86_64" or arch == "i386":
+    if arch in ("x86_64", "i386"):
         if get_vendor() == "amd":
             cpu_info = _get_info()
             pattern = r"cpu family\s*:"
@@ -297,8 +296,8 @@ def get_model():
             if re.search(pattern, line):
                 model = int(line.split(":")[1])
                 return model
-    else:
-        raise NotImplementedError
+        return None
+    raise NotImplementedError
 
 
 def get_x86_amd_zen(family=None, model=None):
@@ -330,6 +329,7 @@ def get_x86_amd_zen(family=None, model=None):
             for _zen, _model in _zen_model.items():
                 if any(lower <= model <= upper for (lower, upper) in _model):
                     return _zen
+    return None
 
 
 def online_list():
@@ -402,9 +402,8 @@ def get_idle_state():
                 f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
             )
             try:
-                cpu_idlestate[cpu][state_no] = bool(
-                    int(open(state_file, "rb").read())
-                )  # pylint: disable=W1514
+                with open(state_file, "rb") as fl:  # pylint: disable=W1514
+                    cpu_idlestate[cpu][state_no] = bool(int(fl.read()))
             except IOError as err:
                 LOG.warning(
                     "Failed to read idle state on cpu %s for state %s:\n%s",
@@ -456,7 +455,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                     f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
                 )
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    with open(state_file, "wb") as fl:  # pylint: disable=W1514
+                        fl.write(disable)
                 except IOError as err:
                     LOG.warning(
                         "Failed to set idle state on cpu %s for state %s:\n%s",
@@ -472,7 +472,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 )
                 disable = _bool_to_binary(value)
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    with open(state_file, "wb") as fl:  # pylint: disable=W1514
+                        fl.write(disable)
                 except IOError as err:
                     LOG.warning(
                         "Failed to set idle state on cpu %s for state %s:\n%s",

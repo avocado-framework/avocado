@@ -76,6 +76,7 @@ phone_home:
 """
 
 
+# pylint: disable=R0913
 def iso(
     output_path,
     instance_id,
@@ -145,7 +146,7 @@ def iso(
 class PhoneHomeServerHandler(BaseHTTPRequestHandler):
     """Handles HTTP requests to the phone home server."""
 
-    def do_POST(self):
+    def do_POST(self):  # pylint: disable=C0103
         """Handles an HTTP POST request.
 
         Respond with status 200 if the instance phoned back.

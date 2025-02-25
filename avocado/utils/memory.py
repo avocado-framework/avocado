@@ -132,6 +132,7 @@ def read_from_meminfo(key):
     for line in genio.read_file("/proc/meminfo").splitlines():
         if key in line:
             return int(re.search(r"(\d+)\s*(?:kB)?$", line).group(1))
+    return None
 
 
 def memtotal():
@@ -475,8 +476,7 @@ def get_thp_value(feature):
     value = genio.read_file(thp_feature_to_get)
     if feature in ("enabled", "defrag", "shmem_enabled"):
         return (re.search(r"\[(\w+)\]", value)).group(1)
-    else:
-        return value
+    return value
 
 
 class _MemInfoItem:

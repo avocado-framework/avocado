@@ -86,6 +86,7 @@ def get_devices_total_space(devices):
     return size
 
 
+# pylint: disable=R0913
 def vg_ramdisk(
     disk,
     vg_name,
@@ -198,21 +199,10 @@ def vg_ramdisk_cleanup(
     :rtype: (str, str, str, str)
     :raises: :py:class:`LVException` on intolerable failure at any stage
     """
-    warnings.warn(
-        "deprecated, use existing methods: vg_remove, lv_remove", DeprecationWarning
-    )
-    errs = []
-    if vg_name is not None:
-        loop_device = re.search(
-            rf"([/\w-]+) +{vg_name} +lvm2", process.run("pvs", sudo=True).stdout_text
-        )
-        if loop_device is not None:
-            loop_device = loop_device.group(1)
-        process.run(f"vgremove -f {vg_name}", ignore_status=True, sudo=True)
 
-    if loop_device is not None:
+    def pvremove(loop_device):
         result = process.run(f"pvremove {loop_device}", ignore_status=True, sudo=True)
-        if result.exit_status != 0:
+        if result.exit_status:
             errs.append("wipe pv")
             LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
@@ -230,7 +220,7 @@ def vg_ramdisk_cleanup(
                     f"losetup -d {loop_device}", ignore_status=True, sudo=True
                 )
                 if b"resource busy" not in result.stderr:
-                    if result.exit_status != 0:
+                    if result.exit_status:
                         errs.append("remove loop device")
                         LOGGER.error(
                             "Unexpected failure when removing loop"
@@ -240,13 +230,7 @@ def vg_ramdisk_cleanup(
                     break
                 time.sleep(0.1)
 
-    if ramdisk_filename is not None:
-        if os.path.exists(ramdisk_filename):
-            os.unlink(ramdisk_filename)
-            LOGGER.debug("Ramdisk filename %s deleted", ramdisk_filename)
-            vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
-
-    if vg_ramdisk_dir is not None:
+    def unmount():
         if use_tmpfs and not process.system(
             f"mountpoint {vg_ramdisk_dir}", ignore_status=True
         ):
@@ -255,7 +239,7 @@ def vg_ramdisk_cleanup(
                     f"umount {vg_ramdisk_dir}", ignore_status=True, sudo=True
                 )
                 time.sleep(0.1)
-                if result.exit_status == 0:
+                if not result.exit_status:
                     break
             else:
                 errs.append("umount")
@@ -270,6 +254,30 @@ def vg_ramdisk_cleanup(
             except OSError as details:
                 errs.append("rm-ramdisk-dir")
                 LOGGER.error("Failed to remove ramdisk_dir: %s", details)
+
+    warnings.warn(
+        "deprecated, use existing methods: vg_remove, lv_remove", DeprecationWarning
+    )
+    errs = []
+    if vg_name is not None:
+        loop_device = re.search(
+            rf"([/\w-]+) +{vg_name} +lvm2", process.run("pvs", sudo=True).stdout_text
+        )
+        if loop_device is not None:
+            loop_device = loop_device.group(1)
+        process.run(f"vgremove -f {vg_name}", ignore_status=True, sudo=True)
+
+    if loop_device is not None:
+        pvremove(loop_device)
+
+    if ramdisk_filename is not None:
+        if os.path.exists(ramdisk_filename):
+            os.unlink(ramdisk_filename)
+            LOGGER.debug("Ramdisk filename %s deleted", ramdisk_filename)
+            vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
+
+    if vg_ramdisk_dir is not None:
+        unmount()
     if errs:
         raise LVException(f"vg_ramdisk_cleanup failed: {', '.join(errs)}")
 
@@ -377,8 +385,7 @@ def lv_check(vg_name, lv_name):
     if match:
         LOGGER.debug("Provided Logical volume %s exists in %s", lv_name, vg_name)
         return True
-    else:
-        return False
+    return False
 
 
 def lv_list(vg_name=None):
@@ -417,6 +424,7 @@ def lv_list(vg_name=None):
     return volumes
 
 
+# pylint: disable=R0913
 def lv_create(
     vg_name, lv_name, lv_size, force_flag=True, pool_name=None, pool_size="1G"
 ):
@@ -442,7 +450,7 @@ def lv_create(
         raise LVException("Volume group could not be found")
     if lv_check(vg_name, lv_name) and not force_flag:
         raise LVException("Logical volume already exists")
-    elif lv_check(vg_name, lv_name) and force_flag:
+    if lv_check(vg_name, lv_name) and force_flag:
         lv_remove(vg_name, lv_name)
 
     lv_cmd = f"lvcreate --name {lv_name}"

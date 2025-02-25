@@ -70,12 +70,14 @@ class Host:
         for interface in self.interfaces:
             if ipaddr in interface.get_ipaddrs():
                 return interface
+        return None
 
     def get_interface_by_hwaddr(self, mac):
         """Return an interface that has a specific mac."""
         for interface in self.interfaces:
             if mac in interface.get_hwaddr():
                 return interface
+        return None
 
     def get_all_hwaddr(self):
         """Get a list of all mac address in the host
@@ -90,7 +92,8 @@ class Host:
         except Exception as ex:
             raise NWException(f"could not get mac addresses:" f" {ex}") from ex
 
-    def validate_mac_addr(self, mac_id):
+    @staticmethod
+    def validate_mac_addr(mac_id):
         """Check if mac address is valid.
         This method checks if the mac address is 12 digit hexadecimal number.
 
@@ -117,8 +120,7 @@ class Host:
             return False
         if re.search(check, mac_id):
             return True
-        else:
-            return False
+        return False
 
     def get_default_route_interface(self):
         """Get a list of default routes interfaces
@@ -168,6 +170,7 @@ class RemoteHost(Host):
     You can also provide a key instead of a password.
     """
 
+    # pylint: disable=R0913
     def __init__(self, host, username, port=22, key=None, password=None):
         super().__init__(host)
         self.port = port

@@ -162,11 +162,10 @@ def get_pci_class_name(pci_address):
             raise ValueError(
                 f"Unable to get 'Class' property of given pci " f"address {pci_address}"
             )
-        else:
-            raise ValueError(
-                f"Class ID {pci_class_id} is not defined "
-                f"in this library please send an update"
-            )
+        raise ValueError(
+            f"Class ID {pci_class_id} is not defined "
+            f"in this library please send an update"
+        )
     return pci_class_dic.get(pci_class_id)
 
 
@@ -194,12 +193,12 @@ def get_slot_from_sysfs(full_pci_address):
              physical slot of the adapter.
     """
     if not os.path.isfile(f"/sys/bus/pci/devices/{full_pci_address}/devspec"):
-        return
+        return None
     devspec = genio.read_file(
         f"/sys/bus/pci/devices/" f"{full_pci_address}/devspec"
     ).strip()
     if not os.path.isfile(f"/proc/device-tree/{devspec}/ibm,loc-code"):
-        return
+        return None
     slot = genio.read_file(f"/proc/device-tree/{devspec}/ibm,loc-code")
     slot_ibm = re.match(r"((\w+)[.])+(\w+)-[PC(\d+)-]*C(\d+)", slot)
     if slot_ibm:
@@ -243,6 +242,7 @@ def get_pci_id_from_sysfs(full_pci_address):
                 ]
             ]
         )
+    return None
 
 
 def get_pci_prop(pci_address, prop):
@@ -261,6 +261,7 @@ def get_pci_prop(pci_address, prop):
         for line in output.splitlines():
             if prop == line.split(":")[0]:
                 return line.split()[-1]
+    return None
 
 
 def get_pci_id(pci_address):
@@ -275,10 +276,11 @@ def get_pci_id(pci_address):
     for params in ["Vendor", "Device", "SVendor", "SDevice"]:
         output = get_pci_prop(pci_address, params)
         if not output:
-            return
+            return None
         pci_id.append(output)
     if pci_id:
         return ":".join(pci_id)
+    return None
 
 
 def get_pci_info(pci_address):
@@ -294,7 +296,7 @@ def get_pci_info(pci_address):
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     pci_info = {}
     if not output:
-        return
+        return None
     for line in output.splitlines():
         if line.strip():
             pci_info[line.split(":")[0].strip()] = (
@@ -318,6 +320,7 @@ def get_driver(pci_address):
         for line in output.splitlines():
             if "Kernel driver in use:" in line:
                 return line.rsplit(None, 1)[-1]
+    return None
 
 
 def unbind(driver, full_pci_address):
@@ -368,7 +371,7 @@ def get_vendor_id(full_pci_address):
     """
     cmd = f"lspci -n -s {full_pci_address}"
     out = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if out == "":
+    if not out:
         raise ValueError(f"Not able to get {full_pci_address} vendor id")
     return out.split(" ")[2].strip()
 
@@ -383,7 +386,7 @@ def reset_check(full_pci_address):
     """
     cmd = f"lspci -vvs {full_pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if output != "":
+    if not output:
         return False
     return True
 
@@ -398,7 +401,7 @@ def rescan_check(full_pci_address):
     """
     cmd = f"lspci -vvs {full_pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if output == "":
+    if not output:
         return False
     return True
 
@@ -501,6 +504,7 @@ def get_memory_address(pci_address):
         for line in output.splitlines():
             if "Memory at" in line:
                 return f"0x{line.split()[2]}"
+    return None
 
 
 def get_mask(pci_address):
@@ -517,16 +521,17 @@ def get_mask(pci_address):
     """
     cmd = f"lspci -vv -s {pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if output:
-        dic = {"K": 1024, "M": 1048576, "G": 1073741824}
-        for line in output.splitlines():
-            if "Region" in line and "Memory at" in line:
-                val = line.split("=")[-1].split("]")[0]
-                memory_size = int(val[:-1]) * dic[val[-1]]
-                break
-        # int("0xffffffff", 16) = 4294967295
-        mask = hex((memory_size - 1) ^ 4294967295)
-        return mask
+    if not output:
+        return None
+    dic = {"K": 1024, "M": 1048576, "G": 1073741824}
+    for line in output.splitlines():
+        if "Region" in line and "Memory at" in line:
+            val = line.split("=")[-1].split("]")[0]
+            memory_size = int(val[:-1]) * dic[val[-1]]
+            break
+    # int("0xffffffff", 16) = 4294967295
+    mask = hex((memory_size - 1) ^ 4294967295)
+    return mask
 
 
 def get_vpd(dom_pci_address):

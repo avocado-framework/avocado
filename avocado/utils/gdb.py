@@ -255,6 +255,7 @@ class CommandResult:
         return f"{self.command} at {self.timestamp:.9f}"
 
 
+# pylint: disable=E1101
 class GDB:
     """
     Wraps a GDB subprocess for easier manipulation
@@ -273,7 +274,7 @@ class GDB:
         args += extra_args
 
         try:
-            self.process = subprocess.Popen(
+            self.process = subprocess.Popen(  # pylint: disable=R1732
                 args,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -285,8 +286,7 @@ class GDB:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc from details
-            else:
-                raise
+            raise
 
         fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         self.read_until_break()
@@ -327,8 +327,8 @@ class GDB:
                 current_try += 1
             if current_try >= max_tries:
                 raise ValueError("Could not read GDB response")
-            else:
-                time.sleep(timeout)
+            time.sleep(timeout)
+        return None
 
     def read_until_break(self, max_lines=100):
         """
@@ -395,7 +395,9 @@ class GDB:
                 if result_response_received:
                     # raise an exception here, because no two result
                     # responses should come from a single command AFAIK
-                    raise Exception("Many result responses to a single cmd")
+                    raise gdbmi_parser.GdbMiError(
+                        "Many result responses to a single cmd"
+                    )
                 result_response_received = True
                 cmd.result = parsed_response
             else:
@@ -597,11 +599,14 @@ class GDBServer:
 
         prefix = f"avocado_gdbserver_{self.port}_"
         _, self.stdout_path = tempfile.mkstemp(prefix=prefix + "stdout_")
+        # pylint: disable=R1732
         self.stdout = open(self.stdout_path, "w", encoding="utf-8")
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + "stderr_")
+        # pylint: disable=R1732
         self.stderr = open(self.stderr_path, "w", encoding="utf-8")
 
         try:
+            # pylint: disable=R1732
             self.process = subprocess.Popen(
                 args,
                 stdin=subprocess.PIPE,
@@ -614,8 +619,7 @@ class GDBServer:
                 exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc from details
-            else:
-                raise
+            raise
 
         if wait_until_running:
             self._wait_until_running()

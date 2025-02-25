@@ -64,7 +64,7 @@ class Collectible(ABC):
     def __eq__(self, other):
         if hash(self) == hash(other):
             return True
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -100,7 +100,7 @@ class Logfile(Collectible):
     def __eq__(self, other):
         if isinstance(other, Logfile):
             return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -147,7 +147,7 @@ class Command(Collectible):
     def __eq__(self, other):
         if isinstance(other, Command):
             return (self.cmd, self.log_path) == (other.cmd, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -202,7 +202,7 @@ class Daemon(Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.daemon_process = None
-        self.temp_file = tempfile.NamedTemporaryFile()
+        self.temp_file = tempfile.NamedTemporaryFile()  # pylint: disable=R1732
 
     def __repr__(self):
         r = "Daemon(%r, %r)"
@@ -212,7 +212,7 @@ class Daemon(Command):
     def __eq__(self, other):
         if isinstance(other, Daemon):
             return (self.cmd, self.log_path) == (other.cmd, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -233,10 +233,11 @@ class Daemon(Command):
         if self.locale:
             env["LC_ALL"] = self.locale
         logf_path = self.temp_file.name
-        stdin = open(os.devnull, "r")  # pylint: disable=W1514
-        stdout = open(logf_path, "w")  # pylint: disable=W1514
+        stdin = open(os.devnull, "r")  # pylint: disable=W1514, R1732
+        stdout = open(logf_path, "w")  # pylint: disable=W1514, R1732
 
         try:
+            # pylint: disable=R1732
             self.daemon_process = subprocess.Popen(
                 shlex.split(self.cmd),
                 stdin=stdin,
@@ -292,7 +293,7 @@ class JournalctlWatcher(Collectible):
     def __eq__(self, other):
         if isinstance(other, JournalctlWatcher):
             return self.log_path == other.log_path
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -366,7 +367,7 @@ class LogWatcher(Collectible):
     def __eq__(self, other):
         if isinstance(other, LogWatcher):
             return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
+        if isinstance(other, Collectible):
             return False
         return NotImplemented
 

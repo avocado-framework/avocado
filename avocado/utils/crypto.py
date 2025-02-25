@@ -51,10 +51,9 @@ def hash_file(filename, size=None, algorithm="md5"):
 
     with open(filename, "rb") as file_to_hash:
         while size > 0:
-            if chunksize > size:
-                chunksize = size
+            chunksize = min(chunksize, size)
             data = file_to_hash.read(chunksize)
-            if len(data) == 0:
+            if not data:
                 LOG.debug("Nothing left to read but size=%d", size)
                 break
             hash_obj.update(data)

@@ -159,6 +159,7 @@ class PMem:
             raise PMemException(f"Failed to offline memory with {device}")
         return True
 
+    # pylint: disable=R0913
     def reconfigure_dax_device(
         self, device, mode="devdax", region=None, no_online=False, no_movable=False
     ):
@@ -314,6 +315,7 @@ class PMem:
             raise PMemException(f'Namespace enable failed for "{namespace}"')
         return True
 
+    # pylint: disable=R0914, R0913
     def create_namespace(
         self,
         region="",

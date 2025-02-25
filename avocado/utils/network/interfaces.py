@@ -22,7 +22,7 @@ import os
 import re
 import shutil
 import subprocess
-from ipaddress import IPv4Address, ip_interface
+from ipaddress import AddressValueError, IPv4Address, ip_interface
 
 from avocado.utils import process
 from avocado.utils.distro import detect as distro_detect
@@ -33,6 +33,7 @@ from avocado.utils.wait import wait_for
 LOG = logging.getLogger(__name__)
 
 
+# pylint: disable=R0904
 class NetworkInterface:
     """
     This class represents a network card interface (NIC).
@@ -70,8 +71,7 @@ class NetworkInterface:
             raise NWException(msg)
         if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
             return f"{path}/{self.name}.nmconnection"
-        else:
-            return f"{path}/ifcfg-{self.name}"
+        return f"{path}/ifcfg-{self.name}"
 
     @property
     def config_file_path(self):
@@ -79,16 +79,14 @@ class NetworkInterface:
         if current_distro.name in ["rhel", "fedora"]:
             if self.distro_is_rhel9_or_later:
                 return "/etc/NetworkManager/system-connections"
-            else:
-                return "/etc/sysconfig/network-scripts"
-        elif current_distro.name == "SuSE":
+            return "/etc/sysconfig/network-scripts"
+        if current_distro.name == "SuSE":
             if self.distro_is_suse16_or_later:
                 return "/etc/NetworkManager/system-connections"
-            else:
-                return "/etc/sysconfig/network"
-        else:
-            msg = "Distro not supported by API. Could not get interface filename."
-            LOG.error(msg)
+            return "/etc/sysconfig/network"
+        msg = "Distro not supported by API. Could not get interface filename."
+        LOG.error(msg)
+        return None
 
     @property
     def slave_config_filename(self):
@@ -99,15 +97,14 @@ class NetworkInterface:
                     f"{self.config_file_path}/{slave}.nmconnection"
                     for slave in slave_dict["slaves"]
                 ]
-            else:
-                return [
-                    f"{self.config_file_path}/ifcfg-{slave}"
-                    for slave in slave_dict["slaves"]
-                ]
-        except Exception:
+            return [
+                f"{self.config_file_path}/ifcfg-{slave}"
+                for slave in slave_dict["slaves"]
+            ]
+        except NWException:
             msg = "Slave config filename not available"
             LOG.debug(msg)
-            return
+            return None
 
     def _get_interface_details(self, version=None):
         cmd = f"ip -j link show {self.name}"
@@ -165,7 +162,7 @@ class NetworkInterface:
         """
         cmd = f"ip link set dev {self.name} address {hwaddr}"
         try:
-            run_command(cmd, self.self.host, sudo=True)
+            run_command(cmd, self.host, sudo=True)
         except Exception as ex:
             raise NWException(f"Adding hw address fails: {ex}") from ex
 
@@ -347,7 +344,7 @@ class NetworkInterface:
         except (NWException, IndexError):
             msg = f"Could not get ip addresses for {self.name}"
             LOG.debug(msg)
-            return []
+        return []
 
     def get_hwaddr(self):
         """Get the Hardware Address (MAC) of this interface.
@@ -391,6 +388,7 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException(f"Failed to ping: {ex}") from ex
 
+    # pylint: disable=R0915
     def save(self, ipaddr, netmask):
         """Save current interface IP Address to the system configuration file.
 
@@ -406,39 +404,11 @@ class NetworkInterface:
         :param ipaddr : IP Address which need to configure for interface
         :param netmask: Network mask which is associated to the provided IP
         """
-        if ipaddr not in self.get_ipaddrs():
-            msg = (
-                "ipaddr not configured on interface. To avoid "
-                "inconsistency, please add the ipaddr first."
-            )
-            raise NWException(msg)
 
-        current_distro = distro_detect()
-        if current_distro.name == "rhel" and int(current_distro.version) >= 9:
-            self.distro_is_rhel9_or_later = True
-        if current_distro.name == "SuSE" and int(current_distro.version) >= 16:
-            self.distro_is_suse16_or_later = True
-
-        filename = f"ifcfg-{self.name}"
-        prefix = self.netmask_to_cidr(netmask)
-        if current_distro.name in ["rhel", "fedora"]:
-            if self.distro_is_rhel9_or_later:
-                filename = f"{self.name}.nmconnection"
-                path = "/etc/NetworkManager/system-connections"
-            else:
-                path = "/etc/sysconfig/network-scripts"
-        elif current_distro.name == "SuSE":
-            if self.distro_is_suse16_or_later:
-                filename = f"{self.name}.nmconnection"
-                path = "/etc/NetworkManager/system-connections"
-            else:
-                path = "/etc/sysconfig/network"
-        else:
-            msg = "Distro not supported by API. Could not save ipaddr."
-            raise NWException(msg)
-
-        if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
-            ifcfg_dict = ""
+        def save_distro_rhel9_and_suse16_or_later():
+            filename = f"{self.name}.nmconnection"
+            prefix = self.netmask_to_cidr(netmask)
+            path = "/etc/NetworkManager/system-connections"
             if os.path.exists(f"{path}/{filename}") is False:
                 run_command(
                     f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
@@ -453,30 +423,8 @@ class NetworkInterface:
                 self.host,
             )
             run_command(f"nmcli connection up {self.name}", self.host)
-        else:
-            ifcfg_dict = {
-                "TYPE": self.if_type,
-                "BOOTPROTO": "static",
-                "NAME": self.name,
-                "DEVICE": self.name,
-                "ONBOOT": "yes",
-                "IPADDR": ipaddr,
-                "NETMASK": netmask,
-                "IPV6INIT": "yes",
-                "IPV6_AUTOCONF": "yes",
-                "IPV6_DEFROUTE": "yes",
-            }
-            if current_distro.name == "SuSE":
-                ifcfg_dict = {
-                    "IPADDR": f"{ipaddr}/{prefix}",
-                    "BOOTPROTO": "static",
-                    "STARTMODE": "auto",
-                }
-            self._write_to_file(f"{path}/{filename}", ifcfg_dict)
 
-        if self.if_type == "Bond":
-            bond_dict = self._get_bondinterface_details()
-            if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
+            if self.if_type == "Bond":
                 if os.path.exists(f"{path}/{filename}") is False:
                     run_command(
                         f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
@@ -491,30 +439,86 @@ class NetworkInterface:
                     self.host,
                 )
                 run_command(f"nmcli connection up {self.name}", self.host)
-            else:
+
+        def save_distro_rhel8_or_older():
+            filename = f"ifcfg-{self.name}"
+            if current_distro.name in ["rhel", "fedora"]:
+                path = "/etc/sysconfig/network-scripts"
+            ifcfg_dict = {
+                "TYPE": self.if_type,
+                "BOOTPROTO": "static",
+                "NAME": self.name,
+                "DEVICE": self.name,
+                "ONBOOT": "yes",
+                "IPADDR": ipaddr,
+                "NETMASK": netmask,
+                "IPV6INIT": "yes",
+                "IPV6_AUTOCONF": "yes",
+                "IPV6_DEFROUTE": "yes",
+            }
+            self._write_to_file(f"{path}/{filename}", ifcfg_dict)
+
+            if self.if_type == "Bond":
+                bond_dict = self._get_bondinterface_details()
                 ifcfg_dict["BONDING_MASTER"] = "yes"
                 ifcfg_slave_dict = {
                     "SLAVE": "yes",
                     "ONBOOT": "yes",
                     "MASTER": self.name,
                 }
-                if current_distro.name == "SuSE":
-                    ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
-                    for index, slave in enumerate(bond_dict["slaves"]):
-                        bonding_slave = f"BONDING_SLAVE{index}"
-                        ifcfg_dict[bonding_slave] = slave
-                        ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
-                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
-                elif current_distro.name in ["rhel", "fedora"]:
-                    ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
-                    for index, slave in enumerate(bond_dict["slaves"]):
-                        ifcfg_slave_dict.update(
-                            {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
-                        )
-                        self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
-                else:
-                    msg = "Distro not supported by API. Could not save ipaddr."
-                    raise NWException(msg)
+                ifcfg_dict["BONDING_OPTS"] = "mode=" + bond_dict["mode"][0]
+                for _, slave in enumerate(bond_dict["slaves"]):
+                    ifcfg_slave_dict.update(
+                        {"NAME": slave, "DEVICE": slave, "TYPE": "Ethernet"}
+                    )
+                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+
+        def save_suse():
+            filename = f"ifcfg-{self.name}"
+            prefix = self.netmask_to_cidr(netmask)
+            path = "/etc/sysconfig/network"
+
+            ifcfg_dict = {
+                "IPADDR": f"{ipaddr}/{prefix}",
+                "BOOTPROTO": "static",
+                "STARTMODE": "auto",
+            }
+            self._write_to_file(f"{path}/{filename}", ifcfg_dict)
+
+            if self.if_type == "Bond":
+                bond_dict = self._get_bondinterface_details()
+                ifcfg_dict["BONDING_MASTER"] = "yes"
+                ifcfg_slave_dict = {
+                    "SLAVE": "yes",
+                    "ONBOOT": "yes",
+                    "MASTER": self.name,
+                }
+                ifcfg_dict["BONDING_MODULE_OPTS"] = "mode=" + bond_dict["mode"][0]
+                for index, slave in enumerate(bond_dict["slaves"]):
+                    bonding_slave = f"BONDING_SLAVE{index}"
+                    ifcfg_dict[bonding_slave] = slave
+                    ifcfg_slave_dict.update({"NAME": slave, "DEVICE": slave})
+                    self._write_to_file(f"{path}/ifcfg-{slave}", ifcfg_slave_dict)
+
+        if ipaddr not in self.get_ipaddrs():
+            msg = (
+                "ipaddr not configured on interface. To avoid "
+                "inconsistency, please add the ipaddr first."
+            )
+            raise NWException(msg)
+
+        current_distro = distro_detect()
+        if current_distro.name == "rhel" and int(current_distro.version) >= 9:
+            save_distro_rhel9_and_suse16_or_later()
+        elif current_distro.name == "rhel" and int(current_distro.version) <= 9:
+            save_distro_rhel8_or_older()
+        elif current_distro.name == "SuSE" and int(current_distro.version) >= 16:
+            save_distro_rhel9_and_suse16_or_later()
+        elif current_distro.name == "SuSE":
+            save_suse()
+        else:
+            msg = "Distro not supported by API. Could not save ipaddr."
+            raise NWException(msg)
 
     def set_mtu(self, mtu, timeout=30):
         """Sets a new MTU value to this interface.
@@ -628,7 +632,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host)
             return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0718
             msg = f"Interface {self.name} is not available. {ex}"
             LOG.debug(msg)
             return False
@@ -644,7 +648,7 @@ class NetworkInterface:
         try:
             run_command(cmd, self.host)
             return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0718
             msg = f"{self.name} is not a bond device. {ex}"
             LOG.debug(msg)
             return False
@@ -742,7 +746,8 @@ class NetworkInterface:
             msg = f"Failed to ping. {ex}"
             raise NWException(msg) from ex
 
-    def netmask_to_cidr(self, netmask):
+    @staticmethod
+    def netmask_to_cidr(netmask):
         """Function is used to check the netmask value and convert
 
         it into short form (mask) of netmask values
@@ -754,7 +759,8 @@ class NetworkInterface:
         """
         return sum(bin(int(bits)).count("1") for bits in netmask.split("."))
 
-    def validate_ipv4_format(self, ip):
+    @staticmethod
+    def validate_ipv4_format(ip):
         """
         This function validates IPv4 address with following format set.
 
@@ -775,12 +781,13 @@ class NetworkInterface:
         """
         try:
             IPv4Address(ip)
-        except Exception as ex:
+        except AddressValueError as ex:
             LOG.debug("Failed to validate IP format %s", ex)
             return False
         return True
 
-    def validate_ipv4_netmask_format(self, netmask):
+    @staticmethod
+    def validate_ipv4_netmask_format(netmask):
         """
         This function validates IPv4 Netmask address with following format set.
 
@@ -812,14 +819,15 @@ class NetworkInterface:
         for symbol in binary_netmask:
             if accept_zero_only and symbol == "1":
                 return False
-            elif symbol == "0":
+            if symbol == "0":
                 accept_zero_only = True
             if first_bit and symbol == "0":
                 return False
             first_bit = False
         return True
 
-    def ping_flood(self, int_name, peer_ip, ping_count):
+    @staticmethod
+    def ping_flood(int_name, peer_ip, ping_count):
         """
         Function to start ping to remote machine with "-f" [ flood ] option,
         on given interface.
@@ -835,27 +843,27 @@ class NetworkInterface:
         :rtype: boolean
         """
         cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
-        ping_process = subprocess.Popen(
+        with subprocess.Popen(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
-        )
-        pattern = r"\.{10}"
-        while True:
-            char = ping_process.stdout.read(100)
-            match = re.search(pattern, char)
-            if match:
-                ping_process.terminate()
-                msg = "ping flood failed to remote machine, Please check the logs"
-                LOG.debug(msg)
-                return False
-            return True
-        ping_process.stdout.close()
-        ping_process.wait()
+        ) as ping_process:
+            pattern = r"\.{10}"
+            while True:
+                char = ping_process.stdout.read(100)
+                match = re.search(pattern, char)
+                if match:
+                    ping_process.terminate()
+                    msg = "ping flood failed to remote machine, Please check the logs"
+                    LOG.debug(msg)
+                    return False
+                return True
+            ping_process.stdout.close()
+            ping_process.wait()
 
-    def get_device_IPI_name(self):
+    def get_device_IPI_name(self):  # pylint: disable=C0103
         """
         Function to convert IO device name to device_ipi names according to
         "/proc/interrupts" context.
@@ -878,5 +886,6 @@ class NetworkInterface:
                 cmd, shell=True, ignore_status=True
             ).decode("utf-8")
             return interface_type
-        elif self.is_veth():
+        if self.is_veth():
             return self.name
+        return None

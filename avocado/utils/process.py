@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+# pylint: disable=C0302
+
 """
 Functions dedicated to find and run external commands.
 """
@@ -66,7 +68,7 @@ def can_sudo(cmd=None):
 
     :param cmd: unicode string with the commands
     """
-    if os.getuid() == 0:  # Root
+    if not os.getuid():  # Root
         return True
 
     try:  # Does sudo binary exists?
@@ -77,10 +79,9 @@ def can_sudo(cmd=None):
     try:
         if cmd:  # Am I able to run the cmd or plain sudo id?
             return not system(cmd, ignore_status=True, sudo=True)
-        elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
+        if system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
             return True
-        else:
-            return False
+        return False
     except OSError:  # Broken sudo binary
         return False
 
@@ -106,7 +107,7 @@ def get_capabilities(pid=None):
         result = run(f"getpcaps {int(pid)}", ignore_status=True)
     except FileNotFoundError:
         return []
-    if result.exit_status != 0:
+    if result.exit_status:
         return []
     if result.stderr_text.startswith("Capabilities "):
         info = result.stderr_text
@@ -153,7 +154,7 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
     :param signal: Signal number.
     """
-    if get_owner_id(int(pid)) == 0:
+    if not get_owner_id(int(pid)):
         kill_cmd = f"kill -{int(signal)} {int(pid)}"
         try:
             run(kill_cmd, sudo=True)
@@ -187,6 +188,7 @@ def _get_pid_from_proc_pid_stat(proc_path):
     match = re.match(r"\/proc\/([0-9]+)\/.*", proc_path)
     if match is not None:
         return int(match.group(1))
+    return None
 
 
 def get_children_pids(parent_pid, recursive=False):
@@ -253,11 +255,11 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
         killed_pids.extend(kill_process_tree(int(child), sig, False))
     safe_kill(pid, sig)
     if send_sigcont:
-        for pid in killed_pids:
-            safe_kill(pid, signal.SIGCONT)
-    if timeout == 0:
+        for killed_pid in killed_pids:
+            safe_kill(killed_pid, signal.SIGCONT)
+    if not timeout:
         return killed_pids
-    elif timeout > 0:
+    if timeout > 0:
         if not wait_for(
             _all_pids_dead,
             timeout + start - time.monotonic(),
@@ -359,6 +361,7 @@ class CmdResult:
     :type encoding: str
     """
 
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         command="",
@@ -415,6 +418,7 @@ class CmdResult:
 
 
 class FDDrainer:
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         fd,
@@ -534,6 +538,7 @@ class SubProcess:
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
+    # pylint: disable=R0913, R0902
     def __init__(
         self,
         cmd,
@@ -627,7 +632,7 @@ class SubProcess:
 
     @staticmethod
     def _prepend_sudo(cmd, shell):
-        if os.getuid() != 0:
+        if os.getuid():
             try:
                 sudo_cmd = f"{path.find_command('sudo', check_exec=False)} -n"
             except path.CmdNotFoundError as details:
@@ -660,7 +665,7 @@ class SubProcess:
         else:
             cmd = self.cmd
         try:
-            self._popen = subprocess.Popen(
+            self._popen = subprocess.Popen(  # pylint: disable=R1732
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -708,7 +713,7 @@ class SubProcess:
     def _fill_results(self, rc):
         self._init_subprocess()
         self.result.exit_status = rc
-        if self.result.duration == 0:
+        if not self.result.duration:
             self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
             LOG.info(
@@ -916,7 +921,7 @@ class SubProcess:
         Returns whether the subprocess is running with sudo enabled
         """
         self._init_subprocess()
-        return self.get_user_id() == 0
+        return not self.get_user_id()
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
@@ -943,6 +948,7 @@ class SubProcess:
         return self.result
 
 
+# pylint: disable=R0913
 def run(
     cmd,
     timeout=None,
@@ -1007,12 +1013,13 @@ def run(
         logger=logger,
     )
     cmd_result = sp.run(timeout=timeout)
-    fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
+    fail_condition = cmd_result.exit_status or cmd_result.interrupted
     if fail_condition and not ignore_status:
         raise CmdError(cmd, sp.result)
     return cmd_result
 
 
+# pylint: disable=R0913
 def system(
     cmd,
     timeout=None,
@@ -1078,6 +1085,7 @@ def system(
     return cmd_result.exit_status
 
 
+# pylint: disable=R0913
 def system_output(
     cmd,
     timeout=None,
@@ -1150,6 +1158,7 @@ def system_output(
     return cmd_result.stdout
 
 
+# pylint: disable=R0913
 def getoutput(
     cmd,
     timeout=None,
@@ -1211,6 +1220,7 @@ def getoutput(
     )[1]
 
 
+# pylint: disable=R0913
 def getstatusoutput(
     cmd,
     timeout=None,
