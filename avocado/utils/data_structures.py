@@ -152,6 +152,8 @@ def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
 
     :rtype: list or None
     """
+    if diff_btw_dict is None:
+        diff_btw_dict = []
     if isinstance(dict1, dict) and isinstance(dict2, dict):
         if dict1.keys() != dict2.keys():
             set1 = set(dict1.keys())
