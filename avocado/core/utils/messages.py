@@ -278,17 +278,18 @@ def start_logging(config, queue):
 
     # store custom test loggers
     enabled_loggers = config.get("job.run.store_logging_stream")
-    for enabled_logger, level in split_loggers_and_levels(enabled_loggers):
-        log_path = f"{enabled_logger}.{logging.getLevelName(level)}.log"
-        if not level:
-            level = log_level
-            log_path = f"{enabled_logger}.log"
-        store_stream_handler = RunnerLogHandler(queue, "file", {"path": log_path})
-        store_stream_handler.setFormatter(formatter)
-        output_logger = logging.getLogger(enabled_logger)
-        output_logger.addHandler(store_stream_handler)
-        output_logger.setLevel(level)
+    if enabled_loggers is not None:
+        for enabled_logger, level in split_loggers_and_levels(enabled_loggers):
+            log_path = f"{enabled_logger}.{logging.getLevelName(level)}.log"
+            if not level:
+                level = log_level
+                log_path = f"{enabled_logger}.log"
+            store_stream_handler = RunnerLogHandler(queue, "file", {"path": log_path})
+            store_stream_handler.setFormatter(formatter)
+            output_logger = logging.getLogger(enabled_logger)
+            output_logger.addHandler(store_stream_handler)
+            output_logger.setLevel(level)
 
-        if not enabled_logger.startswith("avocado."):
-            output_logger.addHandler(log_handler)
-            output_logger.propagate = False
+            if not enabled_logger.startswith("avocado."):
+                output_logger.addHandler(log_handler)
+                output_logger.propagate = False

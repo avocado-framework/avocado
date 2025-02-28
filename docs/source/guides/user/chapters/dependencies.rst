@@ -196,6 +196,45 @@ effect on the spawner.
  * `uri`: the image reference, in any format supported by ``podman
    pull`` itself.
 
+VM Image
+++++++++
+
+Support downloading virtual machine images ahead of test execution time.
+This allows tests to have their required VM images downloaded and cached
+before the test execution begins, preventing timeout issues during the
+actual test run.
+
+ * `type`: `vmimage`
+ * `provider`: the VM image provider (e.g., 'Fedora')
+ * `version`: version of the image
+ * `arch`: architecture of the image
+
+Following is an example of tests using the VM Image dependency that demonstrates
+different use cases including multiple dependencies and different providers:
+
+.. literalinclude:: ../../../../../examples/tests/dependency_vmimage.py
+
+To test the VM Image dependency:
+
+1. Clear the cache first::
+
+    $ avocado cache clear
+
+2. Run the tests::
+
+    $ avocado run examples/tests/dependency_vmimage.py
+
+3. Check the cache to see downloaded images::
+
+    $ avocado cache list
+
+4. Run again to verify cache is used::
+
+    $ avocado run examples/tests/dependency_vmimage.py
+
+The vmimage runner will download required images on first run and use cached
+images on subsequent runs.
+
 Ansible Module
 ++++++++++++++
 
