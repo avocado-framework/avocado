@@ -15,6 +15,7 @@
 Module to help extract and create compressed archives.
 """
 
+import bz2
 import gzip
 import logging
 import lzma
@@ -176,14 +177,72 @@ class ArchiveFile:
 
     # extension info: is_zip, is_tar, zipfile|tarfile, +mode
     _extension_table = {
+        # ZIP archives
         ".zip": (True, False, zipfile.ZipFile, ""),
+        # TAR archives (uncompressed)
         ".tar": (False, True, tarfile.open, ""),
+        # TAR archives with gzip compression
         ".tar.gz": (False, True, tarfile.open, ":gz"),
         ".tgz": (False, True, tarfile.open, ":gz"),
+        # TAR archives with bzip2 compression
         ".tar.bz2": (False, True, tarfile.open, ":bz2"),
         ".tbz2": (False, True, tarfile.open, ":bz2"),
+        # TAR archives with xz compression
+        ".tar.xz": (False, True, tarfile.open, ":xz"),
+        ".txz": (False, True, tarfile.open, ":xz"),
         ".xz": (False, True, tarfile.open, ":xz"),
+        # TAR archives with zstd compression
+        ".tar.zst": (False, True, tarfile.open, ":zstd"),
+        ".tzst": (False, True, tarfile.open, ":zstd"),
+        # Standalone compressed files (not tar archives)
+        ".gz": (False, False, None, "gz"),
+        ".bz2": (False, False, None, "bz2"),
+        ".zst": (False, False, None, "zst"),
     }
+
+    @staticmethod
+    def _detect_archive_type(filename):
+        """
+        Detect archive type based on file content.
+
+        :param filename: the archive file name.
+        :return: tuple of (is_zip, is_tar, engine, extra_mode) or None if not an archive.
+        """
+        result = None
+
+        # Check for ZIP file
+        if zipfile.is_zipfile(filename):
+            result = (True, False, zipfile.ZipFile, "")
+        # Check for TAR file
+        elif tarfile.is_tarfile(filename):
+            # Detect compression method for tar files
+            with open(filename, "rb") as f:
+                header = f.read(4)
+                # Check for different compression formats
+                if header.startswith(GZIP_MAGIC):
+                    result = (False, True, tarfile.open, ":gz")
+                elif header.startswith(ZSTD_MAGIC):
+                    result = (False, True, tarfile.open, ":zstd")
+                # Check for bzip2 magic bytes (BZh)
+                elif header.startswith(b"BZh"):
+                    result = (False, True, tarfile.open, ":bz2")
+                # Check for XZ magic bytes
+                elif header.startswith(b"\xfd\x37\x7a\x58\x5a\x00"):
+                    result = (False, True, tarfile.open, ":xz")
+                # Regular tar file
+                else:
+                    result = (False, True, tarfile.open, "")
+        # Check for standalone compressed files
+        elif is_gzip_file(filename):
+            result = (False, False, None, "gz")
+        elif is_bzip2_file(filename):
+            result = (False, False, None, "bz2")
+        elif is_zstd_file(filename):
+            result = (False, False, None, "zst")
+        elif is_lzma_file(filename):
+            result = (False, False, None, "xz")
+
+        return result
 
     def __init__(self, filename, mode="r"):
         """
@@ -195,14 +254,40 @@ class ArchiveFile:
         self.filename = filename
         self.mode = mode
         engine = None
+        self.is_zip = False
+        self.is_tar = False
+        self.is_compressed = False
+        self.compression_type = None
+
+        # First try to detect by extension
         for ext, value in ArchiveFile._extension_table.items():
             if filename.endswith(ext):
                 (self.is_zip, self.is_tar, engine, extra_mode) = value
-        if engine is not None:
-            self.mode += extra_mode
-            self._engine = engine(self.filename, self.mode)
-        else:
-            raise ArchiveException("file is not an archive")
+
+                # Handle standalone compressed files
+                if not self.is_zip and not self.is_tar and engine is None:
+                    self.is_compressed = True
+                    self.compression_type = extra_mode
+                    # For standalone compressed files, we'll use the appropriate
+                    # extraction function in the extract method
+                    self._engine = None
+                    return
+
+                self.mode += extra_mode
+                self._engine = engine(self.filename, self.mode)
+                return
+
+        # If extension detection fails, try content-based detection
+        if mode == "r":  # Only attempt content detection in read mode
+            detected = self._detect_archive_type(filename)
+            if detected:
+                (self.is_zip, self.is_tar, engine, extra_mode) = detected
+                self.mode += extra_mode
+                self._engine = engine(self.filename, self.mode)
+                return
+
+        # If we get here, it's not a recognized archive
+        raise ArchiveException("file is not an archive")
 
     def __repr__(self):
         return f"ArchiveFile('{self.filename}', '{self.mode}')"
@@ -253,18 +338,38 @@ class ArchiveFile:
         :return: the first member of the archive, a file or directory or None
                  if the archive is empty
         """
+        result = None
+        # Handle standalone compressed files
+        if self.is_compressed:
+            if self.compression_type == "gz":
+                result = gzip_uncompress(self.filename, path)
+            if self.compression_type == "bz2":
+                # Use bzip2 module for extraction
+                output_path = _decide_on_path(self.filename, ".bz2", path)
+                with bz2.open(self.filename, "rb") as file_obj:
+                    with open(output_path, "wb") as newfile_obj:
+                        newfile_obj.write(file_obj.read())
+                result = output_path
+            if self.compression_type == "zst":
+                result = zstd_uncompress(self.filename, path)
+            if self.compression_type not in ("gz", "bz2", "zst"):
+                raise ArchiveException(
+                    f"Unsupported compression type: {self.compression_type}"
+                )
+            return result
+
+        # Handle regular archives (zip and tar)
         self._engine.extractall(path)
         if self.is_zip:
             self._update_zip_extra_attrs(path)
             files = self._engine.namelist()
             if files:
-                return files[0].strip(os.sep)
-            return None
-
-        files = self._engine.getnames()
-        if files:
-            return files[0]
-        return None
+                result = files[0].strip(os.sep)
+        else:
+            files = self._engine.getnames()
+            if files:
+                result = files[0]
+        return result
 
     def _update_zip_extra_attrs(self, dst_dir):
         if platform.system() != "Linux":
@@ -313,6 +418,18 @@ class ArchiveFile:
         self._engine.close()
 
 
+def is_bzip2_file(path):
+    """
+    Checks if file given by path has contents that suggests bzip2 file
+    """
+    try:
+        with open(path, "rb") as bz2_file:
+            # Check for bzip2 magic bytes (BZh)
+            return bz2_file.read(3) == b"BZh"
+    except (IOError, OSError):
+        return False
+
+
 def is_archive(filename):
     """
     Test if a given file is an archive.
@@ -326,6 +443,7 @@ def is_archive(filename):
         or is_gzip_file(filename)
         or is_lzma_file(filename)
         or is_zstd_file(filename)
+        or is_bzip2_file(filename)
     )
 
 
@@ -361,8 +479,21 @@ def uncompress(filename, path):
         return lzma_uncompress(filename, path)
     if is_zstd_file(filename) and not is_tar:
         return zstd_uncompress(filename, path)
-    with ArchiveFile.open(filename) as x:
-        return x.extract(path)
+
+    # For tar and zip files, use the improved ArchiveFile class
+    # which now supports content-based detection
+    try:
+        with ArchiveFile.open(filename) as x:
+            return x.extract(path)
+    except ArchiveException as e:
+        # If we get here but is_archive() returns True, we have an archive
+        # that we can detect but not extract. Provide a more helpful error message.
+        if is_archive(filename):
+            raise ArchiveException(
+                f"File '{filename}' is detected as an archive but its format "
+                f"is not supported for extraction: {e}"
+            ) from e
+        raise
 
 
 # Some aliases
