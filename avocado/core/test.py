@@ -164,7 +164,7 @@ class TestData:
 
         return os.path.join(*paths)
 
-    def get_data(self, filename, source=None, must_exist=True):
+    def get_data(self, filename, source=None, must_exist=True, abs_path=False):
         """
         Retrieves the path to a given data file.
 
@@ -204,7 +204,10 @@ class TestData:
                         path,
                         (f"assumed to be located at " f"{attempt_source} source dir"),
                     )
-                    return path
+                    if not abs_path:
+                        return path
+                    else:
+                        return os.path.abspath(path)
                 else:
                     if os.path.exists(path):
                         self.log.debug(
@@ -213,7 +216,10 @@ class TestData:
                             path,
                             f"found at {attempt_source} source dir",
                         )
-                        return path
+                        if not abs_path:
+                            return path
+                        else:
+                            return os.path.abspath(path)
 
         self.log.debug(
             log_fmt, filename, "NOT FOUND", f"data sources: {', '.join(sources)}"
