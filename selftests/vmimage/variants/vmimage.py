@@ -1,13 +1,26 @@
 import os
 import shutil
+import unittest
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from avocado import Test, fail_on
 from avocado.plugins import vmimage as vmimage_plug
-from avocado.utils import process, vmimage
+from avocado.utils import path, process, vmimage
 
 
+def missing_binary(binary):
+    try:
+        path.find_command(binary)
+        return False
+    except path.CmdNotFoundError:
+        return True
+
+
+@unittest.skipIf(
+    missing_binary("qemu-img"),
+    "QEMU disk image utility is required by the vmimage utility ",
+)
 class Base(Test):
     """
     Tests if avocado.utils.vmimage providers are current and can reach images

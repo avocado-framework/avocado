@@ -5,6 +5,7 @@ import unittest.mock
 from avocado.core import exit_codes
 from avocado.utils import path, process
 from selftests.utils import AVOCADO, get_temporary_config
+from selftests.vmimage.tests.utils.network import is_network_available
 
 
 def missing_binary(binary):
@@ -25,8 +26,8 @@ def create_metadata_file(image_file, metadata):
 
 class VMImagePlugin(unittest.TestCase):
     @unittest.skipUnless(
-        os.environ.get("AVOCADO_SELFTESTS_NETWORK_ENABLED", False),
-        "Network required to run these tests",
+        is_network_available(),
+        "Network connectivity required to run these tests",
     )
     def setUp(self):
         (self.base_dir, self.mapping, self.config_file) = get_temporary_config(self)

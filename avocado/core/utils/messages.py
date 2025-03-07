@@ -277,7 +277,7 @@ def start_logging(config, queue):
     stderr_logger.propagate = False
 
     # store custom test loggers
-    enabled_loggers = config.get("job.run.store_logging_stream")
+    enabled_loggers = config.get("job.run.store_logging_stream", [])
     for enabled_logger, level in split_loggers_and_levels(enabled_loggers):
         log_path = f"{enabled_logger}.{logging.getLevelName(level)}.log"
         if not level:
