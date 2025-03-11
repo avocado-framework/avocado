@@ -3,16 +3,8 @@ import os
 import unittest.mock
 
 from avocado.core import exit_codes
-from avocado.utils import path, process
-from selftests.utils import AVOCADO, get_temporary_config
-
-
-def missing_binary(binary):
-    try:
-        path.find_command(binary)
-        return False
-    except path.CmdNotFoundError:
-        return True
+from avocado.utils import process
+from selftests.utils import AVOCADO, get_temporary_config, missing_binary
 
 
 def create_metadata_file(image_file, metadata):
@@ -24,10 +16,6 @@ def create_metadata_file(image_file, metadata):
 
 
 class VMImagePlugin(unittest.TestCase):
-    @unittest.skipUnless(
-        os.environ.get("AVOCADO_SELFTESTS_NETWORK_ENABLED", False),
-        "Network required to run these tests",
-    )
     def setUp(self):
         (self.base_dir, self.mapping, self.config_file) = get_temporary_config(self)
 
