@@ -14,12 +14,12 @@ fi
 echo "Using coverage utility: $COVERAGE"
 
 test_config="--skip=static-checks"
-if [ -n $1 ]; then
+if [ -n "$1" ]; then
     test_config=$1
 fi
 coverage_source=""
 coverage_include=""
-if [ -n $2 ]; then
+if [ -n "$2" ]; then
     coverage_source="--source=$2"
     coverage_include="--include=$2"
 fi
