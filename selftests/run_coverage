@@ -28,8 +28,10 @@ $COVERAGE erase
 rm -f .coverage.*
 echo -e "import coverage\ncoverage.process_startup()" >> sitecustomize.py
 env COVERAGE_PROCESS_START=.coveragerc $COVERAGE run $coverage_source selftests/check.py $test_config
+test_status=$?
 rm -f sitecustomize.py
 $COVERAGE combine -q
 echo
 $COVERAGE report $coverage_include
 $COVERAGE xml $coverage_include
+exit $test_status
