@@ -26,6 +26,7 @@ import os
 import platform
 import re
 from enum import Enum
+from pathlib import Path
 
 from avocado.utils import astring, data_structures, process
 
@@ -223,7 +224,21 @@ def check_kernel_config(config_name):
 
     kernel_version = platform.uname()[2]
 
-    config_file = "/boot/config-" + kernel_version
+    # NOTE: If other locations for config files are known, they should be added here
+    config_locations = [
+        Path(f"/boot/config-{kernel_version}"),
+        Path(f"/usr/lib/modules/{kernel_version}/config"),
+    ]
+    config_file = None
+    for loc in config_locations:
+        if loc.exists():
+            config_file = loc
+            break
+    if not config_file:
+        raise FileNotFoundError(
+            f"No kernel configuration file found for version {kernel_version}"
+        )
+
     with open(config_file, "r") as kernel_config:  # pylint: disable=W1514
         for line in kernel_config:
             line = line.split("=")
