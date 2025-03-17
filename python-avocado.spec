@@ -239,6 +239,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-pip
 %{_bindir}/avocado-runner-podman-image
 %{_bindir}/avocado-runner-sysinfo
+%{_bindir}/avocado-runner-vmimage
 %{_bindir}/avocado-software-manager
 %{_bindir}/avocado-external-runner
 %{python3_sitelib}/avocado*

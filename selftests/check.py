@@ -25,7 +25,7 @@ TEST_SIZE = {
     "job-api-check-file-exists": 11,
     "job-api-check-output-file": 4,
     "job-api-check-tmp-directory-exists": 1,
-    "nrunner-interface": 80,
+    "nrunner-interface": 90,
     "nrunner-requirement": 28,
     "unit": 661,
     "jobs": 11,
@@ -38,7 +38,7 @@ TEST_SIZE = {
     "optional-plugins-varianter_cit": 40,
     "optional-plugins-varianter_yaml_to_mux": 50,
     "vmimage-variants": 248,
-    "vmimage-tests": 28,
+    "vmimage-tests": 35,
     "pre-release": 19,
 }
 
@@ -634,6 +634,9 @@ def create_suites(args):  # pylint: disable=W0621
             {
                 "runner": "avocado-runner-pip",
             },
+            {
+                "runner": "avocado-runner-vmimage",
+            },
         ],
     }
 
@@ -764,9 +767,7 @@ def create_suites(args):  # pylint: disable=W0621
                 os.path.join(test_dir, "variants", "vmimage.py"),
             ],
             "yaml_to_mux.files": [
-                os.path.join(
-                    test_dir, "variants", "vmimage.py.data", "variants.yml"
-                )
+                os.path.join(test_dir, "variants", "vmimage.py.data", "variants.yml")
             ],
             "run.max_parallel_tasks": 1,
         }
