@@ -94,6 +94,7 @@ jobs:
       - name: Run script
         run: ./selftests/run_coverage
       - name: Push results to codecov
+        if: always()
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.xml
