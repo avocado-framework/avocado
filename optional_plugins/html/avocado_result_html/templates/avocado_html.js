@@ -6,6 +6,7 @@
     datatableElement.dataTable({
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
       autoWidth: false,
+      ordering: true,  // Explicitly enable sorting
       drawCallback: onTableRedrawn.bind(null, resizeControl),
       initComplete: onDatatablesInitialized
     });
@@ -88,9 +89,12 @@
         // we detach and reattach each event to prevent them from being triggered
         // multiple times, as this function is called often
         resizerElement.off('click.resizer')
-                      .on('click.resizer', onClick);
-        resizerElement.parent().off('click.resizer')
-                      .on('click.resizer', onClick);
+                      .on('click.resizer', onClick);  
+                            
+        // Don't attach click handler to the parent th element as it interferes with sorting
+        // resizerElement.parent().off('click.resizer')
+        //               .on('click.resizer', onClick);
+        
         resizerElement.off('mousedown.resizer')
                       .on('mousedown.resizer', onMouseDown.bind(self));
       });
@@ -111,15 +115,19 @@
       if (this.resizeData.mouseDownFired) {
         // when we resize and drop the cursor at the same header cell,
         // it will cause datatables to sort if we don't stop propagation
-        e.stopImmediatePropagation();
-        return false;
+        if ($(e.target).hasClass('resizer')) {
+          e.stopImmediatePropagation();
+          return false;
+        }
       }
     }
 
     function onClick(e) {
       // prevent clicks on the resizer from triggering a datatables sort
-      e.stopImmediatePropagation();
-      return false;
+      if ($(e.target).hasClass('resizer')) {
+        e.stopImmediatePropagation();
+        return false;
+      }
     }
 
     function onMouseDown(e) {
