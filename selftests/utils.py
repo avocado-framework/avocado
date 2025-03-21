@@ -6,6 +6,8 @@ import unittest
 
 import pkg_resources
 
+from avocado.utils import path as avocado_path
+
 #: The base directory for the avocado source tree
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 BASEDIR = os.path.abspath(os.path.join(BASEDIR, os.path.pardir))
@@ -144,6 +146,22 @@ def skipUnlessPathExists(path):
             f"used in test is not available in the system"
         ),
     )
+
+
+def missing_binary(binary):
+    """
+    Checks if a given binary is available on the system.
+
+    :param binary: the name of the binary
+    :type binary: str
+    :returns: True if the binary is not available, False otherwise
+    :rtype: bool
+    """
+    try:
+        avocado_path.find_command(binary)
+        return False
+    except avocado_path.CmdNotFoundError:
+        return True
 
 
 class TestCaseTmpDir(unittest.TestCase):

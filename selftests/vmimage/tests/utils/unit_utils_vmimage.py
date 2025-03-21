@@ -228,7 +228,7 @@ class DebianImageProvider(unittest.TestCase):
   for example). Also, the properties <i>os_type, os_distro, os_version and
   os_admin_user</i> are OpenStack standards as per
   <a href="https://docs.openstack.org/glance/latest/admin/useful-image-properties.html">this
-  document</a>. It is best practice to set them, especialy on public clouds,
+  document</a>. It is best practice to set them, especially on public clouds,
   to allow your cloud users to filter the image list to search what they need,
   for example using a command like this one:
 

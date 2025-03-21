@@ -6,8 +6,10 @@ from urllib.error import URLError
 from avocado.core.settings import Settings
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
-from selftests.functional.plugin.vmimage import create_metadata_file, missing_binary
-from selftests.utils import skipOnLevelsInferiorThan, temp_dir_prefix
+from selftests.utils import missing_binary, skipOnLevelsInferiorThan, temp_dir_prefix
+from selftests.vmimage.tests.plugin.functional_plugin_vmimage import (
+    create_metadata_file,
+)
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
 FEDORA_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">

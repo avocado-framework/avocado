@@ -252,7 +252,8 @@ noop: 3
 package: 1
 pip: 1
 python-unittest: 1
-sysinfo: 1"""
+sysinfo: 1
+vmimage: 1"""
         cmd_line = f"{AVOCADO} -V list {runnables_recipe_path}"
         result = process.run(cmd_line)
         self.assertIn(

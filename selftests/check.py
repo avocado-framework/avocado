@@ -25,11 +25,11 @@ TEST_SIZE = {
     "job-api-check-file-exists": 11,
     "job-api-check-output-file": 4,
     "job-api-check-tmp-directory-exists": 1,
-    "nrunner-interface": 80,
+    "nrunner-interface": 90,
     "nrunner-requirement": 28,
-    "unit": 685,
+    "unit": 661,
     "jobs": 11,
-    "functional-parallel": 318,
+    "functional-parallel": 314,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -37,7 +37,8 @@ TEST_SIZE = {
     "optional-plugins-robot": 3,
     "optional-plugins-varianter_cit": 40,
     "optional-plugins-varianter_yaml_to_mux": 50,
-    "vmimage": 248,
+    "vmimage-variants": 248,
+    "vmimage-tests": 35,
     "pre-release": 19,
 }
 
@@ -238,6 +239,7 @@ The list of test availables for --skip and --select are:
   jobs                  Run selftests/jobs/
   functional            Run selftests/functional/
   optional-plugins      Run optional_plugins/*/tests/
+  vmimage               Run selftests/vmimage/ tests (tests first, then variants)
         """,
     )
     group = parser.add_mutually_exclusive_group()
@@ -632,6 +634,9 @@ def create_suites(args):  # pylint: disable=W0621
             {
                 "runner": "avocado-runner-pip",
             },
+            {
+                "runner": "avocado-runner-vmimage",
+            },
         ],
     }
 
@@ -743,16 +748,33 @@ def create_suites(args):  # pylint: disable=W0621
 
         suites.append(TestSuite.from_config(config_check_optional, "optional-plugins"))
 
+    test_dir = os.path.join("selftests", "vmimage")
+
+    # Combined vmimage option - tests first, then variants
     if args.dict_tests.get("vmimage"):
-        test_dir = os.path.join("selftests", "pre_release", "tests")
-        vmimage_config = {
-            "resolver.references": [os.path.join(test_dir, "vmimage.py")],
-            "yaml_to_mux.files": [
-                os.path.join(test_dir, "vmimage.py.data", "variants.yml")
+        # First suite: vmimage tests
+        vmimage_tests_config = {
+            "resolver.references": [
+                os.path.join(test_dir, "tests"),
             ],
             "run.max_parallel_tasks": 1,
         }
-        suites.append(TestSuite.from_config(vmimage_config, "vmimage"))
+        suites.append(TestSuite.from_config(vmimage_tests_config, "vmimage-tests"))
+
+        # Second suite: vmimage variants
+        vmimage_variants_config = {
+            "resolver.references": [
+                os.path.join(test_dir, "variants", "vmimage.py"),
+            ],
+            "yaml_to_mux.files": [
+                os.path.join(test_dir, "variants", "vmimage.py.data", "variants.yml")
+            ],
+            "run.max_parallel_tasks": 1,
+        }
+        suites.append(
+            TestSuite.from_config(vmimage_variants_config, "vmimage-variants")
+        )
+
     if args.dict_tests.get("pre-release"):
         os.environ["AVOCADO_CHECK_LEVEL"] = "3"
         pre_release_config = {
