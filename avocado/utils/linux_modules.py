@@ -21,6 +21,7 @@
 Linux kernel modules APIs
 """
 
+import os
 import re
 import logging
 import platform
@@ -223,6 +224,8 @@ def check_kernel_config(config_name):
     kernel_version = platform.uname()[2]
 
     config_file = '/boot/config-' + kernel_version
+    if not os.path.exists(config_file):
+        config_file = "/lib/modules/%s/config" % kernel_version
     with open(config_file, 'r') as kernel_config:
         for line in kernel_config:
             line = line.split('=')
