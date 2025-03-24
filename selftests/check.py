@@ -39,7 +39,7 @@ TEST_SIZE = {
     "optional-plugins-varianter_yaml_to_mux": 50,
     "vmimage-variants": 248,
     "vmimage-tests": 35,
-    "pre-release": 19,
+    "pre-release": 18,
 }
 
 
