@@ -497,7 +497,6 @@ if __name__ == "__main__":
             ],
         },
         zip_safe=False,
-        test_suite="selftests",
         python_requires=">=3.8",
         cmdclass={
             "clean": Clean,

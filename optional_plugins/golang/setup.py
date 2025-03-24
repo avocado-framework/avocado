@@ -48,7 +48,6 @@ setup(
     packages=packages,
     include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}"],
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "avocado-runner-golang = avocado_golang.runner:main",
