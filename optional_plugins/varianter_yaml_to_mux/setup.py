@@ -50,7 +50,6 @@ setup(
     include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}", "PyYAML>=4.2b2"],
     zip_safe=False,
-    test_suite="tests",
     entry_points={
         "avocado.plugins.init": [
             "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",

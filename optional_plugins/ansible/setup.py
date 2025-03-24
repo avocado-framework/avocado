@@ -43,7 +43,6 @@ setup(
         "ansible-core",
         "markupsafe<3.0.0",
     ],
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "avocado-runner-ansible-module = avocado_ansible.module:main",

@@ -52,7 +52,6 @@ setup(
         "robotframework>=4.1, <=6.1.1; python_version < '3.8'",
         "robotframework>=4.1, <7.0; python_version >= '3.8'",
     ],
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "avocado-runner-robot = avocado_robot.runner:main",

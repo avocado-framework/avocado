@@ -71,7 +71,7 @@ build-wheel: pip
 	done
 
 check-wheel: build-wheel
-	$(PYTHON) -m pip install twine packaging>=24.2
+	$(PYTHON) -m pip install twine==6.1.0 packaging==24.2
 	twine check --strict ./PYPI_UPLOAD/*
 
 build-egg:
