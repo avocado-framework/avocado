@@ -196,6 +196,8 @@ effect on the spawner.
  * `uri`: the image reference, in any format supported by ``podman
    pull`` itself.
 
+.. _dependency-vmimage:
+
 VM Image
 ++++++++
 
