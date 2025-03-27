@@ -47,8 +47,8 @@ def generate_vmimage_distro():
         os.path.join(
             ROOT_PATH,
             "selftests",
-            "pre_release",
-            "tests",
+            "vmimage",
+            "variants",
             "vmimage.py.data",
             "variants.yml",
         )

@@ -1,0 +1,69 @@
+============================
+110.0 - The Harder They Come
+============================
+
+The Avocado team is proud to present another release: Avocado 110.0,
+AKA "The Harder They Come", is now available!
+
+Release documentation: `Avocado 110.0
+<http://avocado-framework.readthedocs.io/en/110.0/>`_
+
+Users/Test Writers
+==================
+
+* Support for Virtual Machine images (A.K.A. as vmimages) to be used
+  test as dependencies. The new ``vmimage`` runner has been introduced
+  to download/prepare vmimages before the test execution in the test
+  environment. More info about this new feature can be found
+  in the :ref:`documentation <dependency-vmimage>`.
+
+* The HTML report can now filter results based on negative conditions.
+  It's possible now to ask it to show "all tests that did not pass"
+  (regardless of being an error, failure, etc) with a ``!PASS`` filter
+  condition.
+
+* Python 3.13 is now fully tested and supported.
+
+* Code coverage (``coverage.py``) support is improved with code that
+  runs during the test load now being accounted as covered.
+
+Utility Modules
+===============
+
+* A large amount of lint and style changes were applied to the utility
+  modules, in anticipation for migration to aautils.
+
+* :mod:`avocado.utils.network` now supports SLES 16 in combination
+  with NetworkManager.
+
+* The :mod:`avocado.utils.vmimage` and :mod:`avocado.utils.cloudinit`
+  received major code coverage improvements, also in anticipation for
+  migration to aautils.
+
+Bug Fixes
+=========
+
+* Because of the timeout handling mechanism, some tests could end with
+  false positive statuses.  The timeout handling mechanism is now more
+  robust, and that situation is now resolved.
+
+Internal changes
+================
+
+* The runners on CI were updated to run a more recent and standard
+  default distro (``ubuntu-22.04``) and the Fedora images used are now
+  based on Fedora 40.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/109.0...110.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/36>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0070155/>`_.
