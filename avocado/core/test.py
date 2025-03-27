@@ -430,7 +430,7 @@ class Test(unittest.TestCase, TestData):
         Returns the name of the file (path) that holds the current test
         """
         try:
-            possibly_compiled = inspect.getfile(self.__class__)
+            possibly_compiled = inspect.getabsfile(self.__class__)
             if possibly_compiled.endswith(".pyc") or possibly_compiled.endswith(".pyo"):
                 source = possibly_compiled[:-1]
             else:
