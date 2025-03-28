@@ -17,7 +17,7 @@ class ZypperBackend(RpmBackend):
 
     def __init__(self):
         """
-        Initializes the base command and the yum package repository.
+        Initializes the base command and the zypper package repository.
         """
         super().__init__()
         self.base_command = utils_path.find_command("zypper") + " -n"
@@ -62,7 +62,7 @@ class ZypperBackend(RpmBackend):
         """
         Removes package [name].
         """
-        r_cmd = self.base_command + " " + "erase" + " " + name
+        r_cmd = self.base_command + " " + "remove" + " " + name
 
         return self._run_cmd(r_cmd)
 
