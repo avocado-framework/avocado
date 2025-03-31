@@ -8,7 +8,10 @@
       autoWidth: false,
       ordering: true,  // Explicitly enable sorting
       drawCallback: onTableRedrawn.bind(null, resizeControl),
-      initComplete: onDatatablesInitialized
+      initComplete: onDatatablesInitialized,
+      language: {
+        lengthMenu: "Show _MENU_ entries"
+      }
     });
   });
 
@@ -19,13 +22,30 @@
         statusColumn.search($(this).val().trim()).draw();
       });
 
-    $('#dt-length-0').parent().parent()
+    // Create a container for the controls
+    var controlsContainer = $('<div class="dt-controls-container" style="display: flex; justify-content: space-between; width: 100%;"></div>');
+    
+    // Create a container for the entries section (left side)
+    var entriesContainer = $('<div class="dt-entries-container" style="flex: 0 0 auto;"></div>');
+    
+    // Create a container for the status section (right side)
+    var statusContainer = $('<div class="dt-status-container" style="flex: 0 0 auto; margin-left: auto; display: flex; align-items: center; padding-left: 30px;"></div>')
       .append(
-        $('<div class="dt-search"></div>')
-        .append(
-          $('<label for="dt-status-0" style="margin-right: 0.5em;">Status:</label>')
-        ).append(select)
-      );
+        $('<label for="dt-status-0" style="margin-right: 0.5em; display: inline-block;">Status:</label>')
+      )
+      .append(select);
+    
+    // Get the parent element that contains the entries dropdown
+    var parentElement = $('#dt-length-0').parent().parent();
+    
+    // Move the existing entries dropdown to the entries container
+    entriesContainer.append($('#dt-length-0').parent());
+    
+    // Add both containers to the controls container
+    controlsContainer.append(entriesContainer).append(statusContainer);
+    
+    // Replace the original parent content with our new container
+    parentElement.empty().append(controlsContainer);
 
     // Add all possible status to the select
     statusColumn.data().unique().sort().each(
@@ -166,16 +186,28 @@
 
       var mouseOffset = (e.pageX - this.resizeData.initialX);
       var newTableWidth = this.resizeData.tableWidth + mouseOffset;
+      var newColumnWidth = this.resizeData.targetCellWidth + mouseOffset;
 
-      if (newTableWidth <= this.originalTableWidth) {
-        // make sure we don't set a width too small
-        table.width(this.originalTableWidth);
-        return;
+      // Ensure column width doesn't go below a minimum value (e.g., 50px)
+      var minColumnWidth = 50;
+      if (newColumnWidth < minColumnWidth) {
+        newColumnWidth = minColumnWidth;
+        // Recalculate mouseOffset based on the minimum column width
+        mouseOffset = minColumnWidth - this.resizeData.targetCellWidth;
+        newTableWidth = this.resizeData.tableWidth + mouseOffset;
       }
 
-      var newWidth = this.resizeData.targetCellWidth + mouseOffset;
-      table.width(newTableWidth);
-      this.resizeData.targetCell.width(newWidth);
+      if (newTableWidth <= this.originalTableWidth) {
+        // If we're trying to make the table smaller than its original width,
+        // keep the table at its minimum width but still allow column resizing
+        table.width(this.originalTableWidth);
+        // Apply the new column width even when the table is at minimum width
+        this.resizeData.targetCell.width(newColumnWidth);
+      } else {
+        // Normal case: both table and column width can be increased
+        table.width(newTableWidth);
+        this.resizeData.targetCell.width(newColumnWidth);
+      }
     };
   }
 })();
