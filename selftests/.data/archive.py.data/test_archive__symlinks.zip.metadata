@@ -1,0 +1,11 @@
+{
+  "members": [
+    ["file", "6deca672ab9a6aff2ef9ec091d3761c02426140299fd6b36471005999dd2aeb4"],
+    ["dir/file2", "167e0283731e15c428f71c6a2f17b03672656e96243b9a4fa4395c887aba850b"],
+    ["link_to_file", "symlink:file"],
+    ["link_to_file2", "symlink:dir/file2"],
+    ["link_to_dir", "symlink:dir"],
+    ["dir/2nd_link_to_file", "symlink:../file"],
+    ["dir/link_to_link_to_file2", "symlink:../link_to_file2"]
+  ]
+}
