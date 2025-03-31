@@ -15,6 +15,7 @@
 Module to help extract and create compressed archives.
 """
 
+import bz2
 import gzip
 import logging
 import lzma
@@ -38,6 +39,10 @@ MAGIC_BYTES = {
     "zstd": {
         "magic": b"\x28\xb5\x2f\xfd",
         "description": "The first bytes that all zstd files start with. See https://datatracker.ietf.org/doc/html/rfc8878#section-3.1.1-3.2",
+    },
+    "bzip2": {
+        "magic": b"BZh",
+        "description": "The first three bytes that all bzip2 files start with",
     },
     "xz": {
         "magic": b"\xfd\x37\x7a\x58\x5a\x00",
@@ -192,6 +197,24 @@ def zstd_uncompress(path, output_path=None, force=False):
     return output_path
 
 
+def bzip2_uncompress(path, output_path=None, force=False):
+    """
+    Extracts a bzip2 compressed file.
+    """
+    output_path = _decide_on_path(path, ".bz2", output_path)
+    if not force and os.path.exists(output_path):
+        return output_path
+    try:
+        with bz2.open(path, "rb") as file_obj:
+            with open(output_path, "wb") as newfile_obj:
+                shutil.copyfileobj(file_obj, newfile_obj)
+    except OSError as e:
+        raise ArchiveException(
+            f"Unable to decompress {path} into {output_path}: {e}"
+        ) from e
+    return output_path
+
+
 class ArchiveException(Exception):
     """
     Base exception for all archive errors.
@@ -214,6 +237,7 @@ class ArchiveFile:
         # TAR archives with gzip compression
         ".tar.gz": (False, True, tarfile.open, ":gz"),
         ".tgz": (False, True, tarfile.open, ":gz"),
+        # TAR archives with bzip2 compression
         ".tar.bz2": (False, True, tarfile.open, ":bz2"),
         ".tbz2": (False, True, tarfile.open, ":bz2"),
         # TAR archives with xz compression
@@ -225,6 +249,7 @@ class ArchiveFile:
         ".tzst": (False, True, tarfile.open, ":zstd"),
         # Standalone compressed files (not tar archives)
         ".gz": (False, False, None, "gz"),
+        ".bz2": (False, False, None, "bz2"),
         ".zst": (False, False, None, "zst"),
     }
 
@@ -249,6 +274,8 @@ class ArchiveFile:
                 result = (False, True, tarfile.open, ":gz")
             elif is_file_with_magic_bytes(filename, MAGIC_BYTES["zstd"]["magic"]):
                 result = (False, True, tarfile.open, ":zstd")
+            elif is_file_with_magic_bytes(filename, MAGIC_BYTES["bzip2"]["magic"]):
+                result = (False, True, tarfile.open, ":bz2")
             elif is_file_with_magic_bytes(filename, MAGIC_BYTES["xz"]["magic"]):
                 result = (False, True, tarfile.open, ":xz")
             # Regular tar file
@@ -257,6 +284,8 @@ class ArchiveFile:
         # Check for standalone compressed files
         elif is_gzip_file(filename):
             result = (False, False, None, "gz")
+        elif is_bzip2_file(filename):
+            result = (False, False, None, "bz2")
         elif is_zstd_file(filename):
             result = (False, False, None, "zst")
         elif is_lzma_file(filename):
@@ -363,6 +392,8 @@ class ArchiveFile:
         if self.is_compressed:
             if self.compression_type == "gz":
                 result = gzip_uncompress(self.filename, path)
+            if self.compression_type == "bz2":
+                result = bzip2_uncompress(self.filename, path)
             if self.compression_type == "zst":
                 result = zstd_uncompress(self.filename, path)
             if self.compression_type not in ("gz", "bz2", "zst"):
@@ -431,6 +462,13 @@ class ArchiveFile:
         self._engine.close()
 
 
+def is_bzip2_file(path):
+    """
+    Checks if file given by path has contents that suggests bzip2 file
+    """
+    return is_file_with_magic_bytes(path, MAGIC_BYTES["bzip2"]["magic"])
+
+
 def is_archive(filename):
     """
     Test if a given file is an archive.
@@ -444,6 +482,7 @@ def is_archive(filename):
         or is_gzip_file(filename)
         or is_lzma_file(filename)
         or is_zstd_file(filename)
+        or is_bzip2_file(filename)
     )
 
 
@@ -479,6 +518,8 @@ def uncompress(filename, path):
         return lzma_uncompress(filename, path)
     if is_zstd_file(filename) and not is_tar:
         return zstd_uncompress(filename, path)
+    if is_bzip2_file(filename) and not is_tar:
+        return bzip2_uncompress(filename, path)
 
     # For tar and zip files, use the improved ArchiveFile class
     # which now supports content-based detection
