@@ -386,6 +386,7 @@ if __name__ == "__main__":
             "avocado.plugins.init": [
                 "xunit = avocado.plugins.xunit:XUnitInit",
                 "jsonresult = avocado.plugins.jsonresult:JSONInit",
+                "tmt = avocado.plugins.tmtresult:TMTInit",
                 "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
                 "tap = avocado.plugins.tap:TAPInit",
                 "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
@@ -402,6 +403,7 @@ if __name__ == "__main__":
             "avocado.plugins.cli": [
                 "xunit = avocado.plugins.xunit:XUnitCLI",
                 "json = avocado.plugins.jsonresult:JSONCLI",
+                "tmt = avocado.plugins.tmtresult:TMTCLI",
                 "journal = avocado.plugins.journal:Journal",
                 "tap = avocado.plugins.tap:TAP",
                 "zip_archive = avocado.plugins.archive:ArchiveCLI",
@@ -442,6 +444,7 @@ if __name__ == "__main__":
             "avocado.plugins.result": [
                 "xunit = avocado.plugins.xunit:XUnitResult",
                 "json = avocado.plugins.jsonresult:JSONResult",
+                "tmt = avocado.plugins.tmtresult:TMTResult",
                 "zip_archive = avocado.plugins.archive:Archive",
             ],
             "avocado.plugins.result_events": [
