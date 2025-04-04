@@ -117,6 +117,7 @@ class ArchiveTest(unittest.TestCase):
                 os.path.pardir,
                 os.path.pardir,
                 ".data",
+                "test_archive",
                 "test_archive__symlinks.zip",
             )
         )
@@ -148,93 +149,125 @@ class ArchiveTest(unittest.TestCase):
 
     def test_empty_tbz2(self):
         ret = archive.uncompress(
-            os.path.join(BASEDIR, "selftests", ".data", "empty.tar.bz2"),
+            os.path.join(
+                BASEDIR, "selftests", ".data", "test_archive", "empty.tar.bz2"
+            ),
             self.decompressdir,
         )
         self.assertEqual(ret, None, (f"Empty archive should return None " f"({ret})"))
 
     def test_is_gzip_file(self):
-        gz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.gz")
+        gz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.gz"
+        )
         self.assertTrue(archive.is_gzip_file(gz_path))
 
     def test_gzip_uncompress_to_dir(self):
-        gz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.gz")
+        gz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.gz"
+        )
         ret = archive.gzip_uncompress(gz_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
 
     def test_gzip_uncompress_to_file(self):
-        gz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.gz")
+        gz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.gz"
+        )
         filename = os.path.join(self.decompressdir, "other")
         ret = archive.gzip_uncompress(gz_path, filename)
         self.assertEqual(ret, filename)
 
     def test_gzip_is_archive(self):
-        gz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.gz")
+        gz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.gz"
+        )
         self.assertTrue(archive.is_archive(gz_path))
 
     def test_uncompress_gzip(self):
-        gz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.gz")
+        gz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.gz"
+        )
         ret = archive.uncompress(gz_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
         with open(ret, "rb") as decompressed:
             self.assertEqual(decompressed.read(), b"avocado\n")
 
     def test_is_lzma_file(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.xz"
+        )
         self.assertTrue(archive.is_lzma_file(xz_path))
 
     def test_null_is_not_lzma_file(self):
         self.assertFalse(archive.is_lzma_file(os.devnull))
 
     def test_lzma_uncompress_to_dir(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.xz"
+        )
         ret = archive.lzma_uncompress(xz_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
 
     def test_lzma_uncompress_to_file(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.xz"
+        )
         filename = os.path.join(self.decompressdir, "other")
         ret = archive.lzma_uncompress(xz_path, filename)
         self.assertEqual(ret, filename)
 
     def test_lzma_is_archive(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.xz"
+        )
         self.assertTrue(archive.is_archive(xz_path))
 
     def test_uncompress_lzma(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.xz")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.xz"
+        )
         ret = archive.uncompress(xz_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
         with open(ret, "rb") as decompressed:
             self.assertEqual(decompressed.read(), b"avocado\n")
 
     def test_is_zstd_file(self):
-        xz_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        xz_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.zst"
+        )
         self.assertTrue(archive.is_zstd_file(xz_path))
 
     def test_null_is_not_zstd_file(self):
         self.assertFalse(archive.is_zstd_file(os.devnull))
 
     def test_zstd_is_archive(self):
-        zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        zstd_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.zst"
+        )
         self.assertTrue(archive.is_archive(zstd_path))
 
     @unittest.skipUnless(ZSTD_AVAILABLE, "zstd tool is not available")
     def test_zstd_uncompress_to_dir(self):
-        zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        zstd_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.zst"
+        )
         ret = archive.zstd_uncompress(zstd_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
 
     @unittest.skipUnless(ZSTD_AVAILABLE, "zstd tool is not available")
     def test_zstd_uncompress_to_file(self):
-        zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        zstd_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.zst"
+        )
         filename = os.path.join(self.decompressdir, "other")
         ret = archive.zstd_uncompress(zstd_path, filename)
         self.assertEqual(ret, filename)
 
     @unittest.skipUnless(ZSTD_AVAILABLE, "zstd tool is not available")
     def test_uncompress_zstd(self):
-        zstd_path = os.path.join(BASEDIR, "selftests", ".data", "avocado.zst")
+        zstd_path = os.path.join(
+            BASEDIR, "selftests", ".data", "test_archive", "avocado.zst"
+        )
         ret = archive.uncompress(zstd_path, self.decompressdir)
         self.assertEqual(ret, os.path.join(self.decompressdir, "avocado"))
         with open(ret, "rb") as decompressed:
