@@ -18,6 +18,20 @@ class SpawnMethod(enum.Enum):
     ANY = object()
 
 
+class SpawnCapabilities(enum.Enum):
+    """The capabilities of a spawner implementation."""
+
+    #: The spawner can automatically provision the environment. There
+    #: is no need to create environment before running the task.
+    AUTOMATIC_ENVIRONMENT_PROVISIONING = "Automatic environment provisioning"
+    #: The avocado will be preinstalled in the environment.
+    AVOCADO_DEPLOYMENT = "Avocado deployment"
+    #: The environment is accessible after the task is finished.
+    ENVIRONMENT_PRESERVATION = "Environment preservation"
+    #: The spawner can share the filesystem with the run task.
+    FILESYSTEM_SHARING = "Filesystem sharing"
+
+
 class SpawnerMixin:
     """Common utilities for Spawner implementations."""
 

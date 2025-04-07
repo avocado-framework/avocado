@@ -326,6 +326,10 @@ class Spawner(Plugin):
     originally installed are possible children of this.
     """
 
+    #: The capabilities of a spawner implementation. Possible values
+    #: in :class:`avocado.core.spawners.common.SpawnCapabilities`
+    CAPABILITIES = []
+
     @staticmethod
     @abc.abstractmethod
     def is_task_alive(runtime_task):
