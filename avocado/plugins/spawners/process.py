@@ -4,7 +4,7 @@ import socket
 
 from avocado.core.dependencies.requirements import cache
 from avocado.core.plugin_interfaces import Spawner
-from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.utils.eggenv import get_python_path_env_if_egg
 
@@ -32,6 +32,11 @@ class ProcessSpawner(Spawner, SpawnerMixin):
 
     description = "Process based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    CAPABILITIES = [
+        SpawnCapabilities.AUTOMATIC_ENVIRONMENT_PROVISIONING,
+        SpawnCapabilities.AVOCADO_DEPLOYMENT,
+        SpawnCapabilities.FILESYSTEM_SHARING,
+    ]
 
     def is_operational(self):
         return True

@@ -14,7 +14,7 @@ except ImportError:
 
 from avocado.core.plugin_interfaces import Init, Spawner
 from avocado.core.settings import settings
-from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
 
 LOG = logging.getLogger(__name__)
 
@@ -103,6 +103,10 @@ class LXCSpawner(Spawner, SpawnerMixin):
 
     description = "LXC (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    CAPABILITIES = [
+        SpawnCapabilities.AVOCADO_DEPLOYMENT,
+        SpawnCapabilities.ENVIRONMENT_PRESERVATION,
+    ]
     slots_cache = {}
 
     def is_operational(self):
