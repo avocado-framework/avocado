@@ -11,7 +11,7 @@ from avocado.core.dependencies.requirements import cache
 from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.resolver import ReferenceResolutionAssetType
 from avocado.core.settings import settings
-from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.version import VERSION
 from avocado.utils import distro
@@ -118,6 +118,12 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     description = "Podman (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    CAPABILITIES = [
+        SpawnCapabilities.AUTOMATIC_ENVIRONMENT_PROVISIONING,
+        SpawnCapabilities.AVOCADO_DEPLOYMENT,
+        SpawnCapabilities.ENVIRONMENT_PRESERVATION,
+        SpawnCapabilities.FILESYSTEM_SHARING,
+    ]
 
     _PYTHON_VERSIONS_CACHE = {}
 
