@@ -15,6 +15,7 @@
 Module to help extract and create compressed archives.
 """
 
+import bz2
 import gzip
 import logging
 import lzma
@@ -194,6 +195,24 @@ def zstd_uncompress(path, output_path=None, force=False):
     return output_path
 
 
+def bzip2_uncompress(path, output_path=None, force=False):
+    """
+    Extracts a bzip2 compressed file.
+    """
+    output_path = _decide_on_path(path, ".bz2", output_path)
+    if not force and os.path.exists(output_path):
+        return output_path
+    try:
+        with bz2.open(path, "rb") as file_obj:
+            with open(output_path, "wb") as newfile_obj:
+                shutil.copyfileobj(file_obj, newfile_obj)
+    except OSError as e:
+        raise ArchiveException(
+            f"Unable to decompress {path} into {output_path}: {e}"
+        ) from e
+    return output_path
+
+
 class ArchiveException(Exception):
     """
     Base exception for all archive errors.
@@ -228,6 +247,7 @@ class ArchiveFile:
         ".tzst": (False, True, tarfile.open, ":zstd"),
         # Standalone compressed files (not tar archives)
         ".gz": (False, False, None, "gz"),
+        ".bz2": (False, False, None, "bz2"),
         ".zst": (False, False, None, "zst"),
     }
 
@@ -329,6 +349,8 @@ class ArchiveFile:
         if self.is_compressed:
             if self.compression_type == "gz":
                 return gzip_uncompress(self.filename, path)
+            if self.compression_type == "bz2":
+                return bzip2_uncompress(self.filename, path)
             if self.compression_type == "zst":
                 return zstd_uncompress(self.filename, path)
             # Note: bz2 is handled by tarfile, xz by lzma_uncompress (called from top-level uncompress)
@@ -380,6 +402,8 @@ class ArchiveFile:
             result = (False, False, None, "gz")
         elif is_zstd_file(filename):
             result = (False, False, None, "zst")
+        elif is_bzip2_file(filename):
+            result = (False, False, None, "bz2")
         elif is_lzma_file(filename):
             result = (False, False, None, "xz")
 
@@ -432,6 +456,13 @@ class ArchiveFile:
         self._engine.close()
 
 
+def is_bzip2_file(path):
+    """
+    Checks if file given by path has contents that suggests bzip2 file
+    """
+    return _is_file_with_magic_bytes(path, MAGIC_BYTES["bzip2"]["magic"])
+
+
 def is_archive(filename):
     """
     Test if a given file is an archive.
@@ -445,6 +476,7 @@ def is_archive(filename):
         or is_gzip_file(filename)
         or is_lzma_file(filename)
         or is_zstd_file(filename)
+        or is_bzip2_file(filename)
     )
 
 
@@ -480,6 +512,8 @@ def uncompress(filename, path):
         return lzma_uncompress(filename, path)
     if is_zstd_file(filename) and not is_tar:
         return zstd_uncompress(filename, path)
+    if is_bzip2_file(filename) and not is_tar:
+        return bzip2_uncompress(filename, path)
 
     try:
         with ArchiveFile.open(filename) as x:

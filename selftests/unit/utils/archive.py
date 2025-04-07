@@ -286,6 +286,57 @@ class ArchiveTest(unittest.TestCase):
         with open(extracted_path, "rb") as decompressed:
             self.assertEqual(decompressed.read(), b"avocado\n")
 
+    def test_is_bzip2_file(self):
+        # Test with extension
+        bz2_path_ext = os.path.join(
+            BASEDIR, "selftests", ".data", "archive.py.data", "test_file.bz2"
+        )
+        self.assertTrue(archive.is_bzip2_file(bz2_path_ext))
+        # Test without extension (using the golden file)
+        bz2_path_noext = os.path.join(self.test_data_dir, "bzip2file")
+        self.assertTrue(archive.is_bzip2_file(bz2_path_noext))
+
+    def test_null_is_not_bzip2_file(self):
+        self.assertFalse(archive.is_bzip2_file(os.devnull))
+
+    def test_bzip2_uncompress_to_dir(self):
+        bz2_path = os.path.join(
+            BASEDIR, "selftests", ".data", "archive.py.data", "test_file.bz2"
+        )
+        extracted_path = archive.bzip2_uncompress(bz2_path, self.basedir.name)
+        self.assertEqual(extracted_path, os.path.join(self.basedir.name, "test_file"))
+        with open(extracted_path, "rb") as decompressed:
+            self.assertEqual(
+                decompressed.read().decode("utf-8"), self.test_file_content
+            )
+
+    def test_bzip2_uncompress_without_extension(self):
+        """Test bzip2_uncompress on a file without standard extension."""
+        bz2_path_noext = os.path.join(self.test_data_dir, "bzip2file")
+        extracted_path = archive.bzip2_uncompress(bz2_path_noext, self.basedir.name)
+        # The output path should be based on the input filename without extension
+        # Since input is 'bzip2file', output should be 'bzip2file' in the target dir
+        expected_output_path = os.path.join(self.basedir.name, "bzip2file")
+        self.assertEqual(extracted_path, expected_output_path)
+        with open(extracted_path, "rb") as decompressed:
+            # Assuming 'bzip2file' contains the same content as 'avocado.bz2'
+            self.assertEqual(
+                decompressed.read().decode("utf-8"), self.test_file_content
+            )
+
+    def test_bzip2_uncompress_to_file(self):
+        bz2_path = os.path.join(
+            BASEDIR, "selftests", ".data", "archive.py.data", "test_file.bz2"
+        )
+        filename = os.path.join(self.basedir.name, "other_bz2")
+        # Assuming avocado.utils.archive now has bzip2_uncompress
+        extracted_path = archive.bzip2_uncompress(bz2_path, filename)
+        self.assertEqual(extracted_path, filename)
+        with open(extracted_path, "rb") as decompressed:
+            self.assertEqual(
+                decompressed.read().decode("utf-8"), self.test_file_content
+            )
+
     def test_null_is_not_archive(self):
         self.assertFalse(archive.is_archive(os.devnull))
 
@@ -503,6 +554,51 @@ class ArchiveTest(unittest.TestCase):
         if metadata and "members" in metadata:
             for _, expected_hash in metadata["members"]:
                 # For xz files, the member name might not match the extracted file name
+                # So we check if the extracted file exists and verify its hash
+                if os.path.exists(extracted_file) and not os.path.islink(
+                    extracted_file
+                ):
+                    self.assertTrue(
+                        self._verify_file_hash(extracted_file, expected_hash),
+                        f"Hash mismatch for extracted file: expected {expected_hash}",
+                    )
+
+    def test_bzip2_without_extension(self):
+        """Test that bzip2 archives without proper extensions can be detected and extracted."""
+        # Use the existing bzip2 archive without extension
+        bzip2_file = os.path.join(self.test_data_dir, "bzip2file")
+
+        # Verify it's detected as an archive
+        self.assertTrue(archive.is_archive(bzip2_file))
+
+        # Check metadata if available
+        metadata = self._get_archive_metadata(bzip2_file)
+
+        # Extract the archive
+        extract_dir = os.path.join(self.basedir.name, "extract_bzip2")
+        os.makedirs(extract_dir, exist_ok=True)
+        extracted_file = archive.extract(bzip2_file, extract_dir)
+
+        # Verify the file was extracted
+        self.assertTrue(
+            os.path.exists(extracted_file),
+            f"Extracted file not found at {extracted_file}",
+        )
+
+        # Check content if possible
+        try:
+            with open(extracted_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                self.assertEqual(content, self.test_file_content)
+        except UnicodeDecodeError:
+            # If not a text file, just verify it exists
+            pass
+
+        # Verify hash if metadata is available
+        metadata = self._get_archive_metadata(bzip2_file)
+        if metadata and "members" in metadata:
+            for _, expected_hash in metadata["members"]:
+                # For bzip2 files, the member name might not match the extracted file name
                 # So we check if the extracted file exists and verify its hash
                 if os.path.exists(extracted_file) and not os.path.islink(
                     extracted_file
@@ -787,6 +883,48 @@ class ArchiveTest(unittest.TestCase):
         if metadata and "members" in metadata:
             for _, expected_hash in metadata["members"]:
                 # For zstd files, the member name might not match the extracted file name
+                # So we check if the extracted file exists and verify its hash
+                if os.path.exists(extracted_file) and not os.path.islink(
+                    extracted_file
+                ):
+                    self.assertTrue(
+                        self._verify_file_hash(extracted_file, expected_hash),
+                        f"Hash mismatch for extracted file: expected {expected_hash}",
+                    )
+
+    def test_bzip2_with_extension(self):
+        """Test that bzip2 archives with proper extensions can be detected and extracted."""
+        # Use the existing bzip2 archive with extension
+        bzip2_file = os.path.join(self.test_data_dir, "test_file.bz2")
+
+        # Verify it's detected as an archive
+        self.assertTrue(archive.is_archive(bzip2_file))
+
+        # Extract the archive
+        extract_dir = os.path.join(self.basedir.name, "extract_bzip2_ext")
+        os.makedirs(extract_dir, exist_ok=True)
+        extracted_file = archive.extract(bzip2_file, extract_dir)
+
+        # Verify the file was extracted
+        self.assertTrue(
+            os.path.exists(extracted_file),
+            f"Extracted file not found at {extracted_file}",
+        )
+
+        # Check content if possible
+        try:
+            with open(extracted_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                self.assertEqual(content, self.test_file_content)
+        except UnicodeDecodeError:
+            # If not a text file, just verify it exists
+            pass
+
+        # Verify hash if metadata is available
+        metadata = self._get_archive_metadata(bzip2_file)
+        if metadata and "members" in metadata:
+            for _, expected_hash in metadata["members"]:
+                # For bzip2 files, the member name might not match the extracted file name
                 # So we check if the extracted file exists and verify its hash
                 if os.path.exists(extracted_file) and not os.path.islink(
                     extracted_file
