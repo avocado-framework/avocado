@@ -27,7 +27,9 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
-        self.assertIn(b"'log': b'Package name should be passed as kwargs", res.stdout)
+        self.assertIn(
+            b"PackageRunnerError: Package name should be passed as kwargs", res.stdout
+        )
         self.assertEqual(res.exit_status, 0)
 
     @unittest.skipUnless(

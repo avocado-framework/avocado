@@ -161,39 +161,27 @@ class ExecTestRunner(BaseRunner):
 
         return env
 
-    def _run_proc(self, runnable):
+    def _run(self, runnable):
         if runnable.output_dir is not None:
-            stdout = open(os.path.join(runnable.output_dir, "stdout"), "xb")
-            stderr = open(os.path.join(runnable.output_dir, "stderr"), "xb")
+            stdout_pipe = open(os.path.join(runnable.output_dir, "stdout"), "xb")
+            stderr_pipe = open(os.path.join(runnable.output_dir, "stderr"), "xb")
         else:
-            stdout = subprocess.PIPE
-            stderr = subprocess.PIPE
-
-        return subprocess.Popen(
-            [runnable.uri] + list(runnable.args),
-            stdin=subprocess.DEVNULL,
-            stdout=stdout,
-            stderr=stderr,
-            env=self._get_env(runnable),
-        )
-
-    def run(self, runnable):
-        yield self.prepare_status("started")
+            stdout_pipe = subprocess.PIPE
+            stderr_pipe = subprocess.PIPE
 
         try:
-            process = self._run_proc(runnable)
-        except Exception as e:
-            yield self.prepare_status(
-                "finished", {"result": "error", "fail_reason": str(e)}
+            process = subprocess.Popen(
+                [runnable.uri] + list(runnable.args),
+                stdin=subprocess.DEVNULL,
+                stdout=stdout_pipe,
+                stderr=stderr_pipe,
+                env=self._get_env(runnable),
             )
+        except Exception as e:
             self._cleanup(runnable)
-            return
+            raise e
 
-        def poll_proc():
-            return process.poll() is not None
-
-        yield from self.running_loop(poll_proc)
-
+        process.wait()
         if process.stdout is not None:
             stdout = process.stdout.read()
             yield self.prepare_status("running", {"type": "stdout", "log": stdout})
