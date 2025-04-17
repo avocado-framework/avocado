@@ -20,6 +20,7 @@ results directory structure can be seen below ::
     ├── job.log
     ├── results.html
     ├── results.json
+    ├── results.tmt
     ├── results.tap
     ├── results.xml
     ├── sysinfo

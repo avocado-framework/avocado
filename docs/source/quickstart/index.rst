@@ -55,13 +55,17 @@ Currently we support, out of box, the following output formats:
 * **JSON**: a widely used data exchange format. The JSON Avocado plugin
   outputs job information, similarly to the xunit output plugin.
 
+* **TMT**: The Test Management Tool result format. The TMT Avocado plugin
+  outputs job information to be used by Test Management Tool's
+  `custom results <https://tmt.readthedocs.io/en/latest/spec/results.html>`__.
+
 * **TAP**: Provides the basic TAP (`Test Anything Protocol`_) results,
   currently in v12. Unlike most existing Avocado machine readable outputs
   this one is streamlined (per test results).
 
 .. note:: You can see the results of the latest job inside the folder
   ``$HOME/avocado/job-results/latest/``. You can also specify at the command line
-  the options ``--xunit``, ``--json`` or ``--tap`` followed by a filename.
+  the options ``--xunit``, ``--json``, ``--tmt`` or ``--tap`` followed by a filename.
   Avocado will write the output on the specified filename.
 
 When it comes to outputs, Avocado is very flexible. You can check the various
