@@ -27,7 +27,7 @@ TEST_SIZE = {
     "job-api-check-tmp-directory-exists": 1,
     "nrunner-interface": 90,
     "nrunner-requirement": 28,
-    "unit": 661,
+    "unit": 675,
     "jobs": 11,
     "functional-parallel": 315,
     "functional-serial": 7,
