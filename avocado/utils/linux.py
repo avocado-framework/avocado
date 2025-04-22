@@ -96,3 +96,24 @@ def is_os_secureboot_enabled():
     except FileNotFoundError as exc:
         raise UnsupportedMachineError("lsprop not a supported command") from exc
     return False
+
+
+def is_sched_schedstats_enabled():
+    """
+    Returns True if sched_schedstats is in enabled  mode, False if no.
+    """
+    if "1" in genio.read_one_line("/proc/sys/kernel/sched_schedstats"):
+        return True
+    return False
+
+
+def enable_sched_schedstats():
+    """
+    Enable  SELinux Enforcing in system
+
+    :return: True if sched_schedstats enabled , False if not enabled
+    """
+    genio.write_one_line("/proc/sys/kernel/sched_schedstats", "1")
+    if is_sched_schedstats_enabled():
+        return True
+    return False
