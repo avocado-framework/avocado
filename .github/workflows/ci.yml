@@ -60,7 +60,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install setuptools on Python >= 3.12
-        run: python3 -c 'import setuptools' || python3 -m pip install setuptools
+        run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
       - name: Avocado smokecheck
         run: make smokecheck
 
@@ -87,10 +87,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -V --version
+      - name: Install setuptools on Python >= 3.12
+        run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
-      - name: Install setuptools on Python >= 3.12
-        run: python3 -c 'import setuptools' || python3 -m pip install setuptools
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version
@@ -166,7 +166,7 @@ jobs:
       - name: Display Python version
         run: python -V --version
       - name: Install setuptools on Python >= 3.12
-        run: python -c 'import setuptools' || python -m pip install setuptools
+        run: python -c 'import setuptools' || python -m pip install "setuptools<80"
       - name: Install avocado
         run: python setup.py develop --user
       - name: Show avocado help
@@ -194,7 +194,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install setuptools on Python >= 3.12
-      run: python3 -c 'import setuptools' || python3 -m pip install setuptools
+      run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
     - name: Build tarballs and wheels
       run: make -f Makefile.gh build-wheel check-wheel
     - name: Save tarballs and wheels as artifacts
@@ -221,7 +221,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install setuptools on Python >= 3.12
-      run: python3 -c 'import setuptools' || python3 -m pip install setuptools
+      run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
     - name: Build eggs
       run: make -f Makefile.gh build-egg
     - name: Save eggs as artifacts
