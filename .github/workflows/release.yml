@@ -132,7 +132,7 @@ jobs:
       - name: Build eggs
         run: |
           if python -c 'import sys; exit(0) if sys.version_info.minor > 11 else exit(1)' ; then
-            pip install setuptools
+            pip install "setuptools<80"
           fi
           make -f Makefile.gh build-egg
       - name: Upload binaries to release
