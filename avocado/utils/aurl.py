@@ -18,18 +18,19 @@ URL related functions.
 The strange name is to avoid accidental naming collisions in code.
 """
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse
+
+#: The most common schemes (protocols) used in URLs
+COMMON_SCHEMES = ("http", "https", "ftp", "git")
 
 
 def is_url(path):
-    """
-    Return `True` if path looks like an URL.
+    """Return `True` if path looks like an URL of common protocols.
+
+    Refer to :data:`COMMON_SCHEMES` for the list of common protocols.
 
     :param path: path to check.
     :rtype: Boolean.
     """
-    url_parts = urlparse.urlparse(path)
-    return url_parts[0] in ("http", "https", "ftp", "git")
+    url_parts = urllib.parse.urlparse(path)
+    return url_parts[0] in COMMON_SCHEMES
