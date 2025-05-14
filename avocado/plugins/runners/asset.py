@@ -1,9 +1,8 @@
 import sys
-import time
-from multiprocessing import Process, SimpleQueue, set_start_method
+from multiprocessing import set_start_method
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import Asset
@@ -36,7 +35,7 @@ class AssetRunner(BaseRunner):
     CONFIGURATION_USED = ["datadir.paths.cache_dirs"]
 
     @staticmethod
-    def _fetch_asset(name, asset_hash, algorithm, locations, cache_dirs, expire, queue):
+    def _fetch_asset(name, asset_hash, algorithm, locations, cache_dirs, expire):
 
         asset_manager = Asset(
             name, asset_hash, algorithm, locations, cache_dirs, expire
@@ -52,50 +51,25 @@ class AssetRunner(BaseRunner):
             result = "error"
             stderr = str(exc)
 
-        output = {"result": result, "stdout": stdout, "stderr": stderr}
-        queue.put(output)
+        return {"result": result, "stdout": stdout, "stderr": stderr}
 
-    def run(self, runnable):
-        # pylint: disable=W0201
-        self.runnable = runnable
-        yield self.prepare_status("started")
-
-        name = self.runnable.kwargs.get("name")
+    def _run(self, runnable):
+        name = runnable.kwargs.get("name")
         # if name was passed correctly, run the Avocado Asset utility
         if name is not None:
-            asset_hash = self.runnable.kwargs.get("asset_hash")
-            algorithm = self.runnable.kwargs.get("algorithm")
-            locations = self.runnable.kwargs.get("locations")
-            expire = self.runnable.kwargs.get("expire")
+            asset_hash = runnable.kwargs.get("asset_hash")
+            algorithm = runnable.kwargs.get("algorithm")
+            locations = runnable.kwargs.get("locations")
+            expire = runnable.kwargs.get("expire")
             if expire is not None:
                 expire = data_structures.time_to_seconds(str(expire))
 
-            cache_dirs = self.runnable.config.get("datadir.paths.cache_dirs")
+            cache_dirs = runnable.config.get("datadir.paths.cache_dirs")
             if cache_dirs is None:
                 cache_dirs = settings.as_dict().get("datadir.paths.cache_dirs")
-
-            # let's spawn it to another process to be able to update the
-            # status messages and avoid the Asset to lock this process
-            queue = SimpleQueue()
-            process = Process(
-                target=self._fetch_asset,
-                args=(
-                    name,
-                    asset_hash,
-                    algorithm,
-                    locations,
-                    cache_dirs,
-                    expire,
-                    queue,
-                ),
+            output = self._fetch_asset(
+                name, asset_hash, algorithm, locations, cache_dirs, expire
             )
-            process.start()
-
-            while queue.empty():
-                time.sleep(RUNNER_RUN_STATUS_INTERVAL)
-                yield self.prepare_status("running")
-
-            output = queue.get()
             result = output["result"]
             stdout = output["stdout"]
             stderr = output["stderr"]
@@ -104,7 +78,6 @@ class AssetRunner(BaseRunner):
             result = "error"
             stdout = ""
             stderr = 'At least name should be passed as kwargs using name="uri".'
-
         yield self.prepare_status("running", {"type": "stdout", "log": stdout.encode()})
         yield self.prepare_status("running", {"type": "stderr", "log": stderr.encode()})
         yield self.prepare_status("finished", {"result": result})
