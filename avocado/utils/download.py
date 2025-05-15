@@ -22,11 +22,12 @@ import os
 import shutil
 import socket
 import sys
+import urllib.parse
 from multiprocessing import Process
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-from avocado.utils import aurl, crypto, output
+from avocado.utils import crypto, output
 
 log = logging.getLogger(__name__)
 
@@ -148,7 +149,7 @@ def _get_file(src, dst, permissions=None):
     if src == dst:
         return None
 
-    if aurl.is_url(src):
+    if urllib.parse.urlparse(src)[0] in ["http", "https"]:
         url_download(src, dst)
     else:
         shutil.copyfile(src, dst)

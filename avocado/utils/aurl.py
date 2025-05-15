@@ -17,11 +17,13 @@ URL related functions.
 
 The strange name is to avoid accidental naming collisions in code.
 """
-
+import logging
 import urllib.parse
 
 #: The most common schemes (protocols) used in URLs
 COMMON_SCHEMES = ("http", "https", "ftp", "git")
+
+LOG = logging.getLogger(__name__)
 
 
 def is_url(path):
@@ -32,5 +34,8 @@ def is_url(path):
     :param path: path to check.
     :rtype: Boolean.
     """
+    LOG.warning(
+        "The aurl utility is deprecated and will be removed after the next LTS release."
+    )
     url_parts = urllib.parse.urlparse(path)
     return url_parts[0] in COMMON_SCHEMES
