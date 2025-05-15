@@ -49,6 +49,9 @@ from all tests in one place.
 .. note:: You have to specify separated logging streams. You can't use the
  built-in streams in this function.
 
+.. note:: There's a special stream 'all' that let's you store all streams into the
+          ``full.log`` file in the job result directory.
+
 
 .. _avocado-log-files:
 
