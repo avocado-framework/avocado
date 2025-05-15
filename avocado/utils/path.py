@@ -19,8 +19,7 @@ Avocado path related functions.
 import os
 import stat
 import tempfile
-
-from avocado.utils import aurl
+import urllib
 
 SHEBANG = "#!"
 
@@ -54,7 +53,12 @@ def get_path(base_path, user_path):
     :param base_path: The base path of relative user specified paths.
     :param user_path: The user specified path.
     """
-    if os.path.isabs(user_path) or aurl.is_url(user_path):
+    if os.path.isabs(user_path) or urllib.parse.urlparse(user_path)[0] in [
+        "http",
+        "https",
+        "ftp",
+        "file",
+    ]:
         return user_path
     return os.path.join(base_path, user_path)
 
