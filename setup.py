@@ -23,6 +23,7 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 
 import setuptools.command.develop
+import setuptools.command.install
 from setuptools import Command, find_packages, setup
 
 # pylint: disable=E0611
@@ -201,6 +202,27 @@ class Develop(setuptools.command.develop.develop):
                 self.handle_install()
             elif self.uninstall:
                 self.handle_uninstall()
+
+
+class Install(setuptools.command.install.install):
+    """Custom install command."""
+
+    user_options = setuptools.command.install.install.user_options + [
+        ("etcprefix=", None, "The etc directory prefix [default: /]"),
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.etcprefix = "/usr/local"  # pylint: disable=W0201
+
+    def run(self):
+        pkg_dir = os.path.join(self.build_lib, 'avocado')
+        os.makedirs(pkg_dir, exist_ok=True)
+
+        with open(os.path.join(pkg_dir, 'paths.py'), 'w') as f:
+            f.write(f'ETCPREFIX = "{self.etcprefix}"')
+
+        super().run()
 
 
 class SimpleCommand(Command):
@@ -504,6 +526,7 @@ if __name__ == "__main__":
         cmdclass={
             "clean": Clean,
             "develop": Develop,
+            "install": Install,
             "lint": Linter,
             "man": Man,
             "plugin": Plugin,
