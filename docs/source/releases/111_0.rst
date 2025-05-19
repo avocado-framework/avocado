@@ -1,0 +1,72 @@
+========================
+111.0 - Iron Man
+========================
+
+The Avocado team is proud to present another release: Avocado 111.0,
+AKA "Iron Man", is now available!
+
+Release documentation: `Avocado 111.0
+<http://avocado-framework.readthedocs.io/en/111.0/>`_
+
+Users/Test Writers
+==================
+
+* The installation of Avocado from distribution's packages, changed
+  when compared to the previous version due to changes in repositories
+  and support for "package modules" in some distributions.  Please
+  refer to the installation guide instructions
+  (:ref:`installing-from-packages`) for updated instructions
+
+* New TMT plugin for Avocado is now available. This plugin allows
+  Avocado to generate results in a format for TMT (Test Management Tool).
+
+* ``avocado plugins`` command now supports the ``--capabilities`` option to print
+  capabilities of avocado spawners.
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.archive` supports detection and extraction of
+  files without proper extension.
+
+* :mod:`avocado.utils.archive` got support for BZIP2 files.
+
+* :mod:`avocado.utils.linux` now supports enabling statistics of the Linux
+  scheduler. by `is_sched_schedstats_enabled` and `enable_sched_schedstats` methods.
+
+* :mod:`avocado.utils.cpu.lscpu` got socets and threads information.
+
+Bug Fixes
+=========
+
+* :mod:`avocado.utils.software_manager.backends.zypper` was fixed to
+  use the correct commands for removing packages.
+
+* HTML plugin layout resizing was fixed.
+
+* Previously, the filename API in :mod:`avocado.core.test` returned a
+  relative path in Python ≤3.9 and an absolute path in Python ≥3.10,
+  leading to inconsistency. The behavior has been standardized to
+  always return an absolute path, ensuring consistency across Python versions.
+
+Internal changes
+================
+
+* The code coverage was increased for :mod:`avocado.utils.aurl`.
+
+* The setuptools version was freezed ``<80`` version to keep compatibility
+  with avocado's `setup.py develop` command.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/110.0...111.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/37>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0371746>`_.
