@@ -12,8 +12,10 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Yiqiao Pu <ypu@redhat.com>
 
-"""
-Avocado path related functions.
+__doc__ = """
+Module to handle file and directory paths.
+It provides functions to manipulate file and directory paths,
+check permissions, and inspect files.
 """
 
 import os
@@ -21,23 +23,31 @@ import stat
 import tempfile
 import urllib
 
+#: The indicator for a script file, usually the first line of the file.
 SHEBANG = "#!"
 
 
 class CmdNotFoundError(Exception):
     """
     Indicates that the command was not found in the system after a search.
-
-    :param cmd: String with the command.
-    :param paths: List of paths where we looked after.
     """
 
     def __init__(self, cmd, paths):  # pylint: disable=W0231
+        """
+        :param cmd: String with the command.
+        :param paths: List of paths where we looked after.
+        """
         super()
         self.cmd = cmd
         self.paths = paths
 
     def __str__(self):
+        """
+        String representation of the exception.
+
+        :return: A string describing the missing command and the paths searched.
+        :rtype: str
+        """
         return (
             f"Command '{self.cmd}' could not be found in any "
             f"of the PATH dirs: {self.paths}"
@@ -52,6 +62,8 @@ def get_path(base_path, user_path):
 
     :param base_path: The base path of relative user specified paths.
     :param user_path: The user specified path.
+    :return: The resolved path.
+    :rtype: str
     """
     if os.path.isabs(user_path) or urllib.parse.urlparse(user_path)[0] in [
         "http",
@@ -124,10 +136,25 @@ def find_command(cmd, default=None, check_exec=True):
 
 
 class PathInspector:
+    """
+    Inspects paths to provide information about them.
+    """
+
     def __init__(self, path):
+        """
+        :param path: The path to inspect.
+        :type path: str
+        """
         self.path = path
 
     def get_first_line(self):
+        """
+        Reads and returns the first line of the file from path.
+
+        :return: The first line of the file or an empty string if the file
+                 does not exist or is empty.
+        :rtype: str
+        """
         first_line = ""
         if os.path.isfile(self.path):
             with open(self.path, "r", encoding="utf-8") as open_file:
@@ -135,18 +162,40 @@ class PathInspector:
         return first_line
 
     def has_exec_permission(self):
+        """
+        Checks if the file from path has execute permissions for the user.
+
+        :return: True if the file has execute permissions, False otherwise.
+        :rtype: bool
+        """
         if os.path.exists(self.path):
             mode = os.stat(self.path)[stat.ST_MODE]
             return mode & stat.S_IXUSR
         return False
 
     def is_empty(self):
+        """
+        Checks if the file in path is empty.
+
+        :return: True if the file is empty, False otherwise.
+        :rtype: bool
+        """
         if os.path.exists(self.path):
             size = os.stat(self.path)[stat.ST_SIZE]
             return not size
         return False
 
     def is_script(self, language=None):
+        """
+        Checks if the file in the path is a script, optionally checking for a specific language.
+
+        :param language: The scripting language to check for (e.g., "python").
+                         If None, checks for any shebang.
+        :type language: str, optional
+        :return: True if the file is a script (and matches the language, if provided),
+                 False otherwise.
+        :rtype: bool
+        """
         first_line = self.get_first_line()
         if first_line:
             if first_line.startswith(SHEBANG):
@@ -157,6 +206,12 @@ class PathInspector:
         return False
 
     def is_python(self):
+        """
+        Checks if the file in path is a Python script.
+
+        :return: True if the file is a Python script, False otherwise.
+        :rtype: bool
+        """
         if self.path.endswith(".py"):
             return True
         return self.is_script(language="python")
@@ -168,8 +223,12 @@ def usable_rw_dir(directory, create=True):
 
     Checks for appropriate permissions, and creates missing dirs as needed.
 
-    :param directory: Directory
-    :param create: whether to create the directory
+    :param directory: Directory to check.
+    :type directory: str
+    :param create: whether to create the directory if it does not exist.
+    :type create: bool
+    :return: True if the directory is usable for rw, False otherwise.
+    :rtype: bool
     """
     if os.path.isdir(directory):
         try:
@@ -195,7 +254,10 @@ def usable_ro_dir(directory):
 
     Check if a usable RO directory is there.
 
-    :param directory: Directory
+    :param directory: Directory to check.
+    :type directory: str
+    :return: True if the directory is accessible, False otherwise.
+    :rtype: bool
     """
     try:
         cwd = os.getcwd()
@@ -215,7 +277,7 @@ def usable_ro_dir(directory):
 
 def check_readable(path):
     """
-    Verify that the given path exists and is readable
+    Verify that the given path exists and is readable.
 
     This should be used where an assertion makes sense, and is useful
     because it can provide a better message in the exception it
@@ -233,7 +295,8 @@ def check_readable(path):
 
 
 def get_path_mount_point(path):
-    """Returns the mount point for a given file path
+    """
+    Returns the mount point for a given file path.
 
     :param path: the complete filename path. if a non-absolute path is
                  given, it's transformed into an absolute path first.
@@ -248,7 +311,8 @@ def get_path_mount_point(path):
 
 
 def get_max_file_name_length(path):
-    """Returns the maximum length of a file name in the underlying file system
+    """
+    Returns the maximum length of a file name in the underlying file system.
 
     :param path: the complete filename path. if a non-absolute path is
                  given, it's transformed into an absolute path first.
