@@ -58,7 +58,7 @@ class Dependency:
     @classmethod
     def from_dictionary(cls, dictionary):
         return cls(
-            dictionary.pop("type", None),
+            dictionary.get("type", None),
             dictionary.pop("uri", None),
             dictionary.pop("args", ()),
             dictionary,
