@@ -1,5 +1,3 @@
-from multiprocessing import Process, SimpleQueue
-
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.utils import messages
@@ -25,7 +23,7 @@ class AnsibleModuleRunner(BaseRunner):
     name = "ansible-module"
     description = f"Runner for dependencies of type {name}"
 
-    def _run_ansible_module(self, runnable, queue):
+    def _run_ansible_module(self, runnable):
         args = " ".join([f"{k}={v}" for k, v in runnable.kwargs.items()])
         if args:
             args_cmdline = f"-a '{args}'"
@@ -40,25 +38,18 @@ class AnsibleModuleRunner(BaseRunner):
             result = "fail"
             stdout = ""
             stderr = str(e)
-        queue.put({"result": result, "stdout": stdout, "stderr": stderr})
+        return result, stdout, stderr
 
-    def run(self, runnable):
-        yield messages.StartedMessage.get()
-
+    def _run(self, runnable):
         if not runnable.uri:
             reason = "uri identifying the ansible module is required"
             yield messages.FinishedMessage.get("error", reason)
             return
 
-        queue = SimpleQueue()
-        process = Process(target=self._run_ansible_module, args=(runnable, queue))
-        process.start()
-        yield from self.running_loop(lambda: not queue.empty())
-
-        status = queue.get()
-        yield messages.StdoutMessage.get(status["stdout"])
-        yield messages.StderrMessage.get(status["stderr"])
-        yield messages.FinishedMessage.get(status["result"])
+        result, stdout, stderr = self._run_ansible_module(runnable)
+        yield messages.StdoutMessage.get(stdout)
+        yield messages.StderrMessage.get(stderr)
+        yield messages.FinishedMessage.get(result)
 
 
 class RunnerApp(BaseRunnerApp):

@@ -33,6 +33,27 @@ During the execution look for::
 
     avocado --show avocado.utils.debug run examples/tests/assets.py
 
+Interrupting test
+-----------------
+
+In case you want to "pause" the running test, you can use SIGTSTP (ctrl+z)
+signal sent to the main avocado process. This signal is forwarded to test
+and it's children processes. To resume testing you repeat the same signal.
+
+.. note::
+    The job and test timeouts are still enabled on stopped processes. This
+    means that after you restart the test can be killed by the timeout if
+    the timeout was reached. You can use run `-p timeout_factor=$int$` to
+    increase the timeouts for your debugging.
+
+.. note::
+    It is supported by the process spawner only.
+
+.. warning::
+    This feature is meant only for debugging purposes and it can
+    cause unreliable behavior especially if the signal is sent during the
+    test initialization. Therefore use it with caution.
+
 Line-profiler
 -------------
 
