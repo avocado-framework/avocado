@@ -5,7 +5,7 @@
     "tests": [
          {
 	 "name": "Write the release notes",
-         "description": "Under `docs/source/releases/` from next.rst create a new .rst file describing the release changes. Also, add the new release to the list of releases at `docs/source/releases/index.rst` and update the next.rts for next release. Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label. Commit your changes directly in the master branch."
+         "description": "Under `docs/source/releases/` from next.rst create a new .rst file describing the release changes. Also, add the new release to the list of releases at `docs/source/releases/index.rst` and update the next.rts for next release. Run `make html` in docs directory. Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label. Commit your changes directly in the master branch."
 	 },
          {
 	 "name": "Check secrets are set in GitHub",
@@ -25,7 +25,7 @@
 	 },
          {
 	 "name": "Update website",
-         "description": "Update https://github.com/avocado-framework/avocado-framework.github.io/blob/master/_data/releases/versions.yml, add the new release and remove the oldest one."
+         "description": "Update https://github.com/avocado-framework/avocado-framework.github.io/blob/master/_data/releases/versions.yml, add the new release and remove the oldest one. Push it to the master branch. This will update the website with the new release."
 	 },
          {
 	 "name": "Send e-emails",
