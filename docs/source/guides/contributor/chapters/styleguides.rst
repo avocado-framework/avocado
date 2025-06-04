@@ -1,6 +1,8 @@
 Style guides
 ============
 
+.. _commit_style_guide:
+
 Commit style guide
 ------------------
 
@@ -12,6 +14,9 @@ motivation, approach and effects::
                     <- Blank line
     message         <- Any number of lines, limited to 72 characters per line.
                     <- Blank line
+    Assisted-by:    <- artificial intelligence model, tool, or service which
+                       has been used and how big part of contribution has
+                       been generated (percentage)
     Reference:      <- External references, one per line (issue, trello, ...)
     Signed-off-by:  <- Signature and acknowledgment of licensing terms when
                        contributing to the project (created by git commit -s)
