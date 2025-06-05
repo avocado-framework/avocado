@@ -25,6 +25,7 @@ avocado core code or plugins.
 
 
 import math
+import re
 import sys
 
 
@@ -328,23 +329,20 @@ class DataSize:
 
     def __init__(self, data):
         try:
-            norm_size = data.strip().lower()
-            last = norm_size[-1]
-            if last.isdigit():
-                self._value = int(norm_size)
-                self._unit = "b"
-            elif last in self.MULTIPLIERS:
-                self._value = int(norm_size[:-1])
-                self._unit = last
-            else:
+            norm = str(data).strip().lower()
+            match = re.match(r"^(\d+(\.\d+)?)(?:\s*([bkmgt]))?$", norm)
+            if not match:
                 raise ValueError
 
-            if self._value < 0:
+            self._value = float(match.group(1))
+            self._unit = match.group(3) or "b"
+
+            if self._unit not in self.MULTIPLIERS or self._value < 0:
                 raise ValueError
 
         except ValueError as exc:
             raise InvalidDataSize(
-                'String not in size + unit format (i.e. "10M", "100k", ...)'
+                f"Invalid data size '{data}'. Use formats like '10M', '2.5G', or '100'."
             ) from exc
 
     @property
