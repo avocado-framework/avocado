@@ -17,3 +17,4 @@ Useful pointers on how to participate of the Avocado community and contribute.
    chapters/releasing
    chapters/tips
    chapters/contact
+   chapters/ai_policy
