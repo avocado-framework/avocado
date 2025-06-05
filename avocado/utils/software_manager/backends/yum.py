@@ -43,6 +43,10 @@ class YumBackend(RpmBackend):
         self._cfgparser = None
         self._set_version(cmd)
         self._yum_base = None
+        self.transient_opts = ""
+        # Inspect the image mode of RHEL/CentOS/Fedora
+        if os.path.isdir("/ostree"):
+            self.transient_opts += " --transient "
 
     @property
     def repo_config_parser(self):
@@ -89,7 +93,7 @@ class YumBackend(RpmBackend):
         """
         Installs package [name]. Handles local installs.
         """
-        i_cmd = self.base_command + "install" + " " + name
+        i_cmd = self.base_command + "install" + " " + name + self.transient_opts
         return self._run_cmd(i_cmd)
 
     def remove(self, name):
@@ -98,7 +102,7 @@ class YumBackend(RpmBackend):
 
         :param name: Package name (eg. 'ipython').
         """
-        r_cmd = self.base_command + "erase" + " " + name
+        r_cmd = self.base_command + "erase" + " " + name + self.transient_opts
         return self._run_cmd(r_cmd)
 
     def add_repo(self, url, **opt_params):
@@ -174,9 +178,9 @@ class YumBackend(RpmBackend):
         :type name: str
         """
         if not name:
-            r_cmd = self.base_command + "update"
+            r_cmd = self.base_command + "update" + self.transient_opts
         else:
-            r_cmd = self.base_command + "update" + " " + name
+            r_cmd = self.base_command + "update" + " " + name + self.transient_opts
 
         return self._run_cmd(r_cmd)
 
