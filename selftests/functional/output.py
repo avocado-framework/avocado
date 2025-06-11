@@ -657,6 +657,25 @@ class OutputPluginTest(TestCaseTmpDir):
         # Check that plugins do not produce errors
         self.assertNotIn(b"Error running method ", result.stderr)
 
+    def test_custom_log_levels(self):
+        cmd_line = (
+            f"{AVOCADO} run --store-logging-stream=custom_logger:35 "
+            f"--job-results-dir {self.tmpdir.name} "
+            f"--disable-sysinfo examples/tests/logging_custom_level.py"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
+        )
+        custom_log_path = os.path.join(
+            self.tmpdir.name, "latest", "custom_logger.Level 35.log"
+        )
+        with open(custom_log_path, "rb") as custom_log_file:
+            self.assertIn(b"Custom logger and level message", custom_log_file.read())
+
 
 if __name__ == "__main__":
     unittest.main()
