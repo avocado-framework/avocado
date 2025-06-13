@@ -200,6 +200,7 @@ class RunnerLogHandler(logging.Handler):
         if self.message is LogMessage:
             kwargs = {
                 "log_name": record.name,
+                "log_level": record.levelno,
                 "log_levelname": record.levelname,
             }
             kwargs.update(**self.kwargs)
