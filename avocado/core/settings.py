@@ -41,6 +41,7 @@ import configparser
 import glob
 import json
 import os
+import platform
 import re
 from importlib.resources import files
 
@@ -406,7 +407,10 @@ class Settings:
             self.all_config_paths.append(self._config_path_local)
 
     def _prepare_base_dirs(self):
-        cfg_dir = "/etc"
+        if platform.system() == "FreeBSD":
+            cfg_dir = "/usr/local/etc"
+        else:
+            cfg_dir = "/etc"
         user_dir = os.path.expanduser("~")
 
         if "VIRTUAL_ENV" in os.environ:

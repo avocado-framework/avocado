@@ -1,4 +1,5 @@
 import os
+import platform
 
 from pkg_resources import get_distribution
 
@@ -13,6 +14,10 @@ def prepend_base_path(value):
 
 def system_wide_or_base_path(file_path):
     """Returns either a system wide path, or one relative to the base.
+
+    This utility function is helpful when locating configuration files
+    and takes into account system specific conditions, such as whether
+    configuration will normally be under "/etc" or "/usr/local/etc".
 
     If "etc/avocado/avocado.conf" is given as input, it checks for the
     existence of "/etc/avocado/avocado.conf".  If that path does not exist,
@@ -32,7 +37,11 @@ def system_wide_or_base_path(file_path):
     if os.path.isabs(file_path):
         abs_path = file_path
     else:
-        abs_path = os.path.join(os.path.sep, file_path)
+        if platform.system() == "FreeBSD":
+            prefix = "/usr/local"
+        else:
+            prefix = os.path.sep
+        abs_path = os.path.join(prefix, file_path)
     if os.path.exists(abs_path):
         return abs_path
     return prepend_base_path(file_path)
