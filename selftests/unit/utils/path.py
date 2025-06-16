@@ -51,6 +51,14 @@ class Path(unittest.TestCase):
         result = path.find_command("mycmd", default=default_path)
         self.assertEqual(result, default_path)
 
+    @unittest.mock.patch("avocado.utils.path.os.environ", {})
+    @unittest.mock.patch("avocado.utils.path.os.path.isfile", return_value=True)
+    @unittest.mock.patch("avocado.utils.path.os.access", return_value=False)
+    def test_find_command_not_executable(self, mock_access, mock_isfile):
+        with self.assertRaises(path.CmdNotFoundError) as e:
+            path.find_command("unexecutable_cmd")
+        self.assertIn("Command 'unexecutable_cmd' could not be found", str(e.exception))
+
     def test_PathInspector_get_first_line_not_exists(self):
         inspector = path.PathInspector("nonexistent_file.txt")
         self.assertEqual(inspector.get_first_line(), "")
