@@ -16,6 +16,7 @@
 Provides VM images acquired from official repositories
 """
 
+import json
 import logging
 import os
 import re
@@ -114,11 +115,17 @@ class ImageProviderBase:
         return self._file_name
 
     def _feed_html_parser(self, url, parser):
+        """
+        Fetches HTML content from the specified URL and feeds it to the provided HTML parser.
+        
+        Raises:
+            ImageProviderError: If the URL cannot be opened due to an HTTP or OS error.
+        """
         try:
             with urlopen(url) as u:
                 data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError as exc:
+        except (HTTPError, OSError) as exc:
             raise ImageProviderError(f"Cannot open {url}") from exc
 
     @staticmethod
@@ -532,27 +539,18 @@ class Image:
         snapshot_dir=None,
     ):
         """
-        Creates an instance of Image class.
-
-        :param name: Name of image.
-        :type name: str
-        :param url: The url where the image can be fetched from.
-        :type url: str
-        :param version: Version of image.
-        :type version: int
-        :param arch: Architecture of the system image.
-        :type arch: str
-        :param build: Build of the system image.
-        :type build: str
-        :param checksum: Hash of the system image to match after download.
-        :type checksum: str
-        :param algorithm: Hash type, used when the checksum is provided.
-        :type algorithm: str
-        :param cache_dir: Local system path where the base images will be held.
-        :type cache_dir: str or iterable
-        :param snapshot_dir: Local system path where the snapshot images
-                            will be held.  Defaults to cache_dir if none is given.
-        :type snapshot_dir: str
+        Initialize an Image instance representing a VM image with associated metadata and storage locations.
+        
+        Parameters:
+            name (str): Name of the image.
+            url (str): Source URL or local path for the image.
+            version (int): Version identifier for the image.
+            arch (str): Architecture of the image (e.g., 'x86_64', 'arm64').
+            build (str): Build identifier for the image.
+            checksum (str): Expected hash value for image verification.
+            algorithm (str): Hash algorithm used for the checksum.
+            cache_dir (str or iterable): Directory or directories for storing base images.
+            snapshot_dir (str, optional): Directory for storing snapshot images; defaults to cache_dir if not specified.
         """
         self.name = name
         self.url = url
@@ -567,8 +565,117 @@ class Image:
         self._path = None
         self._base_image = None
 
+    @staticmethod
+    def _get_metadata_for_asset(asset_path):
+        """
+        Read and return metadata from a JSON file associated with the given asset path.
+        
+        Parameters:
+            asset_path (str): Path to the asset file.
+        
+        Returns:
+            dict or None: Metadata dictionary if the metadata file exists and is valid, otherwise None.
+        """
+        metadata_file = f"{os.path.splitext(asset_path)[0]}_metadata.json"
+        if not os.path.isfile(metadata_file):
+            return None
+
+        try:
+            with open(metadata_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            LOG.warning(
+                "Could not read or parse metadata file %s: %s", metadata_file, e
+            )
+            return None
+
+    @staticmethod
+    def _metadata_matches(metadata, name, version, build, compatible_arches):
+        """
+        Determine whether a metadata dictionary matches specified VM image criteria.
+        
+        Parameters:
+            metadata (dict): Metadata describing a VM image.
+            name (str or None): Image name to match, or None to ignore.
+            version (str or None): Image version to match, or None to ignore.
+            build (str or None): Image build identifier to match, or None to ignore.
+            compatible_arches (list or None): List of acceptable architecture strings, or None to ignore.
+        
+        Returns:
+            bool: True if the metadata matches all provided criteria and is of type "vmimage"; False otherwise.
+        """
+        type_ok = metadata.get("type") == "vmimage"
+        name_ok = not name or metadata.get("name", "").lower() == name.lower()
+        version_ok = not version or str(metadata.get("version", "")) == str(version)
+        build_ok = not build or str(metadata.get("build", "")) == str(build)
+        arch_ok = not compatible_arches or metadata.get("arch") in compatible_arches
+
+        return type_ok and name_ok and version_ok and build_ok and arch_ok
+
+    @classmethod
+    def _find_cached_image(
+        cls,
+        cache_dirs,
+        name=None,
+        version=None,
+        build=None,
+        arch=None,
+        checksum=None,
+        algorithm=None,
+        snapshot_dir=None,
+    ):
+        """
+        Searches the specified cache directories for a VM image matching the given parameters.
+        
+        Parameters:
+            cache_dirs (list): Directories to search for cached image assets.
+            name (str, optional): Image name to match.
+            version (str, optional): Image version to match.
+            build (str, optional): Image build identifier to match.
+            arch (str, optional): Architecture to match, with compatibility mapping.
+            checksum (str, optional): Checksum for the image (used if a match is found).
+            algorithm (str, optional): Hash algorithm for the checksum.
+            snapshot_dir (str, optional): Directory for storing image snapshots.
+        
+        Returns:
+            Image: An Image instance for the first matching cached image found, or None if no match exists.
+        """
+        # Define architecture compatibility maps
+        arch_map = {
+            "x86_64": ["amd64", "64"],
+            "aarch64": ["arm64"],
+            "amd64": ["x86_64"],
+            "arm64": ["aarch64"],
+        }
+        compatible_arches = [arch] + arch_map.get(arch, []) if arch else []
+
+        # Iterate through all assets in the cache directories
+        for asset_path in asset.Asset.get_all_assets(cache_dirs, sort=False):
+            metadata = cls._get_metadata_for_asset(asset_path)
+            if not metadata:
+                continue
+
+            # Check if metadata matches the search criteria
+            if cls._metadata_matches(metadata, name, version, build, compatible_arches):
+                LOG.info("Found matching cached image: %s", asset_path)
+                return cls(
+                    name=metadata.get("name", name),
+                    url=asset_path,
+                    version=metadata.get("version", version),
+                    arch=metadata.get("arch", arch),
+                    build=metadata.get("build", build),
+                    checksum=checksum,
+                    algorithm=algorithm,
+                    cache_dir=cache_dirs[0],
+                    snapshot_dir=snapshot_dir,
+                )
+        return None
+
     @property
     def path(self):
+        """
+        Returns the path to the image file, downloading and snapshotting it if not already available.
+        """
         return self._path or self.get()
 
     @property
@@ -576,33 +683,50 @@ class Image:
         return self._base_image or self.download()
 
     def __repr__(self):
+        """
+        Return a string representation of the Image instance, including its class name, name, version, and architecture.
+        """
         return (
             f"<{self.__class__.__name__} name={self.name} "
             f"version={self.version} arch={self.arch}>"
         )
 
     def download(self):
-        metadata = {
-            "type": "vmimage",
-            "name": self.name,
-            "version": self.version,
-            "arch": self.arch,
-            "build": self.build,
-        }
-        if isinstance(self.cache_dir, str):
-            cache_dirs = [self.cache_dir]
+        # If URL is already a local file path (from cache), just use it directly
+        """
+        Downloads the VM image if not already cached locally, verifies and uncompresses it if necessary, and returns the path to the base image.
+        
+        If the image URL points to a local file, it is used directly. Otherwise, the image is downloaded from the remote URL, optionally verified with a checksum, and uncompressed if it is an archive.
+        
+        Returns:
+            str: The path to the base image file.
+        """
+        if os.path.isfile(self.url):
+            LOG.debug("Using cached image file: %s", self.url)
+            asset_path = self.url
         else:
-            cache_dirs = self.cache_dir
-        LOG.debug("Attempting to download image from URL: %s", self.url)
-        asset_path = asset.Asset(
-            name=self.url,
-            asset_hash=self.checksum,
-            algorithm=self.algorithm,
-            locations=None,
-            cache_dirs=cache_dirs,
-            expire=None,
-            metadata=metadata,
-        ).fetch(timeout=asset.DOWNLOAD_TIMEOUT * 3)
+            # Download from remote URL
+            metadata = {
+                "type": "vmimage",
+                "name": self.name,
+                "version": self.version,
+                "arch": self.arch,
+                "build": self.build,
+            }
+            if isinstance(self.cache_dir, str):
+                cache_dirs = [self.cache_dir]
+            else:
+                cache_dirs = self.cache_dir
+            LOG.debug("Attempting to download image from URL: %s", self.url)
+            asset_path = asset.Asset(
+                name=self.url,
+                asset_hash=self.checksum,
+                algorithm=self.algorithm,
+                locations=None,
+                cache_dirs=cache_dirs,
+                expire=None,
+                metadata=metadata,
+            ).fetch(timeout=asset.DOWNLOAD_TIMEOUT * 3)
 
         if archive.is_archive(asset_path):
             uncompressed_path = os.path.splitext(asset_path)[0]
@@ -647,49 +771,72 @@ class Image:
         snapshot_dir=None,
     ):
         """
-        Returns an Image, according to the parameters provided.
-
-        :param name: (optional) Name of the Image Provider, usually matches
-                     the distro name.
-        :param version: (optional) Version of the system image.
-        :param build: (optional) Build number of the system image.
-        :param arch: (optional) Architecture of the system image.
-        :param checksum: (optional) Hash of the system image to match after
-                         download.
-        :param algorithm: (optional) Hash type, used when the checksum is
-                          provided.
-        :param cache_dir: (optional) Local system path where the base
-                          images will be held.
-        :param snapshot_dir: (optional) Local system path where the snapshot
-                             images will be held.  Defaults to cache_dir if
-                             none is given.
-
-        :returns: Image instance that can provide the image
-                  according to the parameters.
+        Create an Image instance based on the provided parameters, searching cache first and falling back to network providers if necessary.
+        
+        This method attempts to locate a matching image in the specified cache directories using the given parameters. If no suitable cached image is found, it selects the best available image provider and constructs an Image instance using the provider's information. Raises an ImageProviderError if neither a cached image nor a provider can supply a valid image.
+        
+        Returns:
+            Image: An Image instance corresponding to the requested parameters.
+        
+        Raises:
+            ImageProviderError: If no suitable image can be found in the cache or via network providers.
         """
-        # Use the current system architecture if arch is not provided
-        if arch is None:
-            arch = DEFAULT_ARCH
-        provider = get_best_provider(name, version, build, arch)
+        final_cache_dir = cache_dir or tempfile.gettempdir()
+        final_arch = arch or DEFAULT_ARCH
+        cache_dirs = (
+            [final_cache_dir] if isinstance(final_cache_dir, str) else final_cache_dir
+        )
 
-        if cache_dir is None:
-            cache_dir = tempfile.gettempdir()
+        # 1. First, try to find a suitable image in the local cache
+        cached_image = cls._find_cached_image(
+            cache_dirs=cache_dirs,
+            name=name,
+            version=version,
+            build=build,
+            arch=final_arch,
+            checksum=checksum,
+            algorithm=algorithm,
+            snapshot_dir=snapshot_dir,
+        )
+        if cached_image:
+            return cached_image
+
+        LOG.debug(
+            "Image not found in cache with provided parameters. "
+            "Attempting to find a provider."
+        )
+
+        # 2. If not cached, find a provider (may involve network requests)
+        try:
+            provider = get_best_provider(name, version, build, final_arch)
+        except ImageProviderError as e:
+            raise ImageProviderError(
+                f"No provider found for {name or 'default'} "
+                f"(version={version}, build={build}, arch={final_arch}). "
+                f"No cached image available. Original error: {e}"
+            ) from e
+
+        # 3. With a provider found, create the final Image instance to be returned.
+        #    The actual download will be handled by other methods on the instance.
         try:
             return cls(
                 name=provider.name,
                 url=provider.get_image_url(),
                 version=provider.version,
                 arch=provider.arch,
-                checksum=checksum,
-                algorithm=algorithm,
                 build=provider.build,
-                cache_dir=cache_dir,
+                checksum=checksum or getattr(provider, "checksum", None),
+                algorithm=algorithm or getattr(provider, "algorithm", None),
+                cache_dir=final_cache_dir,
                 snapshot_dir=snapshot_dir,
             )
         except ImageProviderError as e:
-            LOG.debug(e)
-
-        raise AttributeError("Provider not available")
+            LOG.debug("Provider failed to supply a valid image URL: %s", e)
+            raise ImageProviderError(
+                f"Provider '{provider.name}' failed for {name or 'default'} "
+                f"(version={version}, build={build}, arch={final_arch}). "
+                f"No cached image found and network requests failed."
+            ) from e
 
 
 # pylint: disable=R0913
@@ -714,16 +861,20 @@ def get(
 
 def get_best_provider(name=None, version=None, build=None, arch=None):
     """
-    Wrapper to get parameters of the best Image Provider, according to
-    the parameters provided.
-
-    :param name: (optional) Name of the Image Provider, usually matches
-                 the distro name.
-    :param version: (optional) Version of the system image.
-    :param build: (optional) Build number of the system image.
-    :param arch: (optional) Architecture of the system image.
-
-    :returns: Image Provider
+    Selects and returns the best matching image provider instance based on the given parameters.
+    
+    Parameters:
+        name (str, optional): Name of the image provider or distribution.
+        version (str, optional): Version of the system image.
+        build (str, optional): Build number of the system image.
+        arch (str, optional): Architecture of the system image.
+    
+    Returns:
+        An instance of the best matching image provider.
+    
+    Raises:
+        ImageProviderError: If a network-related error occurs during provider instantiation.
+        AttributeError: If no suitable provider is found.
     """
 
     if name is not None:
@@ -739,14 +890,28 @@ def get_best_provider(name=None, version=None, build=None, arch=None):
         if name == "fedora" and arch in ("ppc64", "ppc64le", "s390x"):
             name = "fedorasecondary"
 
+    last_error = None
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
             try:
                 return provider(**provider_args)
             except ImageProviderError as e:
                 LOG.debug(e)
+                last_error = e
+            except (HTTPError, OSError) as e:
+                LOG.debug(
+                    "Network error while creating provider %s: %s", provider.name, e
+                )
+                last_error = ImageProviderError(f"Network error: {e}")
 
     LOG.debug("Provider for %s not available", name)
+    if (
+        last_error
+        and isinstance(last_error, ImageProviderError)
+        and "Cannot open" in str(last_error)
+    ):
+        # Re-raise network errors to be handled by caller
+        raise last_error
     raise AttributeError("Provider not available")
 
 
