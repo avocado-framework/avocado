@@ -21,6 +21,7 @@
 Linux kernel modules APIs
 """
 
+import gzip
 import logging
 import os
 import platform
@@ -222,24 +223,7 @@ def check_kernel_config(config_name):
     :rtype: :class:`ModuleConfig`
     """
 
-    kernel_version = platform.uname()[2]
-
-    # NOTE: If other locations for config files are known, they should be added here
-    config_locations = [
-        Path(f"/boot/config-{kernel_version}"),
-        Path(f"/usr/lib/modules/{kernel_version}/config"),
-    ]
-    config_file = None
-    for loc in config_locations:
-        if loc.exists():
-            config_file = loc
-            break
-    if not config_file:
-        raise FileNotFoundError(
-            f"No kernel configuration file found for version {kernel_version}"
-        )
-
-    with open(config_file, "r") as kernel_config:  # pylint: disable=W1514
+    def parse_kernel_config(kernel_config):
         for line in kernel_config:
             line = line.split("=")
 
@@ -252,7 +236,31 @@ def check_kernel_config(config_name):
                 if option == "m":
                     return ModuleConfig.MODULE
                 return ModuleConfig.BUILTIN
-    return ModuleConfig.NOT_SET
+        return ModuleConfig.NOT_SET
+
+    kernel_version = platform.uname()[2]
+
+    # NOTE: If other locations for config files are known, they should be added here
+    config_locations = [
+        Path("/proc/config.gz"),
+        Path(f"/boot/config-{kernel_version}"),
+        Path(f"/usr/lib/modules/{kernel_version}/config"),
+    ]
+    config_file = None
+    for loc in config_locations:
+        if loc.exists():
+            config_file = loc
+            break
+    if not config_file:
+        raise FileNotFoundError(
+            f"No kernel configuration file found for version {kernel_version}"
+        )
+    if config_file.name.endswith(".gz"):
+        with gzip.open(config_file, "rt") as kernel_config:
+            return parse_kernel_config(kernel_config)
+    else:
+        with open(config_file, "r") as kernel_config:  # pylint: disable=W1514
+            return parse_kernel_config(kernel_config)
 
 
 def get_modules_dir():
