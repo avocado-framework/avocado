@@ -149,7 +149,7 @@ jobs:
   smokecheck-windows:
 
     name: Windows with Python ${{ matrix.python-version }}
-    runs-on: windows-2019
+    runs-on: windows-2025
 
     strategy:
       matrix:
