@@ -1,14 +1,10 @@
 import multiprocessing
 import os
-import signal
 import sys
 import tempfile
-import time
-import traceback
 
-from avocado.core.exceptions import TestInterrupt
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import RUNNER_RUN_CHECK_INTERVAL, BaseRunner
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.test import TestID
 from avocado.core.tree import TreeNodeEnvOnly
 from avocado.core.utils import loader, messages
@@ -41,11 +37,6 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
     ]
 
     @staticmethod
-    def signal_handler(signum, frame):  # pylint: disable=W0613
-        if signum == signal.SIGTERM.value:
-            raise TestInterrupt("Test interrupted: Timeout reached")
-
-    @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
         if runnable.variant is None:
@@ -61,121 +52,59 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             paths = runnable.variant["paths"]
             return tree_nodes, paths
 
-    @staticmethod
-    def _run_avocado(runnable, queue):
+    def _run(self, runnable):
         def load_and_run_test(test_factory):
             instance = loader.load_test(test_factory)
-            early_state = instance.get_state()
-            early_state["type"] = "early_state"
-            queue.put(early_state)
             instance.run_avocado()
             return instance.get_state()
 
-        try:
-            # This assumes that a proper resolution (see resolver module)
-            # was performed, and that a URI contains:
-            # 1) path to python module
-            # 2) class
-            # 3) method
-            #
-            # To be defined: if the resolution uri should be composed like
-            # this, or broken down and stored into other data fields
-            signal.signal(signal.SIGTERM, AvocadoInstrumentedTestRunner.signal_handler)
-            module_path, klass_method = runnable.uri.split(":", 1)
+        # This assumes that a proper resolution (see resolver module)
+        # was performed, and that a URI contains:
+        # 1) path to python module
+        # 2) class
+        # 3) method
+        #
+        # To be defined: if the resolution uri should be composed like
+        # this, or broken down and stored into other data fields
+        module_path, klass_method = runnable.uri.split(":", 1)
 
-            klass, method = klass_method.split(".", 1)
+        klass, method = klass_method.split(".", 1)
 
-            params = AvocadoInstrumentedTestRunner._create_params(runnable)
-            result_dir = runnable.output_dir or tempfile.mkdtemp(prefix=".avocado-task")
-            test_factory = [
-                klass,
-                {
-                    "name": TestID(1, runnable.uri, runnable.variant),
-                    "methodName": method,
-                    "config": runnable.config,
-                    "modulePath": module_path,
-                    "params": params,
-                    "tags": runnable.tags,
-                    "run.results_dir": result_dir,
-                },
-            ]
+        params = AvocadoInstrumentedTestRunner._create_params(runnable)
+        result_dir = runnable.output_dir or tempfile.mkdtemp(prefix=".avocado-task")
+        test_factory = [
+            klass,
+            {
+                "name": TestID(1, runnable.uri, runnable.variant),
+                "methodName": method,
+                "config": runnable.config,
+                "modulePath": module_path,
+                "params": params,
+                "tags": runnable.tags,
+                "run.results_dir": result_dir,
+            },
+        ]
 
-            messages.start_logging(runnable.config, queue)
+        # running the actual test
+        if "COVERAGE_RUN" in os.environ:
+            from coverage import Coverage
 
-            # running the actual test
-            if "COVERAGE_RUN" in os.environ:
-                from coverage import Coverage
-
-                coverage = Coverage(data_suffix=True)
-                with coverage.collect():
-                    state = load_and_run_test(test_factory)
-                coverage.save()
-            else:
+            coverage = Coverage(data_suffix=True)
+            with coverage.collect():
                 state = load_and_run_test(test_factory)
+            coverage.save()
+        else:
+            state = load_and_run_test(test_factory)
 
-            fail_reason = state.get("fail_reason")
-            queue.put(messages.WhiteboardMessage.get(state["whiteboard"]))
-            queue.put(
-                messages.FinishedMessage.get(
-                    state["status"].lower(),
-                    fail_reason=fail_reason,
-                    class_name=klass,
-                    fail_class=state.get("fail_class"),
-                    traceback=state.get("traceback"),
-                )
-            )
-        except Exception as e:
-            queue.put(messages.StderrMessage.get(traceback.format_exc()))
-            queue.put(
-                messages.FinishedMessage.get(
-                    "error",
-                    fail_reason=str(e),
-                    fail_class=e.__class__.__name__,
-                    traceback=traceback.format_exc(),
-                )
-            )
-
-    @staticmethod
-    def _monitor(queue):
-        while True:
-            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            if queue.empty():
-                yield messages.RunningMessage.get()
-            else:
-                message = queue.get()
-                if message.get("type") != "early_state":
-                    yield message
-                if message.get("status") == "finished":
-                    break
-
-    def run(self, runnable):
-        # pylint: disable=W0201
-        signal.signal(signal.SIGTERM, AvocadoInstrumentedTestRunner.signal_handler)
-        self.runnable = runnable
-        yield messages.StartedMessage.get()
-        try:
-            queue = multiprocessing.SimpleQueue()
-            process = multiprocessing.Process(
-                target=self._run_avocado, args=(self.runnable, queue)
-            )
-
-            process.start()
-
-            for message in self._monitor(queue):
-                yield message
-
-        except TestInterrupt:
-            process.terminate()
-            for message in self._monitor(queue):
-                yield message
-        except Exception as e:
-            yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get(
-                "error",
-                fail_reason=str(e),
-                fail_class=e.__class__.__name__,
-                traceback=traceback.format_exc(),
-            )
+        fail_reason = state.get("fail_reason")
+        yield messages.WhiteboardMessage.get(state["whiteboard"])
+        yield messages.FinishedMessage.get(
+            state["status"].lower(),
+            fail_reason=fail_reason,
+            class_name=klass,
+            fail_class=state.get("fail_class"),
+            traceback=state.get("traceback"),
+        )
 
 
 class RunnerApp(BaseRunnerApp):

@@ -5,6 +5,7 @@ import multiprocessing
 import time
 
 from avocado.core.exceptions import JobFailFast
+from avocado.core.output import LOG_UI
 from avocado.core.task.runtime import RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.utils import messages
@@ -492,6 +493,31 @@ class Worker:
         task_status = RuntimeTaskStatus.INTERRUPTED
         terminated = await self._terminate_tasks(task_status)
         await self._send_finished_tasks_message(terminated, "Interrupted by user")
+
+    @staticmethod
+    async def stop_resume_tasks(state_machine, spawner):
+        async with state_machine.lock:
+            try:
+                for runtime_task in state_machine.monitored:
+                    if runtime_task.status == RuntimeTaskStatus.STARTED:
+                        await spawner.stop_task(runtime_task)
+                        runtime_task.status = RuntimeTaskStatus.PAUSED
+                        LOG_UI.warning(
+                            f"{runtime_task.task.identifier}: {runtime_task.status.value}"
+                        )
+                    elif runtime_task.status == RuntimeTaskStatus.PAUSED:
+                        await spawner.resume_task(runtime_task)
+                        runtime_task.status = RuntimeTaskStatus.STARTED
+                        LOG_UI.warning(
+                            f"{runtime_task.task.identifier}: {runtime_task.status.value}"
+                        )
+            except NotImplementedError:
+                LOG.warning(
+                    f"Sending signals to tasks is not implemented for spawner: {spawner}"
+                )
+                LOG_UI.warning(
+                    f"Sending signals to tasks is not implemented for spawner: {spawner}"
+                )
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""

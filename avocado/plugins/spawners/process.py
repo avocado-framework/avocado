@@ -1,5 +1,6 @@
 import asyncio
 import os
+import signal
 import socket
 
 from avocado.core.dependencies.requirements import cache
@@ -61,6 +62,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             proc = await asyncio.create_subprocess_exec(
                 runner,
                 *args,
+                stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
                 env=get_python_path_env_if_egg(),
@@ -109,6 +111,16 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             except asyncio.TimeoutError:
                 pass
         return returncode is not None
+
+    async def stop_task(self, runtime_task):
+        try:
+            runtime_task.spawner_handle.process.send_signal(signal.SIGTSTP)
+        except ProcessLookupError:
+            return False
+        return
+
+    async def resume_task(self, runtime_task):
+        await self.stop_task(runtime_task)
 
     @staticmethod
     async def check_task_requirements(runtime_task):

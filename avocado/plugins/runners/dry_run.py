@@ -18,11 +18,13 @@ class DryRunRunner(BaseRunner):
     name = "dry-run"
     description = "Runner for --dry-run"
 
-    def run(self, runnable):
-        yield self.prepare_status("started")
+    def _run(self, runnable):
         yield self.prepare_status(
             "finished",
-            {"result": "cancel", "fail_reason": "Test cancelled due to " "--dry-run"},
+            {
+                "result": "cancel",
+                "fail_reason": "Test cancelled due to " "--dry-run",
+            },
         )
 
 

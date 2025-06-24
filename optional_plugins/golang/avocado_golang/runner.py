@@ -29,7 +29,7 @@ class GolangRunner(BaseRunner):
     name = "golang"
     description = "Runner for Golang tests"
 
-    def run(self, runnable):
+    def _run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
         error_msgs = []
@@ -45,7 +45,6 @@ class GolangRunner(BaseRunner):
             )
             return
 
-        yield messages.StartedMessage.get()
         module_test = self.runnable.uri.split(":", 1)
         module = module_test[0]
         try:
@@ -59,15 +58,10 @@ class GolangRunner(BaseRunner):
 
         process = subprocess.Popen(
             cmd,
-            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-
-        def poll_proc():
-            return process.poll() is not None
-
-        yield from self.running_loop(poll_proc)
+        process.wait()
 
         result = "pass" if process.returncode == 0 else "fail"
         yield messages.StdoutMessage.get(process.stdout.read())

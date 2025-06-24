@@ -18,6 +18,7 @@ class RuntimeTaskStatus(Enum):
     FAIL_TRIAGE = "FINISHED WITH FAILURE ON TRIAGE"
     FAIL_START = "FINISHED FAILING TO START"
     STARTED = "STARTED"
+    PAUSED = "PAUSED"
 
     @staticmethod
     def finished_statuses():

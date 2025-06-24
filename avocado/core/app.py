@@ -25,7 +25,6 @@ from avocado.core.dispatcher import CLICmdDispatcher, CLIDispatcher
 from avocado.core.output import STD_OUTPUT
 from avocado.core.parser import Parser
 from avocado.core.settings import settings
-from avocado.utils import process
 
 
 class AvocadoApp:
@@ -90,13 +89,6 @@ class AvocadoApp:
 
     @staticmethod
     def _setup_signals():
-        def sigterm_handler(signum, frame):  # pylint: disable=W0613
-            children = process.get_children_pids(os.getpid())
-            for child in children:
-                process.kill_process_tree(int(child))
-            raise SystemExit("Terminated")
-
-        signal.signal(signal.SIGTERM, sigterm_handler)
         if hasattr(signal, "SIGTSTP"):
             signal.signal(signal.SIGTSTP, signal.SIG_IGN)  # ignore ctrl+z
 

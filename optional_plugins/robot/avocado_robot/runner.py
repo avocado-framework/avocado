@@ -17,7 +17,6 @@ Avocado nrunner for Robot Framework tests
 """
 
 import io
-import multiprocessing
 import tempfile
 
 from robot import run
@@ -49,7 +48,7 @@ class RobotRunner(BaseRunner):
 
         return (file_name, suite_name, test_name)
 
-    def _run(self, file_name, suite_name, test_name, queue):
+    def _run_robot(self, file_name, suite_name, test_name):
         stdout = io.StringIO()
         stderr = io.StringIO()
         output_dir = tempfile.mkdtemp(prefix=".avocado-robot")
@@ -68,19 +67,12 @@ class RobotRunner(BaseRunner):
 
         stdout.seek(0)
         stderr.seek(0)
-        output = self.prepare_status(
-            "finished",
-            {
-                "result": result,
-                "stdout": stdout.read().encode(),
-                "stderr": stderr.read().encode(),
-            },
-        )
+        output = (result, stdout.read().encode(), stderr.read().encode())
         stdout.close()
         stderr.close()
-        queue.put(output)
+        return output
 
-    def run(self, runnable):
+    def _run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
         file_name, suite_name, test_name = self._uri_to_file_suite_test()
@@ -89,18 +81,10 @@ class RobotRunner(BaseRunner):
             yield messages.FinishedMessage.get("error", fail_reason="Invalid URI given")
             return
 
-        queue = multiprocessing.SimpleQueue()
-        process = multiprocessing.Process(
-            target=self._run, args=(file_name, suite_name, test_name, queue)
-        )
-        process.start()
-        yield messages.StartedMessage.get()
-        yield from self.running_loop(lambda: not queue.empty())
-
-        status = queue.get()
-        yield messages.StdoutMessage.get(status["stdout"])
-        yield messages.StderrMessage.get(status["stderr"])
-        yield messages.FinishedMessage.get(status["result"])
+        result, stdout, stderr = self._run_robot(file_name, suite_name, test_name)
+        yield messages.StdoutMessage.get(stdout)
+        yield messages.StderrMessage.get(stderr)
+        yield messages.FinishedMessage.get(result)
 
 
 class RunnerApp(BaseRunnerApp):
