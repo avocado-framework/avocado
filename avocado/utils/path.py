@@ -117,7 +117,7 @@ def find_command(cmd, default=None, check_exec=True):
     ]
     try:
         path_paths = os.environ["PATH"].split(":")
-    except IndexError:
+    except KeyError:
         path_paths = []
     path_paths = list(set(common_bin_paths + path_paths))
 
