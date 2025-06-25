@@ -132,12 +132,13 @@ class Command(Collectible):
     :param locale: Force LANG for sysinfo collection
     """
 
-    def __init__(self, cmd, timeout=-1, locale="C"):
+    def __init__(self, cmd, timeout=-1, locale="C", use_sudo=False):
         super().__init__(cmd)
         self._name = self.log_path
         self.cmd = cmd
         self.timeout = timeout
         self.locale = locale
+        self.use_sudo = use_sudo
 
     def __repr__(self):
         r = "Command(%r, %r)"
@@ -168,9 +169,15 @@ class Command(Collectible):
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(self.timeout) <= 0:
             self.timeout = None
+
+        cmd_run =  self.cmd
+        if self.use_sudo:
+            cmd_run = f"sudo {self.cmd}"
+
         try:
             result = process.run(
-                self.cmd,
+                # self.cmd,
+                cmd_run,
                 timeout=self.timeout,
                 verbose=False,
                 ignore_status=True,
