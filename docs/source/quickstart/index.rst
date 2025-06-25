@@ -242,6 +242,11 @@ your employer) and you grant a full, complete, irrevocable copyright license to
 all users and developers of the Avocado project, present and future, pursuant
 to the license of the project.
 
+AI-Generated code policy
+========================
+The Avocado project allows the use of AI-generated code, but it has to follow
+the guidelines and requirements outlined in the `Policy for AI-Generated Code`_.
+
 Build and Quality Status
 ========================
 
@@ -266,3 +271,4 @@ Build and Quality Status
 .. _Avocado Releases: https://avocado-framework.readthedocs.io/en/latest/releases/index.html
 .. _GitHub issue tracker: https://github.com/avocado-framework/avocado/issues
 .. _Test Anything Protocol: https://testanything.org/
+.. _Policy for AI-Generated Code: https://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/ai_policy.html
