@@ -482,20 +482,47 @@ class Asset:
         """
         Returns metadata of the asset if it exists or None.
 
+        IMPROVED: Now handles both normal asset names and direct file paths.
+
         :return: metadata
         :rtype: dict or None
         """
+        asset_file = None
+
+        # Try 1: Normal asset resolution via find_asset_file()
         try:
             asset_file = self.find_asset_file()
-        except OSError as exc:
-            raise OSError("Metadata not available.") from exc
+        except OSError:
+            # Try 2: Check if self.name is already a direct file path
+            if self.name and os.path.isfile(self.name):
+                asset_file = self.name
+            else:
+                # Try 3: Check if self.name is in any of the cache_dirs
+                if self.cache_dirs:
+                    for cache_dir in self.cache_dirs:
+                        potential_path = os.path.join(
+                            os.path.expanduser(cache_dir), self.name
+                        )
+                        if os.path.isfile(potential_path):
+                            asset_file = potential_path
+                            break
 
+        # If we still do not have an asset file, give up
+        if not asset_file:
+            raise OSError("Metadata not available.")
+
+        # Look for metadata file
         basename = os.path.splitext(asset_file)[0]
         metadata_file = f"{basename}_metadata.json"
+
         if os.path.isfile(metadata_file):
-            with open(metadata_file, "r", encoding="utf-8") as f:
-                metadata = json.load(f)
-                return metadata
+            try:
+                with open(metadata_file, "r", encoding="utf-8") as f:
+                    metadata = json.load(f)
+                    return metadata
+            except (json.JSONDecodeError, OSError):
+                pass
+
         return None
 
     @property
