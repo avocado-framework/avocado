@@ -32,12 +32,28 @@ import sys
 class InvalidDataSize(ValueError):
     """
     Signals that the value given to :class:`DataSize` is not valid.
+
+    This exception is raised when an invalid data size string is provided
+    to the DataSize class constructor.
     """
 
 
 def ordered_list_unique(object_list):
     """
-    Returns an unique list of objects, with their original order preserved
+    Returns an unique list of objects, with their original order preserved.
+
+    This function removes duplicates from a list while maintaining the
+    original order of the first occurrence of each element.
+
+    :param object_list: List of objects that may contain duplicates
+    :type object_list: list
+    :returns: List with duplicates removed, order preserved
+    :rtype: list
+
+    Example::
+
+        >>> ordered_list_unique([1, 2, 2, 3, 1, 4])
+        [1, 2, 3, 4]
     """
     seen = set()
     seen_add = seen.add
@@ -47,10 +63,23 @@ def ordered_list_unique(object_list):
 def geometric_mean(values):
     """
     Evaluates the geometric mean for a list of numeric values.
+
     This implementation is slower but allows unlimited number of values.
-    :param values: List with values.
-    :return: Single value representing the geometric mean for the list values.
+    The geometric mean is calculated as the nth root of the product of n numbers.
+
+    :param values: List with numeric values
+    :type values: list
+    :returns: Single value representing the geometric mean for the list values,
+              or None if the list is empty
+    :rtype: float or None
+    :raises ValueError: If any value in the list cannot be converted to int
+
     :see: http://en.wikipedia.org/wiki/Geometric_mean
+
+    Example::
+
+        >>> geometric_mean([1, 2, 4, 8])
+        2.8284271247461903
     """
     try:
         values = [int(value) for value in values]
@@ -64,16 +93,32 @@ def geometric_mean(values):
 
 def compare_matrices(matrix1, matrix2, threshold=0.05):  # pylint: disable=R0912
     """
-    Compare 2 matrices nxm and return a matrix nxm with comparison data and
-    stats. When the first columns match, they are considered as header and
-    included in the results intact.
+    Compare 2 matrices nxm and return a matrix nxm with comparison data and stats.
 
-    :param matrix1: Reference Matrix of floats; first column could be header.
+    When the first columns match, they are considered as header and
+    included in the results intact. This function is useful for comparing
+    performance data between different test runs.
+
+    :param matrix1: Reference Matrix of floats; first column could be header
+    :type matrix1: list of lists
     :param matrix2: Matrix that will be compared; first column could be header
+    :type matrix2: list of lists
     :param threshold: Any difference greater than this percent threshold will
-                      be reported.
-    :return: Matrix with the difference in comparison, number of improvements,
-             number of regressions, total number of comparisons.
+                      be reported (default: 0.05 = 5%)
+    :type threshold: float
+    :returns: Tuple containing:
+              - Matrix with the difference in comparison
+              - Number of improvements
+              - Number of regressions
+              - Total number of comparisons
+    :rtype: tuple(list, int, int, int)
+
+    Example::
+
+        >>> matrix1 = [['test1', 10.0, 20.0]]
+        >>> matrix2 = [['test1', 12.0, 18.0]]
+        >>> result = compare_matrices(matrix1, matrix2)
+        >>> # Returns comparison matrix and statistics
     """
     improvements = 0
     regressions = 0
@@ -131,10 +176,23 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):  # pylint: disable=R0912
 
 def comma_separated_ranges_to_list(string):
     """
-    Provides a list from comma separated ranges
+    Provides a list from comma separated ranges.
 
-    :param string: string of comma separated range
-    :return list: list of integer values in comma separated range
+    Converts a string containing comma-separated ranges into a list of integers.
+    Ranges can be specified as single numbers or as ranges using hyphens.
+
+    :param string: String of comma separated range (e.g., "1,3-5,7")
+    :type string: str
+    :returns: List of integer values in comma separated range
+    :rtype: list of int
+    :raises ValueError: If the string contains invalid range format
+
+    Example::
+
+        >>> comma_separated_ranges_to_list("1,3-5,7")
+        [1, 3, 4, 5, 7]
+        >>> comma_separated_ranges_to_list("10-12")
+        [10, 11, 12]
     """
     values = []
     for range_str in string.split(","):
@@ -148,10 +206,29 @@ def comma_separated_ranges_to_list(string):
 
 def recursive_compare_dict(dict1, dict2, level="DictKey", diff_btw_dict=None):
     """
-    Difference between two dictionaries are returned
-    Dict values can be a dictionary, list and value
+    Difference between two dictionaries are returned.
 
+    Recursively compares two dictionaries and returns a list of differences.
+    Dict values can be a dictionary, list or simple value. The function
+    handles nested structures and provides detailed difference information.
+
+    :param dict1: First dictionary to compare
+    :type dict1: dict, list, or any
+    :param dict2: Second dictionary to compare
+    :type dict2: dict, list, or any
+    :param level: Current level identifier for nested comparison
+    :type level: str
+    :param diff_btw_dict: List to store differences (used internally for recursion)
+    :type diff_btw_dict: list or None
+    :returns: List of differences between the two dictionaries, or None for recursive calls
     :rtype: list or None
+
+    Example::
+
+        >>> dict1 = {'a': 1, 'b': {'c': 2}}
+        >>> dict2 = {'a': 2, 'b': {'c': 2}}
+        >>> differences = recursive_compare_dict(dict1, dict2)
+        >>> # Returns list of differences
     """
     if diff_btw_dict is None:
         diff_btw_dict = []
@@ -190,15 +267,35 @@ class Borg:
     Multiple instances of this class will share the same state.
 
     This is considered a better design pattern in Python than
-    more popular patterns, such as the Singleton. Inspired by
-    Alex Martelli's article mentioned below:
+    more popular patterns, such as the Singleton. The Borg pattern
+    allows multiple instances to exist but they all share the same
+    state, making them effectively equivalent. Inspired by
+    Alex Martelli's article mentioned below.
+
+    All instances of this class will have the same ``__dict__``,
+    so any changes to instance variables will be reflected across
+    all instances.
 
     :see: http://www.aleax.it/5ep.html
+
+    Example::
+
+        >>> b1 = Borg()
+        >>> b2 = Borg()
+        >>> b1.value = 42
+        >>> b2.value  # Will be 42, state is shared
+        42
     """
 
     __shared_state = {}
 
     def __init__(self):
+        """
+        Initialize a new Borg instance with shared state.
+
+        Sets the instance's ``__dict__`` to the shared state dictionary,
+        ensuring all instances share the same state.
+        """
         self.__dict__ = self.__shared_state
 
 
@@ -207,17 +304,37 @@ class LazyProperty:
     Lazily instantiated property.
 
     Use this decorator when you want to set a property that will only be
-    evaluated the first time it's accessed. Inspired by the discussion in
-    the Stack Overflow thread below:
+    evaluated the first time it's accessed. This is useful for expensive
+    computations that should be deferred until actually needed.
+
+    Once computed, the value is stored as a regular attribute on the
+    instance, avoiding repeated computation. Inspired by the discussion in
+    the Stack Overflow thread below.
 
     :see: http://stackoverflow.com/questions/15226721/
     """
 
     def __init__(self, f_get):
+        """
+        Initialize the lazy property with a getter function.
+
+        :param f_get: Function that computes the property value
+        :type f_get: callable
+        """
         self.f_get = f_get
         self.func_name = f_get.__name__
 
     def __get__(self, obj, cls):
+        """
+        Descriptor method to get the property value.
+
+        :param obj: Instance the property is being accessed on
+        :type obj: object or None
+        :param cls: Class the property is defined on
+        :type cls: type
+        :returns: The computed property value
+        :rtype: any
+        """
         if obj is None:
             return None
         value = self.f_get(obj)
@@ -228,11 +345,20 @@ class LazyProperty:
 class CallbackRegister:
     """
     Registers pickable functions to be executed later.
+
+    This class maintains a registry of functions with their arguments
+    that can be called at a later time, typically for cleanup operations.
+    All registered functions must be pickable (serializable).
     """
 
     def __init__(self, name, log):
         """
+        Initialize the callback register.
+
         :param name: Human readable identifier of this register
+        :type name: str
+        :param log: Logger instance for error reporting
+        :type log: logging.Logger
         """
         self._name = name
         self._items = []
@@ -240,11 +366,16 @@ class CallbackRegister:
 
     def register(self, func, args, kwargs, once=False):
         """
-        Register function/args to be called on self.destroy()
-        :param func: Pickable function
-        :param args: Pickable positional arguments
-        :param kwargs: Pickable keyword arguments
+        Register function/args to be called on self.run().
+
+        :param func: Pickable function to be called later
+        :type func: callable
+        :param args: Pickable positional arguments for the function
+        :type args: tuple
+        :param kwargs: Pickable keyword arguments for the function
+        :type kwargs: dict
         :param once: Add unique (func,args,kwargs) combination only once
+        :type once: bool
         """
         item = (func, args, kwargs)
         if not once or item not in self._items:
@@ -252,10 +383,14 @@ class CallbackRegister:
 
     def unregister(self, func, args, kwargs):
         """
-        Unregister (func,args,kwargs) combination
-        :param func: Pickable function
+        Unregister (func,args,kwargs) combination.
+
+        :param func: Pickable function to unregister
+        :type func: callable
         :param args: Pickable positional arguments
+        :type args: tuple
         :param kwargs: Pickable keyword arguments
+        :type kwargs: dict
         """
         item = (func, args, kwargs)
         if item in self._items:
@@ -263,7 +398,12 @@ class CallbackRegister:
 
     def run(self):
         """
-        Call all registered function
+        Call all registered functions.
+
+        Executes all registered functions with their associated arguments.
+        If any function raises an exception, it is logged and execution
+        continues with the remaining functions. Functions are called in
+        LIFO order (last registered, first executed).
         """
         while self._items:
             item = self._items.pop()
@@ -277,8 +417,11 @@ class CallbackRegister:
 
     def __del__(self):
         """
-        :warning: Always call self.run() manually, this is not guaranteed
-                  to be executed!
+        Destructor that runs all registered callbacks.
+
+        .. warning::
+           Always call self.run() manually, this is not guaranteed
+           to be executed!
         """
         self.run()
 
@@ -286,7 +429,28 @@ class CallbackRegister:
 def time_to_seconds(time):
     """
     Convert time in minutes, hours and days to seconds.
-    :param time: Time, optionally including the unit (i.e. '10d')
+
+    Converts a time string with optional unit suffix to seconds.
+    Supported units are 's' (seconds), 'm' (minutes), 'h' (hours),
+    and 'd' (days). If no unit is specified, the value is assumed
+    to be in seconds.
+
+    :param time: Time, optionally including the unit (i.e. '10d', '5m', '30')
+    :type time: str, int, or None
+    :returns: Time converted to seconds
+    :rtype: int
+    :raises ValueError: If the time format is invalid
+
+    Example::
+
+        >>> time_to_seconds('10m')
+        600
+        >>> time_to_seconds('2h')
+        7200
+        >>> time_to_seconds('30')
+        30
+        >>> time_to_seconds(None)
+        0
     """
     units = {"s": 1, "m": 60, "h": 3600, "d": 86400}
     if time is not None:
@@ -312,9 +476,24 @@ class DataSize:
     """
     Data Size object with builtin unit-converted attributes.
 
+    Represents a data size with automatic unit conversion capabilities.
+    Supports bytes (b), kilobytes (k), megabytes (m), gigabytes (g),
+    and terabytes (t). All conversions use binary multipliers (1024-based).
+
     :param data: Data size plus optional unit string. i.e. '10m'. No
                  unit string means the data size is in bytes.
-    :type data: str
+    :type data: str, int, or float
+    :raises InvalidDataSize: If the data format is invalid
+
+    Example::
+
+        >>> size = DataSize('10m')
+        >>> size.b  # bytes
+        10485760
+        >>> size.k  # kilobytes
+        10240
+        >>> size.g  # gigabytes
+        0
     """
 
     __slots__ = ["_value", "_unit"]
@@ -328,6 +507,13 @@ class DataSize:
     }  # 2**40
 
     def __init__(self, data):
+        """
+        Initialize a DataSize object.
+
+        :param data: Data size with optional unit (e.g., '10M', '2.5G', '100')
+        :type data: str, int, or float
+        :raises InvalidDataSize: If the data format is invalid
+        """
         try:
             norm = str(data).strip().lower()
             match = re.match(r"^(\d+(\.\d+)?)(?:\s*([bkmgt]))?$", norm)
@@ -347,28 +533,70 @@ class DataSize:
 
     @property
     def value(self):
+        """
+        The numeric value of the data size.
+
+        :returns: The original numeric value without unit conversion
+        :rtype: float
+        """
         return self._value
 
     @property
     def unit(self):
+        """
+        The unit of the data size.
+
+        :returns: Single character representing the unit ('b', 'k', 'm', 'g', 't')
+        :rtype: str
+        """
         return self._unit
 
     @property
     def b(self):
+        """
+        Data size in bytes.
+
+        :returns: Size converted to bytes
+        :rtype: float
+        """
         return self._value * self.MULTIPLIERS[self._unit]
 
     @property
     def k(self):
+        """
+        Data size in kilobytes.
+
+        :returns: Size converted to kilobytes (truncated to integer)
+        :rtype: int
+        """
         return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["k"])
 
     @property
     def m(self):
+        """
+        Data size in megabytes.
+
+        :returns: Size converted to megabytes (truncated to integer)
+        :rtype: int
+        """
         return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["m"])
 
     @property
     def g(self):
+        """
+        Data size in gigabytes.
+
+        :returns: Size converted to gigabytes (truncated to integer)
+        :rtype: int
+        """
         return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["g"])
 
     @property
     def t(self):
+        """
+        Data size in terabytes.
+
+        :returns: Size converted to terabytes (truncated to integer)
+        :rtype: int
+        """
         return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["t"])
