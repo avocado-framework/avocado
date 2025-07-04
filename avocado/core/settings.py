@@ -42,8 +42,7 @@ import glob
 import json
 import os
 import re
-
-from pkg_resources import resource_exists, resource_filename
+from importlib.resources import files
 
 from avocado.core.settings_dispatcher import SettingsDispatcher
 
@@ -415,9 +414,9 @@ class Settings:
             user_dir = os.environ["VIRTUAL_ENV"]
 
         config_file_name = "avocado.conf"
-        config_pkg_base = os.path.join("etc", "avocado", config_file_name)
-        if resource_exists("avocado", config_pkg_base):
-            self._config_path_pkg = resource_filename("avocado", config_pkg_base)
+        conf_file = files("avocado") / "etc" / "avocado" / config_file_name
+        if conf_file.is_file():
+            self._config_path_pkg = str(conf_file)
         else:
             self._config_path_pkg = None
         self._config_dir_system = os.path.join(cfg_dir, "avocado")
