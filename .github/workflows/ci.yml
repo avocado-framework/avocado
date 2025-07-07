@@ -519,6 +519,7 @@ jobs:
   fedora_selftests_task:
     name: Fedora selftests
     runs-on: ubuntu-latest
+    timeout-minutes: 18 # max + 3*std over the last 400 successful runs
     container:
       image: quay.io/avocado-framework/avocado-ci-fedora-40
     steps:
