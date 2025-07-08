@@ -791,3 +791,6 @@ BZh
 zst
 gz
 basenames
+cls
+getter
+destructor
