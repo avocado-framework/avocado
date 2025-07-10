@@ -25,6 +25,7 @@ Nvme utilities
 import json
 import logging
 import os
+import re
 import time
 
 from avocado.utils import pci, process
@@ -112,7 +113,7 @@ def get_current_ns_ids(controller_name):
     return namespaces
 
 
-def get_current_ns_list(controller_name):
+def get_current_ns_list(controller_name, shared_ns=False):
     """
     Returns the list of namespaces in the nvme controller
 
@@ -121,12 +122,15 @@ def get_current_ns_list(controller_name):
     """
     namespace_list = []
     namespaces_ids = get_current_ns_ids(controller_name)
+    if shared_ns:
+        subsys = get_subsystem_using_ctrl_name(controller_name)
+        controller_name = f"nvme{subsys[len('nvme-subsy'):]}"
     for ns_id in namespaces_ids:
         namespace_list.append(f"/dev/{controller_name}n{ns_id}")
     return namespace_list
 
 
-def get_block_size(controller_name):
+def get_block_size(controller_name, shared_ns=False):
     """
     Returns the block size of the namespace.
     If not found, return defaults to 4k.
@@ -134,9 +138,16 @@ def get_block_size(controller_name):
     :param namespace: Name of the namespace like /dev/nvme0n1 etc..
     :rtype: Integer
     """
-    namespaces = get_current_ns_list(controller_name)
+    namespaces = get_current_ns_list(controller_name, shared_ns=shared_ns)
     if namespaces:
-        namespace = namespaces[0]
+        namespace = get_namespace_absolute_path(namespaces[0])
+        if shared_ns:
+            subsys = get_subsystem_using_ctrl_name(controller_name)
+            controller_name = f"nvme{subsys[len('nvme-subsy'):]}"
+            ns_match = re.search(r"nvme\d+n(\d+)", namespace)
+            if ns_match:
+                namespace = f"{controller_name}n{ns_match.group(1)}"
+                namespace = get_namespace_absolute_path(namespace)
         cmd = f"nvme id-ns {namespace}"
         out = process.run(cmd, shell=True, ignore_status=True).stdout_text
         for line in out.splitlines():
@@ -145,7 +156,18 @@ def get_block_size(controller_name):
     return 4096
 
 
-def delete_ns(controller_name, ns_id):
+def get_namespace_absolute_path(namespace):
+    """
+    Returns absolute path for nvme namespace
+
+    :rtype: String
+    """
+    if "dev" not in namespace:
+        return f"/dev/{namespace}"
+    return namespace
+
+
+def delete_ns(controller_name, ns_id, shared_ns=False):
     """
     Deletes the specified namespace on the controller
 
@@ -153,6 +175,10 @@ def delete_ns(controller_name, ns_id):
     :param ns_id: namespace id to be deleted
     """
     cont_id = get_controller_id(controller_name)
+    if shared_ns:
+        ctrls = get_alternate_controller_name(controller_name)
+        for ctrl in ctrls:
+            cont_id = f"{cont_id},{get_controller_id(ctrl)}"
     detach_ns(controller_name, ns_id, cont_id)
     cmd = f"nvme delete-ns /dev/{controller_name} -n {ns_id}"
     if process.system(cmd, shell=True, ignore_status=True):
@@ -161,7 +187,7 @@ def delete_ns(controller_name, ns_id):
         raise NvmeException("namespace still listed even after deleted")
 
 
-def delete_all_ns(controller_name):
+def delete_all_ns(controller_name, shared_ns=False):
     """
     Deletes all the name spaces available on the given nvme controller
 
@@ -169,7 +195,7 @@ def delete_all_ns(controller_name):
     """
     namespaces_ids = get_current_ns_ids(controller_name)
     for ns_id in namespaces_ids[::-1]:
-        delete_ns(controller_name, ns_id)
+        delete_ns(controller_name, ns_id, shared_ns=shared_ns)
         time.sleep(5)
 
 
@@ -186,10 +212,14 @@ def is_ns_exists(controller_name, ns_id):
     ns_list = get_current_ns_ids(controller_name)
     if ns_id in ns_list:
         return True
+    for ctrl in get_alternate_controller_name(controller_name):
+        ns_list = get_current_ns_ids(ctrl)
+        if ns_id in ns_list:
+            return True
     return False
 
 
-def get_lba(namespace):
+def get_lba(namespace, shared_ns=False):
     """
     Returns LBA of the namespace. If not found, return defaults to 0.
 
@@ -197,6 +227,16 @@ def get_lba(namespace):
     :rtype: Integer
     """
     if namespace:
+        if shared_ns:
+            ns_match = re.search(r"(/dev/)?(nvme\d+)n\d+", namespace)
+            if ns_match:
+                ctrl_name = ns_match.group(2)
+                subsys = get_subsystem_using_ctrl_name(ctrl_name)
+                controller_name = f"nvme{subsys[len('nvme-subsy'):]}"
+                ns_id_match = re.search(r"nvme\d+n(\d+)", namespace)
+                if ns_id_match:
+                    namespace = f"{controller_name}n{ns_id_match.group(1)}"
+        namespace = get_namespace_absolute_path(namespace)
         cmd = f"nvme id-ns {namespace}"
         out = process.run(cmd, shell=True, ignore_status=True).stdout_text
         for line in out.splitlines():
@@ -226,11 +266,11 @@ def detach_ns(controller_name, ns_id, cont_id):
     :param controller_name: controller name
     :param cont_id: controller_ID
     """
-    cmd = f"nvme detach-ns /dev/{controller_name} --namespace-id={ns_id} -controllers={cont_id}"
+    cmd = f"nvme detach-ns /dev/{controller_name} --namespace-id={ns_id} --controllers={cont_id}"
     if not process.run(cmd, shell=True, ignore_status=True):
         raise NvmeException("detach command failed")
     ns_rescan(controller_name)
-    time.sleep(3)
+    time.sleep(5)
     if is_ns_exists(controller_name, ns_id):
         raise NvmeException("namespace dettached but still listing")
 
@@ -251,19 +291,19 @@ def attach_ns(ns_id, controller_name, cont_id):
         raise NvmeException("namespaces attached but not listing")
 
 
-def create_full_capacity_ns(controller_name):
+def create_full_capacity_ns(controller_name, shared_ns=False):
     """
     Creates one namespace with full capacity
 
     :param controller_name: name of the controller like nvme0/nvme1 etc..
     """
     ns_size = get_total_capacity(controller_name) // get_block_size(controller_name)
-    if get_current_ns_list(controller_name):
+    if get_current_ns_list(controller_name, shared_ns=shared_ns):
         raise NvmeException("ns already exist, delete it before creating ")
-    create_one_ns("1", controller_name, ns_size)
+    create_one_ns("1", controller_name, ns_size, shared_ns=shared_ns)
 
 
-def create_one_ns(ns_id, controller_name, ns_size):
+def create_one_ns(ns_id, controller_name, ns_size, shared_ns=False):
     """
     creates a single namespaces with given size and controller_id
 
@@ -272,20 +312,26 @@ def create_one_ns(ns_id, controller_name, ns_size):
     :param ns_size: Size of the namespace that is going to be created
     """
     cmd = f"nvme create-ns /dev/{controller_name} --nsze={ns_size} --ncap={ns_size} --flbas=0 --dps=0"
+    if shared_ns:
+        cmd = f"{cmd} -m 1"
     if process.system(cmd, shell=True, ignore_status=True):
         raise NvmeException(f"namespace create command failed {cmd}")
     cont_id = get_controller_id(controller_name)
+    if shared_ns:
+        ctrls = get_alternate_controller_name(controller_name)
+        for ctrl in ctrls:
+            cont_id = f"{cont_id},{get_controller_id(ctrl)}"
     attach_ns(ns_id, controller_name, cont_id)
 
 
-def create_max_ns(controller_name, force):
+def create_max_ns(controller_name, force, shared_ns=False):
     """
     Creates maximum number of namespaces, with equal capacity
 
     :param controller_name: name of the controller like nvme0/nvme1 etc..
     :param force: if wants to create the namespace force, then pass force=True
     """
-    if get_current_ns_list(controller_name) and not force:
+    if get_current_ns_list(controller_name, shared_ns=shared_ns) and not force:
         raise NvmeException("ns already exist, cannot create max_ns")
     max_ns = int(get_max_ns_supported(controller_name))
     ns_size = get_equal_ns_size(controller_name, max_ns)
@@ -329,7 +375,7 @@ def get_free_space(controller_name):
     return 0
 
 
-def create_namespaces(controller_name, ns_count):
+def create_namespaces(controller_name, ns_count, shared_ns=False):
     """
     creates equal n number of namespaces on the specified controller
 
@@ -342,7 +388,7 @@ def create_namespaces(controller_name, ns_count):
     blk_size = get_total_capacity(controller_name) // get_block_size(controller_name)
     ns_size = blk_size // (ns_count + 1)
     for ns_id in range(1, ns_count + 1):
-        create_one_ns(ns_id, controller_name, ns_size)
+        create_one_ns(ns_id, controller_name, ns_size, shared_ns=shared_ns)
 
 
 def get_ns_status(controller_name, ns_id):
@@ -387,3 +433,98 @@ def get_nslist_with_pci(pci_address):
                     if paths["Address"] == pci_address:
                         ns_list.append(namespace["NSID"])
     return ns_list
+
+
+def get_nvme_subsystem():
+    """
+    Fetches subsystem data and returns dictionary of all subsystems
+
+    :rtype: dict
+    """
+    cmd = "nvme list-subsys -o json"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    json_data = json.loads(data)
+    subsystems_dict = {}
+    for host in json_data:
+        for subsystem in host.get("Subsystems", []):
+            nqn = subsystem.get("NQN")
+            if nqn:
+                subsystem_data = {
+                    "Name": subsystem.get("Name"),
+                    "IOPolicy": subsystem.get("IOPolicy"),
+                    "Type": subsystem.get("Type"),
+                    "Paths": subsystem.get("Paths", []),
+                }
+                subsystems_dict[nqn] = subsystem_data
+    return subsystems_dict
+
+
+def get_controllers_with_nqn(nqn):
+    """
+    Fetches controllers from subsystem based on input Non-Volatile
+    Memory Express Qualified Name
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem().get(nqn)
+    if not subsys_dict:
+        return ""
+    return [path["Name"] for path in subsys_dict["Paths"]]
+
+
+def get_subsys_name_with_nqn(nqn):
+    """
+    Fetches subsystem name based on input Non-Volatile Memory Express
+    Qualified Name
+
+    :rtype: string
+    """
+    subsys_dict = get_nvme_subsystem().get(nqn)
+    if not subsys_dict:
+        return ""
+    return subsys_dict["Name"]
+
+
+def get_controllers_with_subsys(subsys):
+    """
+    Fetches controllers from nvme subsystem with input as subsystem name
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()
+    subsys_arr = [
+        sub_sys_val
+        for sub_sys, sub_sys_val in subsys_dict.items()
+        if sub_sys_val.get("Name") == subsys
+    ]
+    if not subsys_arr:
+        return []
+    return [path["Name"] for path in subsys_arr[0]["Paths"]]
+
+
+def get_alternate_controller_name(ctrl):
+    """
+    Fetches other controller in a subsystem based on input controller
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()
+    for device_nqn in subsys_dict:
+        ctrls = get_controllers_with_nqn(device_nqn)
+        if ctrl in ctrls:
+            return ctrls.remove(ctrl) or ctrls
+    return []
+
+
+def get_subsystem_using_ctrl_name(ctrl):
+    """
+    Fetches subsystem name with controller name as input
+
+    :rtype: string
+    """
+    subsys_dict = get_nvme_subsystem()
+    for device_nqn in subsys_dict:
+        ctrls = get_controllers_with_nqn(device_nqn)
+        if ctrl in ctrls:
+            return get_subsys_name_with_nqn(device_nqn)
+    return ""
