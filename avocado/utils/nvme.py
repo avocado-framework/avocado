@@ -137,9 +137,9 @@ def get_block_size(controller_name):
     namespaces = get_current_ns_list(controller_name)
     if namespaces:
         namespace = namespaces[0]
-        cmd = f"nvme id-ns {namespace}"
+        cmd = f"nvme id-ns /dev/{namespace}"
         out = process.run(cmd, shell=True, ignore_status=True).stdout_text
-        for line in out.splitlines():
+        for line in str(out.splitlines()):
             if "in use" in line:
                 return pow(2, int(line.split()[4].split(":")[-1]))
     return 4096
@@ -186,6 +186,11 @@ def is_ns_exists(controller_name, ns_id):
     ns_list = get_current_ns_ids(controller_name)
     if ns_id in ns_list:
         return True
+    else:
+        for ctrl in get_alternate_controller_name(controller_name):
+            ns_list = get_current_ns_ids(controller_name)
+            if ns_id in ns_list:
+                return True
     return False
 
 
@@ -211,7 +216,7 @@ def ns_rescan(controller_name):
 
     :param controller_name: controller name on which re-scan is applied
     """
-    cmd = f"nvme ns-rescan /dev/{controller_name}"
+    cmd = f"nvme ns-rescan {controller_name}"
     try:
         process.run(cmd, shell=True, ignore_status=True)
     except process.CmdError as detail:
@@ -251,7 +256,7 @@ def attach_ns(ns_id, controller_name, cont_id):
         raise NvmeException("namespaces attached but not listing")
 
 
-def create_full_capacity_ns(controller_name):
+def create_full_capacity_ns(controller_name, shared_ns=False):
     """
     Creates one namespace with full capacity
 
@@ -260,10 +265,10 @@ def create_full_capacity_ns(controller_name):
     ns_size = get_total_capacity(controller_name) // get_block_size(controller_name)
     if get_current_ns_list(controller_name):
         raise NvmeException("ns already exist, delete it before creating ")
-    create_one_ns("1", controller_name, ns_size)
+    create_one_ns("1", controller_name, ns_size, shared_ns=shared_ns)
 
 
-def create_one_ns(ns_id, controller_name, ns_size):
+def create_one_ns(ns_id, controller_name, ns_size, shared_ns=False):
     """
     creates a single namespaces with given size and controller_id
 
@@ -272,9 +277,15 @@ def create_one_ns(ns_id, controller_name, ns_size):
     :param ns_size: Size of the namespace that is going to be created
     """
     cmd = f"nvme create-ns /dev/{controller_name} --nsze={ns_size} --ncap={ns_size} --flbas=0 --dps=0"
+    if shared_ns:
+        cmd = cmd+" -m 1"
     if process.system(cmd, shell=True, ignore_status=True):
         raise NvmeException(f"namespace create command failed {cmd}")
     cont_id = get_controller_id(controller_name)
+    if shared_ns:
+        ctrls = get_alternate_controller_name(controller_name)
+        for ctrl in ctrls:
+            cont_id = cont_id+","+get_controller_id(ctrl)
     attach_ns(ns_id, controller_name, cont_id)
 
 
@@ -329,7 +340,7 @@ def get_free_space(controller_name):
     return 0
 
 
-def create_namespaces(controller_name, ns_count):
+def create_namespaces(controller_name, ns_count, shared_ns=False):
     """
     creates equal n number of namespaces on the specified controller
 
@@ -342,7 +353,7 @@ def create_namespaces(controller_name, ns_count):
     blk_size = get_total_capacity(controller_name) // get_block_size(controller_name)
     ns_size = blk_size // (ns_count + 1)
     for ns_id in range(1, ns_count + 1):
-        create_one_ns(ns_id, controller_name, ns_size)
+        create_one_ns(ns_id, controller_name, ns_size, shared_ns=shared_ns)
 
 
 def get_ns_status(controller_name, ns_id):
@@ -387,3 +398,85 @@ def get_nslist_with_pci(pci_address):
                     if paths["Address"] == pci_address:
                         ns_list.append(namespace["NSID"])
     return ns_list
+
+
+def get_nvme_subsystem():
+    """
+    Fetches susbsytem data and returns dictionary of all subsytems
+
+    :rtype: dict
+    """
+    cmd = "nvme list-subsys -o json"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    json_data = json.loads(data)
+    subsystems_dict = {}
+    for host in json_data:
+        for subsystem in host.get("Subsystems", []):
+            nqn = subsystem.get("NQN")
+            if nqn:
+                subsystem_data = {
+                    "Name": subsystem.get("Name"),
+                    "IOPolicy": subsystem.get("IOPolicy"),
+                    "Type": subsystem.get("Type"),
+                    "Paths": subsystem.get("Paths", [])
+                }
+                subsystems_dict[nqn] = subsystem_data
+    return subsystems_dict
+
+
+def get_controllers_with_nqn(nqn):
+    """
+    Fetches controllers from subsystem based on input nqn
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()[nqn]
+    return [path["Name"] for path in subsys_dict["Paths"]]
+
+
+def get_subsys_name_with_nqn(nqn):
+    """
+    Fetches subsystem name based on input nqn
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()[nqn]
+    return subsys_dict["Name"]
+
+
+def get_controllers_with_subsys(subsys):
+    """
+    Fetches controllers from nvme subsystem with inputy as subsystem name
+    
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()
+    subsys_arr = [subsys_dict[sub_sys] for sub_sys in subsys_dict if subsys_dict[sub_sys].get("Name") == subsys]
+    return [path["Name"] for path in subsys_arr[0]["Paths"]]
+
+
+def get_alternate_controller_name(ctrl):
+    """
+    Fetches other controller in a subsystem based on input controller
+
+    :rtype: list
+    """
+    subsys_dict = get_nvme_subsystem()
+    for device_nqn in subsys_dict:
+        ctrls = get_controllers_with_nqn(device_nqn)
+        if ctrl in ctrls:
+            return ctrls.remove(ctrl) or ctrls
+    return []
+
+def get_subsystem_using_ctrl_name(ctrl):
+    """
+    Fetches subsystem name with controller name as input
+
+    :rtype: string
+    """
+    subsys_dict = get_nvme_subsystem()
+    for device_nqn in subsys_dict:
+        ctrls = get_controllers_with_nqn(device_nqn)
+        if ctrl in ctrls:
+            return get_subsys_name_with_nqn(device_nqn)
+    return ""
