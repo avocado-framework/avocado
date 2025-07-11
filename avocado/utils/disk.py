@@ -130,11 +130,11 @@ def get_disks():
     except json.JSONDecodeError as je:
         raise DiskError(f"Error occurred while parsing JSON data: {je}") from je
     disks = []
-    for device in json_data["blockdevices"]:
-        disks.append(device["name"])
+    to_process = json_data.get("blockdevices", [])
+    for device in to_process:
+        disks.append(device.get("name"))
         if "children" in device:
-            for child in device["children"]:
-                disks.append(child["name"])
+            to_process.extend(device["children"])
     return disks
 
 
