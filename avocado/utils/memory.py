@@ -290,6 +290,16 @@ def get_num_huge_pages():
     return int(raw_hugepages.split()[2])
 
 
+def get_num_huge_pages_meminfo():
+    """
+    Get number of huge pages for this system from /proc/meminfo file.
+
+    :return: Number of huge pages.
+    """
+    output = process.system_output("grep HugePages_Total /proc/meminfo")
+    return int(output.split()[1])
+
+
 def set_num_huge_pages(num):
     """
     Set number of huge pages.
