@@ -289,6 +289,15 @@ def get_num_huge_pages():
     raw_hugepages = process.system_output("/sbin/sysctl vm.nr_hugepages")
     return int(raw_hugepages.split()[2])
 
+def get_num_huge_pages_meminfo(self, filename='/proc/meminfo'):
+    """
+    Get number of huge pages for this system from /proc/meminfo file.
+
+    :return: Number of huge pages.
+    """
+    with open(filename, 'r') as f:
+        match = re.search(r'HugePages_Total:\s*(\d+)', f.read())
+    return int(match.group(1)) if match else None
 
 def set_num_huge_pages(num):
     """
