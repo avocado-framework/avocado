@@ -1,7 +1,6 @@
 import json
 import os
 
-from avocado import Test
 from avocado.core.exit_codes import AVOCADO_JOB_INTERRUPTED
 from avocado.utils import process, script
 from selftests.utils import AVOCADO, TestCaseTmpDir
@@ -26,8 +25,13 @@ class TimeoutTest(Test):
 """
 
 
-class AvocadoInstrumentedRunnerTest(TestCaseTmpDir, Test):
+class AvocadoInstrumentedRunnerTest(TestCaseTmpDir):
     def test_timeout(self):
+        """
+        Test that Avocado interrupts a test exceeding its timeout and reports the correct status and message.
+        
+        Asserts that running the timeout test results in an interrupted job exit status and that the standard output contains the expected timeout interruption message.
+        """
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
             f"-- examples/tests/timeouttest.py "
