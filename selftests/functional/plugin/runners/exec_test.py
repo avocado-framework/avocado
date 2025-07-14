@@ -4,15 +4,14 @@ from avocado import Test
 from avocado.core import exit_codes
 from avocado.core.job import Job
 from avocado.utils import script
-from selftests.utils import TestCaseTmpDir
 
 
-class ExecTestRunnerTest(TestCaseTmpDir, Test):
+class ExecTestRunnerTest(Test):
     def test_env_variables(self):
-        commands_path = os.path.join(self.tmpdir.name, "commands")
+        commands_path = os.path.join(self.workdir, "commands")
         script.make_script(commands_path, "uname -a")
         base_config = {
-            "run.results_dir": self.tmpdir.name,
+            "run.results_dir": self.workdir,
             "sysinfo.collect.per_test": True,
             "sysinfo.collectibles.commands": commands_path,
             "resolver.references": ["examples/tests/env_variables.sh"],
@@ -20,7 +19,7 @@ class ExecTestRunnerTest(TestCaseTmpDir, Test):
         with Job.from_config(base_config) as j:
             result = j.run()
         logfile_path = os.path.join(
-            self.tmpdir.name,
+            self.workdir,
             "latest",
             "test-results",
             "1-1-examples_tests_env_variables.sh",
