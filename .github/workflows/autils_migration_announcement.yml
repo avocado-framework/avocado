@@ -6,6 +6,7 @@ on:
       - opened
     paths:
       - '**/ar.py'
+      - '**/path.py'
 
 jobs:
   commnet-to-pr:
