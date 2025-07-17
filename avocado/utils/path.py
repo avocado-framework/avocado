@@ -23,8 +23,12 @@ import stat
 import tempfile
 import urllib
 
+from avocado.utils.deprecation import log_deprecation
+
 #: The indicator for a script file, usually the first line of the file.
 SHEBANG = "#!"
+
+log_deprecation.warning("path")
 
 
 class CmdNotFoundError(Exception):
