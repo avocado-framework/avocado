@@ -71,3 +71,41 @@ class TreeNode(unittest.TestCase):
         self.assertTrue(tree.TreeNode().is_leaf)
         self.assertTrue(tree.TreeNode(value={"foo": "bar"}).is_leaf)
         self.assertFalse(tree.TreeNode(children=[tree.TreeNode()]).is_leaf)
+
+    def test_valid_paths(self):
+        valid_paths = ["/", "/root", "/root/node"]
+        for path in valid_paths:
+            try:
+                node = tree.TreeNodeEnvOnly(path)
+                self.assertEqual(node.path, path)
+            except ValueError as e:
+                self.fail(f"Unexpected error for path '{path}': {e}")
+
+    def test_environment_loading(self):
+        environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2", "value2")
+        ]
+        node = tree.TreeNodeEnvOnly("/root", environment=environment)
+        self.assertEqual(node.environment["key1"], "value1")
+        self.assertEqual(node.environment.origin["key1"].path, "/root")
+        self.assertEqual(node.environment["key2"], "value2")
+        self.assertEqual(node.environment.origin["key2"].path, "/root/node")
+
+    def test_invalid_environment_items(self):
+        invalid_environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2")
+        ]
+        with self.assertRaises(ValueError):
+            tree.TreeNodeEnvOnly("/root", environment=invalid_environment)
+
+    def test_fingerprint_path(self):
+        environment = [
+            ("/root", "key1", "value1"),
+            ("/root/node", "key2", "value2")
+        ]
+        node = tree.TreeNodeEnvOnly("/root", environment=environment)
+        expected_fingerprint = "/root{key1: value1, key2: value2}," \
+                               "{key1: /root, key2: /root/node},FilterSet([]),FilterSet([])"
+        self.assertEqual(node.fingerprint(), expected_fingerprint)
