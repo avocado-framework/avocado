@@ -308,6 +308,7 @@ class Runner(SuiteRunner):
         self.runtime_tasks = graph.get_tasks_in_topological_order()
 
         # Start the status server
+        asyncio.set_event_loop(asyncio.new_event_loop())
         asyncio.ensure_future(self.status_server.serve_forever())
 
         if test_suite.config.get("run.shuffle"):
