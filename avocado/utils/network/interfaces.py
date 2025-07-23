@@ -16,6 +16,29 @@
 #         : Praveen K Pandey <praveen@linux.vnet.ibm.com>
 #         : Vaishnavi Bhat <vaishnavi@linux.vnet.ibm.com>
 
+"""Network interface management utilities.
+
+This module defines the `NetworkInterface` class, which provides a
+high-level, distribution-aware wrapper for performing common network
+configuration tasks on both local and remote hosts.  Functionality
+includes, but is not limited to:
+
+* Querying and manipulating interface attributes (MAC, MTU, IP
+  addresses, VLANs, bonding information).
+* Persisting interface settings to the appropriate configuration files
+  for RHEL/Fedora and SuSE families, with support for NetworkManager
+  connection profiles on modern releases (RHEL ≥ 9, SuSE ≥ 16).
+* Executing connectivity checks such as ICMP ping and detecting packet
+  loss or interface link status.
+* Gracefully handling errors through custom exceptions defined in
+  `avocado.utils.network.exceptions`.
+
+All shell commands are executed via
+`avocado.utils.network.common.run_command`, allowing seamless operation
+on either a local `LocalHost` instance or a remote `RemoteHost` session.
+"""
+
+# pylint: disable=too-many-lines
 import json
 import logging
 import os
@@ -35,8 +58,7 @@ LOG = logging.getLogger(__name__)
 
 # pylint: disable=R0904
 class NetworkInterface:
-    """
-    This class represents a network card interface (NIC).
+    """Represents a network card interface (NIC).
 
     An "NetworkInterface" is attached to some host. This could be an instance
     of LocalHost or RemoteHost.  If a RemoteHost then all commands will be
@@ -47,6 +69,17 @@ class NetworkInterface:
     """
 
     def __init__(self, if_name, host, if_type="Ethernet"):
+        """Initializes a NetworkInterface object.
+
+        :param if_name: The name of the network interface (e.g., 'eth0').
+        :type if_name: str
+        :param host: The host object (LocalHost or RemoteHost) to which
+                            this interface is attached.
+        :type host: object
+        :param if_type: The type of the interface (e.g., 'Ethernet', 'Bond').
+                            Defaults to "Ethernet".
+        :type if_type: str
+        """
         self.name = if_name
         self.if_type = if_type
         self.host = host
@@ -55,6 +88,16 @@ class NetworkInterface:
 
     @property
     def config_filename(self):
+        """Gets the full path to the network interface configuration file.
+
+        The path is determined based on the detected Linux distribution.
+        Supports RHEL/Fedora and SuSE distributions, with different paths
+        for newer versions (RHEL 9+, SuSE 16+).
+
+        :return: The absolute path to the configuration file.
+        :rtype: str
+        :raises avocado.utils.network.exceptions.NWException: If the distribution is not supported.
+        """
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
             if self.distro_is_rhel9_or_later:
@@ -75,6 +118,15 @@ class NetworkInterface:
 
     @property
     def config_file_path(self):
+        """Gets the directory path for network interface configuration files.
+
+        The path is determined based on the detected Linux distribution.
+        Supports RHEL/Fedora and SuSE distributions.
+
+        :return: The absolute path to the configuration directory, or None
+                 if the distribution is not supported.
+        :rtype: str or None
+        """
         current_distro = distro_detect()
         if current_distro.name in ["rhel", "fedora"]:
             if self.distro_is_rhel9_or_later:
@@ -90,6 +142,15 @@ class NetworkInterface:
 
     @property
     def slave_config_filename(self):
+        """Gets the configuration filenames for all slave interfaces of a bond.
+
+        This is only applicable for 'Bond' type interfaces.
+
+        :return: A list of absolute paths to the slave interface
+                 configuration files, or None if not a bond interface or
+                 if slaves cannot be determined.
+        :rtype: list[str] or None
+        """
         try:
             slave_dict = self._get_bondinterface_details()
             if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
@@ -107,6 +168,18 @@ class NetworkInterface:
             return None
 
     def _get_interface_details(self, version=None):
+        """Retrieves detailed information for the network interface.
+
+        Uses the 'ip' command to fetch details and parses the JSON output.
+
+        :param version: The IP version (4 or 6) to query for address
+                            information. If None, link layer information is
+                            fetched. Defaults to None.
+        :type version: int
+        :return: A dictionary containing interface details.
+        :rtype: dict
+        :raises avocado.utils.network.exceptions.NWException: If the command fails or the interface is not found.
+        """
         cmd = f"ip -j link show {self.name}"
         if version:
             cmd = f"ip -{version} -j address show {self.name}"
@@ -123,6 +196,15 @@ class NetworkInterface:
             raise NWException(msg) from exc
 
     def _get_bondinterface_details(self):
+        """Retrieves bonding mode and slave interfaces for a bond interface.
+
+        Reads bonding information from '/sys/class/net/<bond_name>/bonding/'.
+
+        :return: A dictionary with 'mode' and 'slaves' of the bond.
+        :rtype: dict
+        :raises avocado.utils.network.exceptions.NWException: If the interface is not a bond or information
+                             cannot be retrieved.
+        """
         cmd = (
             f"cat /sys/class/net/{self.name}/bonding/mode "
             f"/sys/class/net/{self.name}/bonding/slaves"
@@ -136,6 +218,18 @@ class NetworkInterface:
             ) from exc
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
+        """Moves a file to a backup location.
+
+        Appends '.backup' to the original filename.
+
+        :param filename: The path to the file to be backed up.
+        :type filename: str
+        :param ignore_missing: If True, do not raise an exception if the
+                                    file does not exist. Defaults to True.
+        :type ignore_missing: bool
+        :raises avocado.utils.network.exceptions.NWException: If the file does not exist and `ignore_missing`
+                             is False.
+        """
         destination = f"{filename}.backup"
         if os.path.exists(filename):
             shutil.move(filename, destination)
@@ -144,6 +238,16 @@ class NetworkInterface:
                 raise NWException(f"{self.name} interface not available")
 
     def _write_to_file(self, filename, values):
+        """Writes key-value pairs to a configuration file.
+
+        First, it backs up the existing file using `_move_file_to_backup`.
+        Then, it writes the new content in 'KEY=value' format.
+
+        :param filename: The path to the file to write to.
+        :type filename: str
+        :param values: A dictionary of key-value pairs to write to the file.
+        :type values: dict
+        """
         self._move_file_to_backup(filename)
 
         with open(filename, "w+") as fp:  # pylint: disable=W1514
@@ -158,7 +262,9 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
 
-        :param hwaddr: Hardware Address (Mac Address)
+        :param hwaddr: Hardware Address (Mac Address).
+        :type hwaddr: str
+        :raises avocado.utils.network.exceptions.NWException: If the command to set the MAC address fails.
         """
         cmd = f"ip link set dev {self.name} address {hwaddr}"
         try:
@@ -174,8 +280,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
 
-        :param ipaddr: IP Address
-        :param netmask: Network mask
+        :param ipaddr: IP Address.
+        :type ipaddr: str
+        :param netmask: Network mask.
+        :type netmask: str
+        :raises avocado.utils.network.exceptions.NWException: If adding the IP address fails.
         """
 
         ip = ip_interface(f"{ipaddr}/{netmask}")
@@ -192,7 +301,8 @@ class NetworkInterface:
         This is a dict were key is the VLAN number and the value is the name of
         the VLAN interface.
 
-        rtype: dict
+        :return: A dictionary where the key is the VLAN number and the value is the name of the VLAN interface.
+        :rtype: dict
         """
         vlans = {}
         if not os.path.exists("/proc/net/vlan/config"):
@@ -212,9 +322,12 @@ class NetworkInterface:
         This method will attempt to add a VLAN tag to this interface. If it
         fails, the method will raise a NWException.
 
-        :param vlan_num: VLAN ID
+        :param vlan_num: VLAN ID.
+        :type vlan_num: int
         :param vlan_name: option to name VLAN interface, by default it is named
                           <interface_name>.<vlan_num>
+        :type vlan_name: str
+        :raises avocado.utils.network.exceptions.NWException: If adding the VLAN tag fails.
         """
 
         vlan_name = vlan_name or f"{self.name}.{vlan_num}"
@@ -233,8 +346,11 @@ class NetworkInterface:
         the method will raise a NWException.
 
         :param vlan_num: VLAN ID
+        :type vlan_num: int
         :return: True or False, True if it found the VLAN interface and removed
                  it successfully, otherwise it will return False.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If removing the VLAN tag fails.
         """
         if str(vlan_num) in self.vlans:
             vlan_name = self.vlans[str(vlan_num)]
@@ -252,7 +368,9 @@ class NetworkInterface:
         """Remove all VLANs of this interface.
 
         This method will remove all the VLAN interfaces associated by the
-        interface. If it fails, the method will raise a NWException.
+        interface.
+
+        :raises avocado.utils.network.exceptions.NWException: If removing the VLAN interfaces fails.
         """
         try:
             for v in self.vlans.values():
@@ -268,6 +386,8 @@ class NetworkInterface:
         connection to the host.
 
         You must have sudo permissions to run this method on a host.
+
+        :raises avocado.utils.network.exceptions.NWException: If the command to bring down the interface fails.
         """
 
         cmd = f"ip link set {self.name} down"
@@ -277,11 +397,13 @@ class NetworkInterface:
             raise NWException(f"Failed to bring down: {ex}") from ex
 
     def bring_up(self):
-        """ "Wake-up the interface.
+        """Wake-up the interface.
 
         This will wake-up the interface link.
 
         You must have sudo permissions to run this method on a host.
+
+        :raises avocado.utils.network.exceptions.NWException: If the command to bring up the interface fails.
         """
         cmd = f"ip link set {self.name} up"
         try:
@@ -294,6 +416,8 @@ class NetworkInterface:
 
         :return: True or False, True if network interface state is 'UP'
                  otherwise will return False.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the link state cannot be retrieved.
         """
         try:
             if "UP" in self._get_interface_details().get("flags"):
@@ -307,6 +431,8 @@ class NetworkInterface:
 
         :return: True or False. True if operational link state is LOWER_UP,
                  otherwise will return False.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the link state cannot be retrieved.
         """
         try:
             if "LOWER_UP" in self._get_interface_details().get("flags"):
@@ -320,6 +446,8 @@ class NetworkInterface:
 
         :return: True or False. True if admin link state and operational
                  link state is up otherwise will return False.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the link state cannot be retrieved.
         """
         return self.is_admin_link_up() and self.is_operational_link_up()
 
@@ -331,7 +459,10 @@ class NetworkInterface:
 
         :param version: Address Family Version (4 or 6). This must be a integer
                         and default is 4.
+        :type version: int
         :return: IP address as string.
+        :rtype: list[str]
+        :raises avocado.utils.network.exceptions.NWException: If an unsupported IP version is provided.
         """
         if version not in [4, 6]:
             raise NWException(f"Version {version} not supported")
@@ -351,6 +482,10 @@ class NetworkInterface:
 
         This method will try to get the address and if fails it will raise a
         NWException.
+
+        :return: The hardware address (MAC address).
+        :rtype: str
+        :raises avocado.utils.network.exceptions.NWException: If fetching the hardware address fails.
         """
         cmd = f"cat /sys/class/net/{self.name}/address"
         try:
@@ -363,6 +498,10 @@ class NetworkInterface:
 
         This method will try to get the current MTU value, if fails will
         raise a NWException.
+
+        :return: The MTU value of the interface.
+        :rtype: int
+        :raises avocado.utils.network.exceptions.NWException: If the MTU value cannot be retrieved.
         """
         try:
             return self._get_interface_details().get("mtu")
@@ -376,9 +515,13 @@ class NetworkInterface:
         method will try to ping the peer and if fails it will raise a
         NWException.
 
-        :param peer_ip: Peer IP address (IPv4 or IPv6)
-        :param count: How many packets to send. Default is 2
-        :param options: ping command options. Default is None
+        :param peer_ip: Peer IP address (IPv4 or IPv6).
+        :type peer_ip: str
+        :param count: How many packets to send. Default is 2.
+        :type count: int
+        :param options: ping command options. Default is None.
+        :type options: str
+        :raises avocado.utils.network.exceptions.NWException: If the ping command fails.
         """
         cmd = f"ping -I {self.name} {peer_ip} -c {count}"
         if options is not None:
@@ -402,7 +545,11 @@ class NetworkInterface:
         found.
 
         :param ipaddr : IP Address which need to configure for interface
+        :type ipaddr: str
         :param netmask: Network mask which is associated to the provided IP
+        :type netmask: str
+        :raises avocado.utils.network.exceptions.NWException: If *ipaddr* is not
+        configured on the interface or the distribution is not supported.
         """
 
         def save_distro_rhel9_and_suse16_or_later():
@@ -537,8 +684,11 @@ class NetworkInterface:
         You must have sudo permissions to run this method on a host.
 
         :param mtu:  mtu size that need to be set. This must be an int.
+        :type mtu: int
         :param timeout: how many seconds to wait until the interface is
                         up again. Default is 30.
+        :type timeout: int
+        :raises avocado.utils.network.exceptions.NWException: If setting the MTU fails.
         """
         cmd = f"ip link set {self.name} mtu {mtu}"
         run_command(cmd, self.host, sudo=True)
@@ -554,6 +704,12 @@ class NetworkInterface:
         lost connection.
 
         You must have sudo permissions to run this method on a host.
+
+        :param ipaddr: The IP address to remove.
+        :type ipaddr: str
+        :param netmask: The netmask of the IP address to remove.
+        :type netmask: str
+        :raises avocado.utils.network.exceptions.NWException: If removing the IP address fails.
         """
         ip = ip_interface(f"{ipaddr}/{netmask}")
         cmd = f"ip addr del {ip.compressed} dev {self.name}"
@@ -571,6 +727,8 @@ class NetworkInterface:
         lost connection.
 
         You must have sudo permissions to run this method on a host.
+
+        :raises avocado.utils.network.exceptions.NWException: If flushing the IP addresses fails.
         """
         cmd = f"ip addr flush dev {self.name}"
         try:
@@ -586,6 +744,8 @@ class NetworkInterface:
         netmask of interfaces and deletes them.
 
         You must have sudo permissions to run this method on a host.
+
+        :raises avocado.utils.network.exceptions.NWException: If flushing the IP addresses fails.
         """
         cmd = f"nmcli -g ip4.ADDRESS device show {self.name}"
         ipaddresses = run_command(cmd, self.host, sudo=True).strip().split(" | ")
@@ -606,6 +766,8 @@ class NetworkInterface:
         will raise a NWException. Be careful, you can lost connection.
 
         You must have sudo permissions to run this method on a host.
+
+        :raises avocado.utils.network.exceptions.NWException: If deleting the link fails.
         """
         cmd = f"ip link del dev {self.name}"
         try:
@@ -619,6 +781,8 @@ class NetworkInterface:
 
         This method checks if a backup version  is available for given
         interface then it copies backup file to interface file in /sysfs path.
+
+        :raises avocado.utils.network.exceptions.NWException: If the backup file is not available.
         """
 
         backup_file = f"{self.config_filename}.backup"
@@ -632,7 +796,8 @@ class NetworkInterface:
 
         This method checks if the interface is available.
 
-        rtype: bool
+        :return: True if the interface exists, False otherwise.
+        :rtype: bool
         """
         cmd = f"ip link show dev {self.name}"
         try:
@@ -648,7 +813,8 @@ class NetworkInterface:
 
         This method checks if the interface is a bonding device or not.
 
-        rtype: bool
+        :return: True if the interface is a bonding device, False otherwise.
+        :rtype: bool
         """
         cmd = f"cat /proc/net/bonding/{self.name}"
         try:
@@ -664,7 +830,9 @@ class NetworkInterface:
 
         This method checks if the interface is a Virtual Ethernet or not.
 
-        rtype: bool
+        :return: True if the interface is a veth device, False otherwise.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the sysfs file for the device does not exist.
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec"):
             raise NWException("Network interface sysfs file does not exists")
@@ -679,7 +847,9 @@ class NetworkInterface:
 
         This method checks if the interface is a virtual NIC or not.
 
-        rtype: bool
+        :return: True if the interface is a virtual NIC, False otherwise.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the sysfs file for the device does not exist.
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/devspec"):
             raise NWException("Network interface sysfs file does not exists")
@@ -694,7 +864,9 @@ class NetworkInterface:
 
         This method checks if the interface is SRIOV logical interface or not.
 
-        rtype: bool
+        :return: True if the interface is an SRIOV VF, False otherwise.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the sysfs file for the device does not exist.
         """
         if not os.path.isfile(f"/sys/class/net/{self.name}/device/vpd"):
             raise NWException("Network interface sysfs file does not exists")
@@ -706,15 +878,14 @@ class NetworkInterface:
         return False
 
     def remove_cfg_file(self):
-        """
-        Remove any config files that is created as a part of the test
-        """
+        """Remove any config files that is created as a part of the test."""
         if os.path.isfile(self.config_filename):
             os.remove(self.config_filename)
 
     def restore_slave_cfg_file(self):
-        """
-        Restore or delete slave config files.
+        """Restore or delete slave config files.
+
+        :raises avocado.utils.network.exceptions.NWException: If the config file cannot be restored.
         """
         if self.if_type != "Bond":
             return
@@ -735,8 +906,14 @@ class NetworkInterface:
         if packet loss occurs.
 
         :param peer_ip: Peer IP address (IPv4 or IPv6)
+        :type peer_ip: str
         :param options: Type is List. Options such as -c, -f. Default is None
+        :type options: list
         :param sudo: If sudo permissions are needed. Default is False
+        :type sudo: bool
+        :return: True for 0% packet loss, False otherwise.
+        :rtype: bool
+        :raises avocado.utils.network.exceptions.NWException: If the ping command fails.
         """
         cmd = f"ping -I {self.name} {peer_ip}"
         cmd = f"{cmd} "
@@ -761,14 +938,15 @@ class NetworkInterface:
         255.255.252.0 = 22
 
         :param netmask: Netmask value example 255.255.255.0
+        :type netmask: str
         :return: Returns mask value of given netmask
+        :rtype: int
         """
         return sum(bin(int(bits)).count("1") for bits in netmask.split("."))
 
     @staticmethod
     def validate_ipv4_format(ip):
-        """
-        This function validates IPv4 address with following format set.
+        """Validates IPv4 address with following format set.
 
         1. A string in decimal-dot notation, consisting of four decimal
            integers in the inclusive range 0-255,separated by dots
@@ -780,10 +958,10 @@ class NetworkInterface:
         raises AddressValueError and returns False.
 
         :param ip: IP address
-        :type pattern: str
+        :type ip: str
         :return: True when IP address pattern/format matches if not
                  return False
-        :rtype: boolean
+        :rtype: bool
         """
         try:
             IPv4Address(ip)
@@ -794,8 +972,7 @@ class NetworkInterface:
 
     @staticmethod
     def validate_ipv4_netmask_format(netmask):
-        """
-        This function validates IPv4 Netmask address with following format set.
+        """Validates IPv4 Netmask address with following format set.
 
         1. A string in decimal-dot notation,consisting of four decimal integers
            starting from 255 and octets separated by dots (e.g 255.255.255.0)
@@ -806,10 +983,10 @@ class NetworkInterface:
         returns False.
 
         :param netmask: netmask address
-        :type pattern: str
+        :type netmask: str
         :return: True when netmask address pattern/format matches if not
                  return False
-        :rtype: boolean
+        :rtype: bool
         """
         netmask_list = netmask.split(".")
         if len(netmask_list) != 4:
@@ -834,19 +1011,21 @@ class NetworkInterface:
 
     @staticmethod
     def ping_flood(int_name, peer_ip, ping_count):
-        """
-        Function to start ping to remote machine with "-f" [ flood ] option,
+        """Start ping to remote machine with "-f" [ flood ] option,
         on given interface.
 
         Also this function enables to track the live data to determine the
         ping flood failure, in case of failure the program will exit.
 
         :param int_name: source interface name.
+        :type int_name: str
         :param peer_ip: Peer IP address (IPv4 or IPv6)
+        :type peer_ip: str
         :param ping_count: How many ICMP echo packets to send.
+        :type ping_count: int
         :return: returns True on successful ping flood.
                   returns False on ping flood failure.
-        :rtype: boolean
+        :rtype: bool
         """
         cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
         with subprocess.Popen(
@@ -870,13 +1049,12 @@ class NetworkInterface:
             ping_process.wait()
 
     def get_device_IPI_name(self):  # pylint: disable=C0103
-        """
-        Function to convert IO device name to device_ipi names according to
+        """Convert IO device name to device_ipi names according to
         "/proc/interrupts" context.
         Ex: vnic@30000009 to vnic-30000009
 
-        :return : A converted Network device according to device_ipi name.
-        :rtype : string
+        :return: A converted Network device according to device_ipi name.
+        :rtype: str or None
         """
 
         if self.is_vnic():

@@ -12,9 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-"""
-Module with network related utility functions
-"""
+"""Module with network related utility functions."""
 
 import random
 import socket
@@ -39,11 +37,13 @@ def is_port_available(
     :type address: str
     :param family: Default is socket.AF_INET. Accepted values are:
                    socket.AF_INET or socket.AF_INET6.
-    :type type: socket.AddressFamily.AF_*
+    :type family: socket.AddressFamily.AF_*
     :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
                      Accepted values are: socket.SOCK_STREAM or
                      socket.SOCK_DGRAM.
-    :type type: socket.AddressFamily.SOCK_*
+    :type protocol: socket.AddressFamily.SOCK_*
+    :return: True if the port is available, False otherwise.
+    :rtype: bool
     """
     try:
         with socket.socket(family, protocol) as sock:
@@ -58,9 +58,16 @@ def is_port_available(
 
 
 def is_port_free(port, address):
+    """This method is deprecated. Please use is_port_available().
+
+    :param port: Port value to check.
+    :type port: int
+    :param address: Address to use this port.
+    :type address: str
+    :return: True if the port is available, False otherwise.
+    :rtype: bool
     """
-    This method is deprecated. Please use is_port_available().
-    """
+
     warnings.warn("deprecated, use is_port_available() instead.", DeprecationWarning)
     return is_port_available(port, address)
 
@@ -74,13 +81,16 @@ def find_free_port(
     family=socket.AF_INET,
     protocol=socket.SOCK_STREAM,
 ):
-    """
-    Return a host free port in the range [start_port, end_port].
+    """Return a host free port in the range [start_port, end_port].
 
     :param start_port: header of candidate port range, defaults to 1024
+    :type start_port: int
     :param end_port: ender of candidate port range, defaults to 65535
+    :type end_port: int
     :param address: Socket address to bind or connect
+    :type address: str
     :param sequent: Find port sequentially, random order if it's False
+    :type sequent: bool
     :param family: Default is socket.AF_INET. Accepted values are:
                    socket.AF_INET or socket.AF_INET6.
     :type family: socket.AddressFamily.AF_*
@@ -88,6 +98,7 @@ def find_free_port(
                      Accepted values are: socket.SOCK_STREAM or
                      socket.SOCK_DGRAM.
     :type protocol: socket.AddressFamily.SOCK_*
+    :return: A free port number, or None if no free port is found.
     :rtype: int or None if no free port found
     """
     ports = find_free_ports(start_port, end_port, 1, address, sequent, family, protocol)
@@ -106,14 +117,18 @@ def find_free_ports(
     family=socket.AF_INET,
     protocol=socket.SOCK_STREAM,
 ):
-    """
-    Return count of host free ports in the range [start_port, end_port].
+    """Return a number of host free ports in the range [start_port, end_port].
 
     :param start_port: header of candidate port range
+    :type start_port: int
     :param end_port: ender of candidate port range
+    :type end_port: int
     :param count: Initial number of ports known to be free in the range.
+    :type count: int
     :param address: Socket address to bind or connect
+    :type address: str
     :param sequent: Find port sequentially, random order if it's False
+    :type sequent: bool
     :param family: Default is socket.AF_INET. Accepted values are:
                    socket.AF_INET or socket.AF_INET6.
     :type family: socket.AddressFamily.AF_*
@@ -121,6 +136,8 @@ def find_free_ports(
                      Accepted values are: socket.SOCK_STREAM or
                      socket.SOCK_DGRAM.
     :type protocol: socket.AddressFamily.SOCK_*
+    :return: A list of free port numbers.
+    :rtype: list[int]
     """
     ports = []
 
@@ -137,11 +154,10 @@ def find_free_ports(
 
 
 class PortTracker(Borg):
-    """
-    Tracks ports used in the host machine.
-    """
+    """Tracks ports used in the host machine."""
 
     def __init__(self):
+        """Initializes the PortTracker instance."""
         Borg.__init__(self)
         self.address = "localhost"
         self.start_port = 5000
@@ -149,12 +165,27 @@ class PortTracker(Borg):
             self._reset_retained_ports()
 
     def __str__(self):
+        """Returns a string representation of the tracked ports.
+
+        :return: A string showing the list of retained ports.
+        :rtype: str
+        """
         return f"Ports tracked: {self.retained_ports!r}"
 
     def _reset_retained_ports(self):
+        """Resets the list of retained ports to an empty list."""
         self.retained_ports = []
 
     def register_port(self, port):
+        """Registers a port as being in use.
+
+        :param port: The port number to register.
+        :type port: int
+        :return: The registered port number if successful.
+        :rtype: int
+        :raises ValueError: If the port is already in use or cannot be
+                             registered.
+        """
         if (port not in self.retained_ports) and is_port_free(port, self.address):
             self.retained_ports.append(port)
         else:
@@ -162,6 +193,16 @@ class PortTracker(Borg):
         return port
 
     def find_free_port(self, start_port=None):
+        """Finds and registers a free port.
+
+        It starts searching from `start_port` if provided, otherwise it uses
+        the default `self.start_port`.
+
+        :param start_port: The port number to start searching from.
+        :type start_port: int or None
+        :return: The first free port number found.
+        :rtype: int
+        """
         if start_port is None:
             start_port = self.start_port
         port = start_port
@@ -171,5 +212,10 @@ class PortTracker(Borg):
         return port
 
     def release_port(self, port):
+        """Releases a previously registered port.
+
+        :param port: The port number to release.
+        :type port: int
+        """
         if port in self.retained_ports:
             self.retained_ports.remove(port)
