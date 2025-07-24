@@ -791,3 +791,10 @@ BZh
 zst
 gz
 basenames
+cls
+getter
+destructor
+kibibytes
+mebibytes
+gibibytes
+tebibytes
