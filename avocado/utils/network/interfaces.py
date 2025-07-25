@@ -748,7 +748,11 @@ class NetworkInterface:
         :raises avocado.utils.network.exceptions.NWException: If flushing the IP addresses fails.
         """
         cmd = f"nmcli -g ip4.ADDRESS device show {self.name}"
-        ipaddresses = run_command(cmd, self.host, sudo=True).strip().split(" | ")
+        ipaddresses_str = run_command(cmd, self.host, sudo=True).strip()
+        if not ipaddresses_str:
+            return
+
+        ipaddresses = ipaddresses_str.split(" | ")
         if ipaddresses:
             try:
                 for ipaddr in ipaddresses:
