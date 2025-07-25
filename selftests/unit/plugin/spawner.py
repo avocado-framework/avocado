@@ -41,7 +41,8 @@ class ProcessHandle(unittest.TestCase):
         async def await_wait_task():
             _ = handle.wait_task
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(await_wait_task())
         self.assertIsInstance(handle.wait_task, asyncio.Task)
         self.assertTrue(handle.wait_task.done())
@@ -53,7 +54,8 @@ class ProcessHandle(unittest.TestCase):
         async def await_wait_task():
             _ = handle.wait_task
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.wait_for(await_wait_task(), 2.0))
         self.assertIsInstance(handle.wait_task, asyncio.Task)
         self.assertFalse(handle.wait_task.done())
