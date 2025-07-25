@@ -109,7 +109,8 @@ def get_current_ns_ids(controller_name):
     namespaces = []
     output = process.run(cmd, shell=True, sudo=True, ignore_status=True).stdout_text
     for line in output.splitlines():
-        namespaces.append(int(line.split()[1].split("]")[0]) + 1)
+        if line.startswith("["):
+            namespaces.append(int(line.split()[1].split("]")[0]) + 1)
     return namespaces
 
 
