@@ -922,8 +922,9 @@ class NetworkInterface:
                 cmd += f"{elem} "
         try:
             output = run_command(cmd, self.host, sudo=sudo)
-            if "0% packet loss" not in output:
-                return False
+            match = re.search(r"(\d+(?:\.\d+)?)% packet loss", output)
+            if match:
+                return float(match.group(1)) > 0
             return True
         except Exception as ex:
             msg = f"Failed to ping. {ex}"
