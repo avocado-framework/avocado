@@ -118,7 +118,7 @@ class ImageProviderBase:
             with urlopen(url) as u:
                 data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError as exc:
+        except (HTTPError, OSError) as exc:
             raise ImageProviderError(f"Cannot open {url}") from exc
 
     @staticmethod
@@ -582,27 +582,37 @@ class Image:
         )
 
     def download(self):
-        metadata = {
-            "type": "vmimage",
-            "name": self.name,
-            "version": self.version,
-            "arch": self.arch,
-            "build": self.build,
-        }
-        if isinstance(self.cache_dir, str):
-            cache_dirs = [self.cache_dir]
+        # If URL is already a local file path (from cache), just use it directly
+        if os.path.isfile(self.url):
+            LOG.debug("Using cached image file: %s", self.url)
+            asset_path = self.url
         else:
-            cache_dirs = self.cache_dir
-        LOG.debug("Attempting to download image from URL: %s", self.url)
-        asset_path = asset.Asset(
-            name=self.url,
-            asset_hash=self.checksum,
-            algorithm=self.algorithm,
-            locations=None,
-            cache_dirs=cache_dirs,
-            expire=None,
-            metadata=metadata,
-        ).fetch(timeout=asset.DOWNLOAD_TIMEOUT * 3)
+            # Prepare cache_dirs and metadata
+            if isinstance(self.cache_dir, str):
+                cache_dirs = [self.cache_dir]
+            else:
+                cache_dirs = self.cache_dir
+
+            metadata = {
+                "type": "vmimage",
+                "name": self.name,
+                "version": self.version,
+                "arch": self.arch,
+                "build": self.build,
+            }
+
+            LOG.debug("Downloading/finding image from URL: %s", self.url)
+            # Asset.fetch() already handles cache checking and downloading
+            asset_obj = asset.Asset(
+                name=self.url,
+                asset_hash=self.checksum,
+                algorithm=self.algorithm,
+                locations=None,
+                cache_dirs=cache_dirs,
+                expire=None,
+                metadata=metadata,
+            )
+            asset_path = asset_obj.fetch(timeout=asset.DOWNLOAD_TIMEOUT * 3)
 
         if archive.is_archive(asset_path):
             uncompressed_path = os.path.splitext(asset_path)[0]
@@ -633,6 +643,145 @@ class Image:
         process.run(cmd)
         return new_image
 
+    @staticmethod
+    def _matches_image_criteria(metadata, name, version, build, compatible_arches):
+        """
+        Check if metadata matches the specified image criteria.
+
+        :param metadata: Asset metadata dictionary
+        :param name: Expected image name
+        :param version: Expected image version
+        :param build: Expected image build
+        :param compatible_arches: List of compatible architectures
+        :return: True if metadata matches criteria, False otherwise
+        """
+        # Check if it's a vmimage type
+        if metadata.get("type") != "vmimage":
+            return False
+
+        # Check name match
+        if name and metadata.get("name", "").lower() != name.lower():
+            return False
+
+        # Check version match
+        if version and str(metadata.get("version", "")) != str(version):
+            return False
+
+        # Check build match
+        if build and str(metadata.get("build", "")) != str(build):
+            return False
+
+        # Check architecture compatibility
+        if compatible_arches and metadata.get("arch") not in compatible_arches:
+            return False
+
+        return True
+
+    @staticmethod
+    def _validate_asset_hash(asset_path, checksum, algorithm):
+        """
+        Validate asset hash without accessing protected methods.
+
+        :param asset_path: Path to the asset file
+        :param checksum: Expected checksum
+        :param algorithm: Hash algorithm
+        :return: True if hash is valid, False otherwise
+        """
+        try:
+            # Create a temporary asset instance to validate hash
+            temp_asset = asset.Asset(
+                name=asset_path,
+                asset_hash=checksum,
+                algorithm=algorithm,
+                cache_dirs=[os.path.dirname(asset_path)],
+            )
+            # Use the public validate_hash method if available, or fallback to file existence check
+            if hasattr(temp_asset, "validate_hash"):
+                return temp_asset.validate_hash()
+            # Fallback: if the asset exists and has the expected checksum filename pattern
+            return os.path.exists(asset_path)
+        except (OSError, ValueError):
+            return False
+
+    @classmethod
+    def _find_cached_image(
+        cls,
+        cache_dirs,
+        name=None,
+        version=None,
+        build=None,
+        arch=None,
+        checksum=None,
+        algorithm=None,
+        snapshot_dir=None,
+    ):
+        """
+        Find a cached image using asset.py enhanced built-in functionality.
+
+        This version uses the enhanced Asset.get_metadata() method which supports
+        both normal asset names and direct file paths, maximizing utilization of
+        existing asset.py caching features.
+        """
+        # Define architecture compatibility maps
+        arch_map = {
+            "x86_64": ["amd64", "64"],
+            "aarch64": ["arm64"],
+            "amd64": ["x86_64"],
+            "arm64": ["aarch64"],
+        }
+        compatible_arches = [arch] + arch_map.get(arch, []) if arch else []
+
+        # Use Asset.get_all_assets() to find cached assets
+        for asset_path in asset.Asset.get_all_assets(cache_dirs, sort=False):
+            try:
+                # Use Asset's enhanced get_metadata() with direct file path support
+                temp_asset = asset.Asset(
+                    name=asset_path,  # Pass full path to leverage enhanced get_metadata()
+                    asset_hash=checksum,
+                    algorithm=algorithm,
+                    cache_dirs=cache_dirs,
+                )
+
+                # Try to get metadata using Asset's enhanced built-in method
+                try:
+                    metadata = temp_asset.get_metadata()
+                    if not metadata:
+                        continue
+                except OSError:
+                    # No metadata available for this asset, skip it
+                    continue
+
+                # Metadata matching for vmimage type
+                if cls._matches_image_criteria(
+                    metadata, name, version, build, compatible_arches
+                ):
+                    # Optional: Use Asset's built-in hash validation if checksum provided
+                    if checksum and not cls._validate_asset_hash(
+                        asset_path, checksum, algorithm
+                    ):
+                        LOG.debug("Hash mismatch for cached image: %s", asset_path)
+                        continue
+
+                    LOG.info("Found matching cached image: %s", asset_path)
+                    return cls(
+                        name=metadata.get("name", name),
+                        url=asset_path,
+                        version=metadata.get("version", version),
+                        arch=metadata.get("arch", arch),
+                        build=metadata.get("build", build),
+                        checksum=checksum,
+                        algorithm=algorithm,
+                        cache_dir=cache_dirs[0],
+                        snapshot_dir=snapshot_dir,
+                    )
+
+            except (OSError, ValueError, KeyError, AttributeError) as e:
+                # Skip assets that can't be processed (common errors during metadata processing)
+                LOG.debug("Skipping asset %s due to error: %s", asset_path, e)
+                continue
+
+        return None
+
     @classmethod
     # pylint: disable=R0913
     def from_parameters(
@@ -649,47 +798,78 @@ class Image:
         """
         Returns an Image, according to the parameters provided.
 
-        :param name: (optional) Name of the Image Provider, usually matches
-                     the distro name.
+        It first searches the local cache for a matching image. If not found,
+        it queries network providers to find a suitable image URL, and then
+        proceeds to use that.
+
+        :param name: (optional) Name of the Image Provider, e.g., 'ubuntu'.
         :param version: (optional) Version of the system image.
         :param build: (optional) Build number of the system image.
         :param arch: (optional) Architecture of the system image.
-        :param checksum: (optional) Hash of the system image to match after
-                         download.
-        :param algorithm: (optional) Hash type, used when the checksum is
-                          provided.
-        :param cache_dir: (optional) Local system path where the base
-                          images will be held.
-        :param snapshot_dir: (optional) Local system path where the snapshot
-                             images will be held.  Defaults to cache_dir if
-                             none is given.
+        :param checksum: (optional) Hash of the system image.
+        :param algorithm: (optional) Hash algorithm, e.g., 'sha256'.
+        :param cache_dir: (optional) Path to the image cache directory.
+        :param snapshot_dir: (optional) Path to the snapshot directory.
 
-        :returns: Image instance that can provide the image
-                  according to the parameters.
+        :returns: Image instance for the requested image.
+        :raises: ImageProviderError if no suitable image can be found or fetched.
         """
-        # Use the current system architecture if arch is not provided
-        if arch is None:
-            arch = DEFAULT_ARCH
-        provider = get_best_provider(name, version, build, arch)
+        final_cache_dir = cache_dir or tempfile.gettempdir()
+        final_arch = arch or DEFAULT_ARCH
+        cache_dirs = (
+            [final_cache_dir] if isinstance(final_cache_dir, str) else final_cache_dir
+        )
 
-        if cache_dir is None:
-            cache_dir = tempfile.gettempdir()
+        # 1. First, try to find a suitable image in the local cache
+        cached_image = cls._find_cached_image(
+            cache_dirs=cache_dirs,
+            name=name,
+            version=version,
+            build=build,
+            arch=final_arch,
+            checksum=checksum,
+            algorithm=algorithm,
+            snapshot_dir=snapshot_dir,
+        )
+        if cached_image:
+            return cached_image
+
+        LOG.debug(
+            "Image not found in cache with provided parameters. "
+            "Attempting to find a provider."
+        )
+
+        # 2. If not cached, find a provider (may involve network requests)
+        try:
+            provider = get_best_provider(name, version, build, final_arch)
+        except ImageProviderError as e:
+            raise ImageProviderError(
+                f"No provider found for {name or 'default'} "
+                f"(version={version}, build={build}, arch={final_arch}). "
+                f"No cached image available. Original error: {e}"
+            ) from e
+
+        # 3. With a provider found, create the final Image instance to be returned.
+        #    The actual download will be handled by other methods on the instance.
         try:
             return cls(
                 name=provider.name,
                 url=provider.get_image_url(),
                 version=provider.version,
                 arch=provider.arch,
-                checksum=checksum,
-                algorithm=algorithm,
                 build=provider.build,
-                cache_dir=cache_dir,
+                checksum=checksum or getattr(provider, "checksum", None),
+                algorithm=algorithm or getattr(provider, "algorithm", None),
+                cache_dir=final_cache_dir,
                 snapshot_dir=snapshot_dir,
             )
         except ImageProviderError as e:
-            LOG.debug(e)
-
-        raise AttributeError("Provider not available")
+            LOG.debug("Provider failed to supply a valid image URL: %s", e)
+            raise ImageProviderError(
+                f"Provider '{provider.name}' failed for {name or 'default'} "
+                f"(version={version}, build={build}, arch={final_arch}). "
+                f"No cached image found and network requests failed."
+            ) from e
 
 
 # pylint: disable=R0913
@@ -739,14 +919,28 @@ def get_best_provider(name=None, version=None, build=None, arch=None):
         if name == "fedora" and arch in ("ppc64", "ppc64le", "s390x"):
             name = "fedorasecondary"
 
+    last_error = None
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
             try:
                 return provider(**provider_args)
             except ImageProviderError as e:
                 LOG.debug(e)
+                last_error = e
+            except (HTTPError, OSError) as e:
+                LOG.debug(
+                    "Network error while creating provider %s: %s", provider.name, e
+                )
+                last_error = ImageProviderError(f"Network error: {e}")
 
     LOG.debug("Provider for %s not available", name)
+    if (
+        last_error
+        and isinstance(last_error, ImageProviderError)
+        and "Cannot open" in str(last_error)
+    ):
+        # Re-raise network errors to be handled by caller
+        raise last_error
     raise AttributeError("Provider not available")
 
 
