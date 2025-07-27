@@ -15,6 +15,7 @@
 #
 # Copyright: 2022 IBM
 # Authors : Naresh Bannoth <nbannoth@linux.vnet.ibm.com>
+#           Maram Srimannarayana Murthy<msmurthy@linux.ibm.com>
 
 
 """
@@ -26,7 +27,10 @@ import json
 import logging
 import os
 import re
+import sys
 import time
+
+import pexpect  # pylint: disable=E0401
 
 from avocado.utils import pci, process
 
@@ -125,7 +129,8 @@ def get_current_ns_list(controller_name, shared_ns=False):
     namespaces_ids = get_current_ns_ids(controller_name)
     if shared_ns:
         subsys = get_subsystem_using_ctrl_name(controller_name)
-        controller_name = f"nvme{subsys[len('nvme-subsy'):]}"
+        controller_name = f"nvme{subsys[len('nvme-subsys'):]}"
+
     for ns_id in namespaces_ids:
         namespace_list.append(f"/dev/{controller_name}n{ns_id}")
     return namespace_list
@@ -529,3 +534,206 @@ def get_subsystem_using_ctrl_name(ctrl):
         if ctrl in ctrls:
             return get_subsys_name_with_nqn(device_nqn)
     return ""
+
+
+def get_nvme_sed_discover_parameters(namespace):
+    """
+    Fetches values from nvme SED discover command
+
+    :param namespace: NVMe namespace path
+    :rtype: dictionary
+    :raises: NvmeException on command failure
+    :rtype: dictionary
+    """
+    cmd = f"nvme sed discover {namespace}"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    pattern = r"\tLocking Supported:\s*(.*)\n\tLocking Feature Enabled:\s*(.*)\n\tLocked:\s*(.*)"
+    match = re.search(pattern, data, re.MULTILINE)
+    if match:
+        locking_features = {
+            "Locking Supported": match.group(1).strip(),
+            "Locking Feature Enabled": match.group(2).strip(),
+            "Locked": match.group(3).strip(),
+        }
+        return locking_features
+    return {}
+
+
+def is_lockdown_supported(namespace):
+    """
+    Fetches information based on namespace
+    Checks if SED locking is supported for the given namespace
+
+    :param namespace: NVMe namespace path
+    :rtype: boolean
+    """
+    lockdown_attr = get_nvme_sed_discover_parameters(namespace)
+    return lockdown_attr.get("Locking Supported") == "Yes"
+
+
+def is_lockdown_enabled(namespace):
+    """
+    Fetches information based on namespace
+    Checks if SED locking feature is enabled for the given namespace
+
+    :param namespace: NVMe namespace path
+    :rtype: boolean
+    """
+    lockdown_attr = get_nvme_sed_discover_parameters(namespace)
+    return lockdown_attr.get("Locking Feature Enabled") == "Yes"
+
+
+def is_drive_locked(namespace):
+    """
+    Fetches information based on namespace
+    Checks if the drive is currently locked for the given namespace
+
+    :param namespace: NVMe namespace path
+    :rtype: boolean
+    """
+    lockdown_attr = get_nvme_sed_discover_parameters(namespace)
+    return lockdown_attr.get("Locked") == "Yes"
+
+
+def initialize_sed_locking(namespace, password):
+    """
+    Enables and initializes SED feature on nvme disk
+
+    :param namespace: NVMe namespace path
+    :param password: SED password
+    """
+    if not is_lockdown_supported(namespace):
+        raise NvmeException(f"SED initialize not supported on {namespace}")
+    if is_lockdown_enabled(namespace):
+        raise NvmeException(
+            f"nvme drive {namespace} locking is enabled, can't initialize it"
+        )
+    pexpect_cmd_execution(
+        f"nvme sed initialize {namespace}",
+        [("New Password:", password), ("Re-enter New Password:", password)],
+    )
+    if not is_lockdown_enabled(namespace):
+        raise NvmeException(f"Failed to initialize nvme disk {namespace}")
+
+
+def revert_sed_locking(namespace, password, destructive=False):
+    """
+    Reverts SED locking state to factory defaults
+
+    :param namespace: NVMe namespace path
+    :param password: Current SED password
+    :raises: NvmeException if revert is not supported, drive is not initialized,
+             drive is locked, or revert operation fails
+    """
+    if not is_lockdown_supported(namespace):
+        raise NvmeException(f"Revert not supported on {namespace}")
+    if not is_lockdown_enabled(namespace):
+        raise NvmeException(
+            f"nvme drive {namespace} locking is not enabled, can't revert it"
+        )
+    if is_drive_locked(namespace):
+        raise NvmeException(f"Reverting not valid when drive is locked {namespace}")
+    if destructive:
+        pexpect_cmd_execution(
+            f"nvme sed revert -e {namespace}",
+            [
+                ("Destructive revert erases drive data. Continue (y/n)?", "y"),
+                ("Are you sure (y/n)?", "y"),
+                ("Password:", password),
+            ],
+        )
+    else:
+        pexpect_cmd_execution(f"nvme sed revert {namespace}", [("Password:", password)])
+    if is_lockdown_enabled(namespace):
+        raise NvmeException(f"Failed to revert {namespace}")
+
+
+def unlock_drive(namespace, with_pass_key=""):
+    """
+    Unlocks SED locked driver
+
+    :param namespace: NVMe namespace path
+    :param with_pass_key: Password for unlocking (if empty, no password prompt)
+    """
+    if not is_drive_locked(namespace):
+        raise NvmeException(f"Drive is not locked, unlock failed for {namespace}")
+    cmd = f"nvme sed unlock {namespace}"
+    if with_pass_key:
+        cmd = f"{cmd} -k"
+        pexpect_cmd_execution(cmd, [("Password:", with_pass_key)])
+    elif process.system(cmd, shell=True, ignore_status=True):
+        raise NvmeException(f"namespace {namespace} unlock failed")
+    if is_drive_locked(namespace):
+        raise NvmeException(f"Unlock failed for {namespace}")
+
+
+def lock_drive(namespace, with_pass_key=""):
+    """
+    SED lock enables on nvme drive
+
+    :param namespace: NVMe namespace path
+    :param with_pass_key: Password for locking (if empty, no password prompt)
+    """
+    if is_drive_locked(namespace):
+        raise NvmeException(f"namespace {namespace} already in locked state")
+    cmd = f"nvme sed lock {namespace}"
+    if with_pass_key:
+        cmd = f"{cmd} -k"
+        pexpect_cmd_execution(cmd, [("Password:", with_pass_key)])
+    elif process.system(cmd, shell=True, ignore_status=True):
+        raise NvmeException(f"namespace {namespace} lock failed")
+    if not is_drive_locked(namespace):
+        raise NvmeException(f"locking failed for {namespace}")
+
+
+def change_sed_password(namespace, pwd1, pwd2):
+    """
+    Changes the SED password for the specified namespace
+
+    :param namespace: NVMe namespace path
+    :param pwd1: Current SED password
+    :param pwd2: New SED password
+    :raises: NvmeException if password change is not supported or drive is not initialized
+    """
+    if not is_lockdown_supported(namespace):
+        raise NvmeException(f"Change password not supported on {namespace}")
+    if not is_lockdown_enabled(namespace):
+        raise NvmeException(
+            f"nvme drive {namespace} is not initialized, can't change password"
+        )
+    pexpect_cmd_execution(
+        f"nvme sed password {namespace}",
+        [
+            ("Password:", pwd1),
+            ("New Password:", pwd2),
+            ("Re-enter New Password:", pwd2),
+        ],
+    )
+
+
+def pexpect_cmd_execution(cmd, list_of_expect_sendline):
+    """
+    Execute command using pexpect with multiple expect/sendline interactions
+
+    :param cmd: Command to execute
+    :param list_of_expect_sendline: List of (expect_pattern, sendline_value) tuples
+    :raises: NvmeException on command failures
+    """
+    try:
+        LOGGER.info("Executing command using pexpect: %s", cmd)
+        pexpect_handle = pexpect.spawn(cmd)
+        pexpect_handle.log_read = sys.stdout
+        for expect, value in list_of_expect_sendline:
+            pexpect_handle.expect(expect, timeout=30)
+            pexpect_handle.sendline(value)
+            LOGGER.debug("Matched String: %s", pexpect_handle.after.strip())
+            LOGGER.debug("Pexpect output: %s", pexpect_handle.before.strip())
+            time.sleep(3)
+        pexpect_handle.close()
+        LOGGER.info("%s command executed successfully", cmd)
+    except pexpect.exceptions.TIMEOUT as e:
+        LOGGER.error("Command timed out: %s", cmd)
+        raise NvmeException(f"Command timeout: {cmd}") from e
+    except pexpect.exceptions.EOF as e:
+        LOGGER.error("Command ended unexpectedly: %s", cmd)
+        raise NvmeException(f"Command failed unexpectedly: {cmd}") from e
