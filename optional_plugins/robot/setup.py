@@ -49,8 +49,7 @@ setup(
     include_package_data=True,
     install_requires=[
         f"avocado-framework=={VERSION}",
-        "robotframework>=4.1, <=6.1.1; python_version < '3.8'",
-        "robotframework>=4.1, <7.0; python_version >= '3.8'",
+        "robotframework>=4.1, <7.0; python_version >= '3.9'",
     ],
     entry_points={
         "console_scripts": [
