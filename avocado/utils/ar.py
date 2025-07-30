@@ -59,8 +59,8 @@ class Ar:
     def is_valid(self):
         """Checks if a file looks like an AR archive.
 
-        :param path: path to a file
-        :returns: bool
+        Returns:
+        bool: True if the file is a valid AR archive, False otherwise
         """
         with self as open_file:
             return open_file.read(8) == MAGIC
