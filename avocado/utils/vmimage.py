@@ -119,7 +119,7 @@ class ImageProviderBase:
                 data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError as exc:
-            raise ImageProviderError(f"Cannot open {url}") from exc
+            raise ImageProviderError(f"Network error: Cannot open {url}") from exc
 
     @staticmethod
     def get_best_version(versions):
@@ -634,6 +634,89 @@ class Image:
         return new_image
 
     @classmethod
+    def _find_cached_image(  # pylint: disable=too-many-locals
+        cls,
+        cache_dirs,
+        name=None,
+        version=None,
+        build=None,
+        arch=None,
+        checksum=None,
+        algorithm=None,
+        snapshot_dir=None,
+    ):
+        """
+        Find a cached image using asset.py enhanced built-in functionality.
+
+        This version uses the enhanced Asset.get_metadata() method which supports
+        both normal asset names and direct file paths, maximizing utilization of
+        existing asset.py caching features.
+        """
+
+        # pylint: disable-next=invalid-name
+        ARCH_COMPATIBILITY = {
+            "x86_64": ["x86_64", "amd64", "64"],
+            "amd64": ["x86_64", "amd64", "64"],
+            "aarch64": ["aarch64", "arm64"],
+            "arm64": ["aarch64", "arm64"],
+        }
+        compatible_arches = ARCH_COMPATIBILITY.get(arch, [arch]) if arch else []
+
+        def matches_image_criteria(metadata, name, version, build, compatible_arches):
+            return (
+                metadata.get("type") == "vmimage"
+                and (not name or metadata.get("name", "").lower() == name.lower())
+                and (not version or str(metadata.get("version", "")) == str(version))
+                and (not build or str(metadata.get("build", "")) == str(build))
+                and (not compatible_arches or metadata.get("arch") in compatible_arches)
+            )
+
+        # Use Asset.get_all_assets() to find cached assets
+        for asset_path in asset.Asset.get_all_assets(cache_dirs, sort=False):
+            try:
+                temp_asset = asset.Asset(
+                    name=asset_path,
+                    asset_hash=checksum,
+                    algorithm=algorithm,
+                    cache_dirs=cache_dirs,
+                )
+
+                try:
+                    metadata = temp_asset.get_metadata()
+                    if not metadata:
+                        continue
+                except OSError:
+                    continue
+
+                if matches_image_criteria(
+                    metadata, name, version, build, compatible_arches
+                ):
+                    # pylint: disable-next=W0212
+                    if checksum and not temp_asset._verify_hash(asset_path):
+                        LOG.debug("Hash mismatch for cached image: %s", asset_path)
+                        continue
+
+                    LOG.info("Found matching cached image: %s", asset_path)
+                    return cls(
+                        name=metadata.get("name", name),
+                        url=asset_path,
+                        version=metadata.get("version", version),
+                        arch=metadata.get("arch", arch),
+                        build=metadata.get("build", build),
+                        checksum=checksum,
+                        algorithm=algorithm,
+                        cache_dir=cache_dirs[0],
+                        snapshot_dir=snapshot_dir,
+                    )
+
+            except (OSError, ValueError, KeyError, AttributeError) as e:
+                # Skip assets that can't be processed (common errors during metadata processing)
+                LOG.debug("Skipping asset %s due to error: %s", asset_path, e)
+                continue
+
+        return None
+
+    @classmethod
     # pylint: disable=R0913
     def from_parameters(
         cls,
@@ -739,14 +822,25 @@ def get_best_provider(name=None, version=None, build=None, arch=None):
         if name == "fedora" and arch in ("ppc64", "ppc64le", "s390x"):
             name = "fedorasecondary"
 
+    provider_errors = []
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
             try:
                 return provider(**provider_args)
             except ImageProviderError as e:
                 LOG.debug(e)
+                provider_errors.append(f"{provider.name}: {e}")
+            except (HTTPError, OSError) as e:
+                LOG.debug(
+                    "Network error while creating provider %s: %s", provider.name, e
+                )
+                # Network errors should raise immediately
+                raise ImageProviderError(f"Network error: {e}") from e
 
     LOG.debug("Provider for %s not available", name)
+    if provider_errors:
+        error_details = "; ".join(provider_errors)
+        raise ImageProviderError(f"Providers failed - {error_details}")
     raise AttributeError("Provider not available")
 
 
