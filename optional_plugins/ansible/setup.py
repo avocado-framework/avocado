@@ -38,7 +38,8 @@ setup(
     include_package_data=True,
     install_requires=[
         f"avocado-framework=={VERSION}",
-        "cffi",
+        "cffi==1.17.1; python_version<'3.10'",
+        "cffi; python_version>='3.10'",
         "pycparser",
         "ansible-core",
         "markupsafe<3.0.0",
