@@ -376,6 +376,91 @@ def get_vendor_id(full_pci_address):
     return out.split(" ")[2].strip()
 
 
+def add_vendor_id(device, driver):
+    """
+    Retrieve and add the vendor ID of a PCI device to the specified driver.
+
+    :param device: Full PCI device address, including domain (e.g., 0000:03:00.0).
+    :param driver: Driver to associate with the vendor ID of the PCI device.
+    """
+    # Get vendor id of pci device
+    output = get_vendor_id(device)
+    cmd = f"echo {output} | sed 's/:/ /g'"
+    out = process.run(cmd, sudo=True, ignore_status=True, shell=True)
+    if out.stderr.decode("utf-8") != "":
+        raise ValueError(f"{out}")
+    vid = out.stdout_text.strip()
+
+    # Add device vendor id to the driver
+    cmd = f"echo {vid} | tee /sys/bus/pci/drivers/{driver}/new_id"
+    out = process.run(cmd, ignore_status=True, shell=True, sudo=True)
+    if (out.stderr.decode("utf-8") != "") and (
+        "File exists" not in out.stderr.decode("utf-8")
+    ):
+        raise ValueError(f"{out}")
+
+
+def attach_driver(device, driver):
+    """
+    Unbind the device from its existing driver and bind it to the given driver.
+
+    :param device: Full PCI device address (e.g., 0000:03:00.0)
+    :param driver: Driver to be attached to the specified PCI device
+    """
+
+    try:
+        # add vendor id of device to driver
+        add_vendor_id(device, driver)
+
+        # unbind the device from its initial driver
+        cur_driver = get_driver(device)
+        if cur_driver is not None:
+            unbind(cur_driver, device)
+
+        # Bind device to driver
+        if driver is not None:
+            bind(driver, device)
+
+    except OSError as e:
+        raise ValueError(f"Not able to attach {driver} to {device}. Reason: {e}")
+
+
+def check_msix_capability(device):
+    """
+    Check whether the PCI device supports MSI-X and if it is currently enabled.
+
+    :param device: full pci address including domain (0000:03:00.0)
+    :return: True if supported, False otherwise
+    """
+    cmd = f"lspci -vvs {device} | grep -e 'MSI-X:'"
+    output = process.run(cmd, ignore_status=True, shell=True, sudo=True)
+    if output.stderr.decode("utf-8") != "":
+        raise ValueError(f"{output}")
+    if output.stdout_text.strip() == "":
+        return False
+    return True
+
+
+def device_supports_irqs(device, count):
+    """
+    Check if the device supports at least the specified number of interrupts (MSI-X vectors).
+
+    :param device: Full PCI device address including domain (e.g., 0000:03:00.0)
+    :param count: Number of IRQs the device should support
+    :return: True if supported, False otherwise
+    """
+    cmd = f"lspci -vv -s {device} | grep -e 'MSI-X:' | grep -e 'Count='"
+    output = process.run(cmd, ignore_status=True, shell=True, sudo=True)
+    if output.stderr.decode("utf-8") != "":
+        raise ValueError(f"{output}")
+
+    match = re.search(r"Count=(\d+)", output.stdout_text.strip())
+    if match:
+        nirq = int(match.group(1))
+        return nirq >= count
+    return False
+
+
 def reset_check(full_pci_address):
     """
     Check if reset for "full_pci_address" is successful
