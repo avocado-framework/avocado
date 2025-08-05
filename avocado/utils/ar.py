@@ -11,7 +11,7 @@
 #
 # Copyright: Red Hat Inc. 2021
 # Author: Cleber Rosa <crosa@redhat.com>
-"""
+__doc__ = """
 Module to read UNIX ar files
 """
 
@@ -41,7 +41,10 @@ class ArMember:
 
 
 class Ar:
-    """An UNIX ar archive."""
+    """An UNIX ar archive iterator.
+
+    It reads ar archive file and iterates over the members in form of :class:`autils.archive.ar.ArMember`
+    """
 
     def __init__(self, path):
         self._path = path
@@ -59,8 +62,8 @@ class Ar:
     def is_valid(self):
         """Checks if a file looks like an AR archive.
 
-        :param path: path to a file
-        :returns: bool
+        :return: If file looks like an AR archive
+        :rtype: bool
         """
         with self as open_file:
             return open_file.read(8) == MAGIC
@@ -95,11 +98,21 @@ class Ar:
             return ArMember(identifier, size, data_position)
 
     def list(self):
-        """Return the name of the members in the archive."""
+        """List the members in the archive.
+
+        :return: List the names of the members in the archive
+        :rtype: list
+        """
         return [member.identifier for member in self]
 
     def read_member(self, identifier):
-        """Returns the data for the given member identifier."""
+        """Reads the data for the given member identifier.
+
+        :param identifier: Archive member name.
+        :type identifier: str
+        :return: data for the given member
+        :rtype: bytes or None
+        """
         for member in self:
             if identifier == member.identifier:
                 with self as open_file:
