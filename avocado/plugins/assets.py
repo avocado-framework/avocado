@@ -86,8 +86,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         # parse args from call
         for arg in node.args:
             # handle string args
-            if isinstance(arg, ast.Str):
-                args.append(arg.s)
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                args.append(arg.value)
             # handle variable args
             elif isinstance(arg, ast.Name):
                 # look for assignments at method
@@ -109,8 +109,10 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
             # variable to make lines shorter
             kword = kwarg.arg
             # handle `keyword = string`
-            if isinstance(kwarg.value, ast.Str):
-                fetch_args[kword] = kwarg.value.s
+            if isinstance(kwarg.value, ast.Constant) and isinstance(
+                kwarg.value.value, str
+            ):
+                fetch_args[kword] = kwarg.value.value
             # handle `keyword = variable`
             elif isinstance(kwarg.value, ast.Name):
                 name = kwarg.value.id
@@ -178,7 +180,9 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         :param node: AST node to be evaluated
         :type node: ast.*
         """
-        if isinstance(node.value, (ast.Str, ast.List)):
+        if isinstance(node.value, ast.List) or (
+            isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)
+        ):
             # make sure we are into a class method, we are not supporting
             # attributes and module constant assignments at this time
             if self.current_klass and self.current_method:
@@ -195,8 +199,10 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                     self.generic_visit(node)
                     return
 
-                if isinstance(node.value, ast.Str):
-                    self.asgmts[cur_klass][cur_method][name] = node.value.s
+                if isinstance(node.value, ast.Constant) and isinstance(
+                    node.value.value, str
+                ):
+                    self.asgmts[cur_klass][cur_method][name] = node.value.value
                 elif isinstance(node.value, ast.List):
                     self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(
                         node
