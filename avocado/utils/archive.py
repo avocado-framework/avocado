@@ -168,6 +168,7 @@ def probe_zstd_cmd():
         )
         if proc.returncode or proc.stdout != b"avocado\n":
             LOG.error("zstd command does not seem to be the Zstandard compression tool")
+            return None
         return zstd_cmd
     return None
 
