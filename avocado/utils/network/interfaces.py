@@ -135,6 +135,18 @@ class NetworkInterface:
                 f"Slave interface not found for " f"the bond {self.name}"
             ) from exc
 
+    def _get_bondingmaster(self):
+        cmd = (
+            f"/sys/class/net/{self.name}/master "
+        )
+        try:
+            bond_master = run_command(cmd, self.host).splitlines()
+            return bond_master
+        except Exception as exc:
+            raise NWException(
+                f"Bonding master not found for " f"the interface {self.name}"
+            ) from exc 
+
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = f"{filename}.backup"
         if os.path.exists(filename):
