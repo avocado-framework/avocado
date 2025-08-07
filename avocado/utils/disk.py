@@ -108,19 +108,6 @@ def delete_loop_device(device):
     return True
 
 
-def dd_read_records_device(disk, read_records="1", out_file="/tmp/data"):
-    """
-    Reads mentioned number of blocks from device to destination
-
-    :param disk: disk absolute path
-    :param read_records: Numbers of blocks to read from disk
-    :param out_file: Destination file
-    :rtype: boolean
-    """
-    cmd = f"dd count={read_records} if={disk} of={out_file}"
-    return not process.system(cmd, ignore_status=True, sudo=True)
-
-
 def get_disks():
     """
     Returns the physical "hard drives" available on this system
@@ -143,11 +130,11 @@ def get_disks():
     except json.JSONDecodeError as je:
         raise DiskError(f"Error occurred while parsing JSON data: {je}") from je
     disks = []
-    for device in json_data["blockdevices"]:
-        disks.append(device["name"])
+    to_process = json_data.get("blockdevices", [])
+    for device in to_process:
+        disks.append(device.get("name"))
         if "children" in device:
-            for child in device["children"]:
-                disks.append(child["name"])
+            to_process.extend(device["children"])
     return disks
 
 
@@ -473,9 +460,8 @@ def get_io_scheduler_list(device_name):
     :param device_name: Device  name example like sda
     :return: list of IO scheduler
     """
-    with open(__sched_path(device_name), "r", encoding="utf-8") as f:
-        names = f.read()
-    return names.translate(str.maketrans("[]", " ")).split()
+    with open(__sched_path(device_name), "r", encoding="utf-8") as fl:
+        return fl.read().translate(str.maketrans("[]", " ")).split()
 
 
 def get_io_scheduler(device_name):
