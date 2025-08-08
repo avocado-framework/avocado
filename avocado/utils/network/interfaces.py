@@ -515,7 +515,7 @@ class NetworkInterface:
         if current_distro.name == "rhel" and int(current_distro.version) >= 9:
             self.distro_is_rhel9_or_later = True
             save_distro_rhel9_and_suse16_or_later()
-        elif current_distro.name == "rhel" and int(current_distro.version) <= 9:
+        elif current_distro.name == "rhel" and int(current_distro.version) < 9:
             save_distro_rhel8_or_older()
         elif current_distro.name == "SuSE" and int(current_distro.version) >= 16:
             self.distro_is_suse16_or_later = True
