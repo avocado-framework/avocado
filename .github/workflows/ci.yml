@@ -46,7 +46,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -72,7 +72,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -184,7 +184,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -211,7 +211,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -390,7 +390,7 @@ jobs:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python38 python38-setuptools
+        run: dnf -y install python39 python39-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
