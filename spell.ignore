@@ -798,3 +798,7 @@ kibibytes
 mebibytes
 gibibytes
 tebibytes
+iface
+veth
+NetworkInterface
+NWException
