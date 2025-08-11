@@ -11,9 +11,35 @@
 #
 # Copyright: Red Hat Inc. 2014
 # Authors: Cleber Rosa <cleber@redhat.com>
+__doc__ = """
+GDB Communication and Debugging Utilities
 
-"""
-Module that provides communication with GDB via its GDB/MI interpreter
+This module provides comprehensive functionality for interacting with the GNU Debugger (GDB)
+through multiple interfaces and protocols. It supports both local debugging sessions and
+remote debugging scenarios.
+
+Key Features:
+    - GDB/MI (Machine Interface) communication for programmatic control
+    - GDB Server management for remote debugging sessions
+    - GDB Remote Protocol client implementation
+    - Command execution with structured result parsing
+    - Breakpoint management and program flow control
+    - Support for both CLI and MI command interfaces
+
+Main Classes:
+    GDB: Wraps a local GDB subprocess with MI interface communication
+    GDBServer: Manages a gdbserver instance for remote debugging
+    GDBRemote: Implements GDB remote protocol client for direct communication
+    CommandResult: Encapsulates command execution results and metadata
+
+Common Usage Patterns:
+    - Automated debugging workflows in test environments
+    - Remote debugging of embedded or containerized applications
+    - Programmatic analysis of application crashes and core dumps
+    - Integration with continuous integration and testing frameworks
+
+The module handles low-level protocol details, message parsing, and connection management,
+providing a high-level Python interface for GDB operations.
 """
 
 __all__ = ["GDB", "GDBServer", "GDBRemote"]
@@ -54,42 +80,32 @@ REMOTE_MAX_PACKET_SIZE = 1024
 
 
 class UnexpectedResponseError(Exception):
-    """
-    A response different from the one expected was received from GDB
-    """
+    """A response different from the one expected was received from GDB"""
 
 
 class ServerInitTimeoutError(Exception):
-    """
-    Server took longer than expected to initialize itself properly
-    """
+    """Server took longer than expected to initialize itself properly"""
 
 
 class InvalidPacketError(Exception):
-    """
-    Packet received has invalid format
-    """
+    """Packet received has invalid format"""
 
 
 class NotConnectedError(Exception):
-    """
-    GDBRemote is not connected to a remote GDB server
-    """
+    """GDBRemote is not connected to a remote GDB server"""
 
 
 class RetransmissionRequestedError(Exception):
-    """
-    Message integrity was not validated and retransmission is being requested
-    """
+    """Message integrity was not validated and retransmission is being requested"""
 
 
 def parse_mi(line):
-    """
-    Parse a GDB/MI line
+    """Parse a GDB/MI line
 
     :param line: a string supposedly coming from GDB using MI language
     :type line: str
     :returns: a parsed GDB/MI response
+    :rtype: gdbmi_parser.GdbMiRecord
     """
     if not line.endswith("\n"):
         line = f"{line}\n"
@@ -97,8 +113,7 @@ def parse_mi(line):
 
 
 def encode_mi_cli(command):
-    """
-    Encodes a regular (CLI) command into the proper MI form
+    """Encodes a regular (CLI) command into the proper MI form
 
     :param command: the regular cli command to send
     :type command: str
@@ -109,6 +124,13 @@ def encode_mi_cli(command):
 
 
 def is_stopped_exit(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates the program exited normally.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates normal program exit, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -119,16 +141,39 @@ def is_stopped_exit(parsed_mi_msg):
 
 
 def is_thread_group_exit(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a thread group has exited.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates thread group exit, False otherwise
+    :rtype: bool
+    """
     return hasattr(parsed_mi_msg, "class_") and (
         parsed_mi_msg.class_ == "thread-group-exited"
     )
 
 
 def is_exit(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates any type of program exit.
+
+    This function combines checks for both normal program exit and thread group exit.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates any form of program exit, False otherwise
+    :rtype: bool
+    """
     return is_stopped_exit(parsed_mi_msg) or is_thread_group_exit(parsed_mi_msg)
 
 
 def is_break_hit(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a breakpoint was hit.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates a breakpoint hit, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -139,6 +184,13 @@ def is_break_hit(parsed_mi_msg):
 
 
 def is_sigsegv(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a segmentation fault (SIGSEGV).
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates SIGSEGV signal, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -149,6 +201,13 @@ def is_sigsegv(parsed_mi_msg):
 
 
 def is_sigabrt_stopped(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a SIGABRT signal with stopped status.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates SIGABRT in stopped state, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -160,6 +219,13 @@ def is_sigabrt_stopped(parsed_mi_msg):
 
 
 def is_sigabrt_console(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a SIGABRT signal from console output.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates SIGABRT from console, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "record_type")
         and (parsed_mi_msg.record_type == "stream")
@@ -171,16 +237,34 @@ def is_sigabrt_console(parsed_mi_msg):
 
 
 def is_sigabrt(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a SIGABRT signal from any source.
+
+    This function combines checks for SIGABRT from both stopped state and console output.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates SIGABRT from any source, False otherwise
+    :rtype: bool
+    """
     return is_sigabrt_stopped(parsed_mi_msg) or is_sigabrt_console(parsed_mi_msg)
 
 
 def is_fatal_signal(parsed_mi_msg):
+    """Check if a parsed GDB MI message indicates a fatal signal (SIGSEGV or SIGABRT).
+
+    This function identifies signals that typically indicate serious program errors
+    that would cause the program to terminate abnormally.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :type parsed_mi_msg: gdbmi_parser.GdbMiRecord
+    :returns: True if the message indicates a fatal signal, False otherwise
+    :rtype: bool
+    """
     return is_sigsegv(parsed_mi_msg) or is_sigabrt(parsed_mi_msg)
 
 
 def format_as_hex(char):
-    """
-    Formats a single ascii character as a lower case hex string
+    """Formats a single ascii character as a lower case hex string
 
     :param char: a single ascii character
     :type char: str
@@ -191,8 +275,7 @@ def format_as_hex(char):
 
 
 def string_to_hex(text):
-    """
-    Formats a string of text into an hex representation
+    """Formats a string of text into an hex representation
 
     :param text: a multi character string
     :type text: str
@@ -203,9 +286,7 @@ def string_to_hex(text):
 
 
 class CommandResult:
-    """
-    A GDB command, its result, and other possible messages
-    """
+    """A GDB command, its result, and other possible messages"""
 
     def __init__(self, command):
         self.command = command
@@ -215,8 +296,7 @@ class CommandResult:
         self.result = None
 
     def get_application_output(self):
-        """
-        Return all application output concatenated as a single string
+        """Return all application output concatenated as a single string
 
         :returns: application output concatenated
         :rtype: str
@@ -224,8 +304,7 @@ class CommandResult:
         return "".join(self.application_output)
 
     def get_stream_messages_text(self):
-        """
-        Return all stream messages text concatenated as a single string
+        """Return all stream messages text concatenated as a single string
 
         :returns: stream messages text concatenated
         :rtype: str
@@ -238,9 +317,7 @@ class CommandResult:
 
 # pylint: disable=E1101
 class GDB:
-    """
-    Wraps a GDB subprocess for easier manipulation
-    """
+    """Wraps a GDB subprocess for easier manipulation"""
 
     REQUIRED_ARGS = ["--interpreter=mi", "--quiet"]
 
@@ -286,8 +363,7 @@ class GDB:
         self.output_messages_queue = []
 
     def read_gdb_response(self, timeout=0.01, max_tries=100):
-        """
-        Read raw responses from GDB
+        """Read raw responses from GDB
 
         :param timeout: the amount of time to way between read attempts
         :type timeout: float
@@ -296,6 +372,7 @@ class GDB:
         :type max_tries: int
         :returns: a string containing a raw response from GDB
         :rtype: str
+        :raises ValueError: if can't read GDB response
         """
         current_try = 0
         while current_try < max_tries:
@@ -312,8 +389,7 @@ class GDB:
         return None
 
     def read_until_break(self, max_lines=100):
-        """
-        Read lines from GDB until a break condition is reached
+        """Read lines from GDB until a break condition is reached
 
         :param max_lines: the maximum number of lines to read
         :type max_lines: int
@@ -331,12 +407,10 @@ class GDB:
         return result
 
     def send_gdb_command(self, command):
-        """
-        Send a raw command to the GNU debugger input
+        """Send a raw command to the GNU debugger input
 
         :param command: the GDB command, hopefully in MI language
         :type command: str
-        :returns: None
         """
         if not command.endswith("\n"):
             command = f"{command}\n"
@@ -344,13 +418,14 @@ class GDB:
         self.process.stdin.flush()
 
     def cmd(self, command):
-        """
-        Sends a command and parses all lines until prompt is received
+        """Sends a command and parses all lines until prompt is received
 
         :param command: the GDB command, hopefully in MI language
         :type command: str
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises gdbmi_parser.GdbMiError: if there are many result responses to a
+                                         single cmd
         """
         cmd = CommandResult(command)
 
@@ -387,8 +462,7 @@ class GDB:
         return cmd
 
     def cli_cmd(self, command):
-        """
-        Sends a cli command encoded as an MI command
+        """Sends a cli command encoded as an MI command
 
         :param command: a regular GDB cli command
         :type command: str
@@ -399,8 +473,7 @@ class GDB:
         return self.cmd(cmd)
 
     def cmd_exists(self, command):
-        """
-        Checks if a given command exists
+        """Checks if a given command exists
 
         :param command: a GDB MI command, including the dash (-) prefix
         :type command: str
@@ -412,13 +485,13 @@ class GDB:
         return r.result.result.command.exists == "true"
 
     def set_file(self, path):
-        """
-        Sets the file that will be executed
+        """Sets the file that will be executed
 
         :param path: the path of the binary that will be executed
         :type path: str
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         cmd = f"-file-exec-and-symbols {path}"
         r = self.cmd(cmd)
@@ -433,13 +506,15 @@ class GDB:
         return r
 
     def set_break(self, location, ignore_error=False):
-        """
-        Sets a new breakpoint on the binary currently being debugged
+        """Sets a new breakpoint on the binary currently being debugged
 
         :param location: a breakpoint location expression as accepted by GDB
         :type location: str
+        :param ignore_error: if set, won't raise exceptions
+        :type ignore_error: bool
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         cmd = f"-break-insert {location}"
         r = self.cmd(cmd)
@@ -449,13 +524,13 @@ class GDB:
         return r
 
     def del_break(self, number):
-        """
-        Deletes a breakpoint by its number
+        """Deletes a breakpoint by its number
 
         :param number: the breakpoint number
         :type number: int
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         cmd = f"-break-delete {number}"
         r = self.cmd(cmd)
@@ -464,14 +539,14 @@ class GDB:
         return r
 
     def run(self, args=None):
-        """
-        Runs the application inside the debugger
+        """Runs the application inside the debugger
 
         :param args: the arguments to be passed to the binary as command line
                      arguments
         :type args: builtin.list
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         if args:
             args_text = " ".join(args)
@@ -486,8 +561,7 @@ class GDB:
         return r
 
     def connect(self, port):
-        """
-        Connects to a remote debugger (a gdbserver) at the given TCP port
+        """Connects to a remote debugger (a gdbserver) at the given TCP port
 
         This uses the "extended-remote" target type only
 
@@ -495,6 +569,7 @@ class GDB:
         :type port: int
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         cmd = f"-target-select extended-remote :{port}"
         r = self.cmd(cmd)
@@ -504,11 +579,11 @@ class GDB:
         return r
 
     def disconnect(self):
-        """
-        Disconnects from a remote debugger
+        """Disconnects from a remote debugger
 
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
+        :raises UnexpectedResponseError: if response is unexpected
         """
         cmd = "-target-disconnect"
         r = self.cmd(cmd)
@@ -518,8 +593,7 @@ class GDB:
         return r
 
     def exit(self):
-        """
-        Exits the GDB application gracefully
+        """Exits the GDB application gracefully
 
         :returns: the result of :meth:`subprocess.POpen.wait`, that is, a
                   :attr:`subprocess.POpen.returncode`
@@ -530,9 +604,7 @@ class GDB:
 
 
 class GDBServer:
-    """
-    Wraps a gdbserver instance
-    """
+    """Wraps a gdbserver instance"""
 
     #: The default arguments used when starting the GDB server process
     REQUIRED_ARGS = ["--multi"]
@@ -552,8 +624,7 @@ class GDBServer:
         wait_until_running=True,
         *extra_args,
     ):
-        """
-        Initializes a new gdbserver instance
+        """Initializes a new gdbserver instance
 
         :param path: location of the gdbserver binary
         :type path: str
@@ -622,8 +693,7 @@ class GDBServer:
             raise ServerInitTimeoutError
 
     def exit(self, force=True):
-        """
-        Quits the gdb_server process
+        """Quits the gdb_server process
 
         Most correct way of quitting the GDB server is by sending it a command.
         If no GDB client is connected, then we can try to connect to it and
@@ -632,7 +702,6 @@ class GDBServer:
 
         :param force: if a forced exit (sending SIGTERM) should be attempted
         :type force: bool
-        :returns: None
         """
         temp_client = GDB()
         try:
@@ -655,19 +724,19 @@ class GDBServer:
 
 
 class GDBRemote:
+    """A GDBRemote acts like a client that speaks the GDB remote protocol,
+    documented at:
+
+    https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
+
+    Caveat: we currently do not support communicating with devices, only
+    with TCP sockets. This limitation is basically due to the lack of
+    use cases that justify an implementation, but not due to any technical
+    shortcoming.
+    """
+
     def __init__(self, host, port, no_ack_mode=True, extended_mode=True):
-        """
-        Initializes a new GDBRemote object.
-
-        A GDBRemote acts like a client that speaks the GDB remote protocol,
-        documented at:
-
-        https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
-
-        Caveat: we currently do not support communicating with devices, only
-        with TCP sockets. This limitation is basically due to the lack of
-        use cases that justify an implementation, but not due to any technical
-        shortcoming.
+        """Initializes a new GDBRemote object.
 
         :param host: the IP address or host name
         :type host: str
@@ -719,8 +788,8 @@ class GDBRemote:
         More details are available at:
         https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
 
-        :param command_data: the command data payload
-        :type command_data: bytes
+        :param data: the command data payload
+        :type data: bytes
         :returns: the encoded command, ready to be sent to a remote GDB
         :rtype: bytes
         """
@@ -733,10 +802,12 @@ class GDBRemote:
         More details are available at:
         https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
 
-        :param command_data: the command data payload
-        :type command_data: bytes
+        :param data: the command data payload
+        :type data: bytes
         :returns: the encoded command, ready to be sent to a remote GDB
         :rtype: bytes
+        :raises InvalidPacketError: if the packet is not well constructed,
+                                    like in checksum mismatches
         """
         if data[0:1] != REMOTE_PREFIX:
             raise InvalidPacketError
@@ -758,8 +829,7 @@ class GDBRemote:
         return payload
 
     def cmd(self, command_data, expected_response=None):
-        """
-        Sends a command data to a remote gdb server
+        """Sends a command data to a remote gdb server
 
         Limitations: the current version does not deal with retransmissions.
 
@@ -771,6 +841,10 @@ class GDBRemote:
         :raises: RetransmissionRequestedError, UnexpectedResponseError
         :returns: raw data read from from the remote server
         :rtype: str
+        :raises NotConnectedError: if the socket is not initialized
+        :raises RetransmissionRequestedError: if there was a failure while
+                                              reading the result of the command
+        :raises UnexpectedResponseError: if response is unexpected
         """
         if self._socket is None:
             raise NotConnectedError
@@ -793,8 +867,7 @@ class GDBRemote:
         return response_payload
 
     def set_extended_mode(self):
-        """
-        Enable extended mode. In extended mode, the remote server is made
+        """Enable extended mode. In extended mode, the remote server is made
         persistent. The 'R' packet is used to restart the program being
         debugged. Original documentation at:
 
@@ -804,8 +877,7 @@ class GDBRemote:
         self.extended_mode = True
 
     def start_no_ack_mode(self):
-        """
-        Request that the remote stub disable the normal +/- protocol
+        """Request that the remote stub disable the normal +/- protocol
         acknowledgments. Original documentation at:
 
         https://sourceware.org/gdb/current/onlinedocs/gdb/General-Query-Packets.html#QStartNoAckMode
@@ -814,9 +886,7 @@ class GDBRemote:
         self.no_ack_mode = True
 
     def connect(self):
-        """
-        Connects to the remote target and initializes the chosen modes
-        """
+        """Connects to the remote target and initializes the chosen modes"""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((self.host, self.port))
 
