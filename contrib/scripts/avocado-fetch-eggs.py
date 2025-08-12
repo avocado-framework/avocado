@@ -54,7 +54,7 @@ def get_avocado_egg_url(avocado_version=None, python_version=None):
 
 def main():
     configure_logging_settings()
-    for version in ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]:
+    for version in ["3.9", "3.10", "3.11", "3.12", "3.13"]:
         url = get_avocado_egg_url(python_version=version)
         try:
             asset = Asset(url, cache_dirs=CACHE_DIRS)
