@@ -529,3 +529,40 @@ def get_subsystem_using_ctrl_name(ctrl):
         if ctrl in ctrls:
             return get_subsys_name_with_nqn(device_nqn)
     return ""
+
+
+def get_nvme_subsystem_io_policy(subsystem):
+    """
+    Read io policy parameter from sysfs folder and returns a string
+
+    :param subsystem: Name of the subsystem
+    :rtype: String
+    """
+    cmd = f"cat /sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    return process.run(cmd,
+                       shell=True,
+                       sudo=True,
+                       ignore_status=True).stdout_text.strip()
+
+
+def change_nvme_subsystem_io_policy(subsystem, io_policy):
+    """
+    Changes io policy of nvme device to specified io policy
+    Change in iopolicy is not persistent
+
+    :param subsystem: Name of the subsystem
+    :param io_policy: Name of the io_policy to which we want to set
+    :raises: NvmeException on command failures
+    :rtype: Boolean
+    """
+    cmd = f"echo {io_policy} > /sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    if get_nvme_subsystem_io_policy(subsystem) == io_policy:
+        LOGGER.info("Returning True as iopolicy is same as current")
+        return True
+    if process.system(cmd, shell=True, sudo=True, ignore_status=True):
+        raise NvmeException(f"Changing nvme subsystem iopolicy is failed: {cmd}")
+    output = process.run(f" cat /sys/class/nvme-subsystem/{subsystem}/iopolicy",
+                         shell=True,
+                         sudo=True,
+                         ignore_status=True).stdout_text.strip()
+    return output == io_policy
