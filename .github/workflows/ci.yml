@@ -330,12 +330,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  version_task_ubuntu_22:
+  version_task_ubuntu_24:
 
-    name: Version task ubuntu:22.04
+    name: Version task ubuntu:24.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:22.04
+      image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
@@ -343,12 +343,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  version_task_ubuntu_20:
+  version_task_ubuntu_22:
 
-    name: Version task ubuntu:20.04
+    name: Version task ubuntu:22.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
@@ -432,12 +432,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubuntu_22:
+  egg_task_ubuntu_24:
 
-    name: Egg task ubuntu:22.04
+    name: Egg task ubuntu:24.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:22.04
+      image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
@@ -445,12 +445,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubuntu_20:
+  egg_task_ubuntu_22:
 
-    name: Egg task ubuntu:20.04
+    name: Egg task ubuntu:22.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
