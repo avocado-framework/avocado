@@ -104,7 +104,7 @@ API_SECTIONS = {
         "utils",
         genio.read_file("api/headers/utils"),
         "utils",
-        ("core", "plugins"),
+        ("core", "plugins", "utils/external"),
         ("avocado.rst", "modules.rst"),
         "",
     ),
