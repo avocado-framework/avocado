@@ -263,6 +263,27 @@ def check_kernel_config(config_name):
             return parse_kernel_config(kernel_config)
 
 
+def configure_module(module, config):
+    """
+    Check if 'config' is not set, builtin or module.
+    Load 'module' if 'config' is set as module.
+    Raise error if 'config' is not set or module cannot be loaded.
+
+    :param module: kernel module to configure
+    :param config: kernel comfig to check and validate
+    """
+    config_status = check_kernel_config(config)
+    if config_status == ModuleConfig.NOT_SET:
+        raise ValueError(f"{config} is not set. {module} cannot be loaded.")
+    elif config_status == ModuleConfig.MODULE:
+        if load_module(module) and module_is_loaded(module):
+            return f"Module {module} loaded successfully"
+        else:
+            raise ValueError(f"Failed to load module {module}")
+    elif config_status == ModuleConfig.BUILTIN:
+        return f"{config} is built-in. {module} already loaded."
+
+
 def get_modules_dir():
     """
     Return the modules dir for the running kernel version
