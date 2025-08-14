@@ -13,7 +13,34 @@
 # Authors: Cleber Rosa <cleber@redhat.com>
 
 """
-Module that provides communication with GDB via its GDB/MI interpreter
+GDB Communication and Debugging Utilities
+
+This module provides comprehensive functionality for interacting with the GNU Debugger (GDB)
+through multiple interfaces and protocols. It supports both local debugging sessions and
+remote debugging scenarios.
+
+Key Features:
+    - GDB/MI (Machine Interface) communication for programmatic control
+    - GDB Server management for remote debugging sessions
+    - GDB Remote Protocol client implementation
+    - Command execution with structured result parsing
+    - Breakpoint management and program flow control
+    - Support for both CLI and MI command interfaces
+
+Main Classes:
+    GDB: Wraps a local GDB subprocess with MI interface communication
+    GDBServer: Manages a gdbserver instance for remote debugging
+    GDBRemote: Implements GDB remote protocol client for direct communication
+    CommandResult: Encapsulates command execution results and metadata
+
+Common Usage Patterns:
+    - Automated debugging workflows in test environments
+    - Remote debugging of embedded or containerized applications
+    - Programmatic analysis of application crashes and core dumps
+    - Integration with continuous integration and testing frameworks
+
+The module handles low-level protocol details, message parsing, and connection management,
+providing a high-level Python interface for GDB operations.
 """
 
 __all__ = ["GDB", "GDBServer", "GDBRemote"]
@@ -29,25 +56,6 @@ import time
 from avocado.utils.external import gdbmi_parser
 from avocado.utils.network import ports
 from avocado.utils.path import find_command
-
-#: Contains a list of binary names that should be run via the GNU debugger
-#: and be stopped at a given point. That means that a breakpoint will be set
-#: using the given expression
-GDB_RUN_BINARY_NAMES_EXPR = []
-
-#: After loading a binary in binary in GDB, but before actually running it,
-#: execute the given GDB commands present in the given file, one per line
-GDB_PRERUN_COMMANDS = {}
-
-#: Whether to enable the automatic generation of core dumps for applications
-#: that are run inside the GNU debugger
-GDB_ENABLE_CORE = False
-
-#: Path to the GDB binary
-GDB_PATH = None
-
-#: Path to the gdbserver binary
-GDBSERVER_PATH = None
 
 GDB_PROMPT = b"(gdb)"
 GDB_EXIT = b"^exit"
@@ -128,6 +136,13 @@ def encode_mi_cli(command):
 
 
 def is_stopped_exit(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates the program exited normally.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates normal program exit, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -138,16 +153,39 @@ def is_stopped_exit(parsed_mi_msg):
 
 
 def is_thread_group_exit(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a thread group has exited.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates thread group exit, False otherwise
+    :rtype: bool
+    """
     return hasattr(parsed_mi_msg, "class_") and (
         parsed_mi_msg.class_ == "thread-group-exited"
     )
 
 
 def is_exit(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates any type of program exit.
+
+    This function combines checks for both normal program exit and thread group exit.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates any form of program exit, False otherwise
+    :rtype: bool
+    """
     return is_stopped_exit(parsed_mi_msg) or is_thread_group_exit(parsed_mi_msg)
 
 
 def is_break_hit(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a breakpoint was hit.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates a breakpoint hit, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -158,6 +196,13 @@ def is_break_hit(parsed_mi_msg):
 
 
 def is_sigsegv(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a segmentation fault (SIGSEGV).
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates SIGSEGV signal, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -168,6 +213,13 @@ def is_sigsegv(parsed_mi_msg):
 
 
 def is_sigabrt_stopped(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a SIGABRT signal with stopped status.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates SIGABRT in stopped state, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "class_")
         and (parsed_mi_msg.class_ == "stopped")
@@ -179,6 +231,13 @@ def is_sigabrt_stopped(parsed_mi_msg):
 
 
 def is_sigabrt_console(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a SIGABRT signal from console output.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates SIGABRT from console, False otherwise
+    :rtype: bool
+    """
     return (
         hasattr(parsed_mi_msg, "record_type")
         and (parsed_mi_msg.record_type == "stream")
@@ -190,10 +249,29 @@ def is_sigabrt_console(parsed_mi_msg):
 
 
 def is_sigabrt(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a SIGABRT signal from any source.
+
+    This function combines checks for SIGABRT from both stopped state and console output.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates SIGABRT from any source, False otherwise
+    :rtype: bool
+    """
     return is_sigabrt_stopped(parsed_mi_msg) or is_sigabrt_console(parsed_mi_msg)
 
 
 def is_fatal_signal(parsed_mi_msg):
+    """
+    Check if a parsed GDB MI message indicates a fatal signal (SIGSEGV or SIGABRT).
+
+    This function identifies signals that typically indicate serious program errors
+    that would cause the program to terminate abnormally.
+
+    :param parsed_mi_msg: a parsed GDB MI message object
+    :returns: True if the message indicates a fatal signal, False otherwise
+    :rtype: bool
+    """
     return is_sigsegv(parsed_mi_msg) or is_sigabrt(parsed_mi_msg)
 
 
