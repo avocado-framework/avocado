@@ -443,7 +443,9 @@ class Asset:
 
     def find_asset_file(self, create_metadata=False):
         """
-        Search for the asset file in each one of the cache locations
+        Search for the asset file in each one of the cache locations.
+
+        It handles both normal asset names and direct file paths.
 
         :param bool create_metadata: Should this method create the
                                      metadata in case asset file found
@@ -454,6 +456,11 @@ class Asset:
         :raises: OSError
         """
 
+        # Try 1: Check if self.name is already a direct file path
+        if self.name and os.path.isfile(self.name):
+            return self.name
+
+        # Try 2: Search in cache directories using relative_dir
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             asset_file = os.path.join(cache_dir, self.relative_dir)
@@ -482,20 +489,30 @@ class Asset:
         """
         Returns metadata of the asset if it exists or None.
 
+        It handles both normal asset names and direct file paths.
+
         :return: metadata
         :rtype: dict or None
         """
         try:
             asset_file = self.find_asset_file()
         except OSError as exc:
+            LOG.debug("Asset file not found, metadata not available for %s", self.name)
             raise OSError("Metadata not available.") from exc
 
         basename = os.path.splitext(asset_file)[0]
         metadata_file = f"{basename}_metadata.json"
         if os.path.isfile(metadata_file):
-            with open(metadata_file, "r", encoding="utf-8") as f:
-                metadata = json.load(f)
-                return metadata
+            try:
+                with open(metadata_file, "r", encoding="utf-8") as f:
+                    metadata = json.load(f)
+                    return metadata
+            except json.JSONDecodeError as e:
+                LOG.warning("Invalid JSON in metadata file %s: %s", metadata_file, e)
+                raise
+            except OSError as e:
+                LOG.warning("Cannot read metadata file %s: %s", metadata_file, e)
+                raise
         return None
 
     @property
