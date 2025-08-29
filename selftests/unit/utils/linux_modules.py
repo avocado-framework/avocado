@@ -63,6 +63,49 @@ class Modules(Test):
             self.assertTrue(linux_modules.module_is_loaded("rfcomm"))
             self.assertFalse(linux_modules.module_is_loaded("unknown_module"))
 
+    @unittest.mock.patch("avocado.utils.linux_modules.check_kernel_config")
+    def test_configure_module_1(self, mock_check_kernel_config):
+        mock_check_kernel_config.return_value = linux_modules.ModuleConfig.NOT_SET
+        with self.assertRaises(ValueError) as ctx:
+            linux_modules.configure_module("mod", "CONFIG_MOD")
+        self.assertIn("CONFIG_MOD is not set", str(ctx.exception))
+
+    @unittest.mock.patch("avocado.utils.linux_modules.module_is_loaded")
+    @unittest.mock.patch("avocado.utils.linux_modules.load_module")
+    @unittest.mock.patch("avocado.utils.linux_modules.check_kernel_config")
+    def test_configure_module_2(self, mock_check, mock_load, mock_loaded):
+        mock_check.return_value = linux_modules.ModuleConfig.BUILTIN
+
+        result = linux_modules.configure_module("mod", "CONFIG_MOD")
+        self.assertIn("already loaded", result)
+
+        mock_load.assert_not_called()
+        mock_loaded.assert_not_called()
+
+    @unittest.mock.patch("avocado.utils.linux_modules.module_is_loaded")
+    @unittest.mock.patch("avocado.utils.linux_modules.load_module")
+    @unittest.mock.patch("avocado.utils.linux_modules.check_kernel_config")
+    def test_configure_module_3(self, mock_check, mock_load, mock_loaded):
+        mock_check.return_value = linux_modules.ModuleConfig.MODULE
+        mock_load.return_value = True
+        mock_loaded.return_value = True
+
+        result = linux_modules.configure_module("mod", "CONFIG_MOD")
+        self.assertEqual(result, "Module mod loaded successfully")
+
+    @unittest.mock.patch("avocado.utils.linux_modules.module_is_loaded")
+    @unittest.mock.patch("avocado.utils.linux_modules.load_module")
+    @unittest.mock.patch("avocado.utils.linux_modules.check_kernel_config")
+    def test_configure_module_4(self, mock_check, mock_load, mock_loaded):
+        mock_check.return_value = linux_modules.ModuleConfig.MODULE
+        mock_load.return_value = False
+        mock_loaded.return_value = False
+
+        with self.assertRaises(ValueError) as ctx:
+            linux_modules.configure_module("mod", "CONFIG_MOD")
+
+        self.assertIn("Failed to load module", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
