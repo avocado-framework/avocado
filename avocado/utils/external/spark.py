@@ -432,9 +432,9 @@ class GenericParser:
             self.edges[(k, None)] = self.cores[tcore]
             return k
 
-        nk = self.cores[tcore] = self.edges[(k, None)] = nk.stateno
+        nk_ = self.cores[tcore] = self.edges[(k, None)] = nk.stateno
         self.edges.update(edges)
-        self.states[nk] = nk
+        self.states[nk_] = nk
         return k
 
     def goto(self, state, sym):

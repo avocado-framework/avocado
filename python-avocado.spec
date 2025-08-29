@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 111.0
-Release: 1%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -72,6 +72,10 @@ BuildRequires: perl-Test-Harness
 BuildRequires: python3-xmlschema
 %endif
 BuildRequires: zstd
+BuildRequires: nmap-ncat
+BuildRequires: gcc
+BuildRequires: gdb
+BuildRequires: gdb-gdbserver
 %endif
 
 %description
@@ -471,6 +475,13 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Aug 25 2025 Cleber Rosa  <crosa@redhat.com> - 111.0-3
+- Require gcc, gdb and gdb-gdbserver for tests
+
+* Sat Jul 12 2025 Cleber Rosa <crosa@redhat.com> - 111.0-2
+- Provide requirements for running the functional test
+  nrunner.py:TaskRunStatusService.test_task_status_service_lost
+
 * Mon May 19 2025 Jan Richter <jarichte@redhat.com> - 111.0-1
 - New release
 

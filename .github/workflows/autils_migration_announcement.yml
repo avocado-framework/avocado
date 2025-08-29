@@ -6,6 +6,8 @@ on:
       - opened
     paths:
       - '**/ar.py'
+      - '**/path.py'
+      - '**/data_structures.py'
 
 jobs:
   commnet-to-pr:

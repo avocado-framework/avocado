@@ -409,25 +409,29 @@ class NetworkInterface:
             filename = f"{self.name}.nmconnection"
             prefix = self.netmask_to_cidr(netmask)
             path = "/etc/NetworkManager/system-connections"
-            if os.path.exists(f"{path}/{filename}") is False:
-                run_command(
-                    f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
-                    self.host,
-                )
-            self._move_file_to_backup(f"{path}/{filename}")
-            if os.path.exists(f"{path}/{filename}.backup"):
-                destination = f"{path}/{filename}"
-                shutil.copy(f"{path}/{filename}.backup", destination)
-            run_command(
-                f"nmcli c mod id {self.name} ipv4.method manual ipv4.address {ipaddr}/{prefix}",
-                self.host,
-            )
-            run_command(f"nmcli connection up {self.name}", self.host)
-
-            if self.if_type == "Bond":
-                if os.path.exists(f"{path}/{filename}") is False:
+            if self.if_type == "Ethernet":
+                if not os.path.exists(f"{path}/{filename}"):
                     run_command(
                         f"nmcli connection add con-name {self.name} ifname {self.name} type ethernet ipv4.address {ipaddr}/{prefix}",
+                        self.host,
+                    )
+                self._move_file_to_backup(f"{path}/{filename}")
+                if os.path.exists(f"{path}/{filename}.backup"):
+                    destination = f"{path}/{filename}"
+                    shutil.copy(f"{path}/{filename}.backup", destination)
+                run_command(
+                    f"nmcli c mod id {self.name} ipv4.method manual ipv4.address {ipaddr}/{prefix}",
+                    self.host,
+                )
+                run_command(f"nmcli connection up {self.name}", self.host)
+
+            if self.if_type == "Bond":
+                bond_dict = self._get_bondinterface_details()
+                mode = bond_dict["mode"][0]
+                if os.path.exists(f"{path}/{filename}") is False:
+                    run_command(
+                        f"nmcli connection add con-name {self.name} ifname {self.name} type bond ipv4.address {ipaddr}/{prefix}"
+                        f' bond.options "mode={mode},miimon=100"',
                         self.host,
                     )
                 self._move_file_to_backup(f"{path}/{filename}")
@@ -509,10 +513,12 @@ class NetworkInterface:
 
         current_distro = distro_detect()
         if current_distro.name == "rhel" and int(current_distro.version) >= 9:
+            self.distro_is_rhel9_or_later = True
             save_distro_rhel9_and_suse16_or_later()
-        elif current_distro.name == "rhel" and int(current_distro.version) <= 9:
+        elif current_distro.name == "rhel" and int(current_distro.version) < 9:
             save_distro_rhel8_or_older()
         elif current_distro.name == "SuSE" and int(current_distro.version) >= 16:
+            self.distro_is_suse16_or_later = True
             save_distro_rhel9_and_suse16_or_later()
         elif current_distro.name == "SuSE":
             save_suse()

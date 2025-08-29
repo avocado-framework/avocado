@@ -2,6 +2,35 @@
 Welcome to Avocado
 ==================
 
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Black
+.. |ci| image:: https://img.shields.io/github/actions/workflow/status/avocado-framework/avocado/ci.yml?label=ci
+   :target: https://github.com/avocado-framework/avocado/actions/workflows/ci.yml
+   :alt: Avocado CI
+.. |codecov| image:: https://img.shields.io/codecov/c/github/avocado-framework/avocado
+   :target: https://app.codecov.io/gh/avocado-framework/avocado
+   :alt: Codecov
+.. |copr| image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
+   :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+   :alt: Copr build
+.. |deepwiki| image:: https://deepwiki.com/badge.svg
+   :target: https://deepwiki.com/avocado-framework/avocado
+   :alt: DeepWiki
+.. |docs| image:: https://img.shields.io/readthedocs/avocado-framework
+   :target: https://avocado-framework.readthedocs.io/en/latest/
+   :alt: Documentation Status
+.. |license| image:: https://img.shields.io/pypi/l/avocado-framework
+   :target: https://github.com/avocado-framework/avocado/blob/master/LICENSE
+   :alt: License
+.. |py-versions| image:: https://img.shields.io/pypi/pyversions/avocado-framework
+   :alt: PyPI - Python Version
+.. |pypi-version| image:: https://img.shields.io/pypi/v/avocado-framework
+   :target: https://pypi.org/project/avocado-framework
+   :alt: PyPI - Version
+
+|ci| |copr| |docs| |codecov| |black| |pypi-version| |py-versions| |license| |deepwiki|
+
 Avocado is a set of tools and libraries to help with automated testing.
 
 One can call it a test framework with benefits.  Native tests are written in
@@ -242,21 +271,10 @@ your employer) and you grant a full, complete, irrevocable copyright license to
 all users and developers of the Avocado project, present and future, pursuant
 to the license of the project.
 
-Build and Quality Status
+AI-Generated code policy
 ========================
-
-.. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
-   :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
-   :alt: Copr build
-
-.. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
-   :target: https://avocado-framework.readthedocs.io/en/latest/
-   :alt: Documentation Status
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
-   :alt: Code Style checking by Black
-
+The Avocado project allows the use of AI-generated code, but it has to follow
+the guidelines and requirements outlined in the `Policy for AI-Generated Code`_.
 
 .. _Avocado User's Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/index.html
 .. _Installing section on Avocado User’s Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/installing.html#installing
@@ -266,3 +284,4 @@ Build and Quality Status
 .. _Avocado Releases: https://avocado-framework.readthedocs.io/en/latest/releases/index.html
 .. _GitHub issue tracker: https://github.com/avocado-framework/avocado/issues
 .. _Test Anything Protocol: https://testanything.org/
+.. _Policy for AI-Generated Code: https://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/ai_policy.html

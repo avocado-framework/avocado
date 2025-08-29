@@ -28,22 +28,19 @@ SHEBANG = "#!"
 
 
 class CmdNotFoundError(Exception):
-    """
-    Indicates that the command was not found in the system after a search.
+    """Indicates that the command was not found in the system after a search.
+
+    :param cmd: String with the command.
+    :param paths: List of paths where we looked after.
     """
 
     def __init__(self, cmd, paths):  # pylint: disable=W0231
-        """
-        :param cmd: String with the command.
-        :param paths: List of paths where we looked after.
-        """
         super()
         self.cmd = cmd
         self.paths = paths
 
     def __str__(self):
-        """
-        String representation of the exception.
+        """String representation of the exception.
 
         :return: A string describing the missing command and the paths searched.
         :rtype: str
@@ -55,13 +52,15 @@ class CmdNotFoundError(Exception):
 
 
 def get_path(base_path, user_path):
-    """
-    Translate a user specified path to a real path.
+    """Translate a user specified path to a real path.
+
     If user_path is relative, append it to base_path.
     If user_path is absolute, return it as is.
 
     :param base_path: The base path of relative user specified paths.
+    :param type base_path: str
     :param user_path: The user specified path.
+    :type user_path: str
     :return: The resolved path.
     :rtype: str
     """
@@ -76,11 +75,9 @@ def get_path(base_path, user_path):
 
 
 def init_dir(*args):
-    """
-    Wrapper around os.path.join that creates dirs based on the final path.
+    """Wrapper around os.path.join that creates dirs based on the final path.
 
     :param args: List of dir arguments that will be os.path.joined.
-    :type directory: list
     :return: directory.
     :rtype: str
     """
@@ -91,16 +88,17 @@ def init_dir(*args):
 
 
 def find_command(cmd, default=None, check_exec=True):
-    """
-    Try to find a command in the PATH, paranoid version.
+    """Try to find a command in the PATH, paranoid version.
 
     :param cmd: Command to be found.
+    :type cmd: str
     :param default: Command path to use as a fallback if not found
                     in the standard directories.
+    :type default: str or None
     :param check_exec: if a check for permissions that render the command
                        executable by the current user should be performed.
     :type check_exec: bool
-    :raise: :class:`avocado.utils.path.CmdNotFoundError` in case the
+    :raise avocado.utils.path.CmdNotFoundError: in case the
             command was not found and no default was given.
     :return: Returns an absolute path to the command or the default
             value if the command is not found
@@ -117,7 +115,7 @@ def find_command(cmd, default=None, check_exec=True):
     ]
     try:
         path_paths = os.environ["PATH"].split(":")
-    except IndexError:
+    except KeyError:
         path_paths = []
     path_paths = list(set(common_bin_paths + path_paths))
 
@@ -136,20 +134,17 @@ def find_command(cmd, default=None, check_exec=True):
 
 
 class PathInspector:
-    """
-    Inspects paths to provide information about them.
+    """Inspects paths to provide information about them.
+
+    :param path: The path to inspect.
+    :type path: str
     """
 
     def __init__(self, path):
-        """
-        :param path: The path to inspect.
-        :type path: str
-        """
         self.path = path
 
     def get_first_line(self):
-        """
-        Reads and returns the first line of the file from path.
+        """Reads and returns the first line of the file from path.
 
         :return: The first line of the file or an empty string if the file
                  does not exist or is empty.
@@ -162,8 +157,7 @@ class PathInspector:
         return first_line
 
     def has_exec_permission(self):
-        """
-        Checks if the file from path has execute permissions for the user.
+        """Checks if the file from path has execute permissions for the user.
 
         :return: True if the file has execute permissions, False otherwise.
         :rtype: bool
@@ -174,8 +168,7 @@ class PathInspector:
         return False
 
     def is_empty(self):
-        """
-        Checks if the file in path is empty.
+        """Checks if the file in path is empty.
 
         :return: True if the file is empty, False otherwise.
         :rtype: bool
@@ -186,8 +179,7 @@ class PathInspector:
         return False
 
     def is_script(self, language=None):
-        """
-        Checks if the file in the path is a script, optionally checking for a specific language.
+        """Checks if the file in the path is a script, optionally checking for a specific language.
 
         :param language: The scripting language to check for (e.g., "python").
                          If None, checks for any shebang.
@@ -206,8 +198,7 @@ class PathInspector:
         return False
 
     def is_python(self):
-        """
-        Checks if the file in path is a Python script.
+        """Checks if the file in path is a Python script.
 
         :return: True if the file is a Python script, False otherwise.
         :rtype: bool
@@ -218,8 +209,7 @@ class PathInspector:
 
 
 def usable_rw_dir(directory, create=True):
-    """
-    Verify whether we can use this dir (read/write).
+    """Verify whether we can use this dir (read/write).
 
     Checks for appropriate permissions, and creates missing dirs as needed.
 
@@ -249,8 +239,7 @@ def usable_rw_dir(directory, create=True):
 
 
 def usable_ro_dir(directory):
-    """
-    Verify whether dir exists and we can access its contents.
+    """Verify whether dir exists and we can access its contents.
 
     Check if a usable RO directory is there.
 
@@ -276,8 +265,7 @@ def usable_ro_dir(directory):
 
 
 def check_readable(path):
-    """
-    Verify that the given path exists and is readable.
+    """Verify that the given path exists and is readable.
 
     This should be used where an assertion makes sense, and is useful
     because it can provide a better message in the exception it
@@ -286,7 +274,6 @@ def check_readable(path):
     :param path: the path to test
     :type path: str
     :raise OSError: path does not exist or path could not be read
-    :rtype: None
     """
     if not os.path.exists(path):
         raise OSError(f'File "{path}" does not exist')
@@ -295,8 +282,7 @@ def check_readable(path):
 
 
 def get_path_mount_point(path):
-    """
-    Returns the mount point for a given file path.
+    """Returns the mount point for a given file path.
 
     :param path: the complete filename path. if a non-absolute path is
                  given, it's transformed into an absolute path first.
@@ -311,8 +297,7 @@ def get_path_mount_point(path):
 
 
 def get_max_file_name_length(path):
-    """
-    Returns the maximum length of a file name in the underlying file system.
+    """Returns the maximum length of a file name in the underlying file system.
 
     :param path: the complete filename path. if a non-absolute path is
                  given, it's transformed into an absolute path first.
@@ -330,3 +315,9 @@ def get_max_file_name_length(path):
     # calculated from the 260 MAX_PATH limit, plus the provision
     # for directories names allowing a 8.3 filename inside it.
     return 248
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("path")

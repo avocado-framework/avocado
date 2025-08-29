@@ -46,7 +46,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -72,7 +72,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -149,7 +149,7 @@ jobs:
   smokecheck-windows:
 
     name: Windows with Python ${{ matrix.python-version }}
-    runs-on: windows-2019
+    runs-on: windows-2025
 
     strategy:
       matrix:
@@ -184,7 +184,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -211,7 +211,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
       fail-fast: false
 
     steps:
@@ -330,12 +330,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  version_task_ubuntu_22:
+  version_task_ubuntu_24:
 
-    name: Version task ubuntu:22.04
+    name: Version task ubuntu:24.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:22.04
+      image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
@@ -343,12 +343,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  version_task_ubuntu_20:
+  version_task_ubuntu_22:
 
-    name: Version task ubuntu:20.04
+    name: Version task ubuntu:22.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools ca-certificates
@@ -390,7 +390,7 @@ jobs:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python38 python38-setuptools
+        run: dnf -y install python39 python39-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
@@ -432,12 +432,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubuntu_22:
+  egg_task_ubuntu_24:
 
-    name: Egg task ubuntu:22.04
+    name: Egg task ubuntu:24.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:22.04
+      image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
@@ -445,12 +445,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubuntu_20:
+  egg_task_ubuntu_22:
 
-    name: Egg task ubuntu:20.04
+    name: Egg task ubuntu:22.04
     runs-on: ubuntu-22.04
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
         run: apt update && apt -y install python3 python3-setuptools
@@ -519,6 +519,7 @@ jobs:
   fedora_selftests_task:
     name: Fedora selftests
     runs-on: ubuntu-latest
+    timeout-minutes: 18 # max + 3*std over the last 400 successful runs
     container:
       image: quay.io/avocado-framework/avocado-ci-fedora-40
     steps:
