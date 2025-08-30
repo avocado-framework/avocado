@@ -1,9 +1,18 @@
 import os
 
-from avocado import Test
-from avocado.utils import gdb, genio, process
+from avocado import Test, skipIf
+from avocado.utils import gdb, genio, path, process
 
 
+def missing_binary(binary):
+    try:
+        path.find_command(binary)
+        return False
+    except path.CmdNotFoundError:
+        return True
+
+
+@skipIf(missing_binary("gdb"), "requires gdb")
 class GdbTest(Test):
     """
     Execute the gdb test
@@ -22,6 +31,7 @@ class GdbTest(Test):
 
     INVALID_CMDS = ["-foobar", "-magic8ball", "-find-me-the-bug", "-auto-debug-it"]
 
+    @skipIf(missing_binary("gcc"), "requires gcc compiler")
     def setUp(self):
         self.return99_binary_path = os.path.join(self.teststmpdir, "return99")
         if not os.path.exists(self.return99_binary_path):
@@ -181,6 +191,7 @@ class GdbTest(Test):
         g.set_break("7")
         g.exit()
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_disconnect_raw(self):
         """
         Connect/disconnect repeatedly from a remote debugger using raw commands
@@ -209,6 +220,7 @@ class GdbTest(Test):
         g.exit()
         s.exit()
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_disconnect(self):
         """
         Connect/disconnect repeatedly from a remote debugger using utilities
@@ -226,6 +238,7 @@ class GdbTest(Test):
         g.exit()
         s.exit()
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_remote_exec(self):
         """
         Tests execution on a remote target
@@ -273,6 +286,7 @@ class GdbTest(Test):
         r = g.cmd("-gdb-version")
         self.assertIn("GNU GPL version", r.get_stream_messages_text())
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_connect_multiple_clients(self):
         """
         Tests two or more connections to the same server raise an exception
@@ -286,6 +300,7 @@ class GdbTest(Test):
             c2.connect(s.port)
         s.exit()
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_server_exit(self):
         """
         Tests that the server is shutdown by using a monitor exit command
@@ -295,6 +310,7 @@ class GdbTest(Test):
         s.exit()
         self.assertFalse(self.is_process_alive(s.process))
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_multiple_servers(self):
         """
         Tests multiple server instances without any blocking or race condition
@@ -315,6 +331,7 @@ class GdbTest(Test):
             server_instances[i].exit()
             self.assertFalse(self.is_process_alive(server_instances[i].process))
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_server_stderr(self):
         self.log.info("Testing server stderr collection")
         s = gdb.GDBServer()
@@ -325,6 +342,7 @@ class GdbTest(Test):
         listening_line = f"Listening on port {s.port}"
         self.assertIn(listening_line, stderr_lines)
 
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
     def test_server_stdout(self):
         self.log.info("Testing server stdout/stderr collection")
         s = gdb.GDBServer()
@@ -340,8 +358,8 @@ class GdbTest(Test):
         stdout_lines = genio.read_all_lines(s.stdout_path)
         self.assertIn("return 99", stdout_lines)
 
-    @staticmethod
-    def test_remote():
+    @skipIf(missing_binary("gdbserver"), "requires gdbserver")
+    def test_remote(self):
         """
         Tests GDBRemote interaction with a GDBServer
         """

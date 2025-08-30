@@ -13,6 +13,7 @@ from avocado.core.test import TestID
 from avocado.core.tree import TreeNodeEnvOnly
 from avocado.core.utils import loader, messages
 from avocado.core.varianter import is_empty_variant
+from avocado.utils.deprecation import log_deprecation
 
 
 class AvocadoInstrumentedTestRunner(BaseRunner):
@@ -68,6 +69,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             early_state = instance.get_state()
             early_state["type"] = "early_state"
             queue.put(early_state)
+            log_deprecation.flush()
             instance.run_avocado()
             return instance.get_state()
 

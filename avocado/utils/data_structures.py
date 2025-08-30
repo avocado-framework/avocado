@@ -571,3 +571,9 @@ class DataSize:
         :rtype: int
         """
         return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["t"])
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("data_structures")

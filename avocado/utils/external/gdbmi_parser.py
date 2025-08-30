@@ -110,8 +110,7 @@ class GdbMiScannerBase(spark.GenericScanner):
         r"[ \t\f\v]+"
 
     def t_symbol(self, s):
-        """"""  # pylint: disable=C0112
-        r",|\{|\}|\[|\]|\="  # pylint: disable=w0105
+        r",|\{|\}|\[|\]|\="
         self.rv.append(Token(s, s))
 
     def t_result_type(self, s):
