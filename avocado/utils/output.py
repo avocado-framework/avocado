@@ -17,20 +17,18 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-"""
-Utility functions for user friendly display of information.
-"""
+"""Utility functions for user friendly display of information."""
 
 import sys
 
 
 def display_data_size(size):
-    """
-    Display data size in human readable units (SI).
+    """Display data size in human readable units (SI).
 
     :param size: Data size, in Bytes.
     :type size: int
     :return: Human readable string with data size, using SI prefixes.
+    :rtype: str
     """
     prefixes = ["B", "KB", "MB", "GB", "TB", "PB"]
     factor = float(1000)
@@ -45,22 +43,23 @@ def display_data_size(size):
 
 
 class ProgressBar:
-    """
-    Displays interactively the progress of a given task
+    """Displays interactively the progress of a given task.
 
     Inspired/adapted from https://gist.github.com/t0xicCode/3306295
     """
 
     def __init__(self, minimum=0, maximum=100, width=75, title=""):
-        """
-        Initializes a new progress bar
+        """Initializes a new progress bar.
 
-        :type minimum: integer
-        :param minimum: minimum (initial) value on the progress bar
-        :type maximum: integer
-        :param maximum: maximum (final) value on the progress bar
-        :type width: integer
-        :param with: number of columns, that is screen width
+        :param minimum: Minimum (initial) value on the progress bar
+        :type minimum: int
+        :param maximum: Maximum (final) value on the progress bar
+        :type maximum: int
+        :param width: Number of columns, that is screen width
+        :type width: int
+        :param title: Optional title to display with the progress bar
+        :type title: str
+        :raises AssertionError: When maximum is not greater than minimum
         """
         assert maximum > minimum
 
@@ -79,20 +78,30 @@ class ProgressBar:
         self.update_amount(minimum)
 
     def append_amount(self, amount):
-        """
-        Increments the current amount value.
+        """Increments the current amount value by the specified amount.
+
+        :param amount: The value to add to the current amount
+        :type amount: int or float
         """
         self.update_amount(self.current_amount + amount)
 
     def update_percentage(self, percentage):
-        """
-        Updates the progress bar to the new percentage.
+        """Updates the progress bar to the specified percentage value.
+
+        :param percentage: The percentage value to set (0-100)
+        :type percentage: int or float
         """
         self.update_amount((percentage * float(self.maximum)) / 100.0)
 
     def update_amount(self, amount):
-        """
-        Performs sanity checks and update the current amount.
+        """Performs sanity checks and updates the current amount value.
+
+        The amount is clamped between the minimum and maximum values set
+        during initialization. After updating the amount, the progress bar
+        is refreshed and redrawn.
+
+        :param amount: The new amount value to set
+        :type amount: int or float
         """
         if amount < self.minimum:
             amount = self.minimum
@@ -104,8 +113,12 @@ class ProgressBar:
         self.draw()
 
     def _update_progress_bar(self):
-        """
-        Builds the actual progress bar text.
+        """Builds the actual progress bar text representation.
+
+        This internal method calculates the percentage completion,
+        creates the visual bar with '=' characters and '>' indicator,
+        and formats the display string including the percentage and
+        optional title.
         """
         diff = float(self.current_amount - self.minimum)
         done = (diff / float(self.maximum - self.minimum)) * 100.0
@@ -132,8 +145,11 @@ class ProgressBar:
         self.prog_bar = screen_text
 
     def draw(self):
-        """
-        Prints the updated text to the screen.
+        """Prints the updated progress bar text to the screen.
+
+        Only prints when the progress bar has changed from the previous
+        state to avoid unnecessary screen updates. Uses carriage return
+        to overwrite the previous progress bar on the same line.
         """
         if self.prog_bar != self.old_prog_bar:
             self.old_prog_bar = self.prog_bar
@@ -141,7 +157,9 @@ class ProgressBar:
             sys.stdout.flush()
 
     def __str__(self):
-        """
-        Returns the current progress bar.
+        """Returns the current progress bar as a string.
+
+        :return: The formatted progress bar string
+        :rtype: str
         """
         return str(self.prog_bar)
