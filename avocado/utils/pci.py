@@ -21,6 +21,7 @@ Module for all PCI devices related functions.
 """
 
 
+import errno
 import os
 import re
 
@@ -374,6 +375,87 @@ def get_vendor_id(full_pci_address):
     if not out:
         raise ValueError(f"Not able to get {full_pci_address} vendor id")
     return out.split(" ")[2].strip()
+
+
+def add_vendor_id(device, driver):
+    """
+    Retrieve and add the vendor ID of a PCI device to the specified driver.
+
+    :param device: Full PCI device address, including domain (e.g., 0000:03:00.0).
+    :param driver: Driver to associate with the vendor ID of the PCI device.
+    """
+    # Get vendor id of pci device
+    output = get_vendor_id(device)
+    vid = output.replace(":", " ")
+
+    # Add device vendor id to the driver
+    try:
+        genio.write_file_or_fail(f"/sys/bus/pci/drivers/{driver}/new_id", f"{vid}\n")
+    except genio.GenIOError as e:
+        if getattr(e, "errno", None) == errno.EEXIST or "File exists" in str(e):
+            return
+        raise ValueError(
+            f"Failed to add vendor ID '{vid}' to driver '{driver}': {e}"
+        ) from e
+
+
+def attach_driver(device, driver):
+    """
+    Unbind the device from its existing driver and bind it to the given driver.
+
+    :param device: Full PCI device address (e.g., 0000:03:00.0)
+    :param driver: Driver to be attached to the specified PCI device
+    """
+
+    try:
+        # add vendor id of device to driver
+        add_vendor_id(device, driver)
+
+        # unbind the device from its initial driver
+        cur_driver = get_driver(device)
+        if cur_driver is not None:
+            unbind(cur_driver, device)
+
+        # Bind device to driver
+        if driver is not None:
+            bind(driver, device)
+
+    except OSError as e:
+        raise ValueError(f"Not able to attach {driver} to {device}. Reason: {e}") from e
+
+
+def check_msix_capability(device):
+    """
+    Check whether the PCI device supports Extended Message Signaled Interrupts
+    and if it is currently enabled.
+
+    :param device: full pci address including domain (0000:03:00.0)
+    :return: True if supported, False otherwise
+    """
+    out = process.run(f"lspci -vvs {device}", ignore_status=True, shell=True, sudo=True)
+    if out.exit_status:
+        raise ValueError(f"lspci failed for {device}: {out.stderr_text}")
+    return any("MSI-X:" in line for line in out.stdout_text.splitlines())
+
+
+def device_supports_irqs(device, count):
+    """
+    Check if the device supports at least the specified number of interrupts.
+
+    :param device: Full PCI device address including domain (e.g., 0000:03:00.0)
+    :param count: Number of IRQs the device should support
+    :return: True if supported, False otherwise
+    """
+    out = process.run(
+        f"lspci -vv -s {device}", ignore_status=True, shell=True, sudo=True
+    )
+    if out.exit_status:
+        raise ValueError(f"lspci failed for {device}: {out.stderr_text}")
+    match = re.search(r"MSI-X:.*?Count=(\d+)", out.stdout_text, re.S)
+    if match:
+        nirq = int(match.group(1))
+        return nirq >= count
+    return False
 
 
 def reset_check(full_pci_address):
