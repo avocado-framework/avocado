@@ -8,6 +8,7 @@ on:
       - '**/ar.py'
       - '**/path.py'
       - '**/data_structures.py'
+      - '**/network/ports.py'
 
 jobs:
   commnet-to-pr:
