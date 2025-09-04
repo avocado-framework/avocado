@@ -219,3 +219,9 @@ class PortTracker(Borg):
         """
         if port in self.retained_ports:
             self.retained_ports.remove(port)
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("network.ports")
