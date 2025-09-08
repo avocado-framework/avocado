@@ -848,3 +848,9 @@ class GenericASTMatcher(GenericParser):
         #  Resolve ambiguity in favor of the longest RHS.
         #
         return input_list[-1]
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("external.spark")
