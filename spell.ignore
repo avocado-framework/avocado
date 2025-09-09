@@ -798,3 +798,8 @@ kibibytes
 mebibytes
 gibibytes
 tebibytes
+AAutils
+iface
+veth
+NetworkInterface
+NWException

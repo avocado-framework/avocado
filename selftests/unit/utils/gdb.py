@@ -1,5 +1,6 @@
 import unittest
 
+from avocado.utils.external.gdbmi_parser import GdbMiScanner
 from avocado.utils.gdb import GDBRemote, InvalidPacketError
 
 
@@ -28,6 +29,25 @@ class GDBRemoteTest(unittest.TestCase):
             GDBRemote.decode(b"!!#21")
         with self.assertRaises(InvalidPacketError):
             GDBRemote.decode(b"+$!#21")
+
+
+class GDBMiParserTest(unittest.TestCase):
+    def test_tokenize(self):
+        scanner = GdbMiScanner()
+        result = scanner.tokenize('^done,command={exists="true"}')
+        exp = [
+            ("result_type", "^"),
+            ("string", "done"),
+            (",", ","),
+            ("string", "command"),
+            ("=", "="),
+            ("{", "{"),
+            ("string", "exists"),
+            ("=", "="),
+            ("c_string", "true"),
+            ("}", "}"),
+        ]
+        self.assertEqual([(t.type, t.value) for t in result], exp)
 
 
 if __name__ == "__main__":

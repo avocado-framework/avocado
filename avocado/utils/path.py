@@ -315,3 +315,9 @@ def get_max_file_name_length(path):
     # calculated from the 260 MAX_PATH limit, plus the provision
     # for directories names allowing a 8.3 filename inside it.
     return 248
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("path")

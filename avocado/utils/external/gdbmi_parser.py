@@ -110,8 +110,7 @@ class GdbMiScannerBase(spark.GenericScanner):
         r"[ \t\f\v]+"
 
     def t_symbol(self, s):
-        """"""  # pylint: disable=C0112
-        r",|\{|\}|\[|\]|\="  # pylint: disable=w0105
+        r",|\{|\}|\[|\]|\="
         self.rv.append(Token(s, s))
 
     def t_result_type(self, s):
@@ -418,3 +417,9 @@ class session:  # pylint: disable=C0103
         ast = self.parse(tokens)
         self.the_interpreter(ast)
         return self.the_output(ast.value)
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("external.gdbmi_parser")
