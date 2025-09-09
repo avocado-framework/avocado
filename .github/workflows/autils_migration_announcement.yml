@@ -9,6 +9,8 @@ on:
       - '**/path.py'
       - '**/data_structures.py'
       - '**/network/ports.py'
+      - '**/external/gdbmi_parser.py'
+      - '**/external/spark.py'
 
 jobs:
   commnet-to-pr:
