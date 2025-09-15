@@ -423,12 +423,12 @@ class OpenSUSEImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + "{version}/appliances/"
 
         if not build:
-            self.image_pattern = "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-OpenStack-Cloud.qcow2$"
+            self.image_pattern = "openSUSE-Leap-(?P<version>{version})-(JeOS|Minimal-VM).(?P<arch>{arch})(-OpenStack)?-Cloud.qcow2$"
 
         else:
             self.image_pattern = (
-                "openSUSE-Leap-(?P<version>{version})-JeOS.(?P<arch>{arch})-{version}"
-                "-OpenStack-Cloud-Build(?P<build>{build}).qcow2$"
+                "openSUSE-Leap-(?P<version>{version})-(JeOS|Minimal-VM).(?P<arch>{arch})-{version}"
+                "(-OpenStack)?-Cloud-Build(?P<build>{build}).qcow2$"
             )
 
     @staticmethod
