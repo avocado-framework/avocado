@@ -85,10 +85,14 @@ distro: !mux
     !filter-out : /run/architectures/ppc64le
     !filter-out : /run/architectures/s390x
     version: !mux
-      15.2:
-        version: 15.2
       15.3:
         version: 15.3
+      15.4:
+        version: 15.4
+      15.5:
+        version: 15.5
+      15.6:
+        version: 15.6
   freebsd:
     name: freebsd
     version: !mux

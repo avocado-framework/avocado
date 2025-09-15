@@ -37,7 +37,7 @@ TEST_SIZE = {
     "optional-plugins-robot": 3,
     "optional-plugins-varianter_cit": 40,
     "optional-plugins-varianter_yaml_to_mux": 50,
-    "vmimage-variants": 248,
+    "vmimage-variants": 256,
     "vmimage-tests": 35,
     "pre-release": 18,
 }
