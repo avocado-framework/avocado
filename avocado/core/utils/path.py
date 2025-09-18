@@ -1,5 +1,7 @@
 import os
 
+from avocado import paths
+
 from pkg_resources import get_distribution
 
 
@@ -32,7 +34,7 @@ def system_wide_or_base_path(file_path):
     if os.path.isabs(file_path):
         abs_path = file_path
     else:
-        abs_path = os.path.join(os.path.sep, file_path)
+        abs_path = os.path.join(paths.ETCPREFIX, file_path)
     if os.path.exists(abs_path):
         return abs_path
     return prepend_base_path(file_path)
