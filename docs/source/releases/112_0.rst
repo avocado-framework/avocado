@@ -1,0 +1,126 @@
+========================
+112.0 - 12 Monkeys
+========================
+
+The Avocado team is proud to present another release: Avocado 112.0,
+AKA "12 Monkeys", is now available!
+
+Release documentation: `Avocado 112.0
+<http://avocado-framework.readthedocs.io/en/112.0/>`_
+
+Users/Test Writers
+==================
+
+* Enhanced logging system with support for custom loggers and levels
+  (`d550fb001 <https://github.com/avocado-framework/avocado/commit/d550fb001>`_)
+
+* VMImage support for non-EOL'd OpenSUSE LEAP 15.x versions
+  (`e3dcde70e <https://github.com/avocado-framework/avocado/commit/e3dcde70e>`_)
+
+Utility Modules
+===============
+
+* :mod:`avocado.utils.nvme` gained comprehensive SED (Self-Encrypting Drive) support
+  with functions for disk initialization, lock/unlock operations, and password changes
+  (`c7b8ea202 <https://github.com/avocado-framework/avocado/commit/c7b8ea202>`_)
+
+* :mod:`avocado.utils.nvme` enhanced with shared namespace support including
+  subsystem and controller management functions
+  (`92ab02d62 <https://github.com/avocado-framework/avocado/commit/92ab02d62>`_)
+
+* :mod:`avocado.utils.data_structures` enhanced with support for decimal values
+  and flexible formatting in DataSize class
+  (`3533673b1 <https://github.com/avocado-framework/avocado/commit/3533673b1>`_)
+
+* :mod:`avocado.utils.memory` added hugepage allocation detection based on meminfo
+  (`2aa3e26a1 <https://github.com/avocado-framework/avocado/commit/2aa3e26a1>`_)
+
+* :mod:`avocado.utils.gdb` significantly improved with comprehensive documentation,
+  better error handling, and enhanced GDB/MI parser functionality
+  (`6d2fbbef5 <https://github.com/avocado-framework/avocado/commit/6d2fbbef5>`_,
+  `af345dee0 <https://github.com/avocado-framework/avocado/commit/af345dee0>`_)
+
+* :mod:`avocado.utils.software_manager.backends.yum` added transient options support
+  (`53fe6c475 <https://github.com/avocado-framework/avocado/commit/53fe6c475>`_)
+
+* :mod:`avocado.utils.linux_modules` enhanced kernel configuration reading to support
+  /proc/config.gz files
+  (`bca99c272 <https://github.com/avocado-framework/avocado/commit/bca99c272>`_)
+
+Bug Fixes
+=========
+
+* Fixed network interface utility issues with IP address flushing and packet loss detection
+  (`8aeb194c7 <https://github.com/avocado-framework/avocado/commit/8aeb194c7>`_,
+  `f18df2171 <https://github.com/avocado-framework/avocado/commit/f18df2171>`_)
+
+* Resolved GDB/MI parser regression that was causing parsing failures
+  (`af345dee0 <https://github.com/avocado-framework/avocado/commit/af345dee0>`_)
+
+* Fixed archive utility to properly handle zstd command validation failures
+  (`4a2f951f4 <https://github.com/avocado-framework/avocado/commit/4a2f951f4>`_)
+
+* Corrected NVMe utility string value error in get_current_ns_ids function
+  (`9aab87c66 <https://github.com/avocado-framework/avocado/commit/9aab87c66>`_)
+
+* Fixed limited depth traversal issue when fetching disk names
+  (`157b8365b <https://github.com/avocado-framework/avocado/commit/157b8365b>`_)
+
+* Fixed robust resource lookup for editable installs
+  (`f04bef6dc <https://github.com/avocado-framework/avocado/commit/f04bef6dc>`_)
+
+* Corrected variable override issues in external spark utility
+  (`43d1cebf7 <https://github.com/avocado-framework/avocado/commit/43d1cebf7>`_)
+
+Internal changes
+================
+
+* Python 3.8 support has been dropped; minimum supported version is now Python 3.9
+  (`9f241fc53 <https://github.com/avocado-framework/avocado/commit/9f241fc53>`_)
+
+* Added Python 3.14 support with proper AST handling for newer Python versions
+  (`331873ef0 <https://github.com/avocado-framework/avocado/commit/331873ef0>`_,
+  `4d4a28471 <https://github.com/avocado-framework/avocado/commit/4d4a28471>`_,
+  `c1de44fab <https://github.com/avocado-framework/avocado/commit/c1de44fab>`_)
+
+* Several utility modules are being prepared for migration to AAutils project:
+  - :mod:`avocado.utils.aurl` is deprecated and will be removed after next LTS release
+    (`bbaa79c4f <https://github.com/avocado-framework/avocado/commit/bbaa79c4f>`_)
+  - :mod:`avocado.utils.path` development is frozen pending AAutils migration
+    (`57aa993d9 <https://github.com/avocado-framework/avocado/commit/57aa993d9>`_)
+  - :mod:`avocado.utils.network.ports` development is frozen pending AAutils migration
+    (`089f44a7a <https://github.com/avocado-framework/avocado/commit/089f44a7a>`_)
+  - :mod:`avocado.utils.data_structures` is deprecated and will be removed after next LTS release
+    (`a5b442f28 <https://github.com/avocado-framework/avocado/commit/a5b442f28>`_)
+
+* Enhanced test coverage for GDB utilities, network utilities, and path utilities
+  (`0148ee43f <https://github.com/avocado-framework/avocado/commit/0148ee43f>`_,
+  `8b87310d7 <https://github.com/avocado-framework/avocado/commit/8b87310d7>`_)
+
+* Improved CI/CD pipeline with Ubuntu 24.04 support and updated GitHub Actions
+  (`a2ea8b876 <https://github.com/avocado-framework/avocado/commit/a2ea8b876>`_)
+
+* Added AI policy documentation for AI-generated code contributions
+  (`092b3eec5 <https://github.com/avocado-framework/avocado/commit/092b3eec5>`_)
+
+* Enhanced documentation with improved badges and contributor guidelines
+  (`35169b1aa <https://github.com/avocado-framework/avocado/commit/35169b1aa>`_)
+
+* Updated Fedora VMImage URLs and improved caching mechanisms
+  (`5596cd0db <https://github.com/avocado-framework/avocado/commit/5596cd0db>`_,
+  `53bc4fe3a <https://github.com/avocado-framework/avocado/commit/53bc4fe3a>`_)
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/111.0...112.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/38>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0114746/>`_.
+
