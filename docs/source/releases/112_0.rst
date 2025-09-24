@@ -84,13 +84,14 @@ Internal changes
   `c1de44fab <https://github.com/avocado-framework/avocado/commit/c1de44fab>`_)
 
 * Several utility modules are being prepared for migration to AAutils project:
-  - :mod:`avocado.utils.aurl` is deprecated and will be removed after next LTS release
+
+  * :mod:`avocado.utils.aurl` is deprecated and will be removed after next LTS release
     (`bbaa79c4f <https://github.com/avocado-framework/avocado/commit/bbaa79c4f>`_)
-  - :mod:`avocado.utils.path` development is frozen pending AAutils migration
+  * :mod:`avocado.utils.path` development is frozen pending AAutils migration
     (`57aa993d9 <https://github.com/avocado-framework/avocado/commit/57aa993d9>`_)
-  - :mod:`avocado.utils.network.ports` development is frozen pending AAutils migration
+  * :mod:`avocado.utils.network.ports` development is frozen pending AAutils migration
     (`089f44a7a <https://github.com/avocado-framework/avocado/commit/089f44a7a>`_)
-  - :mod:`avocado.utils.data_structures` is deprecated and will be removed after next LTS release
+  * :mod:`avocado.utils.data_structures` is deprecated and will be removed after next LTS release
     (`a5b442f28 <https://github.com/avocado-framework/avocado/commit/a5b442f28>`_)
 
 * Enhanced test coverage for GDB utilities, network utilities, and path utilities
