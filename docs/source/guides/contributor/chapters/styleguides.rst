@@ -21,6 +21,29 @@ motivation, approach and effects::
     Signed-off-by:  <- Signature and acknowledgment of licensing terms when
                        contributing to the project (created by git commit -s)
 
+The header is the visible part when reviewing commit logs and should make it
+easy to identify which part in the source tree was affected.
+
+The message helps reviewers to understand why certain changes were introduced
+in the code, esp. when they are not obvious. Also, they can give important
+context if debugging or refactoring code in the future becomes necessary.
+
+A good example of a commit header and message::
+
+    commit b94a186a2d638b791f03bcc0c270e7412de0d9bc
+    Author: Cleber Rosa <crosa@redhat.com>
+    Date:   Mon Aug 11 19:07:00 2025 -0400
+
+        avocado.utils.gdb: remove module level variables used by plugin
+
+        These module level variables were used to control the behavior of the
+        gdb utility from the command line plugin.  The plugin was never
+        migrated to nrunner due to the parallelism aspects, so these are not
+        needed anymore.
+
+        Signed-off-by: Cleber Rosa <crosa@redhat.com>
+
+
 Signing commits
 ~~~~~~~~~~~~~~~
 
