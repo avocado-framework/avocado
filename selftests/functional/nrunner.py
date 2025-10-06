@@ -273,13 +273,15 @@ class TaskRunStatusService(TestCaseTmpDir):
         nc_path = os.path.join(self.tmpdir.name, "socket")
         nc_proc = process.SubProcess(f"nc -lU {nc_path}")
         nc_proc.start()
+        time.sleep(3)
         task_proc = process.SubProcess(
-            f"avocado-runner-exec-test task-run -i 1 -u /bin/sleep -a 3 -s {nc_path}"
+            f"avocado-runner-exec-test task-run -i 1 -u /bin/sleep -a 100 -s {nc_path}"
         )
         task_proc.start()
-        time.sleep(1)
+        time.sleep(3)
         nc_proc.kill()
-        time.sleep(1)
+        nc_proc.wait()
+        time.sleep(3)
         self.assertIn(
             f"Connection with {nc_path} has been lost.".encode(), task_proc.get_stderr()
         )
