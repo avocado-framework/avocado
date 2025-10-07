@@ -161,6 +161,209 @@ class AstringUtilsTest(unittest.TestCase):
         # because on py3 it's unicode and on py2 it uses __repr__ (is encoded)
         self.assertEqual(astring.to_text({"\xe1": 1}), str({"\xe1": 1}))
 
+    def test_bitlist_to_string(self):
+        """Test bitlist_to_string function."""
+        # Test basic conversion
+        bitlist = [0, 1, 0, 0, 0, 0, 0, 1]  # 'A' = 65
+        result = astring.bitlist_to_string(bitlist)
+        self.assertEqual(result, "A")
+
+        # Test multiple characters
+        bitlist = [0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0]  # 'A' = 65, 'B' = 66
+        result = astring.bitlist_to_string(bitlist)
+        self.assertEqual(result, "AB")
+
+        # Test empty list
+        result = astring.bitlist_to_string([])
+        self.assertEqual(result, "")
+
+        # Test partial byte (less than 8 bits) - returns empty string
+        result = astring.bitlist_to_string([1])
+        self.assertEqual(result, "")
+
+        # Test 7 bits (incomplete byte) - returns empty string
+        result = astring.bitlist_to_string([1, 0, 0, 0, 0, 0, 0])
+        self.assertEqual(result, "")
+
+    def test_string_to_bitlist(self):
+        """Test string_to_bitlist function."""
+        # Test single character
+        result = astring.string_to_bitlist("A")
+        expected = [0, 1, 0, 0, 0, 0, 0, 1]  # 'A' = 65
+        self.assertEqual(result, expected)
+
+        # Test multiple characters
+        result = astring.string_to_bitlist("AB")
+        expected = [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+        ]  # 'A' = 65, 'B' = 66
+        self.assertEqual(result, expected)
+
+        # Test empty string
+        result = astring.string_to_bitlist("")
+        self.assertEqual(result, [])
+
+        # Test round trip conversion
+        original = "Hello"
+        bitlist = astring.string_to_bitlist(original)
+        converted_back = astring.bitlist_to_string(bitlist)
+        self.assertEqual(original, converted_back)
+
+    def test_shell_escape(self):
+        """Test shell_escape function."""
+        # Test basic escaping
+        self.assertEqual(astring.shell_escape("hello"), "hello")
+
+        # Test backslash escaping
+        self.assertEqual(astring.shell_escape("hello\\world"), "hello\\\\world")
+
+        # Test dollar sign escaping
+        self.assertEqual(astring.shell_escape("hello$world"), r"hello\$world")
+
+        # Test double quote escaping
+        self.assertEqual(astring.shell_escape('hello"world'), r"hello\"world")
+
+        # Test backtick escaping
+        self.assertEqual(astring.shell_escape("hello`world"), r"hello\`world")
+
+        # Test multiple special characters
+        self.assertEqual(astring.shell_escape('hello\\$"`world'), r"hello\\\$\"\`world")
+
+        # Test empty string
+        self.assertEqual(astring.shell_escape(""), "")
+
+    def test_strip_console_codes(self):
+        """Test strip_console_codes function."""
+        # Test string without console codes
+        self.assertEqual(astring.strip_console_codes("hello world"), "hello world")
+
+        # Test basic ANSI color codes
+        input_str = "\x1b[31mred text\x1b[0m"
+        self.assertEqual(astring.strip_console_codes(input_str), "red text")
+
+        # Test multiple color codes
+        input_str = "\x1b[91mred\x1b[92mgreen\x1b[94mblue\x1b[0m"
+        self.assertEqual(astring.strip_console_codes(input_str), "redgreenblue")
+
+        # Test with text between codes
+        input_str = "\x1b[94mblue\x1b[0m normal \x1b[91mred\x1b[0m"
+        self.assertEqual(astring.strip_console_codes(input_str), "blue normal red")
+
+        # Test custom codes (should be in \x1b[...] format)
+        input_str = "\x1b[Xcustomcode test"
+        self.assertEqual(
+            astring.strip_console_codes(input_str, custom_codes="X"), "customcode test"
+        )
+
+        # Test empty string
+        self.assertEqual(astring.strip_console_codes(""), "")
+
+        # Test string with only console codes
+        self.assertEqual(astring.strip_console_codes("\x1b[31m\x1b[0m"), "")
+
+    def test_iter_tabular_output(self):
+        """Test iter_tabular_output function."""
+        # Test basic functionality
+        matrix = [["a", "b"], ["c", "d"]]
+        result = list(astring.iter_tabular_output(matrix))
+        self.assertEqual(result, ["a b", "c d"])
+
+        # Test with header
+        result = list(astring.iter_tabular_output(matrix, header=["H1", "H2"]))
+        self.assertEqual(result, ["H1 H2", "a  b", "c  d"])
+
+        # Test with strip=True
+        matrix = [["a", "b   "], ["c", "d"]]
+        result = list(astring.iter_tabular_output(matrix, strip=True))
+        self.assertEqual(result, ["a b", "c d"])
+
+        # Test empty matrix
+        result = list(astring.iter_tabular_output([]))
+        self.assertEqual(result, [])
+
+        # Test empty matrix with header
+        result = list(astring.iter_tabular_output([], header=["H1", "H2"]))
+        self.assertEqual(result, ["H1 H2"])
+
+        # Test different column lengths
+        matrix = [[], ["a"], ["b", "c"], ["d", "e", "f"]]
+        result = list(astring.iter_tabular_output(matrix))
+        self.assertEqual(result, ["a", "b c", "d e f"])
+
+    def test_string_safe_encode(self):
+        """Test string_safe_encode function."""
+        # Test string input
+        self.assertEqual(astring.string_safe_encode("hello"), "hello")
+
+        # Test unicode string
+        self.assertEqual(astring.string_safe_encode("héllo"), "héllo")
+
+        # Test integer input
+        self.assertEqual(astring.string_safe_encode(123), "123")
+
+        # Test float input
+        self.assertEqual(astring.string_safe_encode(123.45), "123.45")
+
+        # Test boolean input
+        self.assertEqual(astring.string_safe_encode(True), "True")
+        self.assertEqual(astring.string_safe_encode(False), "False")
+
+        # Test None input
+        self.assertEqual(astring.string_safe_encode(None), "None")
+
+        # Test list input
+        self.assertEqual(astring.string_safe_encode([1, 2, 3]), "[1, 2, 3]")
+
+    def test_to_text_edge_cases(self):
+        """Test edge cases for to_text function."""
+        # Test with different error handling modes
+        self.assertEqual(astring.to_text(b"hello", errors="ignore"), "hello")
+        self.assertEqual(astring.to_text(b"hello", errors="replace"), "hello")
+
+        # Test with None encoding (should use default)
+        self.assertEqual(astring.to_text(b"hello", encoding=None), "hello")
+
+        # Test with numeric types
+        self.assertEqual(astring.to_text(42), "42")
+        self.assertEqual(astring.to_text(3.14), "3.14")
+
+        # Test with complex object
+        self.assertEqual(astring.to_text([1, 2, 3]), "[1, 2, 3]")
+
+    def test_string_to_safe_path_edge_cases(self):
+        """Test edge cases for string_to_safe_path function."""
+        # Test multiple consecutive unsafe chars
+        self.assertEqual(astring.string_to_safe_path("a<<>>b"), "a____b")
+
+        # Test all unsafe characters
+        unsafe = '<>:"/\\|?*;'
+        expected = "_" * len(unsafe)
+        self.assertEqual(astring.string_to_safe_path(unsafe), expected)
+
+        # Test path starting with multiple dots
+        self.assertEqual(astring.string_to_safe_path("...test"), "_..test")
+
+        # Test Unicode characters with unsafe chars
+        input_str = "тест<>файл"
+        result = astring.string_to_safe_path(input_str)
+        self.assertNotIn("<", result)
+        self.assertNotIn(">", result)
+
 
 if __name__ == "__main__":
     unittest.main()
