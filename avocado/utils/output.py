@@ -163,3 +163,9 @@ class ProgressBar:
         :rtype: str
         """
         return str(self.prog_bar)
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("output")
