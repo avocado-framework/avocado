@@ -11,6 +11,7 @@ on:
       - '**/network/ports.py'
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
+      - '**/output.py'
 
 jobs:
   commnet-to-pr:
