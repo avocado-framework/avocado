@@ -45,6 +45,7 @@ import re
 from importlib.resources import files
 
 from avocado.core.settings_dispatcher import SettingsDispatcher
+from avocado import paths
 
 
 def sorted_dict(dict_object):
@@ -406,7 +407,7 @@ class Settings:
             self.all_config_paths.append(self._config_path_local)
 
     def _prepare_base_dirs(self):
-        cfg_dir = "/etc"
+        cfg_dir = os.path.join(paths.ETCPREFIX, "/etc")
         user_dir = os.path.expanduser("~")
 
         if "VIRTUAL_ENV" in os.environ:
