@@ -18,11 +18,15 @@ import os
 import shlex
 import subprocess
 import tempfile
+import configparser
+import platform
+import logging
 from abc import ABC, abstractmethod
 
 from avocado.utils import astring, process
 
 DATA_SIZE = 200000
+log = logging.getLogger("avocado.sysinfo")
 
 
 class CollectibleException(Exception):
@@ -168,6 +172,14 @@ class Command(Collectible):
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(self.timeout) <= 0:
             self.timeout = None
+
+        # Check if the command should be run with sudo
+        sysinfo_cmd = SysinfoCommand()
+        if sysinfo_cmd.use_sudo() and sysinfo_cmd.is_sudo_cmd(self.cmd):
+            self.cmd = f'sudo {self.cmd}'
+
+        log.info(f"Executing Command: {self.cmd}")
+
         try:
             result = process.run(
                 self.cmd,
@@ -394,3 +406,48 @@ class LogWatcher(Collectible):
             raise CollectibleException(
                 f"Not logging {self.path} " f"(lack of permissions)"
             ) from exc
+
+
+class SysinfoCommand:
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config_path = os.path.join(os.path.dirname(__file__), '../etc/avocado/sysinfo.conf')
+        # print(f"{config_path}")
+        config.read(config_path)
+        self.sudo_cmds = [cmd.strip() for cmd in config.get('sysinfo', 'sudo_commands', fallback='').split(',') if cmd.strip()]
+        # print(f"sudo_cmds:{self.sudo_cmds}")
+
+    def use_sudo(self):
+        """
+        Determine if 'sudo' should be used based on the system type.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        system_name = platform.system().lower()
+        # print(f"System Name: {system_name}")
+        if system_name == 'linux':
+            try:
+                with open('/etc/os-release') as f:
+                    for line in f:
+                        if line.startswith('ID='):
+                            os_id = line.strip().split('=')[1].strip('"')
+                            # print(f"OS ID: {os_id}")
+                            return os_id.lower() in ['uos', 'deepin']
+            except FileNotFoundError:
+                log.warning("/etc/os-release not found.")
+                return False
+
+    def is_sudo_cmd(self, cmd):
+        """
+        Determine if 'sudo' should be used for a specific command based on the configuration.
+
+        Args:
+            cmd (str): The command to check.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        result = any(sudo_cmd.strip() in cmd.strip() for sudo_cmd in self.sudo_cmds)
+        # print(f"{result}")
+        return result
