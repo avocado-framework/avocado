@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-hello-world"
+version = "1.0"
+description = "Avocado Hello World CLI command"
+
+[project.entry-points."avocado.plugins.cli.cmd"]
+hello = "hello:HelloWorld"
+
+[tool.setuptools]
+py-modules = ["hello"]

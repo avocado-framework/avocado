@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-hello-world-priority"
+version = "1.0"
+description = "Avocado Hello World CLI command, with priority"
+
+[project.entry-points."avocado.plugins.cli.cmd"]
+hello = "hello_priority:HelloWorld"
+
+[tool.setuptools]
+py-modules = ["hello_priority"]
