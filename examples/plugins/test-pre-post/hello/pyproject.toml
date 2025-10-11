@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-hello-world-pre-post-test"
+version = "1.0"
+description = "Avocado Hello World pre and post test plugin"
+
+[project.entry-points."avocado.plugins.test.pre"]
+hello_pre = "hello:HelloWorld"
+
+[project.entry-points."avocado.plugins.test.post"]
+hello_post = "hello:HelloWorld"
+
+[tool.setuptools]
+py-modules = ["hello"]

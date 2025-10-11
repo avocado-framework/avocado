@@ -1,0 +1,15 @@
+name: Wheel
+description: Test running avocado from wheels
+runs:
+  using: composite
+  steps:
+    - name: Test running avocado from wheels
+      shell: sh
+      run: |
+       python3 -m pip install build
+       python3 -m build --wheel --no-isolation
+       python3 -m pip install dist/*.whl -t /tmp/avocado_install
+       export PYTHONPATH=/tmp/avocado_install:$PYTHONPATH
+       python3 -c 'from avocado.core.main import main; import sys; sys.exit(main())' run /bin/true
+       cd /tmp
+       python3 -c 'from avocado.core.main import main; import sys; sys.exit(main())' run /bin/true

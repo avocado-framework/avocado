@@ -22,10 +22,10 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          pip install -r requirements-dev.txt
-          pip install -r static-checks/requirements.txt
+          python3 -m pip install -r requirements-dev.txt
+          python3 -m pip install -r static-checks/requirements.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: python3 -m pip install -e . --user
       - name: Run make check
         run: make check
       - name: Save artifacts
@@ -45,10 +45,10 @@ jobs:
           fetch-depth: 0
       - name: Install avocado
         run: |
-          pip install -r requirements-dev.txt
-          python3 setup.py develop --user
+          python3 -m pip install -r requirements-dev.txt
+          python3 -m pip install -e . --user
       - name: Avocado pre-release job
-        run: python3 setup.py test --select=pre-release,vmimage
+        run: python3 -m selftests.check --select=pre-release,vmimage
       - name: Save artifacts
         if: failure()
         uses: actions/upload-artifact@v4

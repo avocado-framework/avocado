@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-rogue"
+version = "1.0"
+description = "Avocado \"rogue\" test type"
+
+[project.scripts]
+avocado-runner-rogue = "avocado_rogue.runner:main"
+
+[project.entry-points."avocado.plugins.resolver"]
+rogue = "avocado_rogue.resolver:RogueResolver"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+rogue = "avocado_rogue.runner:RogueRunner"
+
+[tool.setuptools]
+py-modules = ["avocado_rogue"]

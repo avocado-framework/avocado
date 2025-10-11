@@ -25,11 +25,11 @@ jobs:
       - name: Installing Avocado development dependencies
         run: make requirements-static-checks
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: python3 -m pip install -e . --user
       - name: Run static checks
         env:
           COMMIT_COUNT: ${{ github.event.pull_request.commits  }}
-        run: python3 setup.py test --select=static-checks
+        run: python3 -m selftests.check --select=static-checks
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -86,17 +86,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -V --version
+        run: python3 -V --version
       - name: Install setuptools on Python >= 3.12
         run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: python3 -m pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: python3 -m pip install -e . --user
       - name: Avocado version
         run: avocado --version
       - name: Unittests and fast functional tests
-        run: python3 setup.py test --skip=static-checks
+        run: python3 -m selftests.check --skip=static-checks
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -128,19 +128,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -V --version
+        run: python3 -V --version
       - name: Install avocado
         run: |
           python3 -m pip install -r requirements-dev.txt
-          python setup.py develop --user
+          python3 -m pip install -e . --user
       - name: Show avocado help
-        run: python -m avocado --help
+        run: python3 -m avocado --help
       - name: Example test
-        run: python -m avocado run examples/tests/passtest.py
+        run: python3 -m avocado run examples/tests/passtest.py
       - name: List test
-        run: python -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
+        run: python3 -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
       - name: Run a subset of avocado's selftests
-        run: PATH=~/Library/Python/3.11/bin:$PATH ./selftests/check.py --skip=static-checks
+        run: PATH=~/Library/Python/3.11/bin:$PATH python3 -m selftests.check --skip=static-checks
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -166,9 +166,9 @@ jobs:
       - name: Display Python version
         run: python -V --version
       - name: Install setuptools on Python >= 3.12
-        run: python -c 'import setuptools' || python -m pip install "setuptools<80"
+        run: python -c "import setuptools" || python -m pip install "setuptools<80"
       - name: Install avocado
-        run: python setup.py develop --user
+        run: python -m pip install -e . --user
       - name: Show avocado help
         run: python -m avocado --help
       - name: Example test
@@ -262,7 +262,7 @@ jobs:
       image: fedora:40
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3 python3-setuptools
+        run: dnf -y install python3 python3-setuptools python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -275,7 +275,7 @@ jobs:
       image: fedora:41
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3-setuptools
+        run: dnf -y install python3-setuptools python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -288,7 +288,7 @@ jobs:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3.11 python3.11-setuptools python3.11-setuptools-rust
+        run: dnf -y install python3.11 python3.11-setuptools python3.11-setuptools-rust python3.11-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -300,6 +300,8 @@ jobs:
     container:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
+      - name: Install Python dependencies
+        run: dnf -y install python3-setuptools python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -312,7 +314,7 @@ jobs:
       image: debian:12.4
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-setuptools python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -325,7 +327,7 @@ jobs:
       image: debian:11.0
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-setuptools python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -338,7 +340,7 @@ jobs:
       image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools ca-certificates
+        run: apt update && apt -y install python3 python3-setuptools ca-certificates python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -351,36 +353,36 @@ jobs:
       image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools ca-certificates
+        run: apt update && apt -y install python3 python3-setuptools ca-certificates python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
 
-  egg_task_fedora_40:
+  wheel_task_fedora_40:
 
-    name: Egg task fedora:40
+    name: Wheel task fedora:40
     runs-on: ubuntu-22.04
     container:
       image: fedora:40
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3 python3-setuptools
+        run: dnf -y install python3 python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
-  egg_task_fedora_41:
+  wheel_task_fedora_41:
 
-    name: Egg task fedora:41
+    name: Wheel task fedora:41
     runs-on: ubuntu-22.04
     container:
       image: fedora:41
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3-setuptools
+        run: dnf -y install python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
   egg_task_ubi_8:
 
@@ -395,29 +397,31 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubi_9:
+  wheel_task_ubi_9:
 
-    name: Egg task ubi:9.2
+    name: Wheel task ubi:9.2
     runs-on: ubuntu-22.04
     container:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
+      - name: Install Python dependencies
+        run: dnf -y install python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
-  egg_task_debian_12:
+  wheel_task_debian_12:
 
-    name: Egg task debian:12.4
+    name: Wheel task debian:12.4
     runs-on: ubuntu-22.04
     container:
       image: debian:12.4
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
   egg_task_debian_11:
 
@@ -432,31 +436,31 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/egg
 
-  egg_task_ubuntu_24:
+  wheel_task_ubuntu_24:
 
-    name: Egg task ubuntu:24.04
+    name: Wheel task ubuntu:24.04
     runs-on: ubuntu-22.04
     container:
       image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
-  egg_task_ubuntu_22:
+  wheel_task_ubuntu_22:
 
-    name: Egg task ubuntu:22.04
+    name: Wheel task ubuntu:22.04
     runs-on: ubuntu-22.04
     container:
       image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-pip python3-setuptools
       - name: Check out repository code
         uses: actions/checkout@v4
-      - uses: ./.github/actions/egg
+      - uses: ./.github/actions/wheel
 
   podman_egg_task:
 
@@ -504,13 +508,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Test avocado install/uninstall
         run: |
-         python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
-         python3 setup.py develop --user
+         python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools python3-pip
+         python3 -m pip install -e . --user
+         for plugin in optional_plugins/html optional_plugins/robot; do python3 -m pip install -e "$plugin" --user; done
          test `python3 -m avocado plugins | grep ^html | wc -l` -eq "3"
          test `python3 -m avocado plugins | grep ^robot | wc -l` -eq "2"
-         python3 setup.py develop --user --uninstall
-         python3 setup.py clean --all
-         python3 setup.py develop --user --skip-optional-plugins
+         python3 -m pip uninstall -y avocado-framework-plugin-result-html avocado-framework-plugin-robot avocado-framework
+         rm -rf build/ dist/ *.egg-info
+         python3 -m pip install -e . --user
          python3 -m avocado --version
          test `python3 -m avocado plugins | grep ^html | wc -l` -eq "0"
          test `python3 -m avocado plugins | grep ^robot | wc -l` -eq "0"
@@ -528,4 +533,4 @@ jobs:
       - name: Run unittests and functional tests
         run: |
          make develop
-         PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py  --skip static-checks
+         PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 -m selftests.check --skip static-checks

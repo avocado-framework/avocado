@@ -94,12 +94,11 @@ Registering plugins
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
 find Python objects. So, to make your new plugin visible to Avocado, you need
-to add to your setuptools based `setup.py` file something like:
+to add to your `pyproject.toml` file something like:
 
-.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/setup.py
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/pyproject.toml
 
-Then, by running either ``$ python setup.py install`` or ``$ python setup.py
-develop`` your plugin should be visible to Avocado.
+Then, by running ``$ pip install -e .`` your plugin should be visible to Avocado.
 
 Namespace
 =========
@@ -109,11 +108,10 @@ global to a given Python installation.  Avocado uses the namespace prefix
 ``avocado.plugins.`` to avoid name clashes with other software.  Now, inside
 Avocado itself, there's no need keep using the ``avocado.plugins.`` prefix.
 
-Take for instance, the Job Pre/Post plugins are defined on ``setup.py``::
+Take for instance, the Job Pre/Post plugins are defined in ``pyproject.toml``::
 
-  'avocado.plugins.job.prepost': [
-     'jobscripts = avocado.plugins.jobscripts:JobScripts'
-  ]
+  [project.entry-points."avocado.plugins.job.prepost"]
+  jobscripts = "avocado.plugins.jobscripts:JobScripts"
 
 The setuptools entry point namespace is composed of the mentioned prefix
 ``avocado.plugins.``, which is then followed by the Avocado plugin type, in
@@ -169,16 +167,10 @@ You need to create the plugin (eg. ``my_plugin/settings.py``)::
            paths.extend(glob.glob("/etc/my_plugin/conf.d/*.conf"))
 
 
-And register it in your ``setup.py`` entry-points::
+And register it in your ``pyproject.toml`` entry-points::
 
-   from setuptools import setup
-   ...
-   setup(name="my-plugin",
-         entry_points={
-             'avocado.plugins.settings': [
-                 "my-plugin-settings = my_plugin.settings.MyPluginSettings",
-                 ],
-             ...
+   [project.entry-points."avocado.plugins.settings"]
+   my-plugin-settings = "my_plugin.settings:MyPluginSettings"
 
 Which extends the list of files to be parsed by settings object. Note this
 has to be executed early in the code so try to keep the required deps
@@ -330,10 +322,9 @@ The plugins need to be registered so that Avocado knows about it.  See
 :ref:`registering-plugins` for more information.  This is the code
 that can be used to register these plugins:
 
-.. literalinclude:: ../../../../../examples/plugins/tests/magic/setup.py
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/pyproject.toml
 
-With that, you need to either run ``python setup.py install`` or
-``python setup.py develop``.
+With that, you need to run ``pip install -e .`` to install the plugin in development mode.
 
 .. note:: The last entry, registering a ``console_script``, is
           recommended because it allows one to experiment with the

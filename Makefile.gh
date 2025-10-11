@@ -63,11 +63,9 @@ build-wheel: pip
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
 	$(PYTHON) -m build -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then\
-			cd $$PLUGIN;\
-			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
-			cd -;\
-		fi;\
+		cd $$PLUGIN;\
+		$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
+		cd -;\
 	done
 
 check-wheel: build-wheel
@@ -78,11 +76,9 @@ build-egg:
 	if test ! -d EGG_UPLOAD; then mkdir EGG_UPLOAD; fi
 	$(PYTHON) setup.py bdist_egg -d EGG_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then\
-			cd $$PLUGIN;\
-			$(PYTHON) setup.py bdist_egg -d ../../EGG_UPLOAD;\
-			cd -;\
-		fi;\
+		cd $$PLUGIN;\
+		$(PYTHON) setup.py bdist_egg -d ../../EGG_UPLOAD;\
+		cd -;\
 	done
 
 update-pypi:

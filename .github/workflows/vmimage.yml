@@ -37,9 +37,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-utils
       - name: Install
-        run: pip install -r requirements-dev.txt
+        run: python3 -m pip install -r requirements-dev.txt
       - name: Avocado build
-        run: python setup.py develop --user
+        run: python3 -m pip install -e . --user
       - name: Run script
         run: ./selftests/run_coverage --select=vmimage
       - name: Push results to codecov
