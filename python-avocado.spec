@@ -5,7 +5,7 @@
 
 # Settings used for build from snapshots.
 %if 0%{?rel_build}
-    %global gittar          avocado-%{version}.tar.gz
+    %global gittar          avocado_framework-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
         %global commit      a74bc734330c9c9f2b91df4e796c4422ac57b918
@@ -15,7 +15,7 @@
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
-    %global gittar          avocado-%{shortcommit}.tar.gz
+    %global gittar          avocado_framework-%{shortcommit}.tar.gz
 %endif
 
 # Selftests are provided but may need to be skipped because many of
@@ -99,19 +99,12 @@ these days a framework) to perform automated testing.
 
 %prep
 %if 0%{?rel_build}
-%setup -q -n avocado-%{version}
+%setup -q -n avocado_framework-%{version}
 %else
-%setup -q -n avocado-%{commit}
+%setup -q -n avocado_framework-%{commit}
 %endif
 
 %build
-%if 0%{?rhel}
-sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.12"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
-%endif
-%if 0%{?fedora} >= 42
-sed -e '/"markupsafe<3.0.0"/d' -i optional_plugins/html/setup.py
-sed -e '/"markupsafe<3.0.0"/d' -i optional_plugins/ansible/setup.py
-%endif
 %py3_build
 pushd optional_plugins/html
 %py3_build
@@ -247,8 +240,14 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-software-manager
 %{_bindir}/avocado-external-runner
 %{python3_sitelib}/avocado*
+%exclude %{python3_sitelib}/contrib*
+%exclude %{python3_sitelib}/scripts*
 %exclude %{python3_sitelib}/avocado_result_html*
+%if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 %exclude %{python3_sitelib}/avocado_resultsdb*
+%endif
+%endif
 %exclude %{python3_sitelib}/avocado_golang*
 %exclude %{python3_sitelib}/avocado_ansible*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
@@ -257,7 +256,11 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %exclude %{python3_sitelib}/avocado_result_upload*
 %exclude %{python3_sitelib}/avocado_result_mail*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
+%if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
+%endif
+%endif
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
