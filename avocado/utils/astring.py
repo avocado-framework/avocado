@@ -167,7 +167,7 @@ def strip_console_codes(output, custom_codes=None):
     old_word = ""
     return_str = ""
     index = 0
-    output = f"\x1B[m{output}"
+    output = f"\x1b[m{output}"
     console_codes = "%[G@8]|\\[[@A-HJ-MPXa-hl-nqrsu\\`]"
     console_codes += "|\\[[\\d;]+[HJKgqnrm]|#8|\\([B0UK]|\\)"
     if custom_codes is not None and custom_codes not in console_codes:
