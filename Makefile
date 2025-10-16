@@ -6,6 +6,8 @@ all:
 	@echo "develop:           Runs 'python setup.py --develop' on this tree alone"
 	@echo "develop-external:  Install Avocado's external plugins in develop mode."
 	@echo "                   You need to set AVOCADO_EXTERNAL_PLUGINS_PATH"
+	@echo "develop-plugins:   Install all optional plugins in develop mode"
+	@echo "develop-plugin:    Install a specific optional plugin (use PLUGIN=name)"
 	@echo "clean:             Get rid of build scratch from this project and subprojects"
 	@echo "variables:         Show the value of variables as defined in this Makefile or"
 	@echo "                   given as input to make"
@@ -29,13 +31,40 @@ AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1
 
 
 clean:
-	$(PYTHON) setup.py clean --all
+	@echo "Cleaning build artifacts and cache files..."
+	rm -rf build/ dist/ *.egg-info PYPI_UPLOAD EGG_UPLOAD
+	rm -f man/avocado.1
+	rm -rf docs/build
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name '*.pyc' -delete
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf /tmp/.avocado-* /var/tmp/.avocado-* 2>/dev/null || true
+	find docs/source/api -type f -name "*.rst" -delete 2>/dev/null || true
+	@echo "Cleaning optional plugins..."
+	@for plugin in optional_plugins/*/; do \
+		if [ -d "$$plugin" ]; then \
+			echo "  Cleaning $$plugin"; \
+			rm -rf "$$plugin/build" "$$plugin/dist" "$$plugin"/*.egg-info 2>/dev/null || true; \
+			find "$$plugin" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true; \
+			find "$$plugin" -type f -name "*.pyc" -delete 2>/dev/null || true; \
+		fi; \
+	done
+	@echo "Cleaning example plugins..."
+	@for plugin in examples/plugins/tests/*/; do \
+		if [ -d "$$plugin" ]; then \
+			echo "  Cleaning $$plugin"; \
+			rm -rf "$$plugin/build" "$$plugin/dist" "$$plugin"/*.egg-info 2>/dev/null || true; \
+			find "$$plugin" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true; \
+			find "$$plugin" -type f -name "*.pyc" -delete 2>/dev/null || true; \
+		fi; \
+	done
+	@echo "Clean complete."
 
 install:
-	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
+	$(PYTHON) -m pip install . --root $(DESTDIR) $(COMPILE)
 
 uninstall:
-	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
+	$(PYTHON) -m pip uninstall -y avocado-framework
 
 requirements-dev: pip
 	$(PYTHON) -m pip install -r requirements-dev.txt $(PYTHON_DEVELOP_ARGS)
@@ -48,7 +77,7 @@ smokecheck: clean uninstall develop
 
 check: clean uninstall develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	$(PYTHON) selftests/check.py
+	$(PYTHON) -m selftests.check
 
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
@@ -59,10 +88,30 @@ ifndef AVOCADO_EXTERNAL_PLUGINS_PATH
 endif
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS) --external
 
+develop-plugins:
+	@echo "Installing all optional plugins in develop mode..."
+	@for plugin in $(AVOCADO_OPTIONAL_PLUGINS); do \
+		echo "Installing $$plugin..."; \
+		$(PYTHON) -m pip install -e "$$plugin" $(PYTHON_DEVELOP_ARGS); \
+	done
+	@echo "All plugins installed."
+
+develop-plugin:
+ifndef PLUGIN
+	$(error PLUGIN is not defined. Usage: make develop-plugin PLUGIN=html)
+endif
+	@echo "Installing plugin: $(PLUGIN)..."
+	$(PYTHON) -m pip install -e "optional_plugins/$(PLUGIN)" $(PYTHON_DEVELOP_ARGS)
+
 man: man/avocado.1
 
 %.1: %.rst
-	$(PYTHON) setup.py man
+	@if command -v rst2man >/dev/null 2>&1; then \
+		rst2man man/avocado.rst man/avocado.1; \
+	else \
+		echo "ERROR: rst2man not found, cannot build manpage"; \
+		exit 1; \
+	fi
 
 variables:
 	@echo "PYTHON: $(PYTHON)"
@@ -72,4 +121,4 @@ variables:
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
 
-.PHONY: pip install clean uninstall requirements-dev smokecheck check develop develop-external variables man
+.PHONY: pip install clean uninstall requirements-dev smokecheck check develop develop-external develop-plugins develop-plugin variables man

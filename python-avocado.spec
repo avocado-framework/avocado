@@ -46,6 +46,9 @@ BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-setuptools
+BuildRequires: python3-pip
+BuildRequires: python3-wheel
+BuildRequires: pyproject-rpm-macros
 %if ! 0%{?rhel}
 BuildRequires: python3-aexpect
 %endif
@@ -105,95 +108,88 @@ these days a framework) to perform automated testing.
 %endif
 
 %build
-%if 0%{?rhel}
-sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.12"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
-%endif
-%if 0%{?fedora} >= 42
-sed -e '/"markupsafe<3.0.0"/d' -i optional_plugins/html/setup.py
-sed -e '/"markupsafe<3.0.0"/d' -i optional_plugins/ansible/setup.py
-%endif
-%py3_build
+%pyproject_wheel
 pushd optional_plugins/html
-%py3_build
+%pyproject_wheel
 popd
 %if ! 0%{?rhel}
 %if ! 0%{?fedora} > 35
 pushd optional_plugins/resultsdb
-%py3_build
+%pyproject_wheel
 popd
 %endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
-%py3_build
+%pyproject_wheel
 popd
 pushd optional_plugins/golang
-%py3_build
+%pyproject_wheel
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/ansible
-%py3_build
+%pyproject_wheel
 popd
 %endif
 pushd optional_plugins/varianter_pict
-%py3_build
+%pyproject_wheel
 popd
 pushd optional_plugins/varianter_cit
-%py3_build
+%pyproject_wheel
 popd
 pushd optional_plugins/result_upload
-%py3_build
+%pyproject_wheel
 popd
 pushd optional_plugins/mail
-%py3_build
+%pyproject_wheel
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/spawner_remote
-%py3_build
+%pyproject_wheel
 popd
 %endif
 rst2man man/avocado.rst man/avocado.1
 
 %install
-%py3_install
-mv %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
+%pyproject_install
 pushd optional_plugins/html
-%py3_install
+%pyproject_install
 popd
 %if ! 0%{?rhel}
 %if ! 0%{?fedora} > 35
 pushd optional_plugins/resultsdb
-%py3_install
+%pyproject_install
 popd
 %endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
-%py3_install
+%pyproject_install
 popd
 pushd optional_plugins/golang
-%py3_install
+%pyproject_install
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/ansible
-%py3_install
+%pyproject_install
 popd
 %endif
 pushd optional_plugins/varianter_pict
-%py3_install
+%pyproject_install
 popd
 pushd optional_plugins/varianter_cit
-%py3_install
+%pyproject_install
 popd
 pushd optional_plugins/result_upload
-%py3_install
+%pyproject_install
 popd
 pushd optional_plugins/mail
-%py3_install
+%pyproject_install
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/spawner_remote
-%py3_install
+%pyproject_install
 popd
 %endif
+mv %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
 mkdir -p %{buildroot}%{_mandir}/man1
 install -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 mkdir -p %{buildroot}%{_pkgdocdir}
@@ -220,11 +216,21 @@ rmdir %{buildroot}%{python3_sitelib}/avocado/libexec
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
+%if "%{python3_version}" == "3.9"
+# Python 3.9's importlib.metadata cannot find installed packages via PYTHONPATH in RPM buildroot
+# Run only core tests that don't depend on optional plugins
 PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
     PYTHONPATH=%{buildroot}%{python3_sitelib}:. \
     LANG=en_US.UTF-8 \
     AVOCADO_CHECK_LEVEL=0 \
-    %{python3} selftests/check.py --skip static-checks --disable-plugin-checks robot
+    %{python3} -m selftests.check --select unit,jobs --disable-plugin-checks robot
+%else
+PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
+    PYTHONPATH=%{buildroot}%{python3_sitelib}:. \
+    LANG=en_US.UTF-8 \
+    AVOCADO_CHECK_LEVEL=0 \
+    %{python3} -m selftests.check --skip static-checks --disable-plugin-checks robot
+%endif
 %endif
 
 %files -n python3-avocado

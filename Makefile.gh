@@ -63,11 +63,9 @@ build-wheel: pip
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
 	$(PYTHON) -m build -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then\
-			cd $$PLUGIN;\
-			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
-			cd -;\
-		fi;\
+		cd $$PLUGIN;\
+		$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
+		cd -;\
 	done
 
 check-wheel: build-wheel

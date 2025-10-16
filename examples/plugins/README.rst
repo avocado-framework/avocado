@@ -8,9 +8,17 @@ Plugin interfaces.
 To try them out on a development environment, you may run::
 
  $ cd <plugin-type>/<plugin-example>
- $ python setup.py develop --user
+ $ pip install -e .
 
-And to remove them on a development environment, you may run, at the
-same directory::
+For example::
 
- $ python setup.py develop --uninstall --user
+ $ cd cli-cmd/hello
+ $ pip install -e .
+
+And to remove them on a development environment, you may run::
+
+ $ pip uninstall <plugin-name>
+
+For example::
+
+ $ pip uninstall avocado-hello-world

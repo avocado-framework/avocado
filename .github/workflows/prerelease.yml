@@ -45,10 +45,10 @@ jobs:
           fetch-depth: 0
       - name: Install avocado
         run: |
-          pip install -r requirements-dev.txt
-          python3 setup.py develop --user
+          python3 -m pip install -r requirements-dev.txt
+          python3 -m pip install --user -e .
       - name: Avocado pre-release job
-        run: python3 setup.py test --select=pre-release,vmimage
+        run: python3 -m selftets.check --select=pre-release,vmimage
       - name: Save artifacts
         if: failure()
         uses: actions/upload-artifact@v4

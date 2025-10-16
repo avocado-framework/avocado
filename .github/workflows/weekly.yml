@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: python3 -m pip install --user -e .
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
@@ -44,7 +44,7 @@ jobs:
       - name: Tree static check, unittests and fast functional tests
         run: |
           export AVOCADO_CHECK_LEVEL="1"
-          python3 selftests/check.py
+          python3 -m selftests.check
       - name: Archive test logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -80,13 +80,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user --skip-optional-plugins --skip-examples-plugins-tests
+        run: python3 -m pip install --user -e .
       - name: Avocado version
         run: avocado --version
       - name: Tree static check, unittests and fast functional tests without plugins
         run: |
           export AVOCADO_CHECK_LEVEL="1"
-          python3 selftests/check.py --disable-plugin-checks golang,html,resultsdb,result_upload,robot,varianter_cit,varianter_pict,varianter_yaml_to_mux
+          python3 -m selftests.check --disable-plugin-checks golang,html,resultsdb,result_upload,robot,varianter_cit,varianter_pict,varianter_yaml_to_mux
       - name: Archive test logs
         if: failure()
         uses: actions/upload-artifact@v4

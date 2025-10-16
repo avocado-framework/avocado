@@ -13,6 +13,9 @@
 # Copyright: Red Hat Inc. 2016
 # Author: Cleber Rosa <crosa@redhat.com>
 
+# Minimal setup.py for backward compatibility and egg builds.
+# Metadata moved to pyproject.toml.
+
 import os
 
 from setuptools import find_packages, setup
@@ -21,22 +24,9 @@ BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
 
-
-def get_long_description():
-    with open(os.path.join(BASE_PATH, "README.rst"), "rt", encoding="utf-8") as readme:
-        readme_contents = readme.read()
-    return readme_contents
-
-
 setup(
     name="avocado-framework-plugin-result-html",
     version=VERSION,
-    description="Avocado HTML Report for Jobs",
-    long_description=get_long_description(),
-    long_description_content_type="text/x-rst",
-    author="Avocado Developers",
-    author_email="avocado-devel@redhat.com",
-    url="http://avocado-framework.github.io/",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
