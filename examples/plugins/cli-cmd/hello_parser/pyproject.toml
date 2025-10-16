@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-hello-world-parser"
+version = "1.0"
+description = "Avocado Hello World CLI command with config parser"
+
+[project.entry-points."avocado.plugins.cli.cmd"]
+hello_parser = "hello_parser:HelloWorld"
+
+[tool.setuptools]
+py-modules = ["hello_parser"]

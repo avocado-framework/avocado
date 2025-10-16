@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-varianter-cit"
+dynamic = ["version", "readme"]
+description = "Varianter with combinatorial capabilities"
+authors = [
+    {name = "Avocado Developers", email = "avocado-devel@redhat.com"},
+]
+license = {text = "GPL-2.0-or-later"}
+requires-python = ">=3.9"
+dependencies = [
+    "avocado-framework",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "http://avocado-framework.github.io/"
+
+[project.entry-points."avocado.plugins.cli"]
+varianter_cit = "avocado_varianter_cit.varianter_cit:VarianterCitCLI"
+
+[project.entry-points."avocado.plugins.varianter"]
+varianter_cit = "avocado_varianter_cit.varianter_cit:VarianterCit"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["avocado_varianter_cit*"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+readme = {file = "README.rst", content-type = "text/x-rst"}

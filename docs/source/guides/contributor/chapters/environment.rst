@@ -52,11 +52,11 @@ registered. If you're hacking on Avocado and want to use the same, possibly
 modified, source for running your tests and experiments, you may do so with one
 additional step::
 
-  $ python3 setup.py develop [--user]
+  $ pip install -e . [--user]
 
-On POSIX systems this will create an "egg link" to your original source tree under
+On POSIX systems this will create an editable install to your original source tree under
 ``$HOME/.local/lib/pythonX.Y/site-packages``. Then, on your original source tree, an
-"egg info" directory will be created, containing, among other things, the Setuptools
+egg info directory will be created, containing, among other things, the Setuptools
 entry points mentioned before. This works like a symlink, so you only need to run
 this once (unless you add a new entry-point, then you need to re-run it to make it
 available).

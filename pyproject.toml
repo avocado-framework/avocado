@@ -1,0 +1,250 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework"
+dynamic = ["version", "readme"]
+description = "Avocado Test Framework"
+authors = [
+    {name = "Avocado Developers", email = "avocado-devel@redhat.com"},
+]
+license = {text = "GPL-2.0-or-later"}
+requires-python = ">=3.9"
+dependencies = [
+    "setuptools",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+Homepage = "https://avocado-framework.github.io/"
+Documentation = "https://avocado-framework.readthedocs.io/"
+Repository = "https://github.com/avocado-framework/avocado"
+"Issue Tracker" = "https://github.com/avocado-framework/avocado/issues"
+
+[project.scripts]
+avocado = "avocado.core.main:main"
+avocado-runner-noop = "avocado.plugins.runners.noop:main"
+avocado-runner-dry-run = "avocado.plugins.runners.dry_run:main"
+avocado-runner-exec-test = "avocado.plugins.runners.exec_test:main"
+avocado-runner-python-unittest = "avocado.plugins.runners.python_unittest:main"
+avocado-runner-avocado-instrumented = "avocado.plugins.runners.avocado_instrumented:main"
+avocado-runner-tap = "avocado.plugins.runners.tap:main"
+avocado-runner-asset = "avocado.plugins.runners.asset:main"
+avocado-runner-package = "avocado.plugins.runners.package:main"
+avocado-runner-pip = "avocado.plugins.runners.pip:main"
+avocado-runner-vmimage = "avocado.plugins.runners.vmimage:main"
+avocado-runner-podman-image = "avocado.plugins.runners.podman_image:main"
+avocado-runner-sysinfo = "avocado.plugins.runners.sysinfo:main"
+avocado-software-manager = "avocado.utils.software_manager.main:main"
+avocado-external-runner = "scripts.external_runner:main"
+
+[project.entry-points."avocado.plugins.init"]
+xunit = "avocado.plugins.xunit:XUnitInit"
+jsonresult = "avocado.plugins.jsonresult:JSONInit"
+tmt = "avocado.plugins.tmtresult:TMTInit"
+sysinfo = "avocado.plugins.sysinfo:SysinfoInit"
+tap = "avocado.plugins.tap:TAPInit"
+jobscripts = "avocado.plugins.jobscripts:JobScriptsInit"
+dict_variants = "avocado.plugins.dict_variants:DictVariantsInit"
+json_variants = "avocado.plugins.json_variants:JsonVariantsInit"
+run = "avocado.plugins.run:RunInit"
+podman = "avocado.plugins.spawners.podman:PodmanSpawnerInit"
+lxc = "avocado.plugins.spawners.lxc:LXCSpawnerInit"
+nrunner = "avocado.plugins.runner_nrunner:RunnerInit"
+testlogsui = "avocado.plugins.testlogs:TestLogsUIInit"
+human = "avocado.plugins.human:HumanInit"
+exec-runnables-recipe = "avocado.plugins.resolvers:ExecRunnablesRecipeInit"
+
+[project.entry-points."avocado.plugins.cli"]
+xunit = "avocado.plugins.xunit:XUnitCLI"
+json = "avocado.plugins.jsonresult:JSONCLI"
+tmt = "avocado.plugins.tmtresult:TMTCLI"
+journal = "avocado.plugins.journal:Journal"
+tap = "avocado.plugins.tap:TAP"
+zip_archive = "avocado.plugins.archive:ArchiveCLI"
+json_variants = "avocado.plugins.json_variants:JsonVariantsCLI"
+nrunner = "avocado.plugins.runner_nrunner:RunnerCLI"
+podman = "avocado.plugins.spawners.podman:PodmanCLI"
+
+[project.entry-points."avocado.plugins.cli.cmd"]
+config = "avocado.plugins.config:Config"
+distro = "avocado.plugins.distro:Distro"
+exec-path = "avocado.plugins.exec_path:ExecPath"
+variants = "avocado.plugins.variants:Variants"
+list = "avocado.plugins.list:List"
+run = "avocado.plugins.run:Run"
+sysinfo = "avocado.plugins.sysinfo:SysInfo"
+plugins = "avocado.plugins.plugins:Plugins"
+diff = "avocado.plugins.diff:Diff"
+vmimage = "avocado.plugins.vmimage:VMimage"
+assets = "avocado.plugins.assets:Assets"
+jobs = "avocado.plugins.jobs:Jobs"
+replay = "avocado.plugins.replay:Replay"
+cache = "avocado.plugins.cache:Cache"
+
+[project.entry-points."avocado.plugins.job.prepost"]
+jobscripts = "avocado.plugins.jobscripts:JobScripts"
+teststmpdir = "avocado.plugins.teststmpdir:TestsTmpDir"
+human = "avocado.plugins.human:HumanJob"
+testlogsui = "avocado.plugins.testlogs:TestLogsUI"
+suite-dependency = "avocado.plugins.dependency:SuiteDependency"
+
+[project.entry-points."avocado.plugins.test.pre"]
+dependency = "avocado.plugins.dependency:DependencyResolver"
+sysinfo = "avocado.plugins.sysinfo:SysInfoTest"
+
+[project.entry-points."avocado.plugins.test.post"]
+sysinfo = "avocado.plugins.sysinfo:SysInfoTest"
+
+[project.entry-points."avocado.plugins.result"]
+xunit = "avocado.plugins.xunit:XUnitResult"
+json = "avocado.plugins.jsonresult:JSONResult"
+tmt = "avocado.plugins.tmtresult:TMTResult"
+zip_archive = "avocado.plugins.archive:Archive"
+
+[project.entry-points."avocado.plugins.result_events"]
+human = "avocado.plugins.human:Human"
+tap = "avocado.plugins.tap:TAPResult"
+journal = "avocado.plugins.journal:JournalResult"
+fetchasset = "avocado.plugins.assets:FetchAssetJob"
+sysinfo = "avocado.plugins.sysinfo:SysInfoJob"
+testlogging = "avocado.plugins.testlogs:TestLogging"
+bystatus = "avocado.plugins.bystatus:ByStatusLink"
+beaker = "avocado.plugins.beaker_result:BeakerResult"
+
+[project.entry-points."avocado.plugins.varianter"]
+json_variants = "avocado.plugins.json_variants:JsonVariants"
+dict_variants = "avocado.plugins.dict_variants:DictVariants"
+
+[project.entry-points."avocado.plugins.resolver"]
+exec-test = "avocado.plugins.resolvers:ExecTestResolver"
+python-unittest = "avocado.plugins.resolvers:PythonUnittestResolver"
+avocado-instrumented = "avocado.plugins.resolvers:AvocadoInstrumentedResolver"
+tap = "avocado.plugins.resolvers:TapResolver"
+runnable-recipe = "avocado.plugins.resolvers:RunnableRecipeResolver"
+runnables-recipe = "avocado.plugins.resolvers:RunnablesRecipeResolver"
+exec-runnables-recipe = "avocado.plugins.resolvers:ExecRunnablesRecipeResolver"
+
+[project.entry-points."avocado.plugins.suite.runner"]
+nrunner = "avocado.plugins.runner_nrunner:Runner"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+avocado-instrumented = "avocado.plugins.runners.avocado_instrumented:AvocadoInstrumentedTestRunner"
+tap = "avocado.plugins.runners.tap:TAPRunner"
+noop = "avocado.plugins.runners.noop:NoOpRunner"
+dry-run = "avocado.plugins.runners.dry_run:DryRunRunner"
+exec-test = "avocado.plugins.runners.exec_test:ExecTestRunner"
+python-unittest = "avocado.plugins.runners.python_unittest:PythonUnittestRunner"
+asset = "avocado.plugins.runners.asset:AssetRunner"
+package = "avocado.plugins.runners.package:PackageRunner"
+pip = "avocado.plugins.runners.pip:PipRunner"
+podman-image = "avocado.plugins.runners.podman_image:PodmanImageRunner"
+vmimage = "avocado.plugins.runners.vmimage:VMImageRunner"
+sysinfo = "avocado.plugins.runners.sysinfo:SysinfoRunner"
+
+[project.entry-points."avocado.plugins.spawner"]
+process = "avocado.plugins.spawners.process:ProcessSpawner"
+podman = "avocado.plugins.spawners.podman:PodmanSpawner"
+lxc = "avocado.plugins.spawners.lxc:LXCSpawner"
+
+[project.entry-points."avocado.plugins.cache"]
+requirement = "avocado.plugins.requirement_cache:RequirementCache"
+
+[project.optional-dependencies]
+dev = [
+    "pyenchant==3.2.2",
+    "autopep8==1.6.0",
+    "coverage==7.5",
+    "psutil==5.9.5",
+    "pycdlib==1.13.0",
+    "netifaces==0.11.0",
+    "xmlschema==2.5.0",
+    "docutils==0.17.1",
+    "jsonschema==3.2.0",
+    "PyYAML>=4.2b2",
+]
+doc = [
+    "sphinx-rtd-theme==2.0.0",
+]
+# Optional plugins - can be installed via pip install .[plugin-name]
+# These install the plugin packages from the optional_plugins/ directory
+html = [
+    "avocado-framework-plugin-result-html",
+]
+ansible = [
+    "avocado-framework-plugin-ansible",
+]
+golang = [
+    "avocado-framework-plugin-golang",
+]
+mail = [
+    "avocado-framework-plugin-result-mail",
+]
+resultsdb = [
+    "avocado-framework-plugin-resultsdb",
+]
+result_upload = [
+    "avocado-framework-plugin-result-upload",
+]
+robot = [
+    "avocado-framework-plugin-robot",
+]
+spawner_remote = [
+    "avocado-framework-plugin-spawner-remote",
+]
+varianter_cit = [
+    "avocado-framework-plugin-varianter-cit",
+]
+varianter_pict = [
+    "avocado-framework-plugin-varianter-pict",
+]
+varianter_yaml_to_mux = [
+    "avocado-framework-plugin-varianter-yaml-to-mux",
+]
+# Install all optional plugins
+all_plugins = [
+    "avocado-framework-plugin-result-html",
+    "avocado-framework-plugin-ansible",
+    "avocado-framework-plugin-golang",
+    "avocado-framework-plugin-result-mail",
+    "avocado-framework-plugin-resultsdb",
+    "avocado-framework-plugin-result-upload",
+    "avocado-framework-plugin-robot",
+    "avocado-framework-plugin-spawner-remote",
+    "avocado-framework-plugin-varianter-cit",
+    "avocado-framework-plugin-varianter-pict",
+    "avocado-framework-plugin-varianter-yaml-to-mux",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["selftests*", "docs*", "examples*", "contrib*", "scripts*", "optional_plugins*"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[tool.setuptools.package-data]
+avocado = [
+    "etc/**/*",
+    "libexec/**/*",
+    "schemas/**/*",
+]

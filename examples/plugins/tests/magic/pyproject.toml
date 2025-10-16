@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "magic"
+version = "1.0"
+description = "Avocado \"magic\" test type"
+
+[project.scripts]
+avocado-runner-magic = "avocado_magic.runner:main"
+
+[project.entry-points."avocado.plugins.init"]
+magic = "avocado_magic.resolver:MagicInit"
+
+[project.entry-points."avocado.plugins.resolver"]
+magic = "avocado_magic.resolver:MagicResolver"
+
+[project.entry-points."avocado.plugins.discoverer"]
+magic = "avocado_magic.resolver:MagicDiscoverer"
+
+[project.entry-points."avocado.plugins.runnable.runner"]
+magic = "avocado_magic.runner:MagicRunner"
+
+[tool.setuptools.packages.find]

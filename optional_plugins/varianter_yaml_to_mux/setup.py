@@ -13,43 +13,23 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
+# Minimal setup.py for backward compatibility and egg builds.
+# Metadata moved to pyproject.toml.
+
 import os
-import re
 
-from setuptools import setup
-
-# Handle systems with setuptools < 40
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    packages = ["avocado_varianter_yaml_to_mux"]
-else:
-    packages = find_namespace_packages(include=["avocado_varianter_yaml_to_mux"])
+from setuptools import find_namespace_packages, setup
 
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf-8") as version_file:
     VERSION = version_file.read().strip()
 
-
-def get_long_description():
-    with open(os.path.join(BASE_PATH, "README.rst"), "rt", encoding="utf-8") as readme:
-        readme_contents = readme.read()
-    return re.sub(r":[a-zA-Z]+:", "", readme_contents)
-
-
 setup(
     name="avocado-framework-plugin-varianter-yaml-to-mux",
     version=VERSION,
-    description="Avocado Varianter plugin to parse YAML file into variants",
-    long_description=get_long_description(),
-    long_description_content_type="text/x-rst",
-    author="Avocado Developers",
-    author_email="avocado-devel@redhat.com",
-    url="http://avocado-framework.github.io/",
-    packages=packages,
+    packages=find_namespace_packages(include=["avocado_varianter_yaml_to_mux"]),
     include_package_data=True,
     install_requires=[f"avocado-framework=={VERSION}", "PyYAML>=4.2b2"],
-    zip_safe=False,
     entry_points={
         "avocado.plugins.init": [
             "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",

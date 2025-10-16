@@ -17,25 +17,34 @@ proposed filesystem structure::
     │   ├── __init__.py
     │   └── test.py
     ├── README.rst
-    ├── setup.py
+    ├── pyproject.toml
     ├── tests
     │   └── test_example.py
     └── VERSION
 
-- ``setup.py``: In the ``setup.py`` it is important to specify the
+- ``pyproject.toml``: In the ``pyproject.toml`` it is important to specify the
   ``avocado-framework`` package as a dependency::
 
-    from setuptools import setup, find_packages
+    [build-system]
+    requires = ["setuptools>=61.0", "wheel"]
+    build-backend = "setuptools.build_meta"
 
-    setup(name='apricot',
-          description='Apricot - Avocado SubFramework',
-          version=open("VERSION", "r").read().strip(),
-          author='Apricot Developers',
-          author_email='apricot-devel@example.com',
-          packages=['apricot'],
-          include_package_data=True,
-          install_requires=['avocado-framework']
-          )
+    [project]
+    name = "apricot"
+    dynamic = ["version"]
+    description = "Apricot - Avocado SubFramework"
+    authors = [
+        {name = "Apricot Developers", email = "apricot-devel@example.com"},
+    ]
+    dependencies = [
+        "avocado-framework",
+    ]
+
+    [tool.setuptools]
+    packages = ["apricot"]
+
+    [tool.setuptools.dynamic]
+    version = {file = "VERSION"}
 
 
 - ``VERSION``: Version your project as you wish::
@@ -76,39 +85,20 @@ proposed filesystem structure::
 
 To (non-intrusively) install your module, use::
 
-    ~/git/apricot (master)$ python setup.py develop --user
-    running develop
-    running egg_info
-    writing requirements to apricot.egg-info/requires.txt
-    writing apricot.egg-info/PKG-INFO
-    writing top-level names to apricot.egg-info/top_level.txt
-    writing dependency_links to apricot.egg-info/dependency_links.txt
-    reading manifest file 'apricot.egg-info/SOURCES.txt'
-    writing manifest file 'apricot.egg-info/SOURCES.txt'
-    running build_ext
-    Creating /home/user/.local/lib/python2.7/site-packages/apricot.egg-link (link to .)
-    apricot 1.0 is already the active version in easy-install.pth
-
-    Installed /home/user/git/apricot
-    Processing dependencies for apricot==1.0
-    Searching for avocado-framework==55.0
-    Best match: avocado-framework 55.0
-    avocado-framework 55.0 is already the active version in easy-install.pth
-
-    Using /home/user/git/avocado
-    Using /usr/lib/python2.7/site-packages
-    Searching for six==1.10.0
-    Best match: six 1.10.0
-    Adding six 1.10.0 to easy-install.pth file
-
-    Using /usr/lib/python2.7/site-packages
-    Searching for pbr==3.1.1
-    Best match: pbr 3.1.1
-    Adding pbr 3.1.1 to easy-install.pth file
-    Installing pbr script to /home/user/.local/bin
-
-    Using /usr/lib/python2.7/site-packages
-    Finished processing dependencies for apricot==1.0
+    ~/git/apricot (master)$ pip install -e . --user
+    Obtaining file:///home/user/git/apricot
+      Installing build dependencies ... done
+      Checking if build backend supports build_editable ... done
+      Getting requirements to build editable ... done
+      Preparing editable metadata ... done
+    Requirement already satisfied: avocado-framework in /home/user/.local/lib/python3.11/site-packages (from apricot==1.0) (112.0)
+    Building wheels for collected packages: apricot
+      Building editable for apricot (pyproject.toml) ... done
+      Created wheel for apricot: filename=apricot-1.0-py3-none-any.whl
+      Stored in directory: /tmp/pip-ephem-wheel-cache
+    Successfully built apricot
+    Installing collected packages: apricot
+    Successfully installed apricot-1.0
 
 And to run your test::
 

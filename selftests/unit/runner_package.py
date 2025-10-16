@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch
+from multiprocessing import SimpleQueue
+from unittest.mock import MagicMock, patch
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.plugins.runners.package import PackageRunner
@@ -46,164 +47,136 @@ class BasicTests(unittest.TestCase):
     SOFTWARE_MANAGER_CAPABLE, "Not capable of a SoftwareManager backend"
 )
 class ActionTests(unittest.TestCase):
-    """Unit tests for the actions on PackageRunner class"""
+    """Unit tests for the actions on PackageRunner class
 
-    def setUp(self):
-        """Mock SoftwareManager"""
-
-        self.sm_patcher = patch(
-            "avocado.plugins.runners.package.SoftwareManager", autospec=True
-        )
-        self.mock_sm = self.sm_patcher.start()
-        self.addCleanup(self.sm_patcher.stop)
+    Note: These tests directly call _run_software_manager to avoid
+    multiprocessing issues with mocking. The multiprocessing behavior
+    is tested in integration tests.
+    """
 
     def test_success_install(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = False
+            mock_instance.install.return_value = True
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: False
-        self.mock_sm.return_value.install = lambda install: True
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "install", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "pass")
-        stdout = b"Package(s) foo installed successfully"
-        self.assertIn(stdout, messages[-3]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("install", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "pass")
+            self.assertIn("Package(s) foo installed successfully", output["stdout"])
 
     def test_already_installed(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = True
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: True
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "install", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "pass")
-        stdout = b"Package foo already installed"
-        self.assertIn(stdout, messages[-3]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("install", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "pass")
+            self.assertIn("Package foo already installed", output["stdout"])
 
     def test_fail_install(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = False
+            mock_instance.install.return_value = False
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: False
-        self.mock_sm.return_value.install = lambda install: False
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "install", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "error")
-        stderr = b"Failed to install foo."
-        self.assertIn(stderr, messages[-2]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("install", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "error")
+            self.assertIn("Failed to install foo.", output["stderr"])
 
     def test_success_remove(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = True
+            mock_instance.remove.return_value = True
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: True
-        self.mock_sm.return_value.remove = lambda remove: True
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "remove", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "pass")
-        stdout = b"Package(s) foo removed successfully"
-        self.assertIn(stdout, messages[-3]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("remove", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "pass")
+            self.assertIn("Package(s) foo removed successfully", output["stdout"])
 
     def test_not_installed(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = False
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: False
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "remove", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "pass")
-        stdout = b"Package foo not installed"
-        self.assertIn(stdout, messages[-3]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("remove", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "pass")
+            self.assertIn("Package foo not installed", output["stdout"])
 
     def test_fail_remove(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = True
+            mock_instance.remove.return_value = False
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: True
-        self.mock_sm.return_value.remove = lambda remove: False
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "remove", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "error")
-        stderr = b"Failed to remove foo."
-        self.assertIn(stderr, messages[-2]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("remove", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "error")
+            self.assertIn("Failed to remove foo.", output["stderr"])
 
     def test_success_check(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = True
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: True
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "check", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "pass")
-        stdout = b"Package foo already installed"
-        self.assertIn(stdout, messages[-3]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("check", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "pass")
+            self.assertIn("Package foo already installed", output["stdout"])
 
     def test_fail_check(self):
+        with patch("avocado.plugins.runners.package.SoftwareManager") as mock_sm:
+            mock_instance = MagicMock()
+            mock_instance.is_capable.return_value = True
+            mock_instance.check_installed.return_value = False
+            mock_sm.return_value = mock_instance
 
-        self.mock_sm.return_value.check_installed = lambda check_installed: False
-        runnable = Runnable(
-            kind="package", uri=None, **{"action": "check", "name": "foo"}
-        )
-        runner = PackageRunner()
-        status = runner.run(runnable)
-        messages = []
-        while True:
-            try:
-                messages.append(next(status))
-            except StopIteration:
-                break
-        self.assertEqual(messages[-1]["result"], "error")
-        stderr = b"Package foo not installed"
-        self.assertIn(stderr, messages[-2]["log"])
+            runner = PackageRunner()
+            queue = SimpleQueue()
+            runner._run_software_manager("check", "foo", queue)
+
+            output = queue.get()
+            self.assertEqual(output["result"], "error")
+            self.assertIn("Package foo not installed", output["stderr"])
 
 
 if __name__ == "__main__":
