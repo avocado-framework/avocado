@@ -810,3 +810,6 @@ ESC
 HFS
 txt
 codec
+truthy
+falsy
+myfile
