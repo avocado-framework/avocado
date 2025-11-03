@@ -1,3 +1,4 @@
+import errno
 import io
 import logging
 import os
@@ -356,6 +357,13 @@ class MiscProcessTests(unittest.TestCase):
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
         self.assertEqual("./bin", res)
 
+    def test_binary_from_shell_cmd_invalid(self):
+        """Test binary_from_shell_cmd with invalid input"""
+        with self.assertRaises(ValueError):
+            process.binary_from_shell_cmd("VAR=value OTHER=value")
+        with self.assertRaises(ValueError):
+            process.binary_from_shell_cmd("")
+
     def test_cmd_split(self):
         self.assertEqual(process.cmd_split(""), [])
         self.assertEqual(
@@ -534,6 +542,143 @@ class MiscProcessTests(unittest.TestCase):
     def test_empty_command(self):
         with self.assertRaises(process.CmdInputError):
             process.run("")
+
+    @unittest.mock.patch("avocado.utils.process.os.getuid")
+    def test_can_sudo_as_root(self, getuid_mock):
+        """Test can_sudo when running as root"""
+        getuid_mock.return_value = 0
+        self.assertTrue(process.can_sudo())
+
+    @unittest.mock.patch("avocado.utils.path.find_command")
+    @unittest.mock.patch("avocado.utils.process.os.getuid")
+    def test_can_sudo_no_sudo_installed(self, getuid_mock, find_cmd_mock):
+        """Test can_sudo when sudo is not installed"""
+        getuid_mock.return_value = 1000
+        find_cmd_mock.side_effect = path.CmdNotFoundError("sudo", [])
+        self.assertFalse(process.can_sudo())
+
+    @unittest.mock.patch("avocado.utils.process.system")
+    @unittest.mock.patch("avocado.utils.path.find_command")
+    @unittest.mock.patch("avocado.utils.process.os.getuid")
+    def test_can_sudo_with_specific_cmd(self, getuid_mock, find_cmd_mock, system_mock):
+        """Test can_sudo with a specific command"""
+        getuid_mock.return_value = 1000
+        find_cmd_mock.return_value = "/usr/bin/sudo"
+        system_mock.return_value = 0
+        self.assertTrue(process.can_sudo("ls -l"))
+
+    @unittest.mock.patch("avocado.utils.process.system")
+    @unittest.mock.patch("avocado.utils.path.find_command")
+    @unittest.mock.patch("avocado.utils.process.os.getuid")
+    def test_can_sudo_oserror(self, getuid_mock, find_cmd_mock, system_mock):
+        """Test can_sudo when OSError occurs"""
+        getuid_mock.return_value = 1000
+        find_cmd_mock.return_value = "/usr/bin/sudo"
+        system_mock.side_effect = OSError()
+        self.assertFalse(process.can_sudo())
+
+    @unittest.mock.patch("avocado.utils.process.get_capabilities")
+    def test_has_capability_true(self, get_caps_mock):
+        """Test has_capability when capability exists"""
+        get_caps_mock.return_value = ["cap_chown", "cap_dac_override", "cap_kill"]
+        self.assertTrue(process.has_capability("cap_kill"))
+
+    @unittest.mock.patch("avocado.utils.process.get_capabilities")
+    def test_has_capability_false(self, get_caps_mock):
+        """Test has_capability when capability doesn't exist"""
+        get_caps_mock.return_value = ["cap_chown", "cap_dac_override"]
+        self.assertFalse(process.has_capability("cap_kill"))
+
+    @unittest.mock.patch("avocado.utils.process.get_capabilities")
+    def test_has_capability_with_pid(self, get_caps_mock):
+        """Test has_capability with specific PID"""
+        get_caps_mock.return_value = ["cap_sys_admin"]
+        self.assertTrue(process.has_capability("cap_sys_admin", pid=1234))
+        get_caps_mock.assert_called_with(1234)
+
+    @unittest.mock.patch("avocado.utils.process.os.kill")
+    def test_pid_exists_true(self, kill_mock):
+        """Test pid_exists when PID exists"""
+        kill_mock.return_value = None
+        self.assertTrue(process.pid_exists(1234))
+        kill_mock.assert_called_with(1234, 0)
+
+    @unittest.mock.patch("avocado.utils.process.os.kill")
+    def test_pid_exists_false(self, kill_mock):
+        """Test pid_exists when PID doesn't exist"""
+        kill_mock.side_effect = OSError(errno.ESRCH, "No such process")
+        self.assertFalse(process.pid_exists(99999))
+
+    @unittest.mock.patch("avocado.utils.process.os.kill")
+    def test_pid_exists_permission_denied(self, kill_mock):
+        """Test pid_exists when permission denied (PID still exists)"""
+        kill_mock.side_effect = OSError(errno.EPERM, "Operation not permitted")
+        self.assertTrue(process.pid_exists(1))
+
+    @unittest.mock.patch("avocado.utils.process.run")
+    def test_kill_process_by_pattern(self, run_mock):
+        """Test kill_process_by_pattern"""
+        run_mock.return_value = process.CmdResult(exit_status=0)
+        process.kill_process_by_pattern("test_pattern")
+        run_mock.assert_called_with("pkill -f test_pattern", ignore_status=True)
+
+    @unittest.mock.patch("avocado.utils.process.run")
+    def test_kill_process_by_pattern_failure(self, run_mock):
+        """Test kill_process_by_pattern when it fails"""
+        run_mock.return_value = process.CmdResult(exit_status=1)
+        # Should not raise exception
+        process.kill_process_by_pattern("nonexistent")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_system_function(self):
+        """Test system() function returns exit code"""
+        exit_code = process.system(f"{ECHO_CMD} test", ignore_status=True)
+        self.assertEqual(exit_code, 0)
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_system_with_failure(self):
+        """Test system() with failing command"""
+        exit_code = process.system("false", ignore_status=True, shell=True)
+        self.assertNotEqual(exit_code, 0)
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_system_output_function(self):
+        """Test system_output() function returns output"""
+        output = process.system_output(f"{ECHO_CMD} -n hello", ignore_status=True)
+        self.assertEqual(output, b"hello")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_system_output_strip_newline(self):
+        """Test system_output() strips trailing newline"""
+        output = process.system_output(f"{ECHO_CMD} hello", ignore_status=True)
+        self.assertEqual(output, b"hello")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_system_output_no_strip(self):
+        """Test system_output() without stripping newline"""
+        output = process.system_output(
+            f"{ECHO_CMD} hello", ignore_status=True, strip_trail_nl=False
+        )
+        self.assertEqual(output, b"hello\n")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_getoutput_function(self):
+        """Test getoutput() function"""
+        output = process.getoutput(f"{ECHO_CMD} -n test")
+        self.assertEqual(output, "test")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_getstatusoutput_function(self):
+        """Test getstatusoutput() function"""
+        status, output = process.getstatusoutput(f"{ECHO_CMD} hello")
+        self.assertEqual(status, 0)
+        self.assertEqual(output, "hello")
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_getstatusoutput_with_failure(self):
+        """Test getstatusoutput() with failing command"""
+        status, _output = process.getstatusoutput("false")
+        self.assertNotEqual(status, 0)
 
 
 class CmdResultTests(unittest.TestCase):

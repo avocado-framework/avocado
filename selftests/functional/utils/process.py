@@ -122,6 +122,25 @@ if __name__ == '__main__':
 
 """
 
+ENV_TEST_SCRIPT = """#!{interpreter}
+import os
+print(os.environ.get('TEST_VAR', 'NOT_SET'))
+"""
+
+SUCCESS_SCRIPT = """#!{interpreter}
+print('success')
+"""
+
+LARGE_OUTPUT_SCRIPT = """#!{interpreter}
+for i in range(1000):
+    print(f'Line {{i}}' * 100)
+"""
+
+UNICODE_TEST_SCRIPT = """#!{interpreter}
+# -*- coding: utf-8 -*-
+print('Avokádo')
+"""
+
 
 class ProcessTest(TestCaseTmpDir):
     def setUp(self):
@@ -135,6 +154,19 @@ class ProcessTest(TestCaseTmpDir):
         with open(self.fake_uptime, "w", encoding="utf-8") as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
+
+    def _create_script(self, name, contents):
+        """Create a script file from a template with the interpreter substituted.
+
+        :param name: Name for the script file
+        :param contents: Script contents template with {interpreter} placeholder
+        :returns: Path to the created script
+        """
+        script_path = os.path.join(self.tmpdir.name, name)
+        with open(script_path, "w", encoding="utf-8") as script_file:
+            script_file.write(contents.format(interpreter=sys.executable))
+        os.chmod(script_path, DEFAULT_MODE)
+        return script_path
 
     @skipOnLevelsInferiorThan(2)
     def test_process_start(self):
@@ -179,3 +211,77 @@ class ProcessTest(TestCaseTmpDir):
         result = proc.run()
         self.assertEqual(result.exit_status, 0, f"result: {result}")
         self.assertIn(b"load average", result.stdout)
+
+    def test_run_and_system_output_with_environment(self):
+        """Test process.run() and process.system_output() with environment variables"""
+        env_script = self._create_script("env_test.py", ENV_TEST_SCRIPT)
+
+        # Test process.run() with custom environment variable
+        result = process.run(env_script, env={"TEST_VAR": "custom_value"})
+        self.assertEqual(result.stdout.strip(), b"custom_value")
+        self.assertEqual(result.exit_status, 0)
+
+        # Test process.system_output() also respects environment
+        output = process.system_output(
+            env_script, env={"TEST_VAR": "from_system_output"}
+        )
+        self.assertEqual(output.strip(), b"from_system_output")
+
+    def test_getstatusoutput_integration(self):
+        """Test getstatusoutput function with real commands"""
+        success_script = self._create_script("success.py", SUCCESS_SCRIPT)
+
+        status, output = process.getstatusoutput(success_script)
+        self.assertEqual(status, 0)
+        self.assertEqual(output, "success")
+
+    def test_multiple_subprocess_instances(self):
+        """Test running multiple subprocess instances concurrently"""
+        procs = []
+        for i in range(3):
+            proc = process.SubProcess(
+                f"{sys.executable} -c 'import time; time.sleep(1); print({i})'"
+            )
+            proc.start()
+            procs.append(proc)
+
+        # Wait for all processes to complete
+        for i, proc in enumerate(procs):
+            proc.wait()
+            self.assertEqual(proc.result.exit_status, 0)
+            self.assertIn(str(i).encode(), proc.result.stdout)
+
+    @skipOnLevelsInferiorThan(2)
+    def test_process_with_large_output(self):
+        """Test process captures complete large stdout output"""
+        large_output_script = self._create_script(
+            "large_output.py", LARGE_OUTPUT_SCRIPT
+        )
+
+        result = process.run(large_output_script)
+        self.assertEqual(result.exit_status, 0)
+
+        # Verify we captured EXACTLY the expected output
+        lines = result.stdout.decode().strip().split("\n")
+        self.assertEqual(len(lines), 1000, "Should capture exactly 1000 lines")
+
+        # Verify format of first and last lines to ensure no corruption
+        self.assertEqual(lines[0], "Line 0" * 100)
+        self.assertEqual(lines[999], "Line 999" * 100)
+
+    def test_cmdresult_encoding(self):
+        """Test CmdResult with different character encoding"""
+        unicode_script = self._create_script("unicode_test.py", UNICODE_TEST_SCRIPT)
+
+        result = process.run(unicode_script, encoding="utf-8")
+        self.assertEqual(result.encoding, "utf-8")
+        self.assertIn("Avokádo", result.stdout_text)
+
+    def test_binary_from_shell_cmd_realworld(self):
+        """Test binary_from_shell_cmd with real-world command patterns"""
+        # Simulating common command patterns
+        cmd1 = "FOO=bar BAR=baz /usr/bin/python script.py --arg value"
+        self.assertEqual(process.binary_from_shell_cmd(cmd1), "/usr/bin/python")
+
+        cmd2 = "sudo -u user /bin/bash -c 'echo test'"
+        self.assertEqual(process.binary_from_shell_cmd(cmd2), "sudo")
