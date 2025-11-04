@@ -63,10 +63,25 @@ class CmdInputError(Exception):
 
 
 def can_sudo(cmd=None):
-    """
-    Check whether sudo is available (or running as root)
+    """Check whether sudo is available or if running as root.
 
-    :param cmd: unicode string with the commands
+    This function checks if the current process has the ability to run commands
+    with elevated privileges. It first checks if the process is running as root
+    (UID 0), then checks if sudo is installed and functional.
+
+    :param cmd: Optional command to test sudo capabilities with. If provided,
+                tests whether this specific command can be run with sudo.
+                If not provided, tests basic sudo functionality.
+    :type cmd: str or None
+    :return: True if sudo is available or running as root, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> can_sudo()
+        True
+        >>> can_sudo("ls /root")
+        True
     """
     if not os.getuid():  # Root
         return True
@@ -119,26 +134,50 @@ def get_capabilities(pid=None):
 
 
 def has_capability(capability, pid=None):
-    """Checks if a process has a given capability.
+    """Check if a process has a given Linux capability.
 
     This is a simple wrapper around getpcaps, part of the libcap package.
     In case the getpcaps command is not available, the capability will be
     considered *not* to be available.
 
-    :param capability: the name of the capability, refer to capabilities(7)
-                       man page for more information.
+    :param capability: The name of the capability (e.g., "cap_sys_admin").
+                       Refer to capabilities(7) man page for more information.
+                       Note: capability names are UPPERCASE in capabilities(7)
+                       (e.g., CAP_SYS_ADMIN) but must be lowercase in Python
+                       (e.g., "cap_sys_admin").
     :type capability: str
-    :returns: whether the capability is available or not
+    :param pid: The process ID to check. If None, checks the current process.
+    :type pid: int or None
+    :return: True if the capability is available, False otherwise.
     :rtype: bool
+
+    Example::
+
+        >>> has_capability("cap_chown")
+        True
+        >>> has_capability("cap_sys_admin", pid=1234)
+        False
     """
     return capability in get_capabilities(pid)
 
 
 def pid_exists(pid):
-    """
-    Return True if a given PID exists.
+    """Check if a process with the given PID exists.
 
-    :param pid: Process ID number.
+    This function uses os.kill with signal 0 to check if a process exists
+    without actually sending a signal to it.
+
+    :param pid: The process ID number to check.
+    :type pid: int
+    :return: True if the process exists, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> pid_exists(1)
+        True
+        >>> pid_exists(999999)
+        False
     """
     try:
         os.kill(pid, 0)
@@ -149,10 +188,22 @@ def pid_exists(pid):
 
 
 def safe_kill(pid, signal):  # pylint: disable=W0621
-    """
-    Attempt to send a signal to a given process that may or may not exist.
+    """Attempt to send a signal to a process that may or may not exist.
 
-    :param signal: Signal number.
+    This function safely sends a signal to a process, handling cases where
+    the process might not exist or require elevated privileges.
+
+    :param pid: The process ID to send the signal to.
+    :type pid: int
+    :param signal: The signal number to send (e.g., signal.SIGTERM).
+    :type signal: int
+    :return: True if signal was sent successfully, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> safe_kill(1234, signal.SIGTERM)
+        True
     """
     if not get_owner_id(int(pid)):
         kill_cmd = f"kill -{int(signal)} {int(pid)}"
@@ -170,14 +221,22 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
 
 def get_parent_pid(pid):
-    """
-    Returns the parent PID for the given process
+    """Get the parent process ID for a given process.
 
-    :note: This is currently Linux specific.
+    This function reads the /proc filesystem to determine the parent PID.
 
-    :param pid: The PID of child process
-    :returns: The parent PID
+    .. note:: This is currently Linux specific.
+
+    :param pid: The PID of the child process.
+    :type pid: int
+    :return: The parent process ID.
     :rtype: int
+    :raises IOError: If the /proc entry cannot be read.
+
+    Example::
+
+        >>> get_parent_pid(1234)
+        1
     """
     with open(f"/proc/{int(pid)}/stat", "rb") as proc_stat:
         parent_pid = proc_stat.read().split(b" ")[-49]
@@ -192,14 +251,27 @@ def _get_pid_from_proc_pid_stat(proc_path):
 
 
 def get_children_pids(parent_pid, recursive=False):
-    """
-    Returns the children PIDs for the given process
+    """Get the list of child process IDs for a given parent process.
 
-    :note: This is currently Linux specific.
+    This function scans the /proc filesystem to find all child processes
+    of the specified parent PID.
 
-    :param parent_pid: The PID of parent child process
-    :returns: The PIDs for the children processes
+    .. note:: This is currently Linux specific.
+
+    :param parent_pid: The PID of the parent process.
+    :type parent_pid: int
+    :param recursive: If True, also returns grandchildren and all descendants.
+                     If False, only returns direct children.
+    :type recursive: bool
+    :return: List of child process IDs.
     :rtype: list of int
+
+    Example::
+
+        >>> get_children_pids(1)
+        [234, 456, 789]
+        >>> get_children_pids(1, recursive=True)
+        [234, 456, 789, 1011, 1213]
     """
     proc_stats = glob.glob("/proc/[123456789]*/stat")
     children = []
@@ -277,10 +349,20 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
 
 
 def kill_process_by_pattern(pattern):
-    """
-    Send SIGTERM signal to a process with matched pattern.
+    """Send SIGTERM signal to processes matching a pattern.
 
-    :param pattern: normally only matched against the process name
+    This function uses the pkill command to terminate processes whose
+    command line matches the given pattern.
+
+    :param pattern: Pattern to match against process command lines.
+                   This is matched using pkill's -f flag, which matches
+                   against the full command line.
+    :type pattern: str
+
+    Example::
+
+        >>> kill_process_by_pattern("firefox")
+        >>> kill_process_by_pattern("python.*test_script")
     """
     cmd = f"pkill -f {pattern}"
     result = run(cmd, ignore_status=True)
@@ -317,14 +399,28 @@ def process_in_ptree_is_defunct(ppid):
 
 
 def binary_from_shell_cmd(cmd):
-    """
-    Tries to find the first binary path from a simple shell-like command.
+    """Extract the first binary path from a shell-like command string.
 
-    :note: It's a naive implementation, but for commands like:
-           `VAR=VAL binary -args || true` gives the right result (binary)
-    :param cmd: simple shell-like binary
-    :type cmd: unicode string
-    :return: first found binary from the cmd
+    This function parses a shell command and returns the first binary/executable
+    found, skipping environment variable assignments.
+
+    .. note:: This is a naive implementation that handles common patterns like
+              environment variable assignments before the binary name.
+
+    :param cmd: A shell-like command string to parse.
+    :type cmd: str
+    :return: The first binary/executable found in the command.
+    :rtype: str
+    :raises ValueError: If no binary can be extracted from the command.
+
+    Example::
+
+        >>> binary_from_shell_cmd("binary")
+        'binary'
+        >>> binary_from_shell_cmd("VAR=VAL binary -args")
+        'binary'
+        >>> binary_from_shell_cmd("FOO=bar ./script.py")
+        './script.py'
     """
     cmds = shlex.split(cmd)
     for item in cmds:
@@ -1288,11 +1384,24 @@ def getstatusoutput(
 
 
 def get_owner_id(pid):
-    """
-    Get the owner's user id of a process
+    """Get the user ID of the process owner.
 
-    :param pid: the process id
-    :return: user id of the process owner
+    This function reads the /proc filesystem to determine the user ID
+    that owns the specified process.
+
+    .. note:: This is currently Linux specific.
+
+    :param pid: The process ID to query.
+    :type pid: int
+    :return: The user ID of the process owner, or None if not found.
+    :rtype: int or None
+
+    Example::
+
+        >>> get_owner_id(1)
+        0
+        >>> get_owner_id(999999)
+        None
     """
     try:
         return os.stat(f"/proc/{int(pid)}/").st_uid
@@ -1301,15 +1410,22 @@ def get_owner_id(pid):
 
 
 def get_command_output_matching(command, pattern):
-    """
-    Runs a command, and if the pattern is in in the output, returns it.
+    """Run a command and return lines matching a pattern.
 
-    :param command: the command to execute
+    This function executes a command and searches its output for lines
+    containing the specified pattern, returning all matching lines.
+
+    :param command: The command to execute.
     :type command: str
-    :param pattern: pattern to search in the output, in a line by line basis
+    :param pattern: Pattern to search for in the output. Matching is done
+                   on a line-by-line basis using substring matching.
     :type pattern: str
-
-    :return: list of lines matching the pattern
+    :return: List of lines from the command output that contain the pattern.
     :rtype: list of str
+
+    Example::
+
+        >>> get_command_output_matching("ls -la", "txt")
+        ['file1.txt', 'file2.txt']
     """
     return [line for line in run(command).stdout_text.splitlines() if pattern in line]
