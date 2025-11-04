@@ -1,3 +1,6 @@
+# Minimal setup.py for backward compatibility and egg builds.
+# Configuration moved to pyproject.toml.
+
 from setuptools import setup
 
 name = "rogue"
@@ -12,10 +15,6 @@ if __name__ == "__main__":
         name="avocado-rogue",
         version="1.0",
         description='Avocado "rogue" test type',
-        long_description=(
-            "This is a plugin that contains a rogue runner, that is, "
-            "a runner that will try to never allow to be terminated."
-        ),
         py_modules=[module],
         entry_points={
             "avocado.plugins.resolver": [resolver_ep],

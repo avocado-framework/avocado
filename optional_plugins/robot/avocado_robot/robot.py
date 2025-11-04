@@ -38,8 +38,10 @@ def find_tests(reference, test_suite):
     test_suite[data.name] = []
     # data.tests is a list
     for test_case in data.tests:  # pylint: disable=E1133
+        # Handle both string (old API) and TestCase object (new API)
+        test_name = test_case.name if hasattr(test_case, "name") else test_case
         test_suite[data.name].append(
-            {"test_name": test_case, "test_source": data.source}
+            {"test_name": test_name, "test_source": data.source}
         )
 
     # data.suites is a list

@@ -13,28 +13,17 @@
 # Copyright: Red Hat Inc. 2022
 # Author: Cleber Rosa <crosa@redhat.com>
 
-from setuptools import setup
+# Minimal setup.py for backward compatibility and egg builds.
+# Metadata moved to pyproject.toml.
 
-# Handle systems with setuptools < 40
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    packages = ["avocado_ansible"]
-else:
-    packages = find_namespace_packages(include=["avocado_ansible"])
+from setuptools import find_namespace_packages, setup
 
 VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
 setup(
     name="avocado-framework-plugin-ansible",
-    description="Adds to Avocado the ability to use ansible modules as dependencies for tests",
-    long_description="Adds to Avocado the ability to use ansible modules as dependencies for tests",
-    long_description_content_type="text/x-rst",
     version=VERSION,
-    author="Avocado Developers",
-    author_email="avocado-devel@redhat.com",
-    url="http://avocado-framework.github.io/",
-    packages=packages,
+    packages=find_namespace_packages(include=["avocado_ansible"]),
     include_package_data=True,
     install_requires=[
         f"avocado-framework=={VERSION}",

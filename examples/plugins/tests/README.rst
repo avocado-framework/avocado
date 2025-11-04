@@ -12,8 +12,8 @@ different types:
    actually execute the tests, reporting the results back to Avocado
 
 These are all based on the "nrunner" architecture.  To see them in
-effect, after enabling them with ``python setup.py develop --user``-like
-commands (see parent directory ``README.rst``), you will want to
+effect, after enabling them with ``pip install -e .``
+(see parent directory ``README.rst``), you will want to
 list tests with::
 
   avocado list $REFERENCE

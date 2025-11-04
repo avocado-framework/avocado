@@ -3,15 +3,15 @@
 YAML to Mux plugin
 ==================
 
-:mod:`avocado_varianter_yaml_to_mux`
+``avocado_varianter_yaml_to_mux``
 
 This plugin utilizes the ``multiplexation`` mechanism to
 produce variants out of a yaml file. This section is example-based,
 if you are interested in test parameters and/or ``multiplexation``
-overview, please take a look at :ref:`test-parameter`.
+overview, please refer to the test parameter documentation.
 
 As mentioned earlier, it inherits from the
-:class:`avocado_varianter_yaml_to_mux.mux.MuxPlugin`
+``avocado_varianter_yaml_to_mux.mux.MuxPlugin``
 and the only thing it implements is the argument parsing
 to get some input and a custom ``yaml``
 parser (which is also capable of parsing ``json``).
@@ -629,14 +629,14 @@ Or, add the / to the list of paths searched for by default::
 Multiplexer
 -----------
 
-:mod:`avocado_varianter_yaml_to_mux.mux`
+``avocado_varianter_yaml_to_mux.mux``
 
 ``Multiplexer`` or simply ``Mux`` is an abstract concept, which was
 the basic idea behind the tree-like params structure with the support
 to produce all possible variants. There is a core implementation of
 basic building blocks that can be used when creating a custom plugin.
 There is a demonstration version of plugin using this concept in
-:mod:`avocado_varianter_yaml_to_mux`
+``avocado_varianter_yaml_to_mux``
 which adds a parser and then
 uses this multiplexer concept to define an Avocado plugin to produce
 variants from ``yaml`` (or ``json``) files.
@@ -646,14 +646,14 @@ Multiplexer concept
 ^^^^^^^^^^^^^^^^^^^
 
 As mentioned earlier, this is an in-core implementation of building
-blocks intended for writing :ref:`varianter-plugins` based on a tree
+blocks intended for writing varianter plugins based on a tree
 with `Multiplex domains`_ defined. The available blocks are:
 
 * `MuxTree`_ - Object which represents a part of the tree and handles
   the multiplexation, which means producing all possible variants
   from a tree-like object.
-* `MuxPlugin`_ - Base class to build :ref:`varianter-plugins`
-* ``MuxTreeNode`` - Inherits from :ref:`tree-node` and adds the support for
+* `MuxPlugin`_ - Base class to build varianter plugins
+* ``MuxTreeNode`` - Inherits from ``TreeNode`` and adds the support for
   control flags (``MuxTreeNode.ctrl``) and multiplex domains
   (``MuxTreeNode.multiplex``).
 
@@ -784,10 +784,10 @@ inner-dependencies.
 MuxPlugin
 ^^^^^^^^^
 
-:class:`avocado_varianter_yaml_to_mux.mux.MuxPlugin`
+``avocado_varianter_yaml_to_mux.mux.MuxPlugin``
 
 Defines the full interface required by
-:class:`avocado.core.plugin_interfaces.Varianter`. The plugin writer
+``avocado.core.plugin_interfaces.Varianter``. The plugin writer
 should inherit from this ``MuxPlugin``, then from the ``Varianter``
 and call the::
 
@@ -795,15 +795,15 @@ and call the::
 
 Where:
 
-* root - is the root of your params tree (compound of :ref:`tree-node` -like
+* root - is the root of your params tree (compound of ``TreeNode`` -like
   nodes)
-* paths - is the :ref:`parameter-paths` to be used in test with all variants
+* paths - is the parameter paths to be used in test with all variants
 * debug - whether to use debug mode (requires the passed tree to be
   compound of ``TreeNodeDebug``-like nodes which stores the origin
   of the variant/value/environment as the value for listing purposes
   and is __NOT__ intended for test execution.
 
-This method must be called before the :ref:`varianter`'s second
+This method must be called before the varianter's second
 stage. The `MuxPlugin`_'s code will take care of the rest.
 
 MuxTree

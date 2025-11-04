@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-result-mail"
+dynamic = ["version", "readme"]
+description = "Avocado Mail Notification for Jobs"
+authors = [
+    {name = "Avocado Developers", email = "avocado-devel@redhat.com"},
+]
+license = {text = "GPL-2.0-or-later"}
+requires-python = ">=3.9"
+dependencies = [
+    "avocado-framework",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "http://avocado-framework.github.io/"
+
+[project.entry-points."avocado.plugins.init"]
+notification = "avocado_result_mail.result_mail:MailInit"
+
+[project.entry-points."avocado.plugins.job.prepost"]
+notification = "avocado_result_mail.result_mail:Mail"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+readme = {file = "README.rst", content-type = "text/x-rst"}

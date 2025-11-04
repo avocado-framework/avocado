@@ -810,3 +810,5 @@ ESC
 HFS
 txt
 codec
+pyproject
+toml

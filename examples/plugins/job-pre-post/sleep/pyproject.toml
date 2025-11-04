@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado_job_sleep"
+version = "1.0"
+description = "Avocado Pre/Post Job Sleep"
+
+[project.entry-points."avocado.plugins.init"]
+avocado_job_sleep = "avocado_job_sleep:SleepInit"
+
+[project.entry-points."avocado.plugins.job.prepost"]
+avocado_job_sleep = "avocado_job_sleep:Sleep"
+
+[tool.setuptools]
+py-modules = ["avocado_job_sleep"]

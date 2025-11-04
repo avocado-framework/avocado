@@ -1,3 +1,6 @@
+# Minimal setup.py for backward compatibility and egg builds.
+# Configuration moved to pyproject.toml.
+
 from setuptools import setup
 
 if __name__ == "__main__":

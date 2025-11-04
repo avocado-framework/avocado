@@ -3,7 +3,7 @@
 PICT Varianter plugin
 =====================
 
-:mod:`avocado_varianter_pict`
+``avocado_varianter_pict``
 
 This plugin uses a third-party tool to provide variants created by
 "Pair-Wise" algorithms, also known as Combinatorial Independent

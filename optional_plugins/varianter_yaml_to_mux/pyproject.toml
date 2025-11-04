@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avocado-framework-plugin-varianter-yaml-to-mux"
+dynamic = ["version", "readme"]
+description = "Avocado Varianter plugin to parse YAML file into variants"
+authors = [
+    {name = "Avocado Developers", email = "avocado-devel@redhat.com"},
+]
+license = {text = "GPL-2.0-or-later"}
+requires-python = ">=3.9"
+dependencies = [
+    "avocado-framework",
+    "PyYAML>=4.2b2",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "http://avocado-framework.github.io/"
+
+[project.entry-points."avocado.plugins.init"]
+yaml_to_mux = "avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit"
+
+[project.entry-points."avocado.plugins.cli"]
+yaml_to_mux = "avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxCLI"
+
+[project.entry-points."avocado.plugins.varianter"]
+yaml_to_mux = "avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMux"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["avocado_varianter_yaml_to_mux*"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+readme = {file = "README.rst", content-type = "text/x-rst"}

@@ -30,17 +30,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Installing Avocado
-        run: python3 setup.py install --user
+        run: python3 -m pip install --user -e .
       - name: Installing plugins
         run: |
-         python3 setup.py plugin --install=golang --user
-         python3 setup.py plugin --install=html --user
-         python3 setup.py plugin --install=result_upload --user
-         python3 setup.py plugin --install=resultsdb --user
-         python3 setup.py plugin --install=robot --user
-         python3 setup.py plugin --install=varianter_cit --user
-         python3 setup.py plugin --install=varianter_pict --user
-         python3 setup.py plugin --install=varianter_yaml_to_mux --user
+          python3 -m pip install ./optional_plugins/golang --user
+          python3 -m pip install ./optional_plugins/html --user
+          python3 -m pip install ./optional_plugins/result_upload --user
+          python3 -m pip install ./optional_plugins/resultsdb --user
+          python3 -m pip install ./optional_plugins/robot --user
+          python3 -m pip install ./optional_plugins/varianter_cit --user
+          python3 -m pip install ./optional_plugins/varianter_pict --user
+          python3 -m pip install ./optional_plugins/varianter_yaml_to_mux --user
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
@@ -70,17 +70,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Installing Avocado
-        run: python3 setup.py install
+        run: python3 -m pip install .
       - name: Installing plugins
         run: |
-         python3 setup.py plugin --install=golang
-         python3 setup.py plugin --install=html
-         python3 setup.py plugin --install=result_upload
-         python3 setup.py plugin --install=resultsdb
-         python3 setup.py plugin --install=robot
-         python3 setup.py plugin --install=varianter_cit
-         python3 setup.py plugin --install=varianter_pict
-         python3 setup.py plugin --install=varianter_yaml_to_mux
+          python3 -m pip install ./optional_plugins/golang
+          python3 -m pip install ./optional_plugins/html
+          python3 -m pip install ./optional_plugins/result_upload
+          python3 -m pip install ./optional_plugins/resultsdb
+          python3 -m pip install ./optional_plugins/robot
+          python3 -m pip install ./optional_plugins/varianter_cit
+          python3 -m pip install ./optional_plugins/varianter_pict
+          python3 -m pip install ./optional_plugins/varianter_yaml_to_mux
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
@@ -112,17 +112,17 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: python3 -m pip install --user -e .
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
-        run: python3 setup.py man
+        run: make man
       - name: Tree static check, unittests and fast functional tests
-        run: python3 setup.py test
+        run: python3 -m selftests.check
       - name: Uninstall avocado
-        run: python3 setup.py develop --user --uninstall
+        run: python3 -m pip uninstall -y avocado-framework
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -148,17 +148,17 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop
+        run: python3 -m pip install -e .
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
-        run: python3 setup.py man
+        run: make man
       - name: Tree static check, unittests and fast functional tests
-        run: python3 setup.py test
+        run: python3 -m selftests.check
       - name: Uninstall avocado
-        run: python3 setup.py develop --uninstall
+        run: python3 -m pip uninstall -y avocado-framework
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -178,20 +178,20 @@ jobs:
          sudo apt-get install -y  python3-virtualenv
       - name: virtualenv
         run: |
-         python3 -m venv env
-         source env/bin/activate
-         python3 setup.py install
-         python3 setup.py plugin --install=golang
-         python3 setup.py plugin --install=html
-         python3 setup.py plugin --install=result_upload
-         python3 setup.py plugin --install=resultsdb
-         python3 setup.py plugin --install=robot
-         python3 setup.py plugin --install=varianter_cit
-         python3 setup.py plugin --install=varianter_pict
-         python3 setup.py plugin --install=varianter_yaml_to_mux
-         avocado --version
-         avocado run examples/tests/passtest.py
-         deactivate
+          python3 -m venv env
+          source env/bin/activate
+          python3 -m pip install .
+          python3 -m pip install ./optional_plugins/golang
+          python3 -m pip install ./optional_plugins/html
+          python3 -m pip install ./optional_plugins/result_upload
+          python3 -m pip install ./optional_plugins/resultsdb
+          python3 -m pip install ./optional_plugins/robot
+          python3 -m pip install ./optional_plugins/varianter_cit
+          python3 -m pip install ./optional_plugins/varianter_pict
+          python3 -m pip install ./optional_plugins/varianter_yaml_to_mux
+          avocado --version
+          avocado run examples/tests/passtest.py
+          deactivate
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
   devel-virtualenv-installation:
@@ -213,9 +213,9 @@ jobs:
          python3 -m venv env
          source env/bin/activate
          pip install -r requirements-dev.txt
-         python3 setup.py develop
+         python3 -m pip install -e .
          avocado --version
          avocado run examples/tests/passtest.py
-         python3 setup.py test --skip static-checks
+         python3 -m selftests.check --skip=static-checks
          deactivate
       - run: echo "🥑 This job's status is ${{ job.status }}."

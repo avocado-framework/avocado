@@ -29,7 +29,7 @@ jobs:
       - name: Run static checks
         env:
           COMMIT_COUNT: ${{ github.event.pull_request.commits  }}
-        run: python3 setup.py test --select=static-checks
+        run: python3 -m selftests.check --select=static-checks
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -86,17 +86,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -V --version
+        run: python -VV
       - name: Install setuptools on Python >= 3.12
         run: python3 -c 'import setuptools' || python3 -m pip install "setuptools<80"
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: python3 -m pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
       - name: Unittests and fast functional tests
-        run: python3 setup.py test --skip=static-checks
+        run: python3 -m selftests.check --skip=static-checks
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -128,7 +128,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -V --version
+        run: python -VV
       - name: Install avocado
         run: |
           python3 -m pip install -r requirements-dev.txt
@@ -140,7 +140,7 @@ jobs:
       - name: List test
         run: python -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
       - name: Run a subset of avocado's selftests
-        run: PATH=~/Library/Python/3.11/bin:$PATH ./selftests/check.py --skip=static-checks
+        run: PATH=~/Library/Python/3.11/bin:$PATH python3 -m selftests.check --skip=static-checks
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -164,11 +164,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -V --version
+        run: python -VV
       - name: Install setuptools on Python >= 3.12
         run: python -c 'import setuptools' || python -m pip install "setuptools<80"
       - name: Install avocado
-        run: python setup.py develop --user
+        run: python -m pip install --user -e .
       - name: Show avocado help
         run: python -m avocado --help
       - name: Example test
@@ -262,7 +262,7 @@ jobs:
       image: fedora:40
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3 python3-setuptools
+        run: dnf -y install python3 python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -275,7 +275,7 @@ jobs:
       image: fedora:41
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3-setuptools
+        run: dnf -y install python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -288,7 +288,7 @@ jobs:
       image: registry.access.redhat.com/ubi8/ubi:8.8
     steps:
       - name: Install Python dependencies
-        run: dnf -y install python3.11 python3.11-setuptools python3.11-setuptools-rust
+        run: dnf -y install python3.11 python3.11-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -300,6 +300,8 @@ jobs:
     container:
       image: registry.access.redhat.com/ubi9/ubi:9.2
     steps:
+      - name: Install Python dependencies
+        run: dnf -y install python3 python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -312,7 +314,7 @@ jobs:
       image: debian:12.4
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-venv python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -325,7 +327,7 @@ jobs:
       image: debian:11.0
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-venv python3-pip
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -338,7 +340,7 @@ jobs:
       image: ubuntu:24.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools ca-certificates
+        run: apt update && apt -y install python3 python3-venv python3-pip ca-certificates
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version
@@ -351,7 +353,7 @@ jobs:
       image: ubuntu:22.04
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools ca-certificates
+        run: apt update && apt -y install python3 python3-venv python3-pip ca-certificates
       - name: Check out repository code
         uses: actions/checkout@v4
       - uses: ./.github/actions/version

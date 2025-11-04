@@ -7,20 +7,28 @@ functionality can be found.
 
 To try them out on a development environment, you may run::
 
- $ cd <plugin-dir>/
- $ python setup.py develop --user
+ $ pip install -e optional_plugins/<plugin-name>
 
-And to remove them on a development environment, you may run, at the
-same directory::
+For example::
 
- $ python setup.py develop --uninstall --user
+ $ pip install -e optional_plugins/html
+ $ pip install -e optional_plugins/ansible
 
-Also, on a development environment, the following command on the
+And to remove them on a development environment, you may run::
+
+ $ pip uninstall <plugin-package-name>
+
+For example::
+
+ $ pip uninstall avocado-framework-plugin-result-html
+ $ pip uninstall avocado-framework-plugin-ansible
+
+Also, on a development environment, the following command from the
 topmost Avocado source code directory will enable all optional
 plugins::
 
- $ make link
+ $ make develop-plugins
 
-And this will disable all optional plugins::
+And to enable a specific plugin::
 
- $ make unlink
+ $ make develop-plugin PLUGIN=html
