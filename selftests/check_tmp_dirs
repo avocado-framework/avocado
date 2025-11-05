@@ -10,16 +10,21 @@ def check_tmp_dirs():
     fail = False
     for dir_to_check in dirs_to_check:
         dir_list = os.listdir(dir_to_check)
-        avocado_tmp_dirs = [d for d in dir_list
-                            if (d.startswith('avocado')
-                                and os.path.isdir(os.path.join(dir_to_check, d)))]
+        avocado_tmp_dirs = [
+            d
+            for d in dir_list
+            if (
+                d.startswith("avocado") and os.path.isdir(os.path.join(dir_to_check, d))
+            )
+        ]
         try:
             assert len(avocado_tmp_dirs) == 0
-            print('No temporary avocado dirs lying around in %s' %
-                  dir_to_check)
+            print("No temporary avocado dirs lying around in %s" % dir_to_check)
         except AssertionError:
-            print('There are temporary avocado dirs lying around after test:',
-                  ', '.join([os.path.join(dir_to_check, _) for _ in avocado_tmp_dirs]))
+            print(
+                "There are temporary avocado dirs lying around after test:",
+                ", ".join([os.path.join(dir_to_check, _) for _ in avocado_tmp_dirs]),
+            )
             fail = True
     if fail:
         sys.exit(1)
@@ -27,5 +32,5 @@ def check_tmp_dirs():
         sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     check_tmp_dirs()
