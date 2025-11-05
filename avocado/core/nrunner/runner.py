@@ -73,6 +73,7 @@ class BaseRunner(RunnableRunner):
                           condition for continuing the loop
         """
         most_current_execution_state_time = None
+        next_execution_state_mark = 0
         while not condition():
             now = time.monotonic()
             if most_current_execution_state_time is not None:

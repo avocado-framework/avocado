@@ -593,8 +593,7 @@ class NetworkInterface:
 
         def save_distro_rhel8_or_older():
             filename = f"ifcfg-{self.name}"
-            if current_distro.name in ["rhel", "fedora"]:
-                path = "/etc/sysconfig/network-scripts"
+            path = "/etc/sysconfig/network-scripts"
             ifcfg_dict = {
                 "TYPE": self.if_type,
                 "BOOTPROTO": "static",

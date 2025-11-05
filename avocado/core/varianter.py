@@ -349,8 +349,7 @@ class Varianter:
                 for plugin_variants in plugins_variants
                 for variant in plugin_variants
             )
-            for variant in iter(iter_variants):
-                yield variant
+            yield from iter(iter_variants)
         else:  # No real variants, but currently *something* needs to be returned
             yield {
                 "variant": self.node_class("").get_leaves(),

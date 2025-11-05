@@ -145,6 +145,7 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
     if not isinstance(level_check, int):
         raise DmesgError("level_check param should be integer")
     dmsg_log = ""
+    err = ""
     cmd = f"dmesg -T -l {','.join(map(str, range(0, int(level_check))))}" f"|grep ."
     out = process.run(cmd, timeout=30, ignore_status=True, verbose=False, shell=True)
     if not out.exit_status:
