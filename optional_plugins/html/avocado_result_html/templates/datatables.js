@@ -2244,7 +2244,7 @@
 	/**
 	 * Allow the result from a type detection function to be `true` while
 	 * translating that into a string. Old type detection functions will
-	 * return the type name if it passes. An obect store would be better,
+	 * return the type name if it passes. An object store would be better,
 	 * but not backwards compatible.
 	 *
 	 * @param {*} typeDetect Object or function for type detection
@@ -5772,7 +5772,7 @@
 			masterMap[master[i]] = i;
 		}
 
-		// And then cache what would be the indexOf fom the display
+		// And then cache what would be the indexOf from the display
 		for (i=0 ; i<display.length ; i++) {
 			map[display[i]] = masterMap[display[i]];
 		}
@@ -7169,12 +7169,12 @@
 	} );
 
 
-	function _api_scope( scope, fn, struc ) {
+	function _api_scope( scope, fn, struct ) {
 		return function () {
 			var ret = fn.apply( scope || this, arguments );
 
 			// Method extension
-			_Api.extend( ret, ret, struc.methodExt );
+			_Api.extend( ret, ret, struct.methodExt );
 			return ret;
 		};
 	}
@@ -10566,13 +10566,13 @@
 		"bFilter": true,
 
 		/**
-		 * Used only for compatiblity with DT1
+		 * Used only for compatibility with DT1
 		 * @deprecated
 		 */
 		"bInfo": true,
 
 		/**
-		 * Used only for compatiblity with DT1
+		 * Used only for compatibility with DT1
 		 * @deprecated
 		 */
 		"bLengthChange": true,
@@ -11509,13 +11509,13 @@
 			"bFilter": null,
 
 			/**
-			 * Used only for compatiblity with DT1
+			 * Used only for compatibility with DT1
 			 * @deprecated
 			 */
 			"bInfo": true,
 
 			/**
-			 * Used only for compatiblity with DT1
+			 * Used only for compatibility with DT1
 			 * @deprecated
 			 */
 			"bLengthChange": true,
@@ -12377,7 +12377,7 @@
 					},
 					order: {
 						pre: function (d) {
-							// The renderer gives us Moment, Luxon or Date obects for the sorting, all of which have a
+							// The renderer gives us Moment, Luxon or Date objects for the sorting, all of which have a
 							// `valueOf` which gives milliseconds epoch
 							return d.valueOf();
 						}
@@ -13054,7 +13054,7 @@
 						);
 					}
 
-					// Find the first visible column that has ordering applied to it - it get's
+					// Find the first visible column that has ordering applied to it - it gets
 					// the aria information, as the ARIA spec says that only one column should
 					// be marked with aria-sort
 					var firstVis = -1; // column index
@@ -13311,7 +13311,7 @@
 		opts.text = _fnMacros(settings, opts.text);
 
 		// We can put the <input> outside of the label if it is at the start or end
-		// which helps improve accessability (not all screen readers like implicit
+		// which helps improve accessibility (not all screen readers like implicit
 		// for elements).
 		var end = opts.text.match(/_INPUT_$/);
 		var start = opts.text.match(/^_INPUT_/);
@@ -13742,7 +13742,7 @@
 		}
 
 		// We can put the <select> outside of the label if it is at the start or
-		// end which helps improve accessability (not all screen readers like
+		// end which helps improve accessibility (not all screen readers like
 		// implicit for elements).
 		var end = opts.text.match(/_MENU_$/);
 		var start = opts.text.match(/^_MENU_/);

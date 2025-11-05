@@ -120,7 +120,7 @@ endianness that is required.
 
 
 For instance, your tags can now have a key and value pair, like:
-``endianess:little`` or ``endianess:big``.
+``endianness:little`` or ``endianness:big``.
 
 To list tests without any type of filtering would give you::
 
