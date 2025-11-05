@@ -273,7 +273,7 @@ def detach_ns(controller_name, ns_id, cont_id):
     ns_rescan(controller_name)
     time.sleep(5)
     if is_ns_exists(controller_name, ns_id):
-        raise NvmeException("namespace dettached but still listing")
+        raise NvmeException("namespace detached but still listing")
 
 
 def attach_ns(ns_id, controller_name, cont_id):
