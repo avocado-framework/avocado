@@ -34,10 +34,6 @@ persistent=yes
 # Specify a configuration file.
 #rcfile=
 
-# When enabled, pylint would attempt to guess common misconfiguration and emit
-# user-friendly hints instead of false-positive error messages.
-suggestion-mode=yes
-
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
 unsafe-load-any-extension=no
@@ -70,6 +66,7 @@ disable=line-too-long,
   useless-suppression,
   use-symbolic-message-instead,
   too-few-public-methods,
+  too-many-positional-arguments,
   fixme
 
 
@@ -504,4 +501,3 @@ accept-no-yields-doc = false
 
 # Possible choices: ['sphinx', 'epytext', 'google', 'numpy', 'default']
 default-docstring-type = sphinx
-
