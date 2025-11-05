@@ -3,5 +3,5 @@
 # and results in a PASS when executed as a test
 import sys
 
-if __name__ == '__main__':
-   sys.exit(0)
+if __name__ == "__main__":
+    sys.exit(0)

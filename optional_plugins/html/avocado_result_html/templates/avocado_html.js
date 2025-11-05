@@ -24,26 +24,26 @@
 
     // Create a container for the controls
     var controlsContainer = $('<div class="dt-controls-container" style="display: flex; justify-content: space-between; width: 100%;"></div>');
-    
+
     // Create a container for the entries section (left side)
     var entriesContainer = $('<div class="dt-entries-container" style="flex: 0 0 auto;"></div>');
-    
+
     // Create a container for the status section (right side)
     var statusContainer = $('<div class="dt-status-container" style="flex: 0 0 auto; margin-left: auto; display: flex; align-items: center; padding-left: 30px;"></div>')
       .append(
         $('<label for="dt-status-0" style="margin-right: 0.5em; display: inline-block;">Status:</label>')
       )
       .append(select);
-    
+
     // Get the parent element that contains the entries dropdown
     var parentElement = $('#dt-length-0').parent().parent();
-    
+
     // Move the existing entries dropdown to the entries container
     entriesContainer.append($('#dt-length-0').parent());
-    
+
     // Add both containers to the controls container
     controlsContainer.append(entriesContainer).append(statusContainer);
-    
+
     // Replace the original parent content with our new container
     parentElement.empty().append(controlsContainer);
 
@@ -109,12 +109,12 @@
         // we detach and reattach each event to prevent them from being triggered
         // multiple times, as this function is called often
         resizerElement.off('click.resizer')
-                      .on('click.resizer', onClick);  
-                            
+                      .on('click.resizer', onClick);
+
         // Don't attach click handler to the parent th element as it interferes with sorting
         // resizerElement.parent().off('click.resizer')
         //               .on('click.resizer', onClick);
-        
+
         resizerElement.off('mousedown.resizer')
                       .on('mousedown.resizer', onMouseDown.bind(self));
       });

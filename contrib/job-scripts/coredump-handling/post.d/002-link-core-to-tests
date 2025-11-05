@@ -23,15 +23,15 @@ import glob
 import os
 import sys
 
-if 'AVOCADO_JOB_LOGDIR' not in os.environ:
+if "AVOCADO_JOB_LOGDIR" not in os.environ:
     sys.exit(1)
 
-AVOCADO_JOB_LOGDIR = os.environ['AVOCADO_JOB_LOGDIR']
+AVOCADO_JOB_LOGDIR = os.environ["AVOCADO_JOB_LOGDIR"]
 if not os.path.isdir(AVOCADO_JOB_LOGDIR):
     sys.exit(2)
 
-COREDUMPS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, 'coredumps')
-COREDUMPS = glob.glob(os.path.join(COREDUMPS_DIR, 'core.*'))
+COREDUMPS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, "coredumps")
+COREDUMPS = glob.glob(os.path.join(COREDUMPS_DIR, "core.*"))
 if not COREDUMPS:
     sys.exit(0)
 
@@ -42,7 +42,7 @@ if not COREDUMPS:
 # return as the first group member the PID (an unsigned integer) of
 # the process which may have an associated coredump file.
 
-TESTS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, 'test-results')
+TESTS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, "test-results")
 
 
 def symlink_coredumps():

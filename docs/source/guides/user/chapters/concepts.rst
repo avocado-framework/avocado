@@ -260,4 +260,3 @@ The single individual exit codes are:
 If a job finishes with exit code `9`, for example, it means we had at least one
 test that failed and also we had at some point a job interruption, probably due
 to the job timeout or a `CTRL+C`.
-

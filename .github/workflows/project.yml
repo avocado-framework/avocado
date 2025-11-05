@@ -93,7 +93,7 @@ jobs:
                 projectId: $project
                 itemId: $item
                 fieldId: $status_field
-                value: { 
+                value: {
                   singleSelectOptionId: $status_value
                   }
               }) {

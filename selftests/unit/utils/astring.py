@@ -65,8 +65,8 @@ class AstringUtilsTest(unittest.TestCase):
             astring.tabular_output(matrix, header),
             "0 1  2   3    4\n"
             "a an dog word last\n"
-            "\x1B[94ma \x1B[0man cc\x1B[91mc "
-            "\x1B[91md\x1B[92md\x1B[94md\x1B[90md\x1B[0m last",
+            "\x1b[94ma \x1b[0man cc\x1b[91mc "
+            "\x1b[91md\x1b[92md\x1b[94md\x1b[90md\x1b[0m last",
         )
 
     def test_tabular_output_different_no_cols(self):

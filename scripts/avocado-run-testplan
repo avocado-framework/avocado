@@ -27,27 +27,41 @@ class Parser(argparse.ArgumentParser):
 
     def __init__(self):
         super(Parser, self).__init__(
-            prog='avocado-run-testplan',
-            description='Tracks manual test plans progress and results')
+            prog="avocado-run-testplan",
+            description="Tracks manual test plans progress and results",
+        )
 
-        self.add_argument('-t', '--template', type=argparse.FileType('r'),
-                          help='Template file with the predefined test plan')
+        self.add_argument(
+            "-t",
+            "--template",
+            type=argparse.FileType("r"),
+            help="Template file with the predefined test plan",
+        )
 
-        self.add_argument('-o', '--output',
-                          help='Output (test plan results) file location')
+        self.add_argument(
+            "-o", "--output", help="Output (test plan results) file location"
+        )
 
-        self.add_argument('-i', '--input', type=argparse.FileType('r'),
-                          help=('A previously saved result file to use. This '
-                                'will show a human readable report for the '
-                                'given result file'))
+        self.add_argument(
+            "-i",
+            "--input",
+            type=argparse.FileType("r"),
+            help=(
+                "A previously saved result file to use. This "
+                "will show a human readable report for the "
+                "given result file"
+            ),
+        )
 
 
-RESULT_MAP = {"P": "PASS",
-              "p": "PASS",
-              "F": "FAIL",
-              "f": "FAIL",
-              "S": "SKIP",
-              "s": "SKIP"}
+RESULT_MAP = {
+    "P": "PASS",
+    "p": "PASS",
+    "F": "FAIL",
+    "f": "FAIL",
+    "S": "SKIP",
+    "s": "SKIP",
+}
 
 
 class App:
@@ -98,9 +112,13 @@ class App:
                     break
             print("")
 
-            self.results.append({"name": test.get("name"),
-                                 "result": RESULT_MAP.get(result),
-                                 "notes": notes.strip()})
+            self.results.append(
+                {
+                    "name": test.get("name"),
+                    "result": RESULT_MAP.get(result),
+                    "notes": notes.strip(),
+                }
+            )
 
         user = input("Your identification [%s]: " % getpass.getuser())
         if not user:
@@ -110,7 +128,7 @@ class App:
         self.save()
         return 0
 
-    def get_output_file_name(self, suffix='json'):
+    def get_output_file_name(self, suffix="json"):
         """
         Return the user given or default output file name
         """
@@ -120,23 +138,27 @@ class App:
         name = self.json.get("name")
         name = name.strip()
         name = name.replace(" ", "_")
-        return "%s_%s_%s.%s" % (name,
-                                self.user_identification,
-                                self.datetime.isoformat(),
-                                suffix)
+        return "%s_%s_%s.%s" % (
+            name,
+            self.user_identification,
+            self.datetime.isoformat(),
+            suffix,
+        )
 
     def result_to_output_format(self):
-        return {"name": self.json.get("name"),
-                "user_identification": self.user_identification,
-                "datetime": self.datetime.isoformat(),
-                "results": self.results}
+        return {
+            "name": self.json.get("name"),
+            "user_identification": self.user_identification,
+            "datetime": self.datetime.isoformat(),
+            "results": self.results,
+        }
 
     def save(self):
         """
         Save the test plan execution result to a file
         """
         filename = self.get_output_file_name()
-        with open(filename, 'w') as output:
+        with open(filename, "w") as output:
             json.dump(self.result_to_output_format(), output)
         print("Wrote results to: %s" % filename)
 
@@ -150,28 +172,33 @@ class App:
             data = self.result_to_output_format()
 
         print("Test Plan: %s" % data.get("name"))
-        print("Run by '%s' at %s" % (data.get("user_identification"),
-                                     data.get("datetime")))
+        print(
+            "Run by '%s' at %s"
+            % (data.get("user_identification"), data.get("datetime"))
+        )
         print("")
         for result in data.get("results"):
-            print("%s: '%s': %s" % (result.get("result"),
-                                    result.get("name"),
-                                    result.get("notes")))
+            print(
+                "%s: '%s': %s"
+                % (result.get("result"), result.get("name"), result.get("notes"))
+            )
         print("")
         for name in sorted(os.listdir(os.path.pardir)):
             path = os.path.join(os.path.pardir, name)
             if not os.path.isdir(path):
                 continue
-            proc = subprocess.Popen("cd '%s' && git rev-parse HEAD" % path,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    shell=True)
+            proc = subprocess.Popen(
+                "cd '%s' && git rev-parse HEAD" % path,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                shell=True,
+            )
             out = proc.communicate()[0].strip().decode()
             if not proc.poll():
                 print("%s: %s" % (name, out))
         return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = App()
     sys.exit(app.run())
