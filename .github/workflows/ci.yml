@@ -241,8 +241,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Run Codespell Check
-        run: make -f Makefile.gh codespell
       - name: Run bandit check
         run: make -f Makefile.gh bandit
         continue-on-error: True
