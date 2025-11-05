@@ -184,8 +184,8 @@ While reviewing the code, one should:
 
 - Verify that the code is sound and clean.
 - Run the highest level of selftests per each new commit in the merge.
-  The ``contrib/scripts/avocado-check-pr.sh`` contrib script should
-  simplify this step.
+  Note that pre-commit checks should already be passing, but selftests
+  verify the functional correctness of the changes.
 - Verify that code works to its purpose.
 - Make sure the commits organization is proper (i.e. code is well
   organized in atomic commits, there's no extra/unwanted commits, ...).
@@ -197,24 +197,41 @@ While reviewing the code, one should:
 When the Pull Request is approved, the reviewer will merge the code or
 wait for someone with merge permission to merge it.
 
-Using ``avocado-check-pr.sh``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using pre-commit
+~~~~~~~~~~~~~~~~
 
-The ``contrib/scripts/avocado-check-pr.sh`` script is here to simplify the
-per-commit-check. You can simply prepare the merge and initiate
-``AVOCADO_CHECK_LEVEL=99 contrib/scripts/avocado-check-pr.sh`` to run all
-checks per each commit between your branch and the same branch on the
-``origin/master`` (you can specify different remote origin).
+Avocado uses the `pre-commit <https://pre-commit.com/>`_ tool to automatically
+run code quality checks before each commit. This ensures that your code follows
+the project's style guidelines and catches common issues early.
 
-Use ``./contrib/scripts/avocado-check-pr.sh -h`` to learn more about the
-options. We can recommend the following command::
+To set up pre-commit for the first time::
 
-  $ AVOCADO_CHECK_LEVEL=99
-  $ ./contrib/scripts/avocado-check-pr.sh -i -v
+  $ pip install -r static-checks/requirements.txt
+  $ pre-commit install
 
-.. note:: Before first use you might need to create
-  ``~/.config/github_checker.ini`` and fill GitHub user/token entries (while on
-  it you can also specify some defaults)
+This will install the git hooks that will automatically run checks when you
+commit. The configuration is located in ``static-checks/.pre-commit-config.yaml``
+and includes checks for:
+
+- Code formatting (black, isort)
+- Linting (pylint)
+- Spell checking (codespell)
+- Security scanning (gitleaks)
+- File formatting (trailing whitespace, end of file, etc.)
+- Commit message validation (commitlint)
+
+You can also run all checks manually on all files::
+
+  $ pre-commit run --all-files
+
+Or run checks on specific files::
+
+  $ pre-commit run --files path/to/file.py
+
+.. note:: The pre-commit hooks will run automatically on each commit. If any
+  check fails, the commit will be blocked until the issues are resolved. Some
+  checks (like formatting) may automatically fix issues, in which case you'll
+  need to stage the changes and commit again.
 
 
 Share your tests

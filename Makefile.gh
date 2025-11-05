@@ -17,10 +17,6 @@ all:
 	@echo "This file contains targets used by GitHub Actions."
 	@echo
 
-codespell:
-	pip install codespell==2.2.4
-	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/cpu.py.data/*,./avocado/utils/pmem.py,./avocado/utils/cpu.py,./avocado/utils/linux_modules.py,./selftests/functional/output.py,./selftests/unit/utils/vmimage.py"
-
 bandit:
 	pip install bandit
 	bandit -o bandit-output.txt -r --skip B101,B105,B311,B404,B603 .
