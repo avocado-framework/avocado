@@ -107,6 +107,7 @@ class RunnableRun(unittest.TestCase):
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
             first_status = final_status = lines[0]
+            stdout_status = None
         else:
             first_status = lines[0]
             stdout_status = lines[-3]
@@ -229,6 +230,7 @@ class TaskRun(unittest.TestCase):
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
             first_status = final_status = lines[0]
+            stdout_status = None
         else:
             first_status = lines[0]
             stdout_status = lines[-3]

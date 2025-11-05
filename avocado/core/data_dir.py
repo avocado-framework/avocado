@@ -373,6 +373,7 @@ def get_job_results_dir(job_ref, logs_dir=None):
     if len(short_jobid) < 7:
         short_jobid += "*"
     idfile_pattern = os.path.join(logs_dir, f"job-*-{short_jobid}", "id")
+    match_file = None
     for id_file in glob.glob(idfile_pattern):
         with open(id_file, "r", encoding="utf-8") as fid:
             line = fid.read().strip("\n")

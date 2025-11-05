@@ -45,6 +45,7 @@ class PipRunner(BaseRunner):
 
             package = runnable.kwargs.get("name")
             # if package was passed correctly, run python -m pip
+            result = None
             if package is not None:
                 try:
                     cmd = f"python3 -m ensurepip && python3 -m pip {cmd} {package}"
@@ -54,9 +55,13 @@ class PipRunner(BaseRunner):
                     yield messages.FinishedMessage.get("error")
                     return
 
-            yield messages.StdoutMessage.get(result.stdout)
-            yield messages.StderrMessage.get(result.stderr)
-            yield messages.FinishedMessage.get("pass")
+            if result is not None:
+                yield messages.StdoutMessage.get(result.stdout)
+                yield messages.StderrMessage.get(result.stderr)
+                yield messages.FinishedMessage.get("pass")
+            else:
+                yield messages.StderrMessage.get("Package name is required")
+                yield messages.FinishedMessage.get("error")
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
             yield messages.FinishedMessage.get(

@@ -88,8 +88,7 @@ class Config(CLICmd):
             blength = 0
             for namespace, value in config.items():
                 clength = len(namespace)
-                if clength > blength:
-                    blength = clength
+                blength = max(blength, clength)
 
             format_str = "    %-" + str(blength) + "s %s"
 
