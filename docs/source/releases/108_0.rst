@@ -15,7 +15,7 @@ Users/Test Writers
   `exec-runnables-recipe`. It allows a user to point to a file that
   will be executed, and that is expected to generate (on its ``STDOUT``)
   content compatible with the Runnable recipe format. More info
-  about this new featrue can be found in `documentaion
+  about this new feature can be found in `documentation
   <https://avocado-framework.readthedocs.io/en/latest/guides/writer/chapters/recipes.html#using-dynamically-generated-recipes>`_
 
 * Documentation about avocado-instrumented test lifecycle has been `improved
@@ -35,7 +35,7 @@ Bug Fixes
 * Tap runner skipping test failures has been fixed. Now the test
   failures will be always visible.
 
-* Fail reason for interuptions during setUp and tearDown has been fixed.
+* Fail reason for interruptions during setUp and tearDown has been fixed.
 
 Internal changes
 ================
@@ -48,7 +48,7 @@ Internal changes
 
     git submodule update --init --recursive
 
-* Functinal tests for Debian has been added to test :mod:`avocado.utils.disto`
+* Functional tests for Debian has been added to test :mod:`avocado.utils.disto`
 
 Additional information
 ======================
