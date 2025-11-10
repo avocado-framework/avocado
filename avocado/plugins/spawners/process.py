@@ -1,5 +1,6 @@
 import asyncio
 import os
+import signal
 import socket
 
 from avocado.core.dependencies.requirements import cache
@@ -7,6 +8,7 @@ from avocado.core.plugin_interfaces import Spawner
 from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.utils.eggenv import get_python_path_env_if_egg
+from avocado.utils import process as process_utils
 
 ENVIRONMENT_TYPE = "local"
 ENVIRONMENT = socket.gethostname()
@@ -82,10 +84,12 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         await runtime_task.spawner_handle.wait_task
 
     async def terminate_task(self, runtime_task):
+        process_pid = runtime_task.spawner_handle.process.pid
         try:
-            runtime_task.spawner_handle.process.terminate()
-        except ProcessLookupError:
+            process_utils.kill_process_tree(process_pid, signal.SIGTERM, timeout=0)
+        except (ProcessLookupError, OSError):
             return True
+
         soft_interval = self.config.get(
             "runner.task.interval.from_soft_to_hard_termination"
         )
@@ -96,8 +100,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             )
         except asyncio.TimeoutError:
             try:
-                runtime_task.spawner_handle.process.kill()
-            except ProcessLookupError:
+                process_utils.kill_process_tree(process_pid, signal.SIGKILL, timeout=0)
+            except (ProcessLookupError, OSError):
                 return True
             hard_interval = self.config.get(
                 "runner.task.interval.from_hard_termination_to_verification"
