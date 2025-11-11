@@ -32,7 +32,7 @@ There are a number of reasons for introducing a different architecture
 and implementation.  Some of them are related to limitations found in
 the legacy implementation, that were found to be too hard to remove
 without major breakage.  Also, missing features that are deemed
-important would be a better fit wihin a different architecture.
+important would be a better fit within a different architecture.
 
 For instance, these are the limitations of the Avocado legacy test
 runner:
@@ -387,7 +387,7 @@ This status updates are in a format similar to those received from a
 runner, but will add more information to them, such as its unique
 identifier.
 
-A different agreggate structure,
+A different aggregate structure,
 :class:`avocado.core.task.runtime.RuntimeTask`, is used to keep track
 of the extra information while the task is being run.
 

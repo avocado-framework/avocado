@@ -145,4 +145,3 @@ fixes/improvements, please send us a PR and we'll gladly review it.
 * As one would expect, many bugs were fixed. You can take a look at the full
   list of 156 commits here:
   https://github.com/avocado-framework/avocado/compare/0.24.0...0.25.0
-

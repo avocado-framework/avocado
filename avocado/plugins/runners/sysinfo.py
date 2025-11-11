@@ -173,6 +173,7 @@ class SysinfoRunner(BaseRunner):
             sysinfo_process.start()
 
             most_current_execution_state_time = None
+            next_execution_state_mark = None
             while True:
                 time.sleep(RUNNER_RUN_CHECK_INTERVAL)
                 now = time.monotonic()

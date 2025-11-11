@@ -1,0 +1,1 @@
+./static-checks/commitlint.config.ts

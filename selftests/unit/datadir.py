@@ -78,7 +78,7 @@ class DataDirTest(Base):
         with unittest.mock.patch(
             "avocado.core.data_dir.time.strftime", return_value="date_would_go_here"
         ):
-            logdir = os.path.join(self.mapping["base_dir"], "foor", "bar", "baz")
+            logdir = os.path.join(self.mapping["base_dir"], "foo", "bar", "baz")
             path_prefix = os.path.join(logdir, "job-date_would_go_here-")
             uid = "1234567890" * 4
             for i in range(7, 40):

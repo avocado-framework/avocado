@@ -610,7 +610,7 @@ class Asset:
             value = int(re.match("^(\\D+)(\\d+)$", size_filter).group(2))
         except (AttributeError, ValueError) as exc:
             msg = (
-                "Invalid syntax. You need to pass an comparison operatator",
+                "Invalid syntax. You need to pass an comparison operator",
                 " and a value. Ex: '>=200'",
             )
             raise OSError(msg) from exc
