@@ -509,5 +509,5 @@ if __name__ == "__main__":
             "plugin": Plugin,
             "test": Test,
         },
-        install_requires=["setuptools"],
+        install_requires=["setuptools", "requests"],
     )

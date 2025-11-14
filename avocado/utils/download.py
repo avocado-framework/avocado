@@ -27,6 +27,8 @@ from multiprocessing import Process
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
+import requests
+
 from avocado.utils import crypto, output
 
 log = logging.getLogger(__name__)
@@ -103,7 +105,9 @@ def url_download(url, filename, data=None, timeout=300):
         raise OSError("Aborting downloading. Timeout was reached.")
 
 
-def url_download_interactive(url, output_file, title="", chunk_size=102400):
+def url_download_interactive(
+    url, output_file, title="", chunk_size=102400, timeout=300
+):
     """
     Interactively downloads a given file url to a given output file.
 
@@ -118,11 +122,9 @@ def url_download_interactive(url, output_file, title="", chunk_size=102400):
     """
     output_dir = os.path.dirname(output_file)
     with open(output_file, "w+b") as open_output_file:
-        with urlopen(url) as input_file:
-            try:
-                file_size = int(input_file.headers["Content-Length"])
-            except KeyError as exc:
-                raise ValueError("Could not find file size in HTTP headers") from exc
+        with requests.get(url, stream=True, timeout=timeout) as response:
+            response.raise_for_status()
+            file_size = int(response.headers.get("content-length", 0))
 
             log.info(
                 "Downloading %s, %s to %s",
@@ -135,14 +137,10 @@ def url_download_interactive(url, output_file, title="", chunk_size=102400):
 
             # Download the file, while interactively updating the progress
             progress_bar.draw()
-            while True:
-                data = input_file.read(chunk_size)
+            for data in response.iter_content(chunk_size):
                 if data:
                     progress_bar.append_amount(len(data))
                     open_output_file.write(data)
-                else:
-                    progress_bar.update_amount(file_size)
-                    break
 
 
 def _get_file(src, dst, permissions=None):
