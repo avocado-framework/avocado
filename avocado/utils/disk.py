@@ -493,3 +493,14 @@ def set_io_scheduler(device_name, name):
 
     with open(__sched_path(device_name), "w", encoding="utf-8") as fp:
         fp.write(name)
+
+def dd_read_records_device(disk, read_records="1", out_file="/tmp/data"):
+    """
+    Reads mentioned number of blocks from device to destination
+    :param disk: disk absolute path
+    :param read_records: Numbers of blocks to read from disk
+    :param out_file: Destination file
+    :rtype: boolean
+    """
+    cmd = f"dd count={read_records} if={disk} of={out_file}"
+    return not process.system(cmd, ignore_status=True, sudo=True)
