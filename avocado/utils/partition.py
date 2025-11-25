@@ -290,7 +290,7 @@ class Partition:
                     self, "Force unmount failed", umount_details
                 ) from umount_details
 
-    def unmount(self, force=True):
+    def unmount(self, force=True, mountpoint=None):
         """
         Umount this partition.
 
@@ -301,11 +301,14 @@ class Partition:
         When the unmount fails and force==True we unmount the partition
         ungracefully.
 
+        :param force: Whether to force unmount if the standard unmount fails.
+        :param mountpoint: Optional mountpoint to unmount. If not provided, the current mountpoint of the partition object will be used.
         :return: 1 on success, 2 on force umount success
         :raise PartitionError: On failure
         """
         with MtabLock():
-            mountpoint = self.get_mountpoint()
+            if not mountpoint:
+                mountpoint = self.get_mountpoint()
             result = 1
             if not mountpoint:
                 LOG.debug("%s not mounted", self.device)
