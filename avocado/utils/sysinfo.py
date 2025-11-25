@@ -14,15 +14,19 @@
 #          John Admanski <jadmanski@google.com>
 
 import json
+import logging
 import os
+import platform
 import shlex
 import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 
 from avocado.utils import astring, process
+from avocado.utils.process import can_sudo
 
 DATA_SIZE = 200000
+log = logging.getLogger("avocado.sysinfo")
 
 
 class CollectibleException(Exception):
@@ -132,12 +136,23 @@ class Command(Collectible):
     :param locale: Force LANG for sysinfo collection
     """
 
-    def __init__(self, cmd, timeout=-1, locale="C"):
+    def __init__(
+        self, cmd, timeout=-1, locale="C", sudo_commands=None, sudo_distros=None
+    ):  # pylint: disable=R0913
         super().__init__(cmd)
         self._name = self.log_path
         self.cmd = cmd
         self.timeout = timeout
         self.locale = locale
+        self.sudo_commands = sudo_commands
+        self.sudo_distros = sudo_distros
+        self._sysinfo_cmd = None
+
+    @property
+    def _sudoer(self):
+        if self._sysinfo_cmd is None and self.sudo_commands and self.sudo_distros:
+            self._sysinfo_cmd = SysinfoCommand(self.sudo_commands, self.sudo_distros)
+        return self._sysinfo_cmd
 
     def __repr__(self):
         r = "Command(%r, %r)"
@@ -168,6 +183,13 @@ class Command(Collectible):
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(self.timeout) <= 0:
             self.timeout = None
+
+        # Determine whether to run with sudo (do not mutate the command string)
+        sudo_flag = False
+        if self._sudoer:
+            sudo_flag = self._sudoer.use_sudo() and self._sudoer.is_sudo_cmd(self.cmd)
+        log.info("Executing Command%s: %s", " (sudo)" if sudo_flag else "", self.cmd)
+
         try:
             result = process.run(
                 self.cmd,
@@ -176,6 +198,7 @@ class Command(Collectible):
                 ignore_status=True,
                 shell=True,
                 env=env,
+                sudo=sudo_flag,
             )
             yield result.stdout
         except FileNotFoundError as exc_fnf:
@@ -394,3 +417,55 @@ class LogWatcher(Collectible):
             raise CollectibleException(
                 f"Not logging {self.path} " f"(lack of permissions)"
             ) from exc
+
+
+class SysinfoCommand:
+    def __init__(self, sudo_commands=None, sudo_distros=None):
+        self.sudo_cmds = sudo_commands if sudo_commands else set()
+        self.sudo_distros = sudo_distros if sudo_distros else set()
+        self.sudo_available = False
+        # Only attempt sudo capability detection on Linux, where it is relevant.
+        if platform.system().lower() == "linux":
+            self.sudo_available = can_sudo()
+
+    def use_sudo(self):
+        """
+        Determine if 'sudo' should be used based on the system type.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        if not self.sudo_available:
+            return False
+        system_name = platform.system().lower()
+        if system_name == "linux":
+            if hasattr(os, "geteuid") and not os.geteuid():
+                return False
+            try:
+                with open("/etc/os-release", encoding="utf-8") as f:
+                    for line in f:
+                        if line.startswith("ID="):
+                            os_id = line.strip().split("=")[1].strip('"')
+                            return os_id.lower() in self.sudo_distros
+            except FileNotFoundError:
+                log.debug("/etc/os-release not found.")
+                return False
+            return False
+        return False
+
+    def is_sudo_cmd(self, cmd):
+        """
+        Determine if 'sudo' should be used for a specific command based on the configuration.
+
+        Args:
+            cmd (str): The command to check.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        try:
+            first = shlex.split(cmd or "")[0]
+        except (ValueError, IndexError):
+            return False
+        base = os.path.basename(first).lower()
+        return base in self.sudo_cmds
