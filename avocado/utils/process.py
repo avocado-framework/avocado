@@ -79,7 +79,7 @@ def can_sudo(cmd=None):
     try:
         if cmd:  # Am I able to run the cmd or plain sudo id?
             return not system(cmd, ignore_status=True, sudo=True)
-        if system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
+        if getoutput("id -u", sudo=True).strip() == "0":
             return True
         return False
     except OSError:  # Broken sudo binary
