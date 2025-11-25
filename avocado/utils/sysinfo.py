@@ -18,11 +18,15 @@ import os
 import shlex
 import subprocess
 import tempfile
+import configparser
+import platform
+import logging
 from abc import ABC, abstractmethod
 
 from avocado.utils import astring, process
 
 DATA_SIZE = 200000
+log = logging.getLogger("avocado.sysinfo")
 
 
 class CollectibleException(Exception):
@@ -168,6 +172,12 @@ class Command(Collectible):
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(self.timeout) <= 0:
             self.timeout = None
+
+        # Determine whether to run with sudo (do not mutate the command string)
+        sysinfo_cmd = SysinfoCommand()
+        sudo_flag = sysinfo_cmd.use_sudo() and sysinfo_cmd.is_sudo_cmd(self.cmd)
+        log.info("Executing Command%s: %s", " (sudo)" if sudo_flag else "", self.cmd)
+
         try:
             result = process.run(
                 self.cmd,
@@ -176,6 +186,7 @@ class Command(Collectible):
                 ignore_status=True,
                 shell=True,
                 env=env,
+                sudo=sudo_flag,
             )
             yield result.stdout
         except FileNotFoundError as exc_fnf:
@@ -394,3 +405,64 @@ class LogWatcher(Collectible):
             raise CollectibleException(
                 f"Not logging {self.path} " f"(lack of permissions)"
             ) from exc
+
+
+class SysinfoCommand:
+    def __init__(self):
+        from avocado.utils.process import can_sudo
+        self.sudo_available = can_sudo()
+        config = configparser.ConfigParser()
+        candidates = [
+            os.environ.get("AVOCADO_SYSINFO_CONF"),
+            os.path.join(os.path.dirname(__file__), "..", "etc", "avocado", "sysinfo.conf"),
+            "/etc/avocado/sysinfo.conf",
+            os.path.expanduser("~/.config/avocado/sysinfo.conf"),
+        ]
+        config.read([p for p in candidates if p])
+        raw = config.get('sysinfo', 'sudo_commands', fallback='')
+        self.sudo_cmds = {os.path.basename(c.strip()).lower() for c in raw.split(',') if c.strip()}
+
+        distros_raw = config.get('sysinfo', 'sudo_for_distros', fallback='')
+        self.sudo_distros = {d.strip().lower() for d in distros_raw.split(',') if d.strip()}
+
+    def use_sudo(self):
+        """
+        Determine if 'sudo' should be used based on the system type.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        if not self.sudo_available:
+            return False
+        system_name = platform.system().lower()
+        if system_name == 'linux':
+            if hasattr(os, "geteuid") and os.geteuid() == 0:
+                return False
+            try:
+                with open('/etc/os-release') as f:
+                    for line in f:
+                        if line.startswith('ID='):
+                            os_id = line.strip().split('=')[1].strip('"')
+                            return os_id.lower() in self.sudo_distros
+            except FileNotFoundError:
+                log.warning("/etc/os-release not found.")
+                return False
+            return False
+        return False
+
+    def is_sudo_cmd(self, cmd):
+        """
+        Determine if 'sudo' should be used for a specific command based on the configuration.
+
+        Args:
+            cmd (str): The command to check.
+
+        Returns:
+            bool: True if 'sudo' should be used, False otherwise.
+        """
+        try:
+            first = shlex.split(cmd or "")[0]
+        except (ValueError, IndexError):
+            return False
+        base = os.path.basename(first).lower()
+        return base in self.sudo_cmds
