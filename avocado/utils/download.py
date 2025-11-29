@@ -23,6 +23,7 @@ import shutil
 import socket
 import sys
 import time
+import typing
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
@@ -122,7 +123,7 @@ def _download_range(
 def url_download(
     url: str,
     filename: str,
-    data: bytes | None = None,
+    data: typing.Optional[bytes] = None,
     timeout: int = 300,
     segments: int = 4,
 ):
