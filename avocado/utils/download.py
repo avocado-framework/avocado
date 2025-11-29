@@ -22,14 +22,17 @@ import os
 import shutil
 import socket
 import sys
+import time
 import urllib.parse
-from multiprocessing import Process
+from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from avocado.utils import crypto, output
 
 log = logging.getLogger(__name__)
+
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
 def url_open(url, data=None, timeout=5):
@@ -83,24 +86,86 @@ def _url_download(url, filename, data):
         src_file.close()
 
 
-def url_download(url, filename, data=None, timeout=300):
+def _download_range(
+    url: str,
+    start: int,
+    end: int,
+    part_file: str,
+    retries: int = 3,
+    delay: int = 1,
+    timeout: int = 300,
+):
     """
-    Retrieve a file from given url.
+    Downloads file within start and end byte range into part_files
+    :param url: URL to download.
+    :param start: Start byte range.
+    :param end: End byte range.
+    :param part_file: Part file name.
+    :param retries: Number of retries.
+    :param delay: Delay in seconds.
+    :param timeout: Timeout in seconds.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": USER_AGENT, "Range": f"bytes={start}-{end}"}
+            )
+            with urlopen(req, timeout=timeout) as r, open(part_file, "wb") as f:
+                shutil.copyfileobj(r, f, length=1024 * 1024)  # 1MB chunks
+            return
+        except (socket.timeout, TimeoutError, HTTPError) as e:
+            if attempt == retries:
+                raise e
+            time.sleep(delay)
 
-    :param url: source URL.
-    :param filename: destination path.
-    :param data: (optional) data to post.
-    :param timeout: (optional) default timeout in seconds.
-    :return: `None`.
+
+def url_download(
+    url: str,
+    filename: str,
+    data: bytes | None = None,
+    timeout: int = 300,
+    segments: int = 4,
+):
     """
-    process = Process(target=_url_download, args=(url, filename, data))
-    log.info("Fetching %s -> %s", url, filename)
-    process.start()
-    process.join(timeout)
-    if process.is_alive():
-        process.terminate()
-        process.join()
-        raise OSError("Aborting downloading. Timeout was reached.")
+    Multipart downloader using thread pool executor by content-length splitting
+    :param url: URL to download.
+    :param filename: Filename to save the downloaded file
+    :param data: (optional) data to POST Request
+    :param timeout: (optional) default timeout in seconds.
+    :param segments: How much should we split the download into
+    """
+    headers = urllib.request.urlopen(
+        urllib.request.Request(url, method="HEAD"), timeout=10
+    ).headers  # Using HEAD method to get the content length
+    size = int(headers.get("Content-Length", -1))
+    supports_range = "bytes" in headers.get("Accept-Ranges", "").lower()
+
+    if size <= 0 or data or not supports_range:
+        # if the server doesn't provide the size or accepted range / if we want sent data to the server (POST Method),
+        # switch to single download with urlopen
+        _url_download(url=url, filename=filename, data=data)
+        return
+
+    part_size = size // segments
+
+    def task(i: int):
+        start = i * part_size
+        end = size - 1 if i == segments - 1 else (start + part_size - 1)
+        part_file = f"{filename}.part{i}"
+        _download_range(
+            url=url, start=start, end=end, part_file=part_file, timeout=timeout
+        )
+        return part_file
+
+    with ThreadPoolExecutor(max_workers=segments) as executor:
+        part_files = list(executor.map(task, range(segments)))
+
+    # Merge the split files and remove them
+    with open(filename, "wb") as f:
+        for part in part_files:
+            with open(part, "rb") as pf:
+                shutil.copyfileobj(pf, f)
+            os.remove(part)
 
 
 def url_download_interactive(url, output_file, title="", chunk_size=102400):
