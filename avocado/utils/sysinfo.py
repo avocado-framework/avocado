@@ -250,6 +250,9 @@ class Daemon(Command):
             raise CollectibleException(
                 f'Could not execute "{self.cmd}": ' f"{os_err}"
             ) from os_err
+        finally:
+            stdin.close()
+            stdout.close()
 
     def collect(self):
         """
