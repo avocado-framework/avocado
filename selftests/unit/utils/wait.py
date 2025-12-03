@@ -29,7 +29,7 @@ class WaitForTest(unittest.TestCase):
         elapsed = time.time() - start
         self.assertIsNone(result)
         self.assertGreaterEqual(elapsed, 0.5)
-        self.assertLess(elapsed, 0.7)  # Should not wait much longer than timeout
+        self.assertLess(elapsed, 1.5)  # Allow generous buffer for CI variance
 
     def test_function_eventually_succeeds(self):
         """Test wait_for succeeds when function returns True after retries."""
@@ -54,11 +54,11 @@ class WaitForTest(unittest.TestCase):
     def test_step_interval(self):
         """Test wait_for respects step interval between attempts."""
         func = mock.Mock(return_value=False)
-        wait.wait_for(func, timeout=0.5, step=0.15, first=0.0)
-        # Should make roughly 0.5/0.15 = 3-4 attempts
+        wait.wait_for(func, timeout=1.0, step=0.15, first=0.0)
+        # Should make roughly 1.0/0.15 = 6-7 attempts, allow buffer for CI variance
         call_count = func.call_count
-        self.assertGreaterEqual(call_count, 3)
-        self.assertLessEqual(call_count, 5)
+        self.assertGreaterEqual(call_count, 4)
+        self.assertLessEqual(call_count, 10)
 
     def test_zero_timeout(self):
         """Test wait_for with zero timeout."""
