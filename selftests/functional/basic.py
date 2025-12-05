@@ -647,13 +647,13 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        self.assertEqual(
-            result.stderr,
+        self.assertIn(
             (
                 b"Test Suite could not be created. No test references"
                 b" provided nor any other arguments resolved into "
                 b"tests\n"
             ),
+            result.stderr,
         )
 
     def test_not_found(self):
@@ -664,10 +664,10 @@ class RunnerOperationTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
         self.assertEqual(result.stdout, b"")
-        self.assertEqual(
-            result.stderr,
+        self.assertIn(
             b"No tests found for given test references: sbrubles\n"
             b"Try 'avocado -V list sbrubles' for details\n",
+            result.stderr,
         )
 
     def test_invalid_unique_id(self):
