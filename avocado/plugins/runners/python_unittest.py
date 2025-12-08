@@ -167,6 +167,7 @@ class PythonUnittestRunner(BaseRunner):
             process.start()
 
             most_current_execution_state_time = None
+            next_execution_state_mark = None
             while True:
                 if queue.empty():
                     time.sleep(RUNNER_RUN_CHECK_INTERVAL)

@@ -264,8 +264,7 @@ class Daemon(Command):
             if retcode is None:
                 process.kill_process_tree(self.daemon_process.pid)
                 self.daemon_process.wait()
-                for line in self.temp_file.readlines():
-                    yield line
+                yield from self.temp_file.readlines()
             else:
                 raise OSError(
                     f"Daemon process '{self.cmd}' "

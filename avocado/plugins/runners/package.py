@@ -98,12 +98,14 @@ class PackageRunner(BaseRunner):
 
         if cmd == "install":
             result, stdout, stderr = self._install(software_manager, cmd, package)
-
         elif cmd == "remove":
             result, stdout, stderr = self._remove(software_manager, cmd, package)
-
         elif cmd == "check":
             result, stdout, stderr = self._check(software_manager, package)
+        else:
+            result = "error"
+            stdout = ""
+            stderr = f"Invalid command: {cmd}"
 
         output = {"result": result, "stdout": stdout, "stderr": stderr}
         queue.put(output)

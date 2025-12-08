@@ -124,4 +124,3 @@ the `milestone information
 
 For more information on the release codename, please refer to `IMDb
 <https://www.imdb.com/title/tt0114746/>`_.
-

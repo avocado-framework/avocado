@@ -8,7 +8,7 @@ from avocado.core.suite import TestSuite
 
 # This bad location serves to test the "status_server_auto"
 # configuration
-status_server = '/path/to/a/very/bad/non-existing/location'
+status_server = "/path/to/a/very/bad/non-existing/location"
 
 test_results_dir = tempfile.TemporaryDirectory()
 
