@@ -12,8 +12,11 @@
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-"""
-Module to handle scripts creation.
+"""Module to handle script file creation and management.
+
+This module provides utilities for creating executable script files,
+both permanent and temporary, with proper file permissions and
+automatic cleanup capabilities.
 """
 
 import os
@@ -40,20 +43,27 @@ READ_ONLY_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 
 
 class Script:
-    """
-    Class that represents a script.
+    """Class that represents a script file.
+
+    This class provides methods to create, save, and remove script files
+    with configurable permissions. It supports context manager protocol
+    for automatic cleanup.
     """
 
     def __init__(self, path, content, mode=DEFAULT_MODE, open_mode="w"):
-        """
-        Creates an instance of :class:`Script`.
+        """Creates an instance of :class:`Script`.
 
-        Note that when the instance inside a with statement, it will
-        automatically call save() and then remove() for you.
+        When used as a context manager, the script is automatically saved
+        on entry and removed on exit.
 
-        :param path: the script file name.
-        :param content: the script content.
-        :param mode: set file mode, defaults what is commonly known as 0775.
+        :param path: The path where the script file will be created.
+        :type path: str
+        :param content: The content to write to the script file.
+        :type content: str or bytes
+        :param mode: File permissions mode. Defaults to 0775 (rwxrwxr-x).
+        :type mode: int
+        :param open_mode: File open mode ('w' for text, 'wb' for binary).
+        :type open_mode: str
         """
         self.path = path
         self.content = content
@@ -77,10 +87,13 @@ class Script:
         self.remove()
 
     def save(self):
-        """
-        Store script to file system.
+        """Store script content to the file system.
 
-        :return: `True` if script has been stored, otherwise `False`.
+        Creates parent directories if they do not exist and sets the
+        specified file permissions.
+
+        :return: True if script has been stored successfully.
+        :rtype: bool
         """
         dirname = os.path.dirname(self.path)
         utils_path.init_dir(dirname)
@@ -91,10 +104,10 @@ class Script:
         return self.stored
 
     def remove(self):
-        """
-        Remove script from the file system.
+        """Remove script file from the file system.
 
-        :return: `True` if script has been removed, otherwise `False`.
+        :return: True if the script file was removed, False if it did not exist.
+        :rtype: bool
         """
         if os.path.exists(self.path):
             os.remove(self.path)
@@ -104,27 +117,34 @@ class Script:
 
 
 class TemporaryScript(Script):
-    """
-    Class that represents a temporary script.
+    """Class that represents a temporary script in an auto-managed directory.
+
+    The script is created in a temporary directory that is automatically
+    cleaned up when the instance is garbage collected or when used as
+    a context manager.
     """
 
     # pylint: disable=R0913
     def __init__(
         self, name, content, prefix="avocado_script", mode=DEFAULT_MODE, open_mode="w"
     ):
-        """
-        Creates an instance of :class:`TemporaryScript`.
+        """Creates an instance of :class:`TemporaryScript`.
 
-        Note that when the instance inside a with statement, it will
-        automatically call save() and then remove() for you.
+        The script is created in a newly created temporary directory. When
+        used as a context manager, both the script and its directory are
+        automatically removed on exit. The directory is also removed when
+        the object is garbage collected.
 
-        When the instance object is garbage collected, it will automatically
-        call remove() for you.
-
-        :param name: the script file name.
-        :param content: the script content.
-        :param prefix: prefix for the temporary directory name.
-        :param mode: set file mode, default to 0775.
+        :param name: The script filename (not the full path).
+        :type name: str
+        :param content: The content to write to the script file.
+        :type content: str or bytes
+        :param prefix: Prefix for the temporary directory name.
+        :type prefix: str
+        :param mode: File permissions mode. Defaults to 0775 (rwxrwxr-x).
+        :type mode: int
+        :param open_mode: File open mode ('w' for text, 'wb' for binary).
+        :type open_mode: str
         """
         tmpdir = tempfile.mkdtemp(prefix=prefix)
         super().__init__(os.path.join(tmpdir, name), content, mode, open_mode)
@@ -139,13 +159,19 @@ class TemporaryScript(Script):
 
 
 def make_script(path, content, mode=DEFAULT_MODE):
-    """
-    Creates a new script stored in the file system.
+    """Creates and saves a new script file to the file system.
 
-    :param path: the script file name.
-    :param content: the script content.
-    :param mode: set file mode, default to 0775.
-    :return: the script path.
+    This is a convenience function that creates a Script instance,
+    saves it, and returns the path.
+
+    :param path: The path where the script file will be created.
+    :type path: str
+    :param content: The content to write to the script file.
+    :type content: str or bytes
+    :param mode: File permissions mode. Defaults to 0775 (rwxrwxr-x).
+    :type mode: int
+    :return: The path to the created script file.
+    :rtype: str
     """
     scpt = Script(path, content, mode=mode)
     scpt.save()
@@ -153,14 +179,22 @@ def make_script(path, content, mode=DEFAULT_MODE):
 
 
 def make_temp_script(name, content, prefix="avocado_script", mode=DEFAULT_MODE):
-    """
-    Creates a new temporary script stored in the file system.
+    """Creates and saves a new temporary script in a temporary directory.
 
-    :param path: the script file name.
-    :param content: the script content.
-    :param prefix: the directory prefix Default to 'avocado_script'.
-    :param mode: set file mode, default to 0775.
-    :return: the script path.
+    This is a convenience function that creates a TemporaryScript instance
+    and saves it. Note that the script's temporary directory will be removed
+    when the TemporaryScript object is garbage collected.
+
+    :param name: The script filename (not the full path).
+    :type name: str
+    :param content: The content to write to the script file.
+    :type content: str or bytes
+    :param prefix: Prefix for the temporary directory name.
+    :type prefix: str
+    :param mode: File permissions mode. Defaults to 0775 (rwxrwxr-x).
+    :type mode: int
+    :return: The full path to the created script file.
+    :rtype: str
     """
     scpt = TemporaryScript(name, content, prefix=prefix, mode=mode)
     scpt.save()

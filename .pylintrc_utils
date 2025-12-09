@@ -7,7 +7,7 @@ extension-pkg-whitelist=netifaces
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=CVS,archive.py,asset.py,astring.py,aurl.py,build.py,cloudinit.py,cpu.py,crypto.py,data_factory.py,datadrainer.py,debug.py,diff_validator.py,disk.py,distro.py,dmesg.py,download.py,exit_codes.py,file_utils.py,filelock.py,genio.py,git.py,iso9660.py,kernel.py,linux.py,linux_modules.py,lv_utils.py,memory.py,multipath.py,nvme.py,partition.py,pci.py,pmem.py,podman.py,process.py,script.py,service.py,softwareraid.py,ssh.py,stacktrace.py,sysinfo.py,vmimage.py,wait.py,gdbmi_parser.py,spark.py,distro_packages.py,inspector.py,main.py,manager.py,apt.py,base.py,dnf.py,dpkg.py,rpm.py,yum.py,zypper.py,deprecation.py
+ignore=CVS,archive.py,asset.py,astring.py,aurl.py,build.py,cloudinit.py,cpu.py,crypto.py,data_factory.py,datadrainer.py,debug.py,diff_validator.py,disk.py,distro.py,dmesg.py,download.py,exit_codes.py,file_utils.py,filelock.py,genio.py,git.py,iso9660.py,kernel.py,linux.py,linux_modules.py,lv_utils.py,memory.py,multipath.py,nvme.py,partition.py,pci.py,pmem.py,podman.py,process.py,service.py,softwareraid.py,ssh.py,stacktrace.py,sysinfo.py,vmimage.py,wait.py,gdbmi_parser.py,spark.py,distro_packages.py,inspector.py,main.py,manager.py,apt.py,base.py,dnf.py,dpkg.py,rpm.py,yum.py,zypper.py,deprecation.py
 # regex matches against base names, not paths.
 ignore-patterns=.git
 

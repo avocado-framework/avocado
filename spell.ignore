@@ -810,6 +810,10 @@ ESC
 HFS
 txt
 codec
-truthy
+CJK
 falsy
+lifecycle
 myfile
+rwxrwxr
+truthy
+wb
