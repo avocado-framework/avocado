@@ -145,7 +145,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:
             return False
-        # NOTE: since this is called at the end of each test, it is reasonable
+        # since each test is a session detached process, it is reasonable
         # to reuse the same session with a new command
         session = runtime_task.spawner_handle
         status, _ = session.cmd_status_output(
@@ -187,7 +187,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 )
                 return False
 
-        cmd = shlex.join(entry_point_args) + " > /dev/null"
+        cmd = shlex.join(entry_point_args) + " > /dev/null &"
         timeout = self.config.get("spawner.remote.test_timeout")
         status, output = await RemoteSpawner.run_remote_cmd_async(session, cmd, timeout)
         LOG.debug(f"Command exited with code {status}")
