@@ -14,9 +14,7 @@
 
 # pylint: disable=C0302
 
-"""
-Functions dedicated to find and run external commands.
-"""
+"""Functions dedicated to find and run external commands."""
 
 import contextlib
 import errno
@@ -42,6 +40,8 @@ _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
 
 class CmdError(Exception):
+    """Exception raised when a command fails execution."""
+
     def __init__(
         self, command=None, result=None, additional_text=None
     ):  # pylint: disable=W0231
@@ -63,10 +63,25 @@ class CmdInputError(Exception):
 
 
 def can_sudo(cmd=None):
-    """
-    Check whether sudo is available (or running as root)
+    """Check whether sudo is available or if running as root.
 
-    :param cmd: unicode string with the commands
+    This function checks if the current process has the ability to run commands
+    with elevated privileges. It first checks if the process is running as root
+    (UID 0), then checks if sudo is installed and functional.
+
+    :param cmd: Optional command to test sudo capabilities with. If provided,
+                tests whether this specific command can be run with sudo.
+                If not provided, tests basic sudo functionality.
+    :type cmd: str or None
+    :return: True if sudo is available or running as root, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> can_sudo()
+        True
+        >>> can_sudo("ls /root")
+        True
     """
     if not os.getuid():  # Root
         return True
@@ -119,26 +134,50 @@ def get_capabilities(pid=None):
 
 
 def has_capability(capability, pid=None):
-    """Checks if a process has a given capability.
+    """Check if a process has a given Linux capability.
 
     This is a simple wrapper around getpcaps, part of the libcap package.
     In case the getpcaps command is not available, the capability will be
     considered *not* to be available.
 
-    :param capability: the name of the capability, refer to capabilities(7)
-                       man page for more information.
+    :param capability: The name of the capability (e.g., "cap_sys_admin").
+                       Refer to capabilities(7) man page for more information.
+                       Note: capability names are UPPERCASE in capabilities(7)
+                       (e.g., CAP_SYS_ADMIN) but must be lowercase in Python
+                       (e.g., "cap_sys_admin").
     :type capability: str
-    :returns: whether the capability is available or not
+    :param pid: The process ID to check. If None, checks the current process.
+    :type pid: int or None
+    :return: True if the capability is available, False otherwise.
     :rtype: bool
+
+    Example::
+
+        >>> has_capability("cap_chown")
+        True
+        >>> has_capability("cap_sys_admin", pid=1234)
+        False
     """
     return capability in get_capabilities(pid)
 
 
 def pid_exists(pid):
-    """
-    Return True if a given PID exists.
+    """Check if a process with the given PID exists.
 
-    :param pid: Process ID number.
+    This function uses os.kill with signal 0 to check if a process exists
+    without actually sending a signal to it.
+
+    :param pid: The process ID number to check.
+    :type pid: int
+    :return: True if the process exists, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> pid_exists(1)
+        True
+        >>> pid_exists(999999)
+        False
     """
     try:
         os.kill(pid, 0)
@@ -149,10 +188,22 @@ def pid_exists(pid):
 
 
 def safe_kill(pid, signal):  # pylint: disable=W0621
-    """
-    Attempt to send a signal to a given process that may or may not exist.
+    """Attempt to send a signal to a process that may or may not exist.
 
-    :param signal: Signal number.
+    This function safely sends a signal to a process, handling cases where
+    the process might not exist or require elevated privileges.
+
+    :param pid: The process ID to send the signal to.
+    :type pid: int
+    :param signal: The signal number to send (e.g., signal.SIGTERM).
+    :type signal: int
+    :return: True if signal was sent successfully, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> safe_kill(1234, signal.SIGTERM)
+        True
     """
     if not get_owner_id(int(pid)):
         kill_cmd = f"kill -{int(signal)} {int(pid)}"
@@ -170,14 +221,22 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
 
 def get_parent_pid(pid):
-    """
-    Returns the parent PID for the given process
+    """Get the parent process ID for a given process.
 
-    :note: This is currently Linux specific.
+    This function reads the /proc filesystem to determine the parent PID.
 
-    :param pid: The PID of child process
-    :returns: The parent PID
+    .. note:: This is currently Linux specific.
+
+    :param pid: The PID of the child process.
+    :type pid: int
+    :return: The parent process ID.
     :rtype: int
+    :raises IOError: If the /proc entry cannot be read.
+
+    Example::
+
+        >>> get_parent_pid(1234)
+        1
     """
     with open(f"/proc/{int(pid)}/stat", "rb") as proc_stat:
         parent_pid = proc_stat.read().split(b" ")[-49]
@@ -192,14 +251,27 @@ def _get_pid_from_proc_pid_stat(proc_path):
 
 
 def get_children_pids(parent_pid, recursive=False):
-    """
-    Returns the children PIDs for the given process
+    """Get the list of child process IDs for a given parent process.
 
-    :note: This is currently Linux specific.
+    This function scans the /proc filesystem to find all child processes
+    of the specified parent PID.
 
-    :param parent_pid: The PID of parent child process
-    :returns: The PIDs for the children processes
+    .. note:: This is currently Linux specific.
+
+    :param parent_pid: The PID of the parent process.
+    :type parent_pid: int
+    :param recursive: If True, also returns grandchildren and all descendants.
+                     If False, only returns direct children.
+    :type recursive: bool
+    :return: List of child process IDs.
     :rtype: list of int
+
+    Example::
+
+        >>> get_children_pids(1)
+        [234, 456, 789]
+        >>> get_children_pids(1, recursive=True)
+        [234, 456, 789, 1011, 1213]
     """
     proc_stats = glob.glob("/proc/[123456789]*/stat")
     children = []
@@ -220,20 +292,24 @@ def get_children_pids(parent_pid, recursive=False):
 
 
 def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
-    """
-    Signal a process and all of its children.
+    """Signal a process and all of its children.
 
     If the process does not exist -- return.
 
     :param pid: The pid of the process to signal.
+    :type pid: int
     :param sig: The signal to send to the processes, defaults to
                 :data:`signal.SIGKILL`
-    :param send_sigcont: Send SIGCONT to allow killing stopped processes
+    :type sig: int or None
+    :param send_sigcont: Send SIGCONT to allow killing stopped processes.
+    :type send_sigcont: bool
     :param timeout: How long to wait for the pid(s) to die
                     (negative=infinity, 0=don't wait,
-                    positive=number_of_seconds)
-    :return: list of all PIDs we sent signal to
+                    positive=number_of_seconds).
+    :type timeout: int or float
+    :return: List of all PIDs we sent signal to.
     :rtype: list
+    :raises RuntimeError: If timeout is reached waiting for processes to die.
     """
 
     def _all_pids_dead(killed_pids):
@@ -277,10 +353,20 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
 
 
 def kill_process_by_pattern(pattern):
-    """
-    Send SIGTERM signal to a process with matched pattern.
+    """Send SIGTERM signal to processes matching a pattern.
 
-    :param pattern: normally only matched against the process name
+    This function uses the pkill command to terminate processes whose
+    command line matches the given pattern.
+
+    :param pattern: Pattern to match against process command lines.
+                   This is matched using pkill's -f flag, which matches
+                   against the full command line.
+    :type pattern: str
+
+    Example::
+
+        >>> kill_process_by_pattern("firefox")
+        >>> kill_process_by_pattern("python.*test_script")
     """
     cmd = f"pkill -f {pattern}"
     result = run(cmd, ignore_status=True)
@@ -291,8 +377,7 @@ def kill_process_by_pattern(pattern):
 
 
 def process_in_ptree_is_defunct(ppid):
-    """
-    Verify if any processes deriving from PPID are in the defunct state.
+    """Verify if any processes deriving from PPID are in the defunct state.
 
     Attempt to verify if parent process and any children from PPID is defunct
     (zombie) or not.
@@ -301,6 +386,9 @@ def process_in_ptree_is_defunct(ppid):
     MacOS.
 
     :param ppid: The parent PID of the process to verify.
+    :type ppid: int
+    :return: True if any process in the tree is defunct, False otherwise.
+    :rtype: bool
     """
     defunct = False
     try:
@@ -317,14 +405,28 @@ def process_in_ptree_is_defunct(ppid):
 
 
 def binary_from_shell_cmd(cmd):
-    """
-    Tries to find the first binary path from a simple shell-like command.
+    """Extract the first binary path from a shell-like command string.
 
-    :note: It's a naive implementation, but for commands like:
-           `VAR=VAL binary -args || true` gives the right result (binary)
-    :param cmd: simple shell-like binary
-    :type cmd: unicode string
-    :return: first found binary from the cmd
+    This function parses a shell command and returns the first binary/executable
+    found, skipping environment variable assignments.
+
+    .. note:: This is a naive implementation that handles common patterns like
+              environment variable assignments before the binary name.
+
+    :param cmd: A shell-like command string to parse.
+    :type cmd: str
+    :return: The first binary/executable found in the command.
+    :rtype: str
+    :raises ValueError: If no binary can be extracted from the command.
+
+    Example::
+
+        >>> binary_from_shell_cmd("binary")
+        'binary'
+        >>> binary_from_shell_cmd("VAR=VAL binary -args")
+        'binary'
+        >>> binary_from_shell_cmd("FOO=bar ./script.py")
+        './script.py'
     """
     cmds = shlex.split(cmd)
     for item in cmds:
@@ -340,8 +442,7 @@ cmd_split = shlex.split
 
 
 class CmdResult:
-    """
-    Command execution result.
+    """Command execution result.
 
     :param command: the command line itself
     :type command: str
@@ -402,6 +503,12 @@ class CmdResult:
 
     @property
     def stdout_text(self):
+        """Return stdout decoded as text.
+
+        :return: The stdout content as a string.
+        :rtype: str
+        :raises TypeError: If stdout cannot be decoded.
+        """
         if hasattr(self.stdout, "decode"):
             return self.stdout.decode(self.encoding)
         if isinstance(self.stdout, str):
@@ -410,6 +517,12 @@ class CmdResult:
 
     @property
     def stderr_text(self):
+        """Return stderr decoded as text.
+
+        :return: The stderr content as a string.
+        :rtype: str
+        :raises TypeError: If stderr cannot be decoded.
+        """
         if hasattr(self.stderr, "decode"):
             return self.stderr.decode(self.encoding)
         if isinstance(self.stderr, str):
@@ -418,6 +531,8 @@ class CmdResult:
 
 
 class FDDrainer:
+    """Reads data from a file descriptor in a thread, storing locally."""
+
     # pylint: disable=R0913, R0902
     def __init__(
         self,
@@ -430,23 +545,25 @@ class FDDrainer:
         ignore_bg_processes=False,
         verbose=False,
     ):
-        """
-        Reads data from a file descriptor in a thread, storing locally in
-        a file-like :attr:`data` object.
+        """Initialize FDDrainer to read from a file descriptor in a thread.
+
+        Stores data locally in a file-like :attr:`data` object.
 
         :param fd: a file descriptor that will be read (drained) from
         :type fd: int
         :param result: a :class:`CmdResult` instance associated with the process
                        used to detect if the process is still running and
                        if there's still data to be read.
-        :type result: a :class:`CmdResult` instance
+        :type result: CmdResult
         :param name: a descriptive name that will be passed to the Thread name
         :type name: str
         :param logger: the logger that will be used to (interactively) write
                        the content from the file descriptor
-        :type logger: :class:`logging.Logger`
+        :type logger: logging.Logger
         :param logger_prefix: the prefix used when logging the data
-        :type logger_prefix: str with one %-style string formatter
+        :type logger_prefix: str
+        :param stream_logger: a logger for streaming output
+        :type stream_logger: logging.Logger
         :param ignore_bg_processes: When True the process does not wait for
                     child processes which keep opened stdout/stderr streams
                     after the main process finishes (eg. forked daemon which
@@ -454,9 +571,9 @@ class FDDrainer:
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
-        :type ignore_bg_processes: boolean
+        :type ignore_bg_processes: bool
         :param verbose: whether to log in both the logger and stream_logger
-        :type verbose: boolean
+        :type verbose: bool
         """
         self.fd = fd
         self.name = name
@@ -477,9 +594,7 @@ class FDDrainer:
             self._stream_logger.debug(line + newline_for_stream)
 
     def _drainer(self):
-        """
-        Read from fd, storing and optionally logging the output
-        """
+        """Read from fd, storing and optionally logging the output."""
         bfr = b""
         while True:
             if self._ignore_bg_processes:
@@ -509,11 +624,13 @@ class FDDrainer:
                 bfr = b""
 
     def start(self):
+        """Start the drainer thread to read from the file descriptor."""
         self._thread = threading.Thread(target=self._drainer, name=self.name)
         self._thread.daemon = True
         self._thread.start()
 
     def flush(self):
+        """Wait for drainer thread to complete and flush stream handlers."""
         self._thread.join()
         if self._stream_logger is not None:
             for handler in self._stream_logger.handlers:
@@ -534,9 +651,7 @@ class FDDrainer:
 
 
 class SubProcess:
-    """
-    Run a subprocess in the background, collecting stdout/stderr streams.
-    """
+    """Run a subprocess in the background, collecting stdout/stderr streams."""
 
     # pylint: disable=R0913, R0902
     def __init__(
@@ -550,8 +665,7 @@ class SubProcess:
         encoding=None,
         logger=None,
     ):
-        """
-        Creates the subprocess object, stdout/err, reader threads and locks.
+        """Create the subprocess object, stdout/err, reader threads and locks.
 
         :param cmd: Command line to run.
         :type cmd: str
@@ -575,6 +689,7 @@ class SubProcess:
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
+        :type ignore_bg_processes: bool
         :param encoding: the encoding to use for the text representation
                          of the command result stdout and stderr, by default
                          :data:`avocado.utils.astring.ENCODING`
@@ -583,7 +698,7 @@ class SubProcess:
                        outputs. When this parameter is not set, the
                        `avocado.utils.process` logger will be used.
         :type logger: logging.Logger
-        :raises: ValueError if incorrect values are given to parameters
+        :raises ValueError: If incorrect values are given to parameters.
         """
         if encoding is None:
             encoding = astring.ENCODING
@@ -726,9 +841,7 @@ class SubProcess:
         self._fill_streams()
 
     def _fill_streams(self):
-        """
-        Close subprocess stdout and stderr, and put values into result obj.
-        """
+        """Close subprocess stdout and stderr, and put values into result obj."""
         # Cleaning up threads
         if self._stdout_drainer is not None:
             self._stdout_drainer.flush()
@@ -739,8 +852,7 @@ class SubProcess:
         self.result.stderr = self.get_stderr()
 
     def start(self):
-        """
-        Start running the subprocess.
+        """Start running the subprocess.
 
         This method is particularly useful for background processes, since
         you can start the subprocess and not block your test flow.
@@ -752,28 +864,26 @@ class SubProcess:
         return self._popen.pid
 
     def get_stdout(self):
-        """
-        Get the full stdout of the subprocess so far.
+        """Get the full stdout of the subprocess so far.
 
         :return: Standard output of the process.
-        :rtype: str
+        :rtype: bytes
         """
         self._init_subprocess()
         return self._stdout_drainer.data.getvalue()
 
     def get_stderr(self):
-        """
-        Get the full stderr of the subprocess so far.
+        """Get the full stderr of the subprocess so far.
 
         :return: Standard error of the process.
-        :rtype: str
+        :rtype: bytes
         """
         self._init_subprocess()
         return self._stderr_drainer.data.getvalue()
 
     def terminate(self):
-        """
-        Send a :attr:`signal.SIGTERM` to the process.
+        """Send a :attr:`signal.SIGTERM` to the process.
+
         Please consider using :meth:`stop` instead if you want to
         do all that's possible to finalize the process and wait for it to finish.
         """
@@ -781,8 +891,8 @@ class SubProcess:
         self.send_signal(signal.SIGTERM)
 
     def kill(self):
-        """
-        Send a :attr:`signal.SIGKILL` to the process.
+        """Send a :attr:`signal.SIGKILL` to the process.
+
         Please consider using :meth:`stop` instead if you want to
         do all that's possible to finalize the process and wait for it to finish.
         """
@@ -790,10 +900,10 @@ class SubProcess:
         self.send_signal(signal.SIGKILL)
 
     def send_signal(self, sig):
-        """
-        Send the specified signal to the process.
+        """Send the specified signal to the process.
 
         :param sig: Signal to send.
+        :type sig: int
         """
         self._init_subprocess()
         if self.is_sudo_enabled():
@@ -807,8 +917,10 @@ class SubProcess:
             self._popen.send_signal(sig)
 
     def poll(self):
-        """
-        Call the subprocess poll() method, fill results if rc is not None.
+        """Call the subprocess poll() method, fill results if rc is not None.
+
+        :return: Return code if process has finished, None otherwise.
+        :rtype: int or None
         """
         self._init_subprocess()
         rc = self._popen.poll()
@@ -817,17 +929,21 @@ class SubProcess:
         return rc
 
     def wait(self, timeout=None, sig=signal.SIGTERM):
-        """
-        Call the subprocess poll() method, fill results if rc is not None.
+        """Wait for subprocess to complete, fill results when done.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
                         and it's children using ``sig`` and get a
                         status. When the process refuses to die
                         within 1s we use SIGKILL and report the status
-                        (be it exit_code or zombie)
+                        (be it exit_code or zombie).
+        :type timeout: float or None
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
+        :type sig: int
+        :return: Exit status of the process.
+        :rtype: int
+        :raises AssertionError: If the process becomes a zombie.
         """
 
         def nuke_myself():
@@ -884,18 +1000,20 @@ class SubProcess:
         return rc
 
     def stop(self, timeout=None):
-        """
-        Stop background subprocess.
+        """Stop background subprocess.
 
         Call this method to terminate the background subprocess and
-        wait for it results.
+        wait for its results.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and it's children using ``sig`` and get a
+                        and its children using ``sig`` and get a
                         status. When the process refuses to die
                         within 1s we use SIGKILL and report the status
-                        (be it exit_code or zombie)
+                        (be it exit_code or zombie).
+        :type timeout: float or None
+        :return: Exit status of the process.
+        :rtype: int
         """
         self._init_subprocess()
         if self.result.exit_status is None:
@@ -903,45 +1021,50 @@ class SubProcess:
         return self.wait(timeout)
 
     def get_pid(self):
-        """
-        Reports PID of this process
+        """Report PID of this process.
+
+        :return: Process ID.
+        :rtype: int
         """
         self._init_subprocess()
         return self._popen.pid
 
     def get_user_id(self):
-        """
-        Reports user id of this process
+        """Report user id of this process.
+
+        :return: User ID of the process owner.
+        :rtype: int or None
         """
         self._init_subprocess()
         return get_owner_id(self.get_pid())
 
     def is_sudo_enabled(self):
-        """
-        Returns whether the subprocess is running with sudo enabled
+        """Return whether the subprocess is running with sudo enabled.
+
+        :return: True if running as root (UID 0), False otherwise.
+        :rtype: bool
         """
         self._init_subprocess()
         return not self.get_user_id()
 
     def run(self, timeout=None, sig=signal.SIGTERM):
-        """
-        Start a process and wait for it to end, returning the result attr.
+        """Start a process and wait for it to end, returning the result attr.
 
         If the process was already started using .start(), this will simply
         wait for it to end.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and it's children using ``sig`` and get a
+                        and its children using ``sig`` and get a
                         status. When the process refuses to die
                         within 1s we use SIGKILL and report the status
-                        (be it exit_code or zombie)
-        :type timeout: float
+                        (be it exit_code or zombie).
+        :type timeout: float or None
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
         :type sig: int
-        :returns: The command result object.
-        :rtype: A :class:`CmdResult` instance.
+        :return: The command result object.
+        :rtype: CmdResult
         """
         self._init_subprocess()
         self.wait(timeout, sig)
@@ -961,8 +1084,7 @@ def run(
     encoding=None,
     logger=None,
 ):
-    """
-    Run a subprocess, returning a CmdResult object.
+    """Run a subprocess, returning a CmdResult object.
 
     :param cmd: Command line to run.
     :type cmd: str
@@ -970,15 +1092,15 @@ def run(
                     running process. This function will take a few seconds
                     longer than 'timeout' to complete if it has to kill the
                     process.
-    :type timeout: float
+    :type timeout: float or None
     :param verbose: Whether to log the command run and stdout/stderr.
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param shell: Whether to run the command on a subshell
+    :param shell: Whether to run the command on a subshell.
     :type shell: bool
-    :param env: Use extra environment variables
+    :param env: Use extra environment variables.
     :type env: dict
     :param sudo: Whether the command requires admin privileges to run,
                  so that sudo will be prepended to the command.
@@ -986,6 +1108,9 @@ def run(
                  has a sudo configuration such that a password won't be
                  prompted. If that's not the case, the command will
                  straight out fail.
+    :type sudo: bool
+    :param ignore_bg_processes: Whether to ignore background processes.
+    :type ignore_bg_processes: bool
     :param encoding: the encoding to use for the text representation
                      of the command result stdout and stderr, by default
                      :data:`avocado.utils.astring.ENCODING`
@@ -994,9 +1119,10 @@ def run(
                    outputs. When this parameter is not set, the
                    `avocado.utils.process` logger will be used.
     :type logger: logging.Logger
-
-    :return: An :class:`CmdResult` object.
-    :raise: :class:`CmdError`, if ``ignore_status=False``.
+    :return: A CmdResult object.
+    :rtype: CmdResult
+    :raises CmdInputError: If the command is empty.
+    :raises CmdError: If ``ignore_status=False`` and command fails.
     """
     if not cmd:
         raise CmdInputError("Invalid empty command")
@@ -1032,8 +1158,7 @@ def system(
     encoding=None,
     logger=None,
 ):
-    """
-    Run a subprocess, returning its exit code.
+    """Run a subprocess, returning its exit code.
 
     :param cmd: Command line to run.
     :type cmd: str
@@ -1041,13 +1166,13 @@ def system(
                     running process. This function will take a few seconds
                     longer than 'timeout' to complete if it has to kill the
                     process.
-    :type timeout: float
+    :type timeout: float or None
     :param verbose: Whether to log the command run and stdout/stderr.
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param shell: Whether to run the command on a subshell
+    :param shell: Whether to run the command on a subshell.
     :type shell: bool
     :param env: Use extra environment variables.
     :type env: dict
@@ -1057,6 +1182,9 @@ def system(
                  has a sudo configuration such that a password won't be
                  prompted. If that's not the case, the command will
                  straight out fail.
+    :type sudo: bool
+    :param ignore_bg_processes: Whether to ignore background processes.
+    :type ignore_bg_processes: bool
     :param encoding: the encoding to use for the text representation
                      of the command result stdout and stderr, by default
                      :data:`avocado.utils.astring.ENCODING`
@@ -1065,10 +1193,9 @@ def system(
                    outputs. When this parameter is not set, the
                    `avocado.utils.process` logger will be used.
     :type logger: logging.Logger
-
     :return: Exit code.
     :rtype: int
-    :raise: :class:`CmdError`, if ``ignore_status=False``.
+    :raises CmdError: If ``ignore_status=False`` and command fails.
     """
     cmd_result = run(
         cmd=cmd,
@@ -1099,8 +1226,7 @@ def system_output(
     encoding=None,
     logger=None,
 ):
-    """
-    Run a subprocess, returning its output.
+    """Run a subprocess, returning its output.
 
     :param cmd: Command line to run.
     :type cmd: str
@@ -1108,14 +1234,15 @@ def system_output(
                     running process. This function will take a few seconds
                     longer than 'timeout' to complete if it has to kill the
                     process.
-    :type timeout: float
+    :type timeout: float or None
     :param verbose: Whether to log the command run and stdout/stderr.
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param shell: Whether to run the command on a subshell
+    :type ignore_status: bool
+    :param shell: Whether to run the command on a subshell.
     :type shell: bool
-    :param env: Use extra environment variables
+    :param env: Use extra environment variables.
     :type env: dict
     :param sudo: Whether the command requires admin privileges to run,
                  so that sudo will be prepended to the command.
@@ -1124,9 +1251,9 @@ def system_output(
                  prompted. If that's not the case, the command will
                  straight out fail.
     :type sudo: bool
-    :param ignore_bg_processes: Whether to ignore background processes
+    :param ignore_bg_processes: Whether to ignore background processes.
     :type ignore_bg_processes: bool
-    :param strip_trail_nl: Whether to strip the trailing newline
+    :param strip_trail_nl: Whether to strip the trailing newline.
     :type strip_trail_nl: bool
     :param encoding: the encoding to use for the text representation
                      of the command result stdout and stderr, by default
@@ -1136,10 +1263,9 @@ def system_output(
                    outputs. When this parameter is not set, the
                    `avocado.utils.process` logger will be used.
     :type logger: logging.Logger
-
     :return: Command output.
     :rtype: bytes
-    :raise: :class:`CmdError`, if ``ignore_status=False``.
+    :raises CmdError: If ``ignore_status=False`` and command fails.
     """
     cmd_result = run(
         cmd=cmd,
@@ -1170,10 +1296,10 @@ def getoutput(
     ignore_bg_processes=False,
     logger=None,
 ):
-    """
+    """Return output (stdout or stderr) of executing cmd in a shell.
+
     Because commands module is removed in Python3 and it redirect stderr
-    to stdout, we port commands.getoutput to make code compatible
-    Return output (stdout or stderr) of executing cmd in a shell.
+    to stdout, we port commands.getoutput to make code compatible.
 
     :param cmd: Command line to run.
     :type cmd: str
@@ -1181,14 +1307,15 @@ def getoutput(
                     running process. This function will take a few seconds
                     longer than 'timeout' to complete if it has to kill the
                     process.
-    :type timeout: float
+    :type timeout: float or None
     :param verbose: Whether to log the command run and stdout/stderr.
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param shell: Whether to run the command on a subshell
+    :type ignore_status: bool
+    :param shell: Whether to run the command on a subshell.
     :type shell: bool
-    :param env: Use extra environment variables
+    :param env: Use extra environment variables.
     :type env: dict
     :param sudo: Whether the command requires admin privileges to run,
                  so that sudo will be prepended to the command.
@@ -1197,14 +1324,13 @@ def getoutput(
                  prompted. If that's not the case, the command will
                  straight out fail.
     :type sudo: bool
-    :param ignore_bg_processes: Whether to ignore background processes
+    :param ignore_bg_processes: Whether to ignore background processes.
     :type ignore_bg_processes: bool
     :param logger: User's custom logger, which will be logging the subprocess
                    outputs. When this parameter is not set, the
                    `avocado.utils.process` logger will be used.
     :type logger: logging.Logger
-
-    :return: Command output(stdout or stderr).
+    :return: Command output (stdout or stderr).
     :rtype: str
     """
     return getstatusoutput(
@@ -1232,10 +1358,10 @@ def getstatusoutput(
     ignore_bg_processes=False,
     logger=None,
 ):
-    """
+    """Return (status, output) of executing cmd in a shell.
+
     Because commands module is removed in Python3 and it redirect stderr
-    to stdout, we port commands.getstatusoutput to make code compatible
-    Return (status, output) of executing cmd in a shell.
+    to stdout, we port commands.getstatusoutput to make code compatible.
 
     :param cmd: Command line to run.
     :type cmd: str
@@ -1243,14 +1369,15 @@ def getstatusoutput(
                     running process. This function will take a few seconds
                     longer than 'timeout' to complete if it has to kill the
                     process.
-    :type timeout: float
+    :type timeout: float or None
     :param verbose: Whether to log the command run and stdout/stderr.
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param shell: Whether to run the command on a subshell
+    :type ignore_status: bool
+    :param shell: Whether to run the command on a subshell.
     :type shell: bool
-    :param env: Use extra environment variables
+    :param env: Use extra environment variables.
     :type env: dict
     :param sudo: Whether the command requires admin privileges to run,
                  so that sudo will be prepended to the command.
@@ -1259,14 +1386,13 @@ def getstatusoutput(
                  prompted. If that's not the case, the command will
                  straight out fail.
     :type sudo: bool
-    :param ignore_bg_processes: Whether to ignore background processes
+    :param ignore_bg_processes: Whether to ignore background processes.
     :type ignore_bg_processes: bool
     :param logger: User's custom logger, which will be logging the subprocess
                    outputs. When this parameter is not set, the
                    `avocado.utils.process` logger will be used.
     :type logger: logging.Logger
-
-    :return: Exit status and command output(stdout and stderr).
+    :return: Exit status and command output (stdout and stderr).
     :rtype: tuple
     """
     cmd_result = run(
@@ -1288,11 +1414,24 @@ def getstatusoutput(
 
 
 def get_owner_id(pid):
-    """
-    Get the owner's user id of a process
+    """Get the user ID of the process owner.
 
-    :param pid: the process id
-    :return: user id of the process owner
+    This function reads the /proc filesystem to determine the user ID
+    that owns the specified process.
+
+    .. note:: This is currently Linux specific.
+
+    :param pid: The process ID to query.
+    :type pid: int
+    :return: The user ID of the process owner, or None if not found.
+    :rtype: int or None
+
+    Example::
+
+        >>> get_owner_id(1)
+        0
+        >>> get_owner_id(999999)
+        None
     """
     try:
         return os.stat(f"/proc/{int(pid)}/").st_uid
@@ -1301,15 +1440,22 @@ def get_owner_id(pid):
 
 
 def get_command_output_matching(command, pattern):
-    """
-    Runs a command, and if the pattern is in in the output, returns it.
+    """Run a command and return lines matching a pattern.
 
-    :param command: the command to execute
+    This function executes a command and searches its output for lines
+    containing the specified pattern, returning all matching lines.
+
+    :param command: The command to execute.
     :type command: str
-    :param pattern: pattern to search in the output, in a line by line basis
+    :param pattern: Pattern to search for in the output. Matching is done
+                   on a line-by-line basis using substring matching.
     :type pattern: str
-
-    :return: list of lines matching the pattern
+    :return: List of lines from the command output that contain the pattern.
     :rtype: list of str
+
+    Example::
+
+        >>> get_command_output_matching("ls -la", "txt")
+        ['file1.txt', 'file2.txt']
     """
     return [line for line in run(command).stdout_text.splitlines() if pattern in line]
