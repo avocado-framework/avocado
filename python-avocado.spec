@@ -28,8 +28,8 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 112.0
-Release: 1%{?gitrel}%{?dist}
-License: GPLv2+ and GPLv2 and MIT
+Release: 2%{?gitrel}%{?dist}
+License: GPL-2.0-or-later AND GPL-2.0-only AND MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
 Source0: https://github.com/avocado-framework/avocado/archive/%{version}/%{gittar}
@@ -270,7 +270,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 
 %package -n python3-avocado-common
 Summary: Avocado common files
-License: GPLv2+
+License: GPL-2.0-or-later
 
 %description -n python3-avocado-common
 Common files (such as configuration) for the Avocado Testing Framework.
@@ -297,7 +297,7 @@ Common files (such as configuration) for the Avocado Testing Framework.
 
 %package -n python3-avocado-plugins-output-html
 Summary: Avocado HTML report plugin
-License: GPLv2+ and MIT
+License: GPL-2.0-or-later AND GPL-2.0-only AND MIT
 Requires: python3-avocado == %{version}-%{release}
 Requires: python3-jinja2
 
@@ -314,7 +314,7 @@ arbitrary filesystem location.
 %if ! 0%{?fedora} > 35
 %package -n python3-avocado-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 Requires: python3-resultsdb_api
 
@@ -330,7 +330,7 @@ server.
 
 %package -n python3-avocado-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 Requires: python3-yaml
 
@@ -344,7 +344,7 @@ defined in a yaml file(s).
 
 %package -n python3-avocado-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 Requires: golang
 
@@ -360,7 +360,7 @@ also run them.
 %if ! 0%{?rhel}
 %package -n python3-avocado-plugins-ansible
 Summary: Avocado Ansible Dependency plugin
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 Requires: ansible-core
 
@@ -376,7 +376,7 @@ tests.
 
 %package -n python3-avocado-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-plugins-varianter-pict
@@ -389,7 +389,7 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 
 %package -n python3-avocado-plugins-varianter-cit
 Summary: Varianter with Combinatorial Independent Testing capabilities
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-plugins-varianter-cit
@@ -403,7 +403,7 @@ collaboration with CVUT Prague.
 
 %package -n python3-avocado-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-plugins-result-upload
@@ -416,7 +416,7 @@ a dedicated sever.
 
 %package -n python3-avocado-plugins-result-mail
 Summary: Avocado Mail Notification for Jobs
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-plugins-result-mail
@@ -430,7 +430,7 @@ for job start and completion events within the Avocado testing framework.
 %if ! 0%{?rhel}
 %package -n python3-avocado-plugins-spawner-remote
 Summary: Avocado Plugin to spawn tests on a remote host
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-plugins-spawner-remote
@@ -443,7 +443,7 @@ This optional plugin is intended to spawn tests on a remote host.
 
 %package -n python3-avocado-examples
 Summary: Avocado Test Framework Example Tests
-License: GPLv2+
+License: GPL-2.0-or-later
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-examples
@@ -463,7 +463,7 @@ examples of how to write tests on your own.
 
 %package -n python3-avocado-bash
 Summary: Avocado Test Framework Bash Utilities
-License: GPLv2+ and GPLv2
+License: GPL-2.0-or-later AND GPL-2.0-only
 Requires: python3-avocado == %{version}-%{release}
 
 %description -n python3-avocado-bash
@@ -475,6 +475,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Dec 04 2025 Cleber Rosa  <crosa@redhat.com> - 112.0-2
+- Update license format to match The System Package Data Exchange (SPDX)
+
 * Wed Sep 24 2025 Jan Richter <jarichte@redhat.com> - 112.0-1
 - New release
 
