@@ -838,7 +838,6 @@ class GDBRemote:
         :param expected_response: the (optional) response that is expected
                                   as a response for the command sent
         :type expected_response: str
-        :raises: RetransmissionRequestedError, UnexpectedResponseError
         :returns: raw data read from from the remote server
         :rtype: str
         :raises NotConnectedError: if the socket is not initialized
