@@ -647,10 +647,13 @@ class RunnerOperationTest(TestCaseTmpDir):
         )
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        # TODO Modify this test to assertEqual, once the issue `deprecated pkg_resources` is solved
-        self.assertIn(
-            "Test Suite could not be created. No test references provided nor any other arguments resolved into tests",
-            str(result.stderr),
+        self.assertEqual(
+            result.stderr,
+            (
+                b"Test Suite could not be created. No test references"
+                b" provided nor any other arguments resolved into "
+                b"tests\n"
+            ),
         )
 
     def test_not_found(self):
