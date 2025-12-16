@@ -6,12 +6,17 @@ on:
       - opened
     paths:
       - '**/ar.py'
-      - '**/path.py'
+      - '**/astring.py'
       - '**/data_structures.py'
-      - '**/network/ports.py'
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
+      - '**/gdb.py'
+      - '**/network/ports.py'
       - '**/output.py'
+      - '**/path.py'
+      - '**/process.py'
+      - '**/script.py'
+      - '**/wait.py'
 
 jobs:
   commnet-to-pr:
