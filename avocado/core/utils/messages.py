@@ -259,7 +259,7 @@ def start_logging(config, queue):
     # root log
     logger = logging.getLogger("")
     logger.addHandler(log_handler)
-    logger.setLevel(logging.NOTSET)
+    logger.setLevel(log_level)
 
     # main log = 'avocado'
     logging.getLogger("avocado").setLevel(log_level)
