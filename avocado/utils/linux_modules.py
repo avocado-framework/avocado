@@ -244,6 +244,7 @@ def check_kernel_config(config_name):
     config_locations = [
         Path("/proc/config.gz"),
         Path(f"/boot/config-{kernel_version}"),
+        Path(f"/lib/modules/{kernel_version}/build/.config"),
         Path(f"/usr/lib/modules/{kernel_version}/config"),
     ]
     config_file = None
