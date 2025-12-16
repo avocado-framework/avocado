@@ -508,3 +508,9 @@ def to_text(data, encoding=ENCODING, errors="strict"):
     if not isinstance(data, str):
         return str(data)
     return data
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("astring")

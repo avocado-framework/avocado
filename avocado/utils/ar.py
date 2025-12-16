@@ -119,3 +119,9 @@ class Ar:
                     open_file.seek(member.offset)
                     return open_file.read(member.size)
         return None
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("ar")

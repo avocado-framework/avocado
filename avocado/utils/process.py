@@ -1459,3 +1459,9 @@ def get_command_output_matching(command, pattern):
         ['file1.txt', 'file2.txt']
     """
     return [line for line in run(command).stdout_text.splitlines() if pattern in line]
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("process")

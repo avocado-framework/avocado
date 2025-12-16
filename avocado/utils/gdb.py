@@ -894,3 +894,9 @@ class GDBRemote:
 
         if self._extended_mode:
             self.set_extended_mode()
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("gdb")
