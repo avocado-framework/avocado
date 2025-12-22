@@ -1,4 +1,4 @@
-""" Provides utilities to carry out an SSH session.
+"""Provides utilities to carry out an SSH session.
 
 Example of use:
 

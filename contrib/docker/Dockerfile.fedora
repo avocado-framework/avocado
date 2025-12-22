@@ -35,4 +35,3 @@ RUN dnf install -y \
     make requirements && \
     make install  && \
     dnf clean all
-

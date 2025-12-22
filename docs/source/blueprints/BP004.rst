@@ -209,4 +209,3 @@ Here is a list of all issues related to this blueprint:
 
 References
 **********
-

@@ -138,13 +138,11 @@ class VMImageRunner(BaseRunner):
         try:
             process.start()
 
-            for message in self._monitor(queue):
-                yield message
+            yield from self._monitor(queue)
 
         except TestInterrupt:
             process.terminate()
-            for message in self._monitor(queue):
-                yield message
+            yield from self._monitor(queue)
         except (multiprocessing.ProcessError, OSError) as e:
             # ProcessError: Issues with process management
             # OSError: System-level errors (e.g. resource limits)

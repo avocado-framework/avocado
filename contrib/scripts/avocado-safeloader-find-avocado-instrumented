@@ -26,7 +26,7 @@ import sys
 
 from avocado.core.safeloader import find_avocado_tests
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_module_paths = sys.argv[1:]
     result = []
     for test_module_path in test_module_paths:
@@ -36,7 +36,9 @@ if __name__ == '__main__':
             continue
         for klass, methods in test_class_methods.items():
             test_module_name = os.path.relpath(test_module_path)
-            result += ["%s:%s.%s" % (test_module_name, klass, method_name)
-                       for (method_name, _, _) in methods]
+            result += [
+                "%s:%s.%s" % (test_module_name, klass, method_name)
+                for (method_name, _, _) in methods
+            ]
     if result:
         print("\n".join(result))

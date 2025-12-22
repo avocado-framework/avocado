@@ -143,9 +143,9 @@ class Mail(JobPre, JobPost):
         """
 
         msg = MIMEText(body, "html")
-        msg[
-            "Subject"
-        ] = f"{job.config.get('plugins.mail.header')} Job {job.unique_id} - Status: {subject_prefix}"
+        msg["Subject"] = (
+            f"{job.config.get('plugins.mail.header')} Job {job.unique_id} - Status: {subject_prefix}"
+        )
         msg["From"] = job.config.get("plugins.mail.sender")
         msg["To"] = job.config.get("plugins.mail.recipient")
         return msg

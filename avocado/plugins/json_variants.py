@@ -99,8 +99,7 @@ class JsonVariants(Varianter):
                 "Iterating Varianter before initialization is not supported"
             )
 
-        for variant in self.variants.itertests():
-            yield variant
+        yield from self.variants.itertests()
 
     def __len__(self):
         if self.variants == _NO_VARIANTS:

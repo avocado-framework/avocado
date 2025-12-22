@@ -4,7 +4,7 @@
 
 /*
  * Signal numbers are translated to exit code by the shell.
- * For example, if SIGUSR1 is raised (sinal number 10) then
+ * For example, if SIGUSR1 is raised (signal number 10) then
  * the exit code will be 128+10 = 138.
  *
  * In the case of avocado.utils.process.SubProcess, the exit code is

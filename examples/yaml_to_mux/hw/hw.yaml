@@ -12,4 +12,3 @@ disk: !mux
         disk_type: 'scsi'
     virtio:
         disk_type: 'virtio'
-
