@@ -290,6 +290,7 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %dir %{_datarootdir}/avocado/schemas
 %{_datarootdir}/avocado/schemas/*
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo.conf
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
