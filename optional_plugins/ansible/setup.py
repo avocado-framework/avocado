@@ -34,7 +34,14 @@ setup(
     url="http://avocado-framework.github.io/",
     packages=packages,
     include_package_data=True,
-    install_requires=[f"avocado-framework=={VERSION}", "ansible-core"],
+    install_requires=[
+        f"avocado-framework=={VERSION}",
+        "cryptography<3.4",
+        "jinja2<3.1",
+        "PyYAML<6.0",
+        "packaging<22.0",
+        "ansible-core<2.12",
+    ],
     test_suite="tests",
     entry_points={
         "console_scripts": [
