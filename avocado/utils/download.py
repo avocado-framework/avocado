@@ -28,6 +28,7 @@ import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
 from urllib.request import urlopen
+from pathlib import Path
 
 from avocado.utils import crypto, output
 
@@ -125,12 +126,12 @@ def url_download(
     filename: str,
     data: typing.Optional[bytes] = None,
     timeout: int = 300,
-    segments: int = 4,
+    segments: int = 1,
 ):
     """
     Multipart downloader using thread pool executor by content-length splitting
     :param url: URL to download.
-    :param filename: Filename to save the downloaded file
+    :param filename: Target file name or full file path
     :param data: (optional) data to POST Request
     :param timeout: (optional) default timeout in seconds.
     :param segments: How much should we split the download into
@@ -141,32 +142,49 @@ def url_download(
     size = int(headers.get("Content-Length", -1))
     supports_range = "bytes" in headers.get("Accept-Ranges", "").lower()
 
-    if size <= 0 or data or not supports_range:
-        # if the server doesn't provide the size or accepted range / if we want sent data to the server (POST Method),
-        # switch to single download with urlopen
+    if segments == 1 or size <= 0 or data or not supports_range:
+        # Use single download when size/range is unavailable, request is POST, or segment size is 1
         _url_download(url=url, filename=filename, data=data)
         return
 
     part_size = size // segments
+    path = Path(filename)  # takes absolute path
+    part_files = [str(path.parent / f"temp{i}_{path.name}") for i in range(segments)]
+    if part_size == 0:
+        # File too small for segmentation, fall back to single download
+        _url_download(url=url, filename=filename, data=data)
+        return
 
     def task(i: int):
         start = i * part_size
         end = size - 1 if i == segments - 1 else (start + part_size - 1)
-        part_file = f"{filename}.part{i}"
+        part_file = part_files[i]
         _download_range(
             url=url, start=start, end=end, part_file=part_file, timeout=timeout
         )
-        return part_file
 
-    with ThreadPoolExecutor(max_workers=segments) as executor:
-        part_files = list(executor.map(task, range(segments)))
-
-    # Merge the split files and remove them
-    with open(filename, "wb") as f:
+    try:
+        with ThreadPoolExecutor(max_workers=segments) as executor:
+            # This will raise an exception if any task fails
+            list(executor.map(task, range(segments)))
+        # Merge the split files
+        with open(filename, "wb") as f:
+            for part in part_files:
+                with open(part, "rb") as pf:
+                    shutil.copyfileobj(pf, f)
+    except Exception as e:
+        # If anything fails, remove the incomplete destination file and switch to single-part download
+        if os.path.exists(filename):
+            os.remove(filename)
+        log.warning(
+            "Multipart download failed (%s). Falling back to single-part download.", e
+        )
+        _url_download(url=url, filename=filename, data=data)
+    finally:
+        # Always clean up part files
         for part in part_files:
-            with open(part, "rb") as pf:
-                shutil.copyfileobj(pf, f)
-            os.remove(part)
+            if os.path.exists(part):
+                os.remove(part)
 
 
 def url_download_interactive(url, output_file, title="", chunk_size=102400):
