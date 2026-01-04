@@ -273,6 +273,8 @@ def fail_path(path):
 
     def is_failed():
         path_stat = get_path_status(path)
+        if path_stat is None:
+            return False
         if path_stat[0] == "failed" and path_stat[2] == "faulty":
             return True
         return False
@@ -293,6 +295,8 @@ def reinstate_path(path):
 
     def is_reinstated():
         path_stat = get_path_status(path)
+        if path_stat is None:
+            return False
         if path_stat[0] == "active" and path_stat[2] == "ready":
             return True
         return False
