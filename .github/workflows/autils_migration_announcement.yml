@@ -12,6 +12,7 @@ on:
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
       - '**/output.py'
+      - '**/genio.py'
 
 jobs:
   commnet-to-pr:
