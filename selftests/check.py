@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 import copy
 import glob
@@ -27,9 +26,9 @@ TEST_SIZE = {
     "job-api-check-tmp-directory-exists": 1,
     "nrunner-interface": 90,
     "nrunner-requirement": 28,
-    "unit": 934,
+    "unit": 950,
     "jobs": 11,
-    "functional-parallel": 353,
+    "functional-parallel": 366,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -85,7 +84,6 @@ class JobAPIFeaturesTest(Test):
         extra_job_config = self.params.get("extra_job_config")
         if extra_job_config is not None:
             config.update(extra_job_config)
-
         return config
 
     @staticmethod
@@ -117,13 +115,10 @@ class JobAPIFeaturesTest(Test):
     def run_job(self):
         """Run a Job"""
         config = self.create_config()
-
         suite = TestSuite.from_config(config, "")
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
-
         return result
 
     @property
@@ -134,14 +129,11 @@ class JobAPIFeaturesTest(Test):
     def test_check_archive_file_exists(self):
         """Test to check the archive file was created."""
         config = self.create_config()
-
         suite = TestSuite.from_config(config)
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
             logdir = j.logdir
-
         # Asserts
         self.check_exit_code(result)
         archive_path = f"{logdir}.zip"
@@ -150,17 +142,13 @@ class JobAPIFeaturesTest(Test):
     def test_check_category_directory_exists(self):
         """Test to check if the category directory was created."""
         config = self.create_config()
-
         suite = TestSuite.from_config(config)
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
             logdir = j.logdir
-
         # Asserts
         self.check_exit_code(result)
-
         value = self.params.get("value")
         category_path = os.path.join(os.path.dirname(logdir), value)
         self.check_directory_exists(category_path)
@@ -168,13 +156,10 @@ class JobAPIFeaturesTest(Test):
     def test_check_directory_exists(self):
         """Test to check if a directory was created."""
         config = self.create_config()
-
         suite = TestSuite.from_config(config)
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
-
         # Asserts
         self.check_exit_code(result)
         self.check_directory_exists()
@@ -182,7 +167,6 @@ class JobAPIFeaturesTest(Test):
     def test_check_file_content(self):
         """Test to check if a file has the desired content."""
         result = self.run_job()
-
         # Asserts
         self.check_exit_code(result)
         self.check_file_content(self.workdir_file_path)
@@ -190,7 +174,6 @@ class JobAPIFeaturesTest(Test):
     def test_check_file_exists(self):
         """Test to check if a file was created."""
         result = self.run_job()
-
         # Asserts
         self.check_exit_code(result)
         self.check_file_exists(self.workdir_file_path)
@@ -198,13 +181,10 @@ class JobAPIFeaturesTest(Test):
     def test_check_output_file(self):
         """Test to check if the file passed as parameter was created."""
         config = self.create_config(self.workdir_file_path)
-
         suite = TestSuite.from_config(config)
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
-
         # Asserts
         self.check_exit_code(result)
         self.check_file_exists(self.workdir_file_path)
@@ -212,14 +192,11 @@ class JobAPIFeaturesTest(Test):
     def test_check_tmp_directory_exists(self):
         """Test to check if the temporary directory was created."""
         config = self.create_config()
-
         suite = TestSuite.from_config(config)
-
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
             tmpdir = j.tmpdir
-
         # Asserts
         self.check_exit_code(result)
         self.check_directory_exists(tmpdir)
@@ -230,7 +207,6 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 The list of test availables for --skip and --select are:
-
   static-checks         Run static checks (isort, lint, etc)
   job-api               Run job API checks
   nrunner-interface     Run selftests/functional/nrunner_interface.py
@@ -269,7 +245,6 @@ The list of test availables for --skip and --select are:
         action="append",
         default=[],
     )
-
     arg = parser.parse_args()
     return arg
 
@@ -290,13 +265,11 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {"namespace": "run.results.archive", "value": True, "assert": True},
         ],
     }
-
     suites.append(
         TestSuite.from_config(
             config_check_archive_file_exists, "job-api-check-archive-file-exists"
         )
     )
-
     # ========================================================================
     # Test if the category directory was created
     # ========================================================================
@@ -307,14 +280,12 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {"namespace": "run.job_category", "value": "foo", "assert": True},
         ],
     }
-
     suites.append(
         TestSuite.from_config(
             config_check_category_directory_exists,
             "job-api-check-category-directory-exists",
         )
     )
-
     # ========================================================================
     # Test if a directory was created
     # ========================================================================
@@ -336,13 +307,11 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             },
         ],
     }
-
     suites.append(
         TestSuite.from_config(
             config_check_directory_exists, "job-api-check-directory-exists"
         )
     )
-
     # ========================================================================
     # Test the content of a file
     # ========================================================================
@@ -430,11 +399,9 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             },
         ],
     }
-
     suites.append(
         TestSuite.from_config(config_check_file_content, "job-api-check-file-content")
     )
-
     # ========================================================================
     # Test if the result file was created
     # ========================================================================
@@ -498,12 +465,10 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             },
         ],
     }
-
     if (
         python_module_available("avocado-framework-plugin-result-html")
         and "html" not in args.disable_plugin_checks
     ):
-
         config_check_file_exists["run.dict_variants"].append(
             {
                 "namespace": "job.run.result.html.enabled",
@@ -512,7 +477,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "assert": True,
             }
         )
-
         config_check_file_exists["run.dict_variants"].append(
             {
                 "namespace": "job.run.result.html.enabled",
@@ -521,11 +485,9 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "assert": False,
             }
         )
-
     suites.append(
         TestSuite.from_config(config_check_file_exists, "job-api-check-file-exists")
     )
-
     # ========================================================================
     # Test if a file was created
     # ========================================================================
@@ -551,12 +513,10 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             },
         ],
     }
-
     if (
         python_module_available("avocado-framework-plugin-result-html")
         and "html" not in args.disable_plugin_checks
     ):
-
         config_check_output_file["run.dict_variants"].append(
             {
                 "namespace": "job.run.result.html.output",
@@ -564,11 +524,9 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                 "assert": True,
             }
         )
-
     suites.append(
         TestSuite.from_config(config_check_output_file, "job-api-check-output-file")
     )
-
     # ========================================================================
     # Test if the temporary directory was created
     # ========================================================================
@@ -579,7 +537,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {"namespace": "run.keep_tmp", "value": True, "assert": True},
         ],
     }
-
     suites.append(
         TestSuite.from_config(
             config_check_tmp_directory_exists, "job-api-check-tmp-directory-exists"
@@ -591,7 +548,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
 def create_suites(args):  # pylint: disable=W0621
     suites = []
     config_check = {"run.ignore_missing_references": True}
-
     if args.dict_tests["static-checks"]:
         config_check_static = copy.copy(config_check)
         config_check_static["resolver.references"] = glob.glob("selftests/*.sh")
@@ -601,7 +557,6 @@ def create_suites(args):  # pylint: disable=W0621
         config_check_static["resolver.references"].append("static-checks/check-style")
         config_check_static["resolver.references"].append("static-checks/check-lint")
         suites.append(TestSuite.from_config(config_check_static, "static-checks"))
-
     # ========================================================================
     # Run nrunner interface checks for all available runners
     # ========================================================================
@@ -639,7 +594,6 @@ def create_suites(args):  # pylint: disable=W0621
             },
         ],
     }
-
     if (
         python_module_available("avocado-framework-plugin-golang")
         and "golang" not in args.disable_plugin_checks
@@ -650,7 +604,6 @@ def create_suites(args):  # pylint: disable=W0621
             }
         )
         TEST_SIZE["nrunner-interface"] += nrunner_interface_size
-
     if (
         python_module_available("avocado-framework-plugin-robot")
         and "robot" not in args.disable_plugin_checks
@@ -661,7 +614,6 @@ def create_suites(args):  # pylint: disable=W0621
             }
         )
         TEST_SIZE["nrunner-interface"] += nrunner_interface_size
-
     if (
         python_module_available("avocado-framework-plugin-ansible")
         and "ansible" not in args.disable_plugin_checks
@@ -672,12 +624,10 @@ def create_suites(args):  # pylint: disable=W0621
             }
         )
         TEST_SIZE["nrunner-interface"] += nrunner_interface_size
-
     if args.dict_tests["nrunner-interface"]:
         suites.append(
             TestSuite.from_config(config_nrunner_interface, "nrunner-interface")
         )
-
     # ========================================================================
     # Run functional requirement tests
     # ========================================================================
@@ -691,26 +641,21 @@ def create_suites(args):  # pylint: disable=W0621
             {"spawner": "remote"},
         ],
     }
-
     if args.dict_tests["nrunner-requirement"]:
         suites.append(
             TestSuite.from_config(config_nrunner_requirement, "nrunner-requirement")
         )
-
     # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
-
     if args.dict_tests["unit"]:
         config_check_unit = copy.copy(config_check)
         config_check_unit["resolver.references"] = ["selftests/unit/"]
         suites.append(TestSuite.from_config(config_check_unit, "unit"))
-
     if args.dict_tests["jobs"]:
         config_check_jobs = copy.copy(config_check)
         config_check_jobs["resolver.references"] = ["selftests/jobs/"]
         suites.append(TestSuite.from_config(config_check_jobs, "jobs"))
-
     if args.dict_tests["functional"]:
         functional_path = os.path.join("selftests", "functional")
         references = glob.glob(os.path.join(functional_path, "*.py"))
@@ -727,7 +672,6 @@ def create_suites(args):  # pylint: disable=W0621
                 config_check_functional_parallel, "functional-parallel"
             )
         )
-
         config_check_functional_serial = copy.copy(config_check)
         config_check_functional_serial["resolver.references"] = [
             "selftests/functional/serial/"
@@ -736,7 +680,6 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(
             TestSuite.from_config(config_check_functional_serial, "functional-serial")
         )
-
     if args.dict_tests["optional-plugins"]:
         config_check_optional = copy.copy(config_check)
         config_check_optional["resolver.references"] = []
@@ -745,11 +688,8 @@ def create_suites(args):  # pylint: disable=W0621
             if plugin_name not in args.disable_plugin_checks:
                 pattern = f"{optional_plugin}/tests/*"
                 config_check_optional["resolver.references"] += glob.glob(pattern)
-
         suites.append(TestSuite.from_config(config_check_optional, "optional-plugins"))
-
     test_dir = os.path.join("selftests", "vmimage")
-
     # Combined vmimage option - tests first, then variants
     if args.dict_tests.get("vmimage"):
         # First suite: vmimage tests
@@ -760,7 +700,6 @@ def create_suites(args):  # pylint: disable=W0621
             "run.max_parallel_tasks": 1,
         }
         suites.append(TestSuite.from_config(vmimage_tests_config, "vmimage-tests"))
-
         # Second suite: vmimage variants
         vmimage_variants_config = {
             "resolver.references": [
@@ -774,7 +713,6 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(
             TestSuite.from_config(vmimage_variants_config, "vmimage-variants")
         )
-
     if args.dict_tests.get("pre-release"):
         os.environ["AVOCADO_CHECK_LEVEL"] = "3"
         pre_release_config = {
@@ -786,12 +724,10 @@ def create_suites(args):  # pylint: disable=W0621
             "run.max_parallel_tasks": 1,
         }
         suites.append(TestSuite.from_config(pre_release_config, "pre-release"))
-
     return suites
 
 
 def main(args):  # pylint: disable=W0621
-
     args.dict_tests = {
         "static-checks": False,
         "job-api": False,
@@ -806,7 +742,6 @@ def main(args):  # pylint: disable=W0621
         "vmimage": False,
         "pre-release": False,
     }
-
     if python_module_available("avocado-framework-plugin-golang"):
         TEST_SIZE["optional-plugins"] += TEST_SIZE["optional-plugins-golang"]
     if python_module_available("avocado-framework-plugin-result-html"):
@@ -819,7 +754,6 @@ def main(args):  # pylint: disable=W0621
         TEST_SIZE["optional-plugins"] += TEST_SIZE[
             "optional-plugins-varianter_yaml_to_mux"
         ]
-
     # Make a list of strings instead of a list with a single string
     if len(args.disable_plugin_checks) > 0:
         args.disable_plugin_checks = args.disable_plugin_checks[0].split(",")
@@ -827,7 +761,6 @@ def main(args):  # pylint: disable=W0621
         args.select = args.select[0].split(",")
     if len(args.skip) > 0:
         args.skip = args.skip[0].split(",")
-
     # Print features covered in this test
     if args.list_features:
         suites = create_suites(args)
@@ -837,12 +770,10 @@ def main(args):  # pylint: disable=W0621
             for variants in suite.config["run.dict_variants"]:
                 if variants.get("namespace"):
                     features.append(variants["namespace"])
-
         unique_features = sorted(set(features))
         print(f"Features covered ({len(unique_features)}):")
         print("\n".join(unique_features))
         exit(0)
-
     # Will only run the test you select, --select must be followed by list of tests
     elif args.select:
         for elem in args.select:
@@ -851,32 +782,26 @@ def main(args):  # pylint: disable=W0621
                 exit(0)
             else:
                 args.dict_tests[elem] = True
-
     # Will run all the tests except these you skip, --skip must be followed by list of tests
     elif args.skip:
         # Make all the values True, so later we set to False the tests we don't want to run
         args.dict_tests = {x: True for x in args.dict_tests}
-
         for elem in args.skip:
             if elem not in args.dict_tests.keys():
                 print(elem, "is not in the list of valid tests.")
                 exit(0)
             else:
                 args.dict_tests[elem] = False
-
     # If no option was selected, run all tests!
     elif not (args.skip or args.select):
         print("No test were selected to run, running all of them.")
         args.dict_tests = {x: True for x in args.dict_tests}
-
     else:
         print("Something went wrong, please report a bug!")
         exit(1)
-
     suites = create_suites(args)
     if args.dict_tests["job-api"]:
         suites += create_suite_job_api(args)
-
     # ========================================================================
     # Job execution
     # ========================================================================
@@ -884,14 +809,12 @@ def main(args):  # pylint: disable=W0621
         "run.job_category": "avocado-selftests",
         "job.output.testlogs.statuses": ["FAIL", "ERROR", "INTERRUPT"],
     }
-
     # Workaround for travis problem on arm64 - https://github.com/avocado-framework/avocado/issues/4768
     if platform.machine() == "aarch64":
         max_parallel = int(multiprocessing.cpu_count() / 2)
         for suite in suites:
             if suite.name == "functional-parallel":
                 suite.config["run.max_parallel_tasks"] = max_parallel
-
     with Job(config, suites) as j:
         pre_job_test_result_dirs = set(os.listdir(os.path.dirname(j.logdir)))
         exit_code = j.run()
@@ -915,7 +838,6 @@ def main(args):  # pylint: disable=W0621
                     " variable in `check.py`. If you haven't done any changes to"
                     " selftests this behavior is an ERROR, and it needs to be fixed."
                 )
-
     # tmp dirs clean up check
     process.run(f"{sys.executable} selftests/check_tmp_dirs")
     return exit_code
