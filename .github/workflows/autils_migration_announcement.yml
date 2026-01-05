@@ -11,6 +11,7 @@ on:
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
       - '**/gdb.py'
+      - '**/genio.py'
       - '**/network/ports.py'
       - '**/output.py'
       - '**/path.py'
