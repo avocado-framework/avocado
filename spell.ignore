@@ -820,9 +820,12 @@ rwxrwxr
 substring
 truthy
 wb
-doctest
-myhost
+checksums
 cryptographic
-genio
-roundtrip
 CSV
+doctest
+genio
+hashlib
+myhost
+roundtrip
+symlinked
