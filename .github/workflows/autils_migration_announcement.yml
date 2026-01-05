@@ -6,6 +6,7 @@ on:
       - opened
     paths:
       - '**/ar.py'
+      - '**/crypto.py'
       - '**/path.py'
       - '**/data_structures.py'
       - '**/network/ports.py'
