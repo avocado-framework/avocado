@@ -102,3 +102,9 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=No
         time.sleep(step)
 
     return None
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("wait")

@@ -199,3 +199,9 @@ def make_temp_script(name, content, prefix="avocado_script", mode=DEFAULT_MODE):
     scpt = TemporaryScript(name, content, prefix=prefix, mode=mode)
     scpt.save()
     return scpt.path
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("script")
