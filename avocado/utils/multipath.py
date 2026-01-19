@@ -273,9 +273,11 @@ def fail_path(path):
 
     def is_failed():
         path_stat = get_path_status(path)
-        if path_stat[0] == "failed" and path_stat[2] == "faulty":
-            return True
-        return False
+        return (
+            path_stat is not None
+            and path_stat[0] == "failed"
+            and path_stat[2] == "faulty"
+        )
 
     cmd = f'multipathd -k"fail path {path}"'
     if not process.system(cmd):
@@ -293,9 +295,11 @@ def reinstate_path(path):
 
     def is_reinstated():
         path_stat = get_path_status(path)
-        if path_stat[0] == "active" and path_stat[2] == "ready":
-            return True
-        return False
+        return (
+            path_stat is not None
+            and path_stat[0] == "active"
+            and path_stat[2] == "ready"
+        )
 
     cmd = f'multipathd -k"reinstate path {path}"'
     if not process.system(cmd):
