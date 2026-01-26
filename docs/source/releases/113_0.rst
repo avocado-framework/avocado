@@ -1,0 +1,127 @@
+=================
+113.0 - Apollo 13
+=================
+
+The Avocado team is proud to present another release: Avocado 113.0,
+AKA "Apollo 13", is now available!
+
+Release documentation: `Avocado 113.0
+<http://avocado-framework.readthedocs.io/en/113.0/>`_
+
+Related Avocado Projects News
+=============================
+
+The Avocado framework is a project consisting of multiple
+repositories.  Notably, `Avocado-VT
+<https://github.com/avocado-framework/avocado-vt>`_, `aexpect
+<https://github.com/avocado-framework/aexpect>`_ and the newer `AAutils
+<https://github.com/avocado-framework/autils>`_.
+
+Avocado-VT
+----------
+
+If you're an Avocado-VT user, or are interested in having tests
+running across multiple machines, please refer to the documentation of
+the newly introduced `Multi-Host Testing
+<https://github.com/avocado-framework/avocado-vt/blob/master/docs/source/MultiHostTesting.rst>`_.
+
+AAutils
+-------
+
+AAutils has released `version 3.0
+<https://github.com/avocado-framework/aautils/releases/tag/3.0>`_
+(check out also the `PyPI release
+<https://pypi.org/project/aautils/3.0/>`_), containing a large number
+of new utilities, migrated from Avocado itself.  Please refer to `the
+current list of utilities
+<https://avocado-framework.github.io/aautils.html>`_.
+
+
+Bug Fixes
+=========
+
+* The ``job.output.loglevel`` configuration option was not being
+  respected for external loggers outside of the ``avocado`` logging
+  namespace.
+
+* Fixed an issue in :mod:`avocado.utils.process.can_sudo` where the
+  wrong type of return of :func:`avocado.utils.process.system_output`
+  was assumed.
+
+Utility Modules
+===============
+
+* The following modules received improvements like docstrings and
+  better test coverage, preparing them for being migrated to AAUtils:
+
+ * :mod:`avocado.utils.astring`
+ * :mod:`avocado.utils.process`
+ * :mod:`avocado.utils.script`
+ * :mod:`avocado.utils.wait`
+
+* Added deprecation notice to the following modules (it means they
+  will be removed after the next LTS release):
+
+ * :mod:`avocado.utils.astring`
+ * :mod:`avocado.utils.gdb`
+ * :mod:`avocado.utils.network.ports`
+ * :mod:`avocado.utils.output`
+ * :mod:`avocado.utils.path`
+ * :mod:`avocado.utils.process`
+ * :mod:`avocado.utils.script`
+ * :mod:`avocado.utils.wait`
+
+* :mod:`avocado.utils.cpu` now has a broadened AMD Zen5 detection to
+  recognize additional processor model ranges, improving
+  identification of more CPU variants.
+
+* Fixed a resource leak in :meth:`avocado.utils.sysinfo.Daemon.run` in
+  module :mod:`avocado.utils.sysinfo`.
+
+* :mod:`avocado.utils.partition` now provides symmetry when it comes
+  to allowing users to specify the mount point in both the mount and
+  unmount operations.
+
+* :mod:`avocado.utils.linux_modules` now also supports
+  ``/lib/modules/$KERNEL_VERSION/build/.config`` paths as a location
+  for the kernel configuration as found in some systems.
+
+* :mod:`avocado.utils.multipath` received stability improvements in
+  :func:`avocado.utils.multipath.is_failed` and
+  :func:`avocado.utils.multipath.is_reinstated`, preventing errors
+  when the status path is not properly obtained.
+
+Internal changes
+================
+
+* Updated the format of license to match SPDX in the RPM packages.
+
+* Improved reliability of functional nrunner test
+  ``test_task_status_service_lost``, which produced false positives
+  due to timing issues.
+
+* Improved reliability of time sensitive unit tests for
+  :mod:`avocado.utils.wait` by relaxing the time tolerances and
+  broadening assertion ranges.
+
+* Improved reliability of basic functional tests by matching against
+  the presence of output messages, instead of an exact match, given
+  that some platforms will output deprecation and other similar
+  warnings.
+
+* The pre-release deployment check was updated to use Fedora 42,
+  matching the COPR repository configuration.
+
+Additional information
+======================
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/112.0...113.0>`_.
+
+For more information on the actual issues addressed, please check out
+the `milestone information
+<https://github.com/avocado-framework/avocado/milestone/39>`_.
+
+For more information on the release codename, please refer to `IMDb
+<https://www.imdb.com/title/tt0112384/>`_.
