@@ -16,9 +16,7 @@
 # Modification History:
 # - Added read_line_with_matching_pattern()
 
-"""
-Avocado generic IO related functions.
-"""
+"""Avocado generic IO related functions."""
 
 import logging
 import os
@@ -30,22 +28,23 @@ LOG = logging.getLogger(__name__)
 
 
 class GenIOError(Exception):
-    """
-    Base Exception Class for all IO exceptions
-    """
+    """Base Exception Class for all IO exceptions."""
 
 
 def ask(question, auto=False):
-    """
-    Prompt the user with a (y/n) question.
+    """Prompt the user with a (y/n) question.
 
-    :param question: Question to be asked
+    :param question: Question to be asked.
     :type question: str
-    :param auto: Whether to return "y" instead of asking the question
+    :param auto: Whether to return "y" instead of asking the question.
     :type auto: bool
-
-    :return: User answer
+    :return: User answer.
     :rtype: str
+
+    Example::
+
+        >>> ask("Do you want to continue?", auto=True)
+        'y'
     """
     if auto:
         LOG.info("%s (y/n) y", question)
@@ -54,14 +53,19 @@ def ask(question, auto=False):
 
 
 def read_file(filename):
-    """
-    Read the entire contents of file.
+    """Read the entire contents of a file.
 
     :param filename: Path to the file.
     :type filename: str
-
-    :return: File contents
+    :return: File contents.
     :rtype: str
+    :raises FileNotFoundError: When the file does not exist.
+    :raises PermissionError: When the file cannot be read due to permissions.
+
+    Example::
+
+        >>> read_file("/etc/hostname")  # doctest: +SKIP
+        'myhost\\n'
     """
     with open(filename, "r", encoding="utf-8") as file_obj:
         contents = file_obj.read()
@@ -69,14 +73,21 @@ def read_file(filename):
 
 
 def read_one_line(filename):
-    """
-    Read the first line of filename.
+    """Read the first line of a file.
+
+    The returned line has the trailing newline character stripped.
 
     :param filename: Path to the file.
     :type filename: str
-
-    :return: First line contents
+    :return: First line contents with newline stripped.
     :rtype: str
+    :raises FileNotFoundError: When the file does not exist.
+    :raises PermissionError: When the file cannot be read due to permissions.
+
+    Example::
+
+        >>> read_one_line("/etc/hostname")  # doctest: +SKIP
+        'myhost'
     """
     with open(filename, "r", encoding="utf-8") as file_obj:
         line = file_obj.readline().rstrip("\n")
@@ -84,8 +95,7 @@ def read_one_line(filename):
 
 
 def read_all_lines(filename):
-    """
-    Return all lines of a given file
+    """Return all lines of a given file.
 
     This utility method returns an empty list in any error scenario,
     that is, it doesn't attempt to identify error paths and raise
@@ -96,9 +106,15 @@ def read_all_lines(filename):
 
     :param filename: Path to the file.
     :type filename: str
+    :return: All lines of the file as a list with newlines stripped.
+    :rtype: list
 
-    :return: all lines of the file as list
-    :rtype: builtin.list
+    Example::
+
+        >>> read_all_lines("/etc/hosts")  # doctest: +SKIP
+        ['127.0.0.1 localhost', '::1 localhost']
+        >>> read_all_lines("/nonexistent/file.txt")
+        []
     """
     contents = []
     try:
@@ -110,22 +126,24 @@ def read_all_lines(filename):
 
 
 def read_line_with_matching_pattern(filename, pattern):
-    """
-    Return the line/lines found with a given matching pattern.
+    """Return lines from a file that contain a given pattern.
 
-    This method returns the line/lines wherever the occurrence of the pattern,
-    that is passed as an input, is found in the file.
-
-    All the occurrences are stored in the list and the list is returned as
-    an output.
+    This method returns all lines where the pattern substring is found.
+    The search uses simple substring matching (not regex).
 
     :param filename: Path to the file to be read.
     :type filename: str
-    :param pattern: List of all the patterns, intended to be searched
-    :type pattern: list
-
-    :return: All those lines from the file, matching the pattern.
+    :param pattern: Pattern substring to search for in each line.
+    :type pattern: str
+    :return: All lines from the file that contain the pattern, with newlines stripped.
     :rtype: list
+    :raises FileNotFoundError: When the file does not exist.
+    :raises PermissionError: When the file cannot be read due to permissions.
+
+    Example::
+
+        >>> read_line_with_matching_pattern("/etc/passwd", "root")  # doctest: +SKIP
+        ['root:x:0:0:root:/root:/bin/bash']
     """
     contents = []
     with open(filename, "r", encoding="utf-8") as file_obj:
@@ -136,39 +154,61 @@ def read_line_with_matching_pattern(filename, pattern):
 
 
 def write_file(filename, data):
-    """
-    Write data to a file.
+    """Write data to a file.
+
+    This will overwrite any existing content in the file. If the file
+    does not exist, it will be created.
 
     :param filename: Path to the file.
     :type filename: str
-    :param line: Line to be written.
-    :type line: str
+    :param data: Data to be written to the file.
+    :type data: str
+    :raises FileNotFoundError: When the parent directory does not exist.
+    :raises PermissionError: When the file cannot be written due to permissions.
+
+    Example::
+
+        >>> write_file("/tmp/test.txt", "Hello World")  # doctest: +SKIP
     """
     with open(filename, "w", encoding="utf-8") as file_obj:
         file_obj.write(data)
 
 
 def write_one_line(filename, line):
-    """
-    Write one line of text to filename.
+    """Write one line of text to a file.
+
+    A newline character is automatically appended. Any existing trailing
+    newline in the input line is stripped before adding the newline.
 
     :param filename: Path to the file.
     :type filename: str
     :param line: Line to be written.
     :type line: str
+    :raises FileNotFoundError: When the parent directory does not exist.
+    :raises PermissionError: When the file cannot be written due to permissions.
+
+    Example::
+
+        >>> write_one_line("/tmp/test.txt", "Hello World")  # doctest: +SKIP
     """
     write_file(filename, line.rstrip("\n") + "\n")
 
 
 def write_file_or_fail(filename, data):
-    """
-    Write to a file and raise exception on write failure
+    """Write to a file and raise GenIOError on write failure.
 
-    :param filename: Path to file
+    Unlike :func:`write_file`, this function catches OSError exceptions
+    and re-raises them as GenIOError with a descriptive message.
+
+    :param filename: Path to the file.
     :type filename: str
-    :param data: Data to be written to file
+    :param data: Data to be written to the file.
     :type data: str
-    :raises GenIOError: On write Failure
+    :raises GenIOError: When the write operation fails for any reason.
+
+    Example::
+
+        >>> write_file_or_fail("/tmp/test.txt", "Hello World")  # doctest: +SKIP
     """
     try:
         with open(filename, "w", encoding="utf-8") as file_obj:
@@ -178,42 +218,67 @@ def write_file_or_fail(filename, data):
 
 
 def append_file(filename, data):
-    """
-    Append data to a file.
+    """Append data to a file.
+
+    If the file does not exist, it will be created.
 
     :param filename: Path to the file.
     :type filename: str
-    :param line: Line to be written.
-    :type line: str
+    :param data: Data to be appended to the file.
+    :type data: str
+    :raises FileNotFoundError: When the parent directory does not exist.
+    :raises PermissionError: When the file cannot be written due to permissions.
+
+    Example::
+
+        >>> append_file("/tmp/log.txt", "New log entry\\n")  # doctest: +SKIP
     """
     with open(filename, "a+", encoding="utf-8") as file_obj:
         file_obj.write(data)
 
 
 def append_one_line(filename, line):
-    """
-    Append one line of text to filename.
+    """Append one line of text to a file.
+
+    A newline character is automatically appended. Any existing trailing
+    newline in the input line is stripped before adding the newline.
+    If the file does not exist, it will be created.
 
     :param filename: Path to the file.
     :type filename: str
-    :param line: Line to be written.
+    :param line: Line to be appended.
     :type line: str
+    :raises FileNotFoundError: When the parent directory does not exist.
+    :raises PermissionError: When the file cannot be written due to permissions.
+
+    Example::
+
+        >>> append_one_line("/tmp/log.txt", "Log entry 1")  # doctest: +SKIP
+        >>> append_one_line("/tmp/log.txt", "Log entry 2")  # doctest: +SKIP
     """
     append_file(filename, line.rstrip("\n") + "\n")
 
 
 def is_pattern_in_file(filename, pattern):
-    """
-    Check if a pattern matches in a specified file. If a non
-    regular file be informed a GenIOError will be raised.
+    """Check if a regex pattern matches anywhere in a file.
 
-    :param filename: Path to file
+    The pattern is matched using Python's re.search with MULTILINE mode,
+    allowing patterns like ``^`` and ``$`` to match at line boundaries.
+
+    :param filename: Path to the file.
     :type filename: str
-    :param pattern: Pattern that need to match in file
+    :param pattern: Regular expression pattern to search for.
     :type pattern: str
-    :return: True when pattern matches in file if not
-             return False
-    :rtype: boolean
+    :return: True if pattern matches anywhere in the file, False otherwise.
+    :rtype: bool
+    :raises GenIOError: When filename is not a regular file (e.g., directory).
+
+    Example::
+
+        >>> is_pattern_in_file("/etc/passwd", r"^root:")  # doctest: +SKIP
+        True
+        >>> is_pattern_in_file("/etc/passwd", r"nonexistent")  # doctest: +SKIP
+        False
     """
     if not os.path.isfile(filename):
         raise GenIOError(f"invalid file {filename} " f"to match pattern {pattern}")
@@ -224,15 +289,33 @@ def is_pattern_in_file(filename, pattern):
 
 
 def are_files_equal(filename, other):
-    """
-    Comparison of two files line by line
-    :param filename: path to the first file
+    """Compare two files for equality using cryptographic hashing.
+
+    This function computes the hash of both files and compares them,
+    which is efficient for large files. Files are considered equal
+    if they have identical content.
+
+    :param filename: Path to the first file.
     :type filename: str
-    :param other: path to the second file
+    :param other: Path to the second file.
     :type other: str
-    :return: equality of file
-    :rtype: boolean
+    :return: True if files have identical content, False otherwise.
+    :rtype: bool
+
+    Example::
+
+        >>> are_files_equal("/tmp/file1.txt", "/tmp/file2.txt")  # doctest: +SKIP
+        True
     """
     hash_1 = crypto.hash_file(filename)
     hash_2 = crypto.hash_file(other)
     return hash_1 == hash_2
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning(
+    "genio",
+    "The genio utility is deprecated and will be removed after the next LTS release.",
+)
