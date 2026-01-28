@@ -529,3 +529,41 @@ def get_subsystem_using_ctrl_name(ctrl):
         if ctrl in ctrls:
             return get_subsys_name_with_nqn(device_nqn)
     return ""
+
+
+def get_nvme_subsystem_io_policy(subsystem):
+    """
+    Read io policy parameter from sysfs folder and returns a string
+
+    :param subsystem: Name of the subsystem
+    :rtype: String
+    """
+    subsys_iopolicy_path = f"/sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    if os.path.isfile(subsys_iopolicy_path):
+        return open(subsys_iopolicy_path, "r", encoding="utf-8").readline().rstrip("\n")
+    raise NvmeException(f"iopolicy file not found: {subsys_iopolicy_path}")
+
+
+def change_nvme_subsystem_io_policy(subsystem, io_policy):
+    """
+    Changes io policy of nvme device to specified io policy
+    Change in io policy is not persistent
+
+    :param subsystem: Name of the subsystem
+    :param io_policy: Name of the io_policy to which we want to set
+    :raises: NvmeException on command failures
+    :rtype: Boolean
+    """
+    subsys_iopolicy_path = f"/sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    if get_nvme_subsystem_io_policy(subsystem) == io_policy:
+        LOGGER.info("Returning True as iopolicy is same as current")
+        return True
+    if os.path.isfile(subsys_iopolicy_path):
+        with open(subsys_iopolicy_path, "w", encoding="utf-8") as subsys_iopolicy_file:
+            subsys_iopolicy_file.write(io_policy)
+            subsys_iopolicy_file.close()
+    else:
+        raise NvmeException(f"iopolicy file not found: {subsys_iopolicy_path}")
+    if get_nvme_subsystem_io_policy(subsystem) == io_policy:
+        return True
+    raise NvmeException("Failed to change iopolicy")
