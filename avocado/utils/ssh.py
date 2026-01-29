@@ -18,6 +18,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 
 from avocado.utils import path as path_utils
 from avocado.utils import process
@@ -100,6 +101,7 @@ class Session:
         return cmd
 
     def _master_connection(self):
+        time.sleep(10)
         options = self.DEFAULT_OPTIONS + self.MASTER_OPTIONS
         options += (("PubkeyAuthentication", "yes" if self.key else "no"),)
         if self.password is None:
@@ -125,6 +127,7 @@ class Session:
         return path
 
     def _master_command(self, command):
+        time.sleep(10)
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ("-O", command))
         result = process.run(cmd, ignore_status=True)
         return not result.exit_status
@@ -187,6 +190,7 @@ class Session:
 
     @property
     def control_master(self):
+        time.sleep(10)
         control = f"~/.ssh/avocado-master-{self.user}@{self.host}:{self.port}"
         control = os.path.expanduser(control)
         if os.path.exists(control):
