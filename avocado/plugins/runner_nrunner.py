@@ -249,7 +249,7 @@ class Runner(SuiteRunner):
         message_handler = MessageHandler()
         while True:
             try:
-                (_, task_id, _, index) = self.status_repo.status_journal_summary_pop()
+                _, task_id, _, index = self.status_repo.status_journal_summary_pop()
 
             except IndexError:
                 await asyncio.sleep(0.05)

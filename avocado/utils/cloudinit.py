@@ -23,6 +23,7 @@ need pycdlib module installed in your environment.
 
 :see: http://cloudinit.readthedocs.io.
 """
+
 import warnings
 from http.server import BaseHTTPRequestHandler, HTTPServer
 

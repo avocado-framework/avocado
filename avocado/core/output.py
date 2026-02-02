@@ -15,6 +15,7 @@
 """
 Manages output and logging in avocado applications.
 """
+
 import errno
 import logging
 import logging.handlers
