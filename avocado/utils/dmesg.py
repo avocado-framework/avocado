@@ -181,3 +181,38 @@ def skip_dmesg_messages(dmesg_stdout, skip_messages):
         return not any(string in line for string in skip_messages)
 
     return "\n".join(filter(None, filter(filter_strings, dmesg_stdout.splitlines())))
+
+
+def check_kernel_cmdline_param(param: str) -> bool:
+    """
+    Check if a given kernel cmdline parameter is present in /proc/cmdline.
+
+    :param param: Kernel cmdline parameter string to search for (e.g. "fred=on")
+    :return: True if the parameter is found, False otherwise
+    """
+    try:
+        with open("/proc/cmdline", "r", encoding="utf-8") as f:
+            cmdline = f.read()
+            return param in cmdline
+    except OSError as e:
+        LOGGER.error("Unable to read /proc/cmdline: %s", e)
+        return False
+
+
+def collect_journalctl_logs(pattern):
+    """Collect kernel logs from journalctl that match a given pattern.
+
+    :param pattern: String to search for in journalctl logs
+    :type pattern: str
+    :returns: List of matching log lines
+    :rtype: list of str
+    """
+    logs = []
+    cmd = "journalctl -k -b"
+    output = process.run(cmd, ignore_status=True, verbose=False,
+                         sudo=True).stdout_text
+    if output:
+        for line in output.splitlines():
+            if pattern in line:
+                logs.append(line)
+    return logs
