@@ -906,7 +906,7 @@ class NetworkInterface:
     def are_packets_lost(self, peer_ip, options=None, sudo=False):
         """Check packet loss that occurs during ping.
 
-        Function returns True for 0% packet loss and False
+        Function returns False for 0% packet loss and True
         if packet loss occurs.
 
         :param peer_ip: Peer IP address (IPv4 or IPv6)
@@ -915,7 +915,7 @@ class NetworkInterface:
         :type options: list
         :param sudo: If sudo permissions are needed. Default is False
         :type sudo: bool
-        :return: True for 0% packet loss, False otherwise.
+        :return: False for 0% packet loss, True otherwise.
         :rtype: bool
         :raises avocado.utils.network.exceptions.NWException: If the ping command fails.
         """
