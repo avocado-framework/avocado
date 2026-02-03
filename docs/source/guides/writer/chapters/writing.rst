@@ -1359,5 +1359,3 @@ for more possibilities.
 .. _Autotest: http://autotest.github.io
 .. _Class Names: https://www.python.org/dev/peps/pep-0008/
 .. _PEP8 Function Names: https://www.python.org/dev/peps/pep-0008/#function-names
-
-

@@ -163,13 +163,11 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
 
             process.start()
 
-            for message in self._monitor(queue):
-                yield message
+            yield from self._monitor(queue)
 
         except TestInterrupt:
             process.terminate()
-            for message in self._monitor(queue):
-                yield message
+            yield from self._monitor(queue)
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
             yield messages.FinishedMessage.get(

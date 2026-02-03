@@ -13,11 +13,11 @@ test_results_dir = tempfile.TemporaryDirectory()
 
 config = {
     "run.results_dir": test_results_dir.name,
-    'resolver.references': [
-        os.path.join(os.path.dirname(__file__), 'tests', 'pass'),
-        os.path.join(os.path.dirname(__file__), 'tests', 'passtest.py')
-        ]
-    }
+    "resolver.references": [
+        os.path.join(os.path.dirname(__file__), "tests", "pass"),
+        os.path.join(os.path.dirname(__file__), "tests", "passtest.py"),
+    ],
+}
 
 suite = TestSuite.from_config(config)
 with Job(config, [suite]) as j:

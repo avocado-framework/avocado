@@ -556,7 +556,7 @@ Active Task Status Collection
 -----------------------------
 
 Some environments and use cases may require disconnected execution
-of tasks.  In such cases, a Job will have to activelly poll for
+of tasks.  In such cases, a Job will have to actively poll for
 tasks' statuses, which may be:
 
 1. an operation that happens along the task execution.

@@ -521,8 +521,7 @@ class MemInfo:
             pass
 
     def __iter__(self):
-        for item in self.__dict__.items():
-            yield item
+        yield from self.__dict__.items()
 
 
 meminfo = MemInfo()

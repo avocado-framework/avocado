@@ -14,7 +14,7 @@ Users/Test Writers
 * New test dependency for installing pip packages. The new PIP runner
   has been introduced to install pip packages before the test execution
   in the test environment. More info about this new feature can be found
-  in `documentaion <https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/dependencies.html#Pip>`_
+  in `documentation <https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/dependencies.html#Pip>`_
 
 * VMimage get --debug option has been added to show more information
   about possible failures during image download.

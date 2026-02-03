@@ -466,6 +466,7 @@ class PMem:
             "parent_uuid": "-p %",
             "offset": "-O %s",
         }
+        args = ""
 
         if namespace:
             args = namespace
@@ -511,6 +512,7 @@ class PMem:
             raise PMemException("Namespace or input file must be specified")
 
         args_dict = {"region": "-r %s", "bus": "-b %s", "op_file": "-o %s"}
+        args = ""
         if namespace:
             args = namespace
         elif inp_file:

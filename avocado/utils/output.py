@@ -103,10 +103,8 @@ class ProgressBar:
         :param amount: The new amount value to set
         :type amount: int or float
         """
-        if amount < self.minimum:
-            amount = self.minimum
-        if amount > self.maximum:
-            amount = self.maximum
+        amount = max(amount, self.minimum)
+        amount = min(amount, self.maximum)
         self.current_amount = amount
 
         self._update_progress_bar()

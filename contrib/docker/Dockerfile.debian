@@ -67,4 +67,3 @@ RUN cd /devel/avocado-framework/avocado && \
     git config --global user.email "avocado@localhost" && \
     git config --global user.name "Avocado tool" && \
     rm -rf /devel/avocado-framework/avocado
-
