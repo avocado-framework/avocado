@@ -7,6 +7,7 @@ on:
     paths:
       - '**/ar.py'
       - '**/astring.py'
+      - '**/crypto.py'
       - '**/data_structures.py'
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
