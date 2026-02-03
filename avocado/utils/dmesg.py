@@ -192,8 +192,7 @@ def check_kernel_cmdline_param(param: str) -> bool:
     """
     try:
         with open("/proc/cmdline", "r", encoding="utf-8") as f:
-            cmdline = f.read()
-            return param in cmdline
+            return param in f.read().split()
     except OSError as e:
         LOGGER.error("Unable to read /proc/cmdline: %s", e)
         return False
