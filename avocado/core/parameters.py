@@ -177,8 +177,9 @@ class AvocadoParams:
 
         :param key: The name of the key whose value lists the objects
                 (e.g. 'nics').
+        :param path: namespace ['*']
         """
-        return self.get(path, key, "").split()
+        return self.get(key, path, "").split()
 
     def iteritems(self):
         """
