@@ -23,7 +23,7 @@ import tempfile
 import uuid
 import warnings
 from html.parser import HTMLParser
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 from avocado.utils import archive, asset, astring
@@ -118,7 +118,8 @@ class ImageProviderBase:
             with urlopen(url) as u:
                 data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError as exc:
+        except (HTTPError, URLError) as exc:
+            LOG.debug("Network error accessing %s: %s", url, exc)
             raise ImageProviderError(f"Network error: Cannot open {url}") from exc
 
     @staticmethod
