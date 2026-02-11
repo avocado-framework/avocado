@@ -198,20 +198,16 @@ def check_kernel_cmdline_param(param: str) -> bool:
         return False
 
 
-def collect_journalctl_logs(pattern):
+def collect_journalctl_logs(pattern: str) -> list:
     """Collect kernel logs from journalctl that match a given pattern.
 
     :param pattern: String to search for in journalctl logs
-    :type pattern: str
     :returns: List of matching log lines
-    :rtype: list of str
     """
     logs = []
     cmd = "journalctl -k -b"
     output = process.run(cmd, ignore_status=True, verbose=False,
                          sudo=True).stdout_text
     if output:
-        for line in output.splitlines():
-            if pattern in line:
-                logs.append(line)
-    return logs
+        return [line for line in output.splitlines() if pattern in line]
+    return []
