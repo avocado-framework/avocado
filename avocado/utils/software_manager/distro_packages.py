@@ -99,7 +99,7 @@ def ensure_tool(tool_name, custom_path=None, distro_pkg_map=None):
     if not distro_pkg_map:
         raise RuntimeError(f"No package map provided for {tool_name}")
     install_distro_packages(distro_pkg_map)
-    ret = process.run(f"{tool_name} --version", ignore_status=True, shell=True)
+    ret = process.run(f"{tool_name} --version", ignore_status=True)
     if ret.exit_status != 0:
         raise RuntimeError(f"{tool_name} not functional after install")
     return ret.stdout.decode().strip()
