@@ -182,3 +182,22 @@ def skip_dmesg_messages(dmesg_stdout, skip_messages):
         return not any(string in line for string in skip_messages)
 
     return "\n".join(filter(None, filter(filter_strings, dmesg_stdout.splitlines())))
+
+
+def check_kernel_logs(pattern):
+    """
+    Check if "pattern" is present in kernel logs.
+
+    :param pattern: string to check in kernel logs
+    :return: True if pattern found, False otherwise
+    """
+    out = process.run("dmesg", ignore_status=True, verbose=False, sudo=True)
+    if pattern in out.stdout_text:
+        return True
+
+    cmd = "journalctl -k -b"
+    out = process.run(cmd, ignore_status=True, verbose=False, sudo=True)
+    if pattern in out.stdout_text:
+        return True
+
+    return False
