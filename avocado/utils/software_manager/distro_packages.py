@@ -73,3 +73,33 @@ def install_distro_packages(distro_pkg_map, interactive=False):
             log.info('Installing packages "%s"', text)
             result = software_manager.install(text)
     return result
+
+def ensure_tool(tool_name, custom_path=None, distro_pkg_map=None):
+    """
+    Ensure tool is available from custom path or distro packages 
+    and return its version.
+
+    :param tool_name: Name of the tool (e.g. "perf")
+    :param custom_path: Optional path to a binary provided via YAML
+    :param distro_pkg_map: Mapping of distro name/spec to a list of package names
+    :return: version_string
+    """
+    from avocado.utils import process
+    import os
+
+    sm = SoftwareManager()
+    if custom_path:
+        if not os.path.exists(custom_path):
+            raise RuntimeError(f"{tool_name} binary not found at {custom_path}")
+        ret = process.run(f"{custom_path} --version", ignore_status=True)
+        if ret.exit_status != 0:
+            raise RuntimeError(f"{tool_name} binary at {custom_path} not functional")
+        return ret.stdout.decode().strip()
+
+    if not distro_pkg_map:
+        raise RuntimeError(f"No package map provided for {tool_name}")
+    install_distro_packages(distro_pkg_map)
+    ret = process.run(f"{tool_name} --version", ignore_status=True)
+    if ret.exit_status != 0:
+        raise RuntimeError(f"{tool_name} not functional after install")
+    return ret.stdout.decode().strip()
