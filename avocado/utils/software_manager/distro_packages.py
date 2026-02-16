@@ -91,7 +91,7 @@ def ensure_tool(tool_name, custom_path=None, distro_pkg_map=None):
     if custom_path:
         if not os.path.exists(custom_path):
             raise RuntimeError(f"{tool_name} binary not found at {custom_path}")
-        ret = process.run(f"{custom_path} --version", ignore_status=True, shell=True)
+        ret = process.run(f"{custom_path} --version", ignore_status=True)
         if ret.exit_status != 0:
             raise RuntimeError(f"{tool_name} binary at {custom_path} not functional")
         return ret.stdout.decode().strip()
