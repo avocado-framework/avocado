@@ -23,7 +23,7 @@ import tempfile
 import uuid
 import warnings
 from html.parser import HTMLParser
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 from avocado.utils import archive, asset, astring
@@ -118,7 +118,8 @@ class ImageProviderBase:
             with urlopen(url) as u:
                 data = u.read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError as exc:
+        except (HTTPError, URLError) as exc:
+            LOG.debug("Network error accessing %s: %s", url, exc)
             raise ImageProviderError(f"Network error: Cannot open {url}") from exc
 
     @staticmethod
@@ -202,12 +203,56 @@ class ImageProviderBase:
 class FedoraImageProviderBase(ImageProviderBase):
     """
     Base Fedora Image Provider
+
+    This provider uses fallback mirrors to handle URL changes that occur
+    periodically as Fedora versions are released and archived.
     """
 
     HTML_ENCODING = "iso-8859-1"
     url_old_images = None
+    MIRRORS = []  # Subclasses define fallback mirror URLs
+
+    def _get_image_url_from_mirror(self, mirror):
+        """Try to get image URL from a specific mirror."""
+        # Reset cached version to force re-discovery with new mirror
+        self._best_version = None
+        self.url_versions = mirror
+
+        # Use _version (init param) instead of version (property) to avoid
+        # network call that would fail on mirrors without old versions
+        try:
+            ver = int(self._version)
+        except ValueError:
+            ver = 99  # Pattern like "[0-9]+" - assume recent version
+
+        # Determine cloud directory based on version
+        if ver >= 28:
+            cloud = "Cloud"
+        else:
+            cloud = "CloudImages"
+
+        self.url_images = self.url_versions + "{version}/" + cloud + "/{arch}/images/"
+        return super().get_image_url()
 
     def get_image_url(self):
+        # If we have fallback mirrors, try each one
+        if self.MIRRORS:
+            last_error = None
+            for mirror in self.MIRRORS:
+                try:
+                    return self._get_image_url_from_mirror(mirror)
+                except ImageProviderError as exc:
+                    LOG.debug("Mirror %s failed: %s", mirror, exc)
+                    last_error = exc
+                    continue
+            # All mirrors failed - include helpful debugging info
+            mirrors_tried = ", ".join(self.MIRRORS)
+            raise ImageProviderError(
+                f"All mirrors failed for Fedora {self._version}. "
+                f"Mirrors tried: {mirrors_tried}. Last error: {last_error}"
+            )
+
+        # No mirrors configured, use default behavior
         if int(self.version) >= 28:
             cloud = "Cloud"
         else:
@@ -223,46 +268,108 @@ class FedoraImageProviderBase(ImageProviderBase):
 class FedoraImageProvider(FedoraImageProviderBase):
     """
     Fedora Image Provider
+
+    Uses multiple fallback mirrors to handle periodic URL changes as
+    Fedora versions are released, archived, or mirrors become unavailable.
     """
 
     name = "Fedora"
 
+    # Fallback mirrors for Fedora images (tried in order)
+    # dl.fedoraproject.org is the direct mirror (original, most reliable)
+    # Archives is last - for old versions that have been archived
+    MIRRORS = [
+        "https://dl.fedoraproject.org/pub/fedora/linux/releases/",
+        "https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/",
+    ]
+
     def __init__(self, version="[0-9]+", build="[0-9]+.[0-9]+", arch=DEFAULT_ARCH):
         super().__init__(version, build, arch)
-        self.url_versions = "https://dl.fedoraproject.org/pub/fedora/linux/releases/"
+        self.url_versions = self.MIRRORS[0]
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/"
         )
-        if int(self.version) == 40:
-            self.image_pattern = "Fedora-Cloud-Base-Generic.(?P<arch>{arch})-(?P<version>{version})-(?P<build>{build}).qcow2$"
-        elif int(self.version) >= 41:
-            self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        self._update_image_pattern()
+
+    @staticmethod
+    def _get_image_pattern_for_version(ver):
+        """Get the correct image pattern for a Fedora version.
+
+        Fedora changed image naming conventions:
+        - < 40: Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2
+        - 40: Fedora-Cloud-Base-Generic.{arch}-{version}-{build}.qcow2
+        - >= 41: Fedora-Cloud-Base-Generic-{version}-{build}.{arch}.qcow2
+        """
+        if ver == 40:
+            return "Fedora-Cloud-Base-Generic.(?P<arch>{arch})-(?P<version>{version})-(?P<build>{build}).qcow2$"
+        elif ver >= 41:
+            return "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
         else:
-            self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+            return "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+
+    def _update_image_pattern(self):
+        """Update image pattern based on _version init param."""
+        try:
+            ver = int(self._version)
+        except ValueError:
+            ver = 0  # Pattern like "[0-9]+" - use old format as default
+        self.image_pattern = self._get_image_pattern_for_version(ver)
+
+    def get_image_url(self):
+        # Update pattern based on discovered version before image matching
+        # This is needed when _version is a pattern like "[0-9]+"
+        try:
+            discovered_ver = int(self.version)
+            self.image_pattern = self._get_image_pattern_for_version(discovered_ver)
+        except (ValueError, TypeError):
+            pass  # Keep pattern from __init__
+        return super().get_image_url()
 
 
 class FedoraSecondaryImageProvider(FedoraImageProviderBase):
     """
     Fedora Secondary Image Provider
+
+    Uses multiple fallback mirrors for secondary architectures.
     """
 
     name = "FedoraSecondary"
 
+    # Fallback mirrors for Fedora secondary images (tried in order)
+    # dl.fedoraproject.org is the direct mirror (original, most reliable)
+    # Archives is last - for old versions that have been archived
+    MIRRORS = [
+        "https://dl.fedoraproject.org/pub/fedora-secondary/releases/",
+        "https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/",
+    ]
+
     def __init__(self, version="[0-9]+", build="[0-9]+.[0-9]+", arch=DEFAULT_ARCH):
         super().__init__(version, build, arch)
-
-        self.url_versions = (
-            "https://dl.fedoraproject.org/pub/fedora-secondary/releases/"
-        )
+        self.url_versions = self.MIRRORS[0]
         self.url_old_images = (
             "https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/"
         )
-        if int(self.version) == 40:
-            self.image_pattern = "Fedora-Cloud-Base-Generic.(?P<arch>{arch})-(?P<version>{version})-(?P<build>{build}).qcow2$"
-        elif int(self.version) >= 41:
-            self.image_pattern = "Fedora-Cloud-Base-Generic-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
-        else:
-            self.image_pattern = "Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$"
+        self._update_image_pattern()
+
+    def _update_image_pattern(self):
+        """Update image pattern based on _version init param."""
+        try:
+            ver = int(self._version)
+        except ValueError:
+            ver = 0
+        # Reuse pattern logic from FedoraImageProvider
+        self.image_pattern = FedoraImageProvider._get_image_pattern_for_version(ver)
+
+    def get_image_url(self):
+        # Update pattern based on discovered version before image matching
+        try:
+            discovered_ver = int(self.version)
+            self.image_pattern = FedoraImageProvider._get_image_pattern_for_version(
+                discovered_ver
+            )
+        except (ValueError, TypeError):
+            pass
+        return super().get_image_url()
 
 
 class CentOSImageProvider(ImageProviderBase):
