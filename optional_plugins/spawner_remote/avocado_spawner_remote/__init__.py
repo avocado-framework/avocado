@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import shlex
+import time
 
 from aexpect import exceptions, remote
 
@@ -145,9 +146,14 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         # since each test is a session detached process, it is reasonable
         # to reuse the same session with a new command
         session = runtime_task.spawner_handle
-        status, _ = session.cmd_status_output(
-            f"pgrep -r R,S -f {runtime_task.task.identifier}"
-        )
+        for _ in range(10):
+            status, output = RemoteSpawner.run_remote_cmd(
+                session, f"pgrep -r R,S -f {runtime_task.task.identifier}", 10
+            )
+            LOG.debug(output)
+            if status == 0:
+                break
+            time.sleep(1)
         return status == 0
 
     @with_slot_reservation
