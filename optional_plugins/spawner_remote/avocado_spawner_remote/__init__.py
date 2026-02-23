@@ -85,12 +85,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         return True
 
     @staticmethod
-    async def run_remote_cmd_async(session, command, timeout):
-        loop = asyncio.get_event_loop()
+    def run_remote_cmd(session, command, timeout):
         try:
-            status, output = await loop.run_in_executor(
-                None, session.cmd_status_output, command, timeout
-            )
+            status, output = session.cmd_status_output(command, timeout)
         except exceptions.ShellTimeoutError:
             status, output = 2, f"Remote command timeout of {timeout} reached"
         except exceptions.ShellProcessTerminatedError:
@@ -176,7 +173,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         # Customize and deploy test data to the container
         if setup_hook:
             setup_timeout = self.config.get("spawner.remote.setup_timeout")
-            status, output = await RemoteSpawner.run_remote_cmd_async(
+            status, output = RemoteSpawner.run_remote_cmd(
                 session, setup_hook, setup_timeout
             )
             LOG.debug(f"Customization command exited with code {status}")
@@ -189,7 +186,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
 
         cmd = shlex.join(entry_point_args) + " > /dev/null &"
         timeout = self.config.get("spawner.remote.test_timeout")
-        status, output = await RemoteSpawner.run_remote_cmd_async(session, cmd, timeout)
+        status, output = RemoteSpawner.run_remote_cmd(session, cmd, timeout)
         LOG.debug(f"Command exited with code {status}")
         if status != 0:
             LOG.error(
