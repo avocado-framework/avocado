@@ -88,11 +88,13 @@ class RemoteSpawner(Spawner, SpawnerMixin):
     @staticmethod
     def run_remote_cmd(session, command, timeout):
         try:
-            status, output = session.cmd_status_output(command, timeout)
+            status, output = session.cmd_status_output(command, timeout, safe=True)
         except exceptions.ShellTimeoutError:
             status, output = 2, f"Remote command timeout of {timeout} reached"
         except exceptions.ShellProcessTerminatedError:
             status, output = 2, "Remote command terminated prematurely"
+        except exceptions.ShellStatusError:
+            status, output = 3, f"Remote command could not retrieve status"
         return status, output
 
     @contextlib.contextmanager
