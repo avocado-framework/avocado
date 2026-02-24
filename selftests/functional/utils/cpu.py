@@ -7,15 +7,29 @@ hardware.
 """
 
 import os
+import sys
 import unittest
 
+from avocado import skipIf
 from avocado.utils import cpu
 from selftests.utils import missing_binary, skipUnlessPathExists
 
 
+@skipIf(
+    sys.platform.startswith("darwin"),
+    "Linux-only: /proc/cpuinfo and sysfs not available on macOS; "
+    "os.sysconf(SC_NPROCESSORS_*) can hang on macOS with Python 3.11",
+)
 @skipUnlessPathExists("/proc/cpuinfo")
 class CpuBasicTest(unittest.TestCase):
     """Functional tests for basic CPU information available on any Linux system."""
+
+    def setUp(self):
+        super().setUp()
+        if sys.platform.startswith("darwin"):
+            self.skipTest(
+                "Linux-only: os.sysconf(SC_NPROCESSORS_*) can hang on macOS with Python 3.11"
+            )
 
     def test_total_count_positive(self):
         """total_count returns a positive integer."""

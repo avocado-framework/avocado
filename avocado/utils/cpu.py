@@ -16,8 +16,12 @@
 # Original author: John Admanski <jadmanski@google.com>
 
 
-"""
-Get information from the current's machine CPU.
+"""Utilities for querying and managing CPU information on the current machine.
+
+This module provides functions to read CPU details from /proc/cpuinfo and sysfs,
+including architecture, vendor, version, online/offline status, NUMA topology,
+and frequency governor settings. It supports x86_64, i386, powerpc, s390,
+aarch64, and other architectures.
 """
 import glob
 import logging
@@ -44,12 +48,11 @@ LOG = logging.getLogger(__name__)
 
 
 class FamilyException(Exception):
-    pass
+    """Raised when CPU family cannot be determined for the current architecture."""
 
 
 def _list_matches(content_list, pattern):
-    """
-    Checks if any item in list matches the specified pattern.
+    """Check if any item in list matches the specified pattern.
 
     :param content_list: items to match
     :type content_list: list
@@ -66,8 +69,7 @@ def _list_matches(content_list, pattern):
 
 
 def _get_info():
-    """
-    Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines.
+    """Return info on the 1st CPU entry from /proc/cpuinfo as a list of lines.
 
     :return: `list` of lines 1st CPU entry from /proc/cpuinfo file
     :rtype: list
@@ -82,8 +84,7 @@ def _get_info():
 
 
 def _get_status(cpu):
-    """
-    Check if a CPU is online or offline.
+    """Check if a CPU is online or offline.
 
     :param cpu: CPU number (e.g. 1, 2 or 39)
     :type cpu: int
@@ -99,8 +100,7 @@ def _get_status(cpu):
 
 
 def cpu_has_flags(flags):
-    """
-    Check if a list of flags are available on current CPU info.
+    """Check if a list of flags are available on current CPU info.
 
     :param flags: A `list` of cpu flags that must exists on the current CPU.
     :type flags: list of str
@@ -119,8 +119,7 @@ def cpu_has_flags(flags):
 
 
 def get_version():
-    """
-    Get cpu version.
+    """Get cpu version.
 
     :return: cpu version of given machine
              e.g.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines in
@@ -148,8 +147,7 @@ def get_version():
 
 
 def get_vendor():
-    """
-    Get the current cpu vendor name.
+    """Get the current cpu vendor name.
 
     :return: a key of :data:`VENDORS_MAP` (e.g. 'intel') depending on the
              current CPU architecture. Return None if it was unable to
@@ -165,12 +163,11 @@ def get_vendor():
 
 
 def get_revision():
-    """
-    Get revision from /proc/cpuinfo
+    """Get revision from /proc/cpuinfo.
 
-    :return: revision entry from /proc/cpuinfo file
-             e.g.:- '0080' for IBM POWER10 machine
-    :rtype: str
+    :return: Revision entry from /proc/cpuinfo (e.g. '0080' for IBM POWER10),
+             or None if no revision line is found.
+    :rtype: str or None
     """
     rev = None
     proc_cpuinfo = genio.read_file("/proc/cpuinfo")
@@ -181,10 +178,10 @@ def get_revision():
 
 
 def get_va_bits():
-    """
-    Check for VA address bit size in /proc/cpuinfo
+    """Get virtual address bit size from /proc/cpuinfo (x86).
 
-    :return: VA address bit size
+    :return: VA address bit size as string (e.g. '48'), or empty string
+             if not found or on non-x86 architectures.
     :rtype: str
     """
     cpu_info = genio.read_file("/proc/cpuinfo")
@@ -195,7 +192,11 @@ def get_va_bits():
 
 
 def get_arch():
-    """Work out which CPU architecture we're running on."""
+    """Detect the CPU architecture of the current machine.
+
+    :return: Architecture string (e.g. 'x86_64', 'powerpc', 's390', 'aarch64').
+    :rtype: str
+    """
     cpu_table = [
         (b"^cpu.*(RS64|Broadband Engine)", "powerpc"),
         (rb"^cpu.*POWER\d+", "powerpc"),
@@ -234,7 +235,14 @@ def get_arch():
 
 
 def get_family():
-    """Get family name of the cpu like Broadwell, Haswell, power8, power9."""
+    """Get CPU family or microarchitecture name.
+
+    :return: Family string (e.g. 'broadwell', 'haswell', 'power8', 'power9',
+             'z15') depending on architecture.
+    :rtype: str
+    :raises FamilyException: When family cannot be determined.
+    :raises NotImplementedError: On unsupported architectures.
+    """
     family = None
     arch = get_arch()
     if arch in ("x86_64", "i386"):
@@ -284,8 +292,11 @@ def get_family():
 
 
 def get_model():
-    """
-    Get model of cpu
+    """Get CPU model number (x86 only).
+
+    :return: Model integer from /proc/cpuinfo, or None if not found.
+    :rtype: int or None
+    :raises NotImplementedError: On non-x86 architectures.
     """
     arch = get_arch()
     if arch == "x86_64":
@@ -301,15 +312,14 @@ def get_model():
 
 
 def get_x86_amd_zen(family=None, model=None):
-    """
-    Get the AMD Zen architecture's version of the x86_AMD CPU
-    :param family: AMD family
-    :type family: int
-    :param model: AMD model
-    :type model: int
+    """Get the AMD Zen architecture version for x86 AMD CPUs.
 
-    :return: AMD Zen
-    :rtype: int
+    :param family: AMD CPU family (default: from get_family()).
+    :type family: int or None
+    :param model: AMD CPU model (default: from get_model()).
+    :type model: int or None
+    :return: Zen generation (1-6), or None if not an AMD Zen CPU.
+    :rtype: int or None
     """
 
     x86_amd_zen = {
@@ -323,9 +333,9 @@ def get_x86_amd_zen(family=None, model=None):
             6: [(0x50, 0x5F), (0x80, 0xAF), (0xC0, 0xCF)],
         },
     }
-    if not family:
+    if family is None:
         family = get_family()
-    if not model:
+    if model is None:
         model = get_model()
 
     for _family, _zen_model in x86_amd_zen.items():
@@ -337,7 +347,11 @@ def get_x86_amd_zen(family=None, model=None):
 
 
 def online_list():
-    """Reports a list of indexes of the online cpus."""
+    """Report a list of indexes of the online CPUs.
+
+    :return: List of online CPU indices.
+    :rtype: list of int
+    """
     cpus = []
     search_str = b"processor"
     index = 2
@@ -352,21 +366,42 @@ def online_list():
 
 
 def total_count():
-    """Return Number of Total cpus in the system including offline cpus."""
+    """Return number of total CPUs in the system including offline CPUs.
+
+    :return: Total CPU count.
+    :rtype: int
+    """
     return os.sysconf("SC_NPROCESSORS_CONF")
 
 
 def online_count():
-    """Return Number of Online cpus in the system."""
+    """Return number of online CPUs in the system.
+
+    :return: Online CPU count.
+    :rtype: int
+    """
     return os.sysconf("SC_NPROCESSORS_ONLN")
 
 
 def is_hotpluggable(cpu):
+    """Check whether a CPU can be hot-plugged (offlined/onlined).
+
+    :param cpu: CPU index to check.
+    :type cpu: int
+    :return: True if the CPU has an 'online' sysfs interface.
+    :rtype: bool
+    """
     return os.path.exists(f"/sys/devices/system/cpu/cpu{cpu}/online")
 
 
 def online(cpu):
-    """Online given CPU."""
+    """Bring a CPU online.
+
+    :param cpu: CPU index to bring online.
+    :type cpu: int
+    :return: 1 on success, 0 on failure (requires root).
+    :rtype: int
+    """
     if _get_status(cpu) is False:
         with open(
             f"/sys/devices/system/cpu/cpu{cpu}/online", "wb"
@@ -378,7 +413,13 @@ def online(cpu):
 
 
 def offline(cpu):
-    """Offline given CPU."""
+    """Take a CPU offline.
+
+    :param cpu: CPU index to take offline.
+    :type cpu: int
+    :return: 0 on success, 1 on failure (requires root).
+    :rtype: int
+    """
     if _get_status(cpu):
         with open(
             f"/sys/devices/system/cpu/cpu{cpu}/online", "wb"
@@ -390,10 +431,9 @@ def offline(cpu):
 
 
 def get_idle_state():
-    """
-    Get current cpu idle values.
+    """Get current CPU idle state values.
 
-    :return: Dict of cpuidle states values for all cpus
+    :return: Dict of cpuidle state values for all CPUs
     :rtype: dict
     """
     cpus_list = online_list()
@@ -419,10 +459,15 @@ def get_idle_state():
 
 
 def _bool_to_binary(value):
-    """
-    Turns a Python boolean value (True or False) into binary data.
+    """Turn a Python boolean value (True or False) into binary data.
 
     This function is suitable for writing to /proc/* and /sys/* files.
+
+    :param value: Boolean to convert.
+    :type value: bool
+    :return: b'1' for True, b'0' for False.
+    :rtype: bytes
+    :raises TypeError: When value is not a boolean.
     """
     if value is True:
         return b"1"
@@ -432,8 +477,7 @@ def _bool_to_binary(value):
 
 
 def set_idle_state(state_number="all", disable=True, setstate=None):
-    """
-    Set/Reset cpu idle states for all cpus.
+    """Set or reset CPU idle states for all CPUs.
 
     :param state_number: cpuidle state number, default: `all` all states
     :type state_number: str
@@ -488,12 +532,13 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
 
 
 def set_freq_governor(governor="random"):
-    """
-    To change the given cpu frequency governor.
+    """Change the CPU frequency governor for all CPUs.
 
-    :param governor: frequency governor profile name whereas `random` is default
-                     option to choose random profile among available ones.
+    :param governor: Governor name (e.g. 'performance', 'powersave'), or
+                     'random' to pick one randomly from available governors.
     :type governor: str
+    :return: True on success, False on failure.
+    :rtype: bool
     """
     avl_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
@@ -535,7 +580,11 @@ def set_freq_governor(governor="random"):
 
 
 def get_freq_governor():
-    """Get current cpu frequency governor."""
+    """Get the current CPU frequency governor.
+
+    :return: Governor name (e.g. 'performance'), or empty string on error.
+    :rtype: str
+    """
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
     try:
         with open(cur_gov_file, "r") as fl:  # pylint: disable=W1514
@@ -546,13 +595,12 @@ def get_freq_governor():
 
 
 def get_pid_cpus(pid):
-    """
-    Get all the cpus being used by the process according to pid informed.
+    """Get CPU indices used by a process (from ``/proc/<pid>/task/*/stat``).
 
-    :param pid: process id
-    :type pid: str
-    :return: A list include all cpus the process is using
-    :rtype: list
+    :param pid: Process ID.
+    :type pid: int or str
+    :return: List of CPU index strings the process threads are running on.
+    :rtype: list of str
     """
     # processor id index is defined according proc documentation
     # the negative index is necessary because backward data
@@ -571,14 +619,10 @@ def get_pid_cpus(pid):
 
 
 def get_numa_node_has_cpus():
-    """
-    Get the list NUMA node numbers which has CPU's on the system,
-    if there is no CPU associated to NUMA node,Those NUMA node number
-    will not be appended to list.
+    """Get NUMA node numbers that have CPUs assigned.
 
-    :return: A list where NUMA node numbers only which has
-             CPU's - as elements of The list.
-    :rtype: List
+    :return: List of NUMA node identifiers that have CPUs.
+    :rtype: list of str
     """
     cpu_path = "/sys/devices/system/node/has_cpu"
     delim = ",", "-"
@@ -589,12 +633,10 @@ def get_numa_node_has_cpus():
 
 
 def numa_nodes_with_assigned_cpus():
-    """
-    Get NUMA nodes with associated CPU's on the system.
+    """Get NUMA nodes with their associated CPU indices.
 
-    :return: A dictionary,in which "NUMA node numbers" as key
-             and "NUMA node associated CPU's" as values.
-    :rtype: dictionary
+    :return: Dict mapping NUMA node ID to sorted list of CPU indices.
+    :rtype: dict
     """
     numa_nodes_with_cpus = {}
     for path in glob.glob("/sys/devices/system/node/node[0-9]*"):
@@ -610,17 +652,23 @@ def numa_nodes_with_assigned_cpus():
 
 
 def _deprecated(newfunc, oldfuncname):
-    """
-    Print a warning to user and return the new function.
+    """Print a deprecation warning and return the new function.
 
-    :param newfunc: new function to be assigned
-    :param oldfunctionname: Old function name string
-    :rtype: `function`
+    :param newfunc: New function to be assigned.
+    :param oldfuncname: Old function name string.
+    :return: Wrapper that warns and calls newfunc.
+    :rtype: function
     """
 
     def wrap(*args, **kwargs):
-        fmt_str = f"avocado.utils.cpu.{oldfuncname}() it is getting deprecat"
-        fmt_str += f"ed, Use avocado.utils.cpu.{newfunc.__name__}() instead"
+        """Wrapper that emits deprecation warning and delegates to newfunc.
+
+        :param args: Positional arguments passed through to newfunc.
+        :param kwargs: Keyword arguments passed through to newfunc.
+        :return: Result of newfunc(`*args`, `**kwargs`).
+        :rtype: any
+        """
+        fmt_str = f"avocado.utils.cpu.{oldfuncname}() is deprecated, please use avocado.utils.cpu.{newfunc.__name__}() instead"
         warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
         return newfunc(*args, **kwargs)
 
@@ -628,17 +676,12 @@ def _deprecated(newfunc, oldfuncname):
 
 
 def lscpu():
-    """
-    Get Cores per socket, Physical sockets and Physical chips
-    by executing 'lscpu' command.
+    """Get CPU topology by executing the 'lscpu' command.
 
-    :rtype: `dict_obj` with the following details
-    :cores per socket:
-    :physical sockets:
-    :physical chips:
-    :threads per core:
-    :sockets:
-    :chips: physical sockets * physical chips
+    :return: Dict with keys such as 'cores_per_chip', 'physical_sockets',
+             'physical_chips', 'threads_per_core', 'sockets', 'chips',
+             'physical_cores' (depending on lscpu output).
+    :rtype: dict
     """
     output = process.run("LANG=en_US.UTF-8;lscpu", shell=True)
     res = {}
@@ -679,3 +722,8 @@ get_cpuidle_state = _deprecated(get_idle_state, "get_cpuidle_state")
 set_cpuidle_state = _deprecated(set_idle_state, "set_cpuidle_state")
 set_cpufreq_governor = _deprecated(set_freq_governor, "set_cpufreq_governor")
 get_cpufreq_governor = _deprecated(get_freq_governor, "get_cpufreq_governor")
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("cpu")

@@ -27,9 +27,9 @@ TEST_SIZE = {
     "job-api-check-tmp-directory-exists": 1,
     "nrunner-interface": 90,
     "nrunner-requirement": 28,
-    "unit": 994,
+    "unit": 1005,
     "jobs": 11,
-    "functional-parallel": 380,
+    "functional-parallel": 382,
     "functional-serial": 7,
     "optional-plugins": 0,
     "optional-plugins-golang": 2,
@@ -709,14 +709,23 @@ def create_suites(args):  # pylint: disable=W0621
     if args.dict_tests["functional"]:
         functional_path = os.path.join("selftests", "functional")
         references = glob.glob(os.path.join(functional_path, "*.py"))
-        references.extend(
-            [
-                os.path.join(functional_path, "utils"),
-                os.path.join(functional_path, "plugin"),
+        utils_path = os.path.join(functional_path, "utils")
+        if sys.platform == "darwin":
+            # cpu.py tests hang on macOS (os.sysconf with Python 3.11)
+            utils_refs = [
+                os.path.join(utils_path, f)
+                for f in os.listdir(utils_path)
+                if f.endswith(".py") and f != "cpu.py"
             ]
-        )
+            references.extend(sorted(utils_refs))
+        else:
+            references.append(utils_path)
+        references.append(os.path.join(functional_path, "plugin"))
         config_check_functional_parallel = copy.copy(config_check)
         config_check_functional_parallel["resolver.references"] = references
+        if sys.platform == "darwin":
+            # cpu.py has 14 tests excluded on macOS (os.sysconf hang with Python 3.11)
+            TEST_SIZE["functional-parallel"] = TEST_SIZE["functional-parallel"] - 14
         suites.append(
             TestSuite.from_config(
                 config_check_functional_parallel, "functional-parallel"
