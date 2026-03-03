@@ -235,6 +235,18 @@ It is super easy, just run the follow command::
 
 This will install the avocado command in your home directory.
 
+.. warning:: **Python 3.11+ and setuptools compatibility**
+
+   If you encounter installation or import errors on Python 3.11 or newer
+   (e.g. ``ModuleNotFoundError: No module named 'pkg_resources'``), Avocado
+   still depends on ``pkg_resources``, which was removed in setuptools 82+.
+   Downgrade setuptools before installing::
+
+       $ pip3 install "setuptools<82"
+       $ pip3 install --user avocado-framework
+
+   This is a temporary workaround until Avocado migrates.
+
 .. note:: For more details and alternative methods, please visit the
          `Installing section on Avocado User’s Guide`_
 
