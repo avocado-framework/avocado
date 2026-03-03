@@ -17,6 +17,7 @@ on:
       - '**/output.py'
       - '**/path.py'
       - '**/process.py'
+      - '**/cpu.py'
       - '**/script.py'
       - '**/wait.py'
 
