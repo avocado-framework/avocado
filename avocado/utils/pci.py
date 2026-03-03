@@ -191,8 +191,8 @@ def get_slot_from_sysfs(full_pci_address):
 
     :return: Removed port related details using re, only returns till
              physical slot of the adapter
-             Examples: U78CD.001.FZHAK92-P2-C3
-                       U50EE.001.WZS0011-P3-C20-R1
+             Examples: U78CC.001.FZHAK92-P2-C3
+                       U50EE.001.WZS0011-P3-C20-R2
     """
     if not os.path.isfile(f"/sys/bus/pci/devices/{full_pci_address}/devspec"):
         return None
