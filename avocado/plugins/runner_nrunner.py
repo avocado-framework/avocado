@@ -18,10 +18,7 @@ nrunner based implementation of job compliant runner
 
 import asyncio
 import multiprocessing
-import os
-import platform
 import random
-import tempfile
 
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, JobFailFast
@@ -31,11 +28,12 @@ from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init, SuiteRunner
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
-from avocado.core.status.server import StatusServer
+from avocado.core.status.server import StatusServer, resolve_listen_uri
 from avocado.core.task.runtime import RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 
-DEFAULT_SERVER_URI = "127.0.0.1:8888"
+# Default port range so multiple avocado runs can bind without conflict
+DEFAULT_SERVER_URI = "127.0.0.1:8888-9000"
 
 
 class RunnerInit(Init):
@@ -55,10 +53,9 @@ class RunnerInit(Init):
         )
 
         help_msg = (
-            "If the status server should automatically choose "
-            'a "status_server_listen" and "status_server_uri" '
-            "configuration. Default is to auto configure a "
-            "status server."
+            "If the status server should automatically choose a listen address "
+            "from the default port range so multiple runs do not conflict. "
+            "When disabled, use status_server_listen/status_server_uri."
         )
         settings.register_option(
             section=section,
@@ -69,10 +66,10 @@ class RunnerInit(Init):
         )
 
         help_msg = (
-            'URI where status server will listen on. Usually a "HOST:PORT" '
-            'string. This is only effective if "status_server_auto" is disabled. '
-            'If "status_server_uri" is not set, the value from "status_server_listen " '
-            "will be used."
+            'URI where status server will listen. "HOST:PORT" or "HOST:START-END" '
+            "port range (default: 127.0.0.1:8888-9000). Only used when "
+            '"status_server_auto" is disabled. If "status_server_uri" is not set, '
+            '"status_server_listen" is used.'
         )
         settings.register_option(
             section=section,
@@ -83,12 +80,10 @@ class RunnerInit(Init):
         )
 
         help_msg = (
-            "URI for connecting to the status server, usually "
-            'a "HOST:PORT" string. Use this if your status server '
-            "is in another host, or different port. This is only "
-            'effective if "status_server_auto" is disabled. '
-            'If "status_server_listen" is not set, the value from "status_server_uri" '
-            "will be used."
+            'URI for connecting to the status server: "HOST:PORT" or "HOST:START-END" '
+            'port range (default: 127.0.0.1:8888-9000). Only used when "status_server_auto" '
+            'is disabled. If "status_server_listen" is not set, '
+            '"status_server_uri" is used.'
         )
         settings.register_option(
             section=section,
@@ -207,19 +202,8 @@ class Runner(SuiteRunner):
     name = "nrunner"
     description = "nrunner based implementation of job compliant runner"
 
-    def __init__(self):
-        super().__init__()
-        self.status_server_dir = None
-
     def _determine_status_server(self, test_suite, config_key):
-        if test_suite.config.get("run.status_server_auto"):
-            # no UNIX domain sockets on Windows
-            if platform.system() != "Windows":
-                if self.status_server_dir is None:
-                    self.status_server_dir = tempfile.TemporaryDirectory(
-                        prefix="avocado_"
-                    )
-                return os.path.join(self.status_server_dir.name, ".status_server.sock")
+        """Return listen/uri config; default is a port range so multiple runs work."""
         return test_suite.config.get(config_key)
 
     def _sync_status_server_urls(self, config):
@@ -240,10 +224,19 @@ class Runner(SuiteRunner):
     def _create_status_server(self, test_suite, job):
         self._sync_status_server_urls(test_suite.config)
         listen = self._determine_status_server(test_suite, "run.status_server_listen")
+        try:
+            resolved_listen = resolve_listen_uri(listen)
+        except (ValueError, OSError) as exc:
+            raise JobError(str(exc)) from exc
+        if resolved_listen != listen:
+            test_suite.config["run.status_server_listen"] = resolved_listen
+            server_uri = test_suite.config.get("run.status_server_uri")
+            if server_uri in (listen, DEFAULT_SERVER_URI):
+                test_suite.config["run.status_server_uri"] = resolved_listen
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
-        self.status_server = StatusServer(listen, self.status_repo)
+        self.status_server = StatusServer(resolved_listen, self.status_repo)
 
     async def _update_status(self, job):
         message_handler = MessageHandler()
@@ -384,8 +377,6 @@ class Runner(SuiteRunner):
 
         job.result.end_tests()
         self.status_server.close()
-        if self.status_server_dir is not None:
-            self.status_server_dir.cleanup()
 
         # Update the overall summary with found test statuses, which will
         # determine the Avocado command line exit status
