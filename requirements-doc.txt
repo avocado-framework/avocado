@@ -1,1 +1,3 @@
 sphinx-rtd-theme==2.0.0
+# Pin <82: setuptools 82.0.0+ removed pkg_resources (avocado.core still uses it at doc build time)
+setuptools>=45.0.0,<82
