@@ -185,15 +185,20 @@ Options for subcommand `run` (`avocado run --help`)::
                             server.
       --status-server-listen HOST_PORT
                             URI where status server will listen on. Usually a
-                            "HOST:PORT" string. This is only effective if
+                            "HOST:PORT" string, or a "HOST:START-END" port
+                            range (for example, "127.0.0.1:8888-9000") in which
+                            case an available port within the range will be
+                            chosen. This is only effective if
                             "status_server_auto" is disabled. If
                             "status_server_uri" is not set, the value from
-                            "status_server_listen " will be used.
+                            "status_server_listen" will be used.
       --status-server-uri HOST_PORT
                             URI for connecting to the status server, usually a
-                            "HOST:PORT" string. Use this if your status server is
-                            in another host, or different port. This is only
-                            effective if "status_server_auto" is disabled.  If
+                            "HOST:PORT" string, or a "HOST:START-END" port range
+                            where an available port within the range will be
+                            chosen. Use this if your status server is in another
+                            host, or different port. This is only effective if
+                            "status_server_auto" is disabled.  If
                             "status_server_listen" is not set, the value from
                             "status_server_uri" will be used.
       --max-parallel-tasks NUMBER_OF_TASKS

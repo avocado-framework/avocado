@@ -31,7 +31,7 @@ from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init, SuiteRunner
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
-from avocado.core.status.server import StatusServer
+from avocado.core.status.server import StatusServer, resolve_listen_uri
 from avocado.core.task.runtime import RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 
@@ -240,10 +240,19 @@ class Runner(SuiteRunner):
     def _create_status_server(self, test_suite, job):
         self._sync_status_server_urls(test_suite.config)
         listen = self._determine_status_server(test_suite, "run.status_server_listen")
+        try:
+            resolved_listen = resolve_listen_uri(listen)
+        except (ValueError, OSError) as exc:
+            raise JobError(str(exc)) from exc
+        if resolved_listen != listen:
+            test_suite.config["run.status_server_listen"] = resolved_listen
+            server_uri = test_suite.config.get("run.status_server_uri")
+            if server_uri in (listen, DEFAULT_SERVER_URI):
+                test_suite.config["run.status_server_uri"] = resolved_listen
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
-        self.status_server = StatusServer(listen, self.status_repo)
+        self.status_server = StatusServer(resolved_listen, self.status_repo)
 
     async def _update_status(self, job):
         message_handler = MessageHandler()
