@@ -19,6 +19,7 @@
 """
 Get information from the current's machine CPU.
 """
+
 import glob
 import logging
 import os

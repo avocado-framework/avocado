@@ -14,6 +14,7 @@
 """
 Plugins information plugin
 """
+
 import itertools
 
 from avocado.core import dispatcher

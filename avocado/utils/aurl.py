@@ -17,6 +17,7 @@ URL related functions.
 
 The strange name is to avoid accidental naming collisions in code.
 """
+
 import urllib.parse
 
 #: The most common schemes (protocols) used in URLs

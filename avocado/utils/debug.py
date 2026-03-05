@@ -15,6 +15,7 @@
 """
 This file contains tools for (not only) Avocado developers.
 """
+
 import logging
 import os
 import time

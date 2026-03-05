@@ -17,6 +17,7 @@
 This file contains mux-enabled implementations of parts useful for creating
 a custom Varianter plugin.
 """
+
 #
 # Multiplex-enabled tree objects
 #

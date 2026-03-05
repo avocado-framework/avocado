@@ -22,7 +22,6 @@
 avocado core code or plugins.
 """
 
-
 import math
 import re
 import sys

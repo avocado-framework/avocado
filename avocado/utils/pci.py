@@ -20,7 +20,6 @@
 Module for all PCI devices related functions.
 """
 
-
 import errno
 import os
 import re
@@ -335,10 +334,8 @@ def unbind(driver, full_pci_address):
     """
     genio.write_file_or_fail(f"/sys/bus/pci/drivers/{driver}/unbind", full_pci_address)
     if wait.wait_for(
-        lambda: os.path.exists(
-            f"/sys/bus/pci/drivers/\
-{driver}/{full_pci_address}"
-        ),
+        lambda: os.path.exists(f"/sys/bus/pci/drivers/\
+{driver}/{full_pci_address}"),
         timeout=5,
     ):
         raise ValueError(f"Not able to unbind {full_pci_address} from {driver}")
@@ -354,10 +351,8 @@ def bind(driver, full_pci_address):
     """
     genio.write_file_or_fail(f"/sys/bus/pci/drivers/{driver}/bind", full_pci_address)
     if not wait.wait_for(
-        lambda: os.path.exists(
-            f"/sys/bus/pci/drivers/\
-{driver}/{full_pci_address}"
-        ),
+        lambda: os.path.exists(f"/sys/bus/pci/drivers/\
+{driver}/{full_pci_address}"),
         timeout=5,
     ):
         raise ValueError(f"Not able to bind {full_pci_address} to {driver}")
