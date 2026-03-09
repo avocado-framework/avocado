@@ -463,7 +463,7 @@ class PMem:
             "size": "-s %s",
             "align": "-a %s",
             "uuid": "-u %s",
-            "parent_uuid": "-p %",
+            "parent_uuid": "-p %s",
             "offset": "-O %s",
         }
         args = ""
