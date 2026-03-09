@@ -145,6 +145,8 @@ Options for subcommand `run` (`avocado run --help`)::
       --store-logging-stream LOGGING_STREAM
                             Store given logging STREAMs in
                             "$JOB_RESULTS_DIR/$STREAM.$LEVEL".
+                            LOGGING_STREAM=all is the default and will store all logs
+                            into the file "$JOB_RESULTS_DIR/full.log"
       --xunit FILE          Enable xUnit result format and write it to FILE. Use
                             "-" to redirect to the standard output.
       --disable-xunit-job-result
