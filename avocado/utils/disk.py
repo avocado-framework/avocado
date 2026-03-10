@@ -149,7 +149,7 @@ def get_all_disk_paths():
     :returns: a list of all disk path names
     :rtype: list of str
     """
-    disk_list = abs_path = []
+    disk_list = []
     for path in [
         "/dev",
         "/dev/mapper",
@@ -160,6 +160,7 @@ def get_all_disk_paths():
         "/dev/disk/by-partlabel",
     ]:
         if os.path.exists(path):
+            abs_path = []
             for device in os.listdir(path):
                 abs_path.append(os.path.join(path, device))
             disk_list.extend(abs_path)
