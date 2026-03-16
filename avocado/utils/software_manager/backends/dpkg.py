@@ -90,7 +90,9 @@ class DpkgBackend(BaseBackend):
         data_tarball_name = archive.list()[2]
         member_data = archive.read_member(data_tarball_name)
         with tarfile.open(fileobj=io.BytesIO(member_data)) as tarball:
-            tarball.extractall(dest)
+            tarball.extractall(
+                dest
+            )  # nosec B202 -- extracting deb package data; filter= requires Python 3.12+
         return dest
 
     def list_files(self, package):

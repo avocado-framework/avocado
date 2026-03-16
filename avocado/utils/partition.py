@@ -52,7 +52,10 @@ class MtabLock:
     def __init__(self, timeout=60):
         self.timeout = timeout
         self.mtab = None
-        device_hash = hashlib.sha1(self.device.encode("utf-8")).hexdigest()
+        device_hash = hashlib.sha1(  # nosec B324 -- not used for security, generates lock filename
+            self.device.encode("utf-8"),
+            usedforsecurity=False,
+        ).hexdigest()
         lock_filename = os.path.join(tempfile.gettempdir(), device_hash)
         self.lock = filelock.FileLock(lock_filename, timeout=self.timeout)
 
