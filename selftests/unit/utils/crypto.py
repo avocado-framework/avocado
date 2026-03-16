@@ -21,7 +21,7 @@ class HashFileTest(TestCaseTmpDir):
         """Test MD5 hash calculation with default algorithm."""
         content = b"Hello, World!"
         filepath = self._create_test_file(content)
-        expected = hashlib.md5(content).hexdigest()
+        expected = hashlib.md5(content, usedforsecurity=False).hexdigest()
         result = crypto.hash_file(filepath)
         self.assertEqual(result, expected)
 
@@ -39,7 +39,7 @@ class HashFileTest(TestCaseTmpDir):
         content = b"ABCDEFGHIJ"  # 10 bytes
         filepath = self._create_test_file(content)
         # Hash only first 5 bytes - tests size < file_size path
-        expected = hashlib.md5(b"ABCDE").hexdigest()
+        expected = hashlib.md5(b"ABCDE", usedforsecurity=False).hexdigest()
         result = crypto.hash_file(filepath, size=5)
         self.assertEqual(result, expected)
 
@@ -47,7 +47,7 @@ class HashFileTest(TestCaseTmpDir):
         """Test that size larger than file hashes the whole file."""
         content = b"Small file"
         filepath = self._create_test_file(content)
-        expected = hashlib.md5(content).hexdigest()
+        expected = hashlib.md5(content, usedforsecurity=False).hexdigest()
         # Request more bytes than file contains - tests size > file_size branch
         result = crypto.hash_file(filepath, size=1000000)
         self.assertEqual(result, expected)
@@ -56,7 +56,7 @@ class HashFileTest(TestCaseTmpDir):
         """Test that falsy size values (None, 0) hash the entire file."""
         content = b"Complete file content"
         filepath = self._create_test_file(content)
-        expected = hashlib.md5(content).hexdigest()
+        expected = hashlib.md5(content, usedforsecurity=False).hexdigest()
         # Both None and 0 are falsy - tests 'not size' branch
         self.assertEqual(crypto.hash_file(filepath, size=None), expected)
         self.assertEqual(crypto.hash_file(filepath, size=0), expected)
@@ -65,7 +65,7 @@ class HashFileTest(TestCaseTmpDir):
     def test_hash_file_empty_file(self):
         """Test hashing an empty file."""
         filepath = self._create_test_file(b"")
-        expected = hashlib.md5(b"").hexdigest()
+        expected = hashlib.md5(b"", usedforsecurity=False).hexdigest()
         result = crypto.hash_file(filepath)
         self.assertEqual(result, expected)
 
@@ -73,7 +73,7 @@ class HashFileTest(TestCaseTmpDir):
         """Test hashing a file with all possible byte values."""
         content = bytes(range(256))  # All byte values 0-255
         filepath = self._create_test_file(content)
-        expected = hashlib.md5(content).hexdigest()
+        expected = hashlib.md5(content, usedforsecurity=False).hexdigest()
         result = crypto.hash_file(filepath)
         self.assertEqual(result, expected)
 
@@ -82,7 +82,7 @@ class HashFileTest(TestCaseTmpDir):
         # Create content larger than io.DEFAULT_BUFFER_SIZE (typically 8192)
         content = b"x" * 100000
         filepath = self._create_test_file(content)
-        expected = hashlib.md5(content).hexdigest()
+        expected = hashlib.md5(content, usedforsecurity=False).hexdigest()
         result = crypto.hash_file(filepath)
         self.assertEqual(result, expected)
 
