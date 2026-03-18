@@ -37,12 +37,12 @@ class RemoteSpawnerInit(Init):
 
         help_msg = "Test timeout enforced for remote host setup hook"
         settings.register_option(
-            section=section, key="setup_timeout", help_msg=help_msg, default=3600
+            section=section, key="setup_timeout", help_msg=help_msg, key_type=int, default=3600
         )
 
         help_msg = "Test timeout enforced for sessions (just for this spawner)"
         settings.register_option(
-            section=section, key="test_timeout", help_msg=help_msg, default=14400
+            section=section, key="test_timeout", help_msg=help_msg, key_type=int, default=14400
         )
 
 
