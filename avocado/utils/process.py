@@ -780,7 +780,7 @@ class SubProcess:
         else:
             cmd = self.cmd
         try:
-            self._popen = subprocess.Popen(  # pylint: disable=R1732
+            self._popen = subprocess.Popen(  # nosec B602 -- shell execution is core to this test framework  # pylint: disable=R1732
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

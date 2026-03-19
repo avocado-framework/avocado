@@ -636,7 +636,9 @@ class Paginator:
             except utils_path.CmdNotFoundError as details:
                 raise RuntimeError(f"Unable to enable pagination: {details}")
 
-        self.pipe = os.popen(paginator, "w")
+        self.pipe = os.popen(
+            paginator, "w"
+        )  # nosec B605 -- paginator command is user-configured or safe default (less)
 
     def __del__(self):
         self.close()

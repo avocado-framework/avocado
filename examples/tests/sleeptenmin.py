@@ -28,4 +28,6 @@ class SleepTenMin(Test):
             if method == "builtin":
                 time.sleep(length)
             elif method == "shell":
-                os.system(f"sleep {length}")
+                os.system(
+                    f"sleep {length}"
+                )  # nosec B605 -- example test, length is an integer from test params
