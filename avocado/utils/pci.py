@@ -192,7 +192,9 @@ def get_slot_from_sysfs(full_pci_address):
     :param full_pci_address: Full PCI address including domain (0000:03:00.0)
 
     :return: Removed port related details using re, only returns till
-             physical slot of the adapter.
+             physical slot of the adapter
+             Examples: U78CC.001.FZHAK92-P2-C3
+                       U50EE.001.WZS0011-P3-C20-R2
     """
     if not os.path.isfile(f"/sys/bus/pci/devices/{full_pci_address}/devspec"):
         return None
@@ -202,7 +204,7 @@ def get_slot_from_sysfs(full_pci_address):
     if not os.path.isfile(f"/proc/device-tree/{devspec}/ibm,loc-code"):
         return None
     slot = genio.read_file(f"/proc/device-tree/{devspec}/ibm,loc-code")
-    slot_ibm = re.match(r"((\w+)[.])+(\w+)-[PC(\d+)-]*C(\d+)", slot)
+    slot_ibm = re.match(r"((\w+)[.])+(\w+)-[PC(\d+)-]*C(\d+)(?:-R\d+)?", slot)
     if slot_ibm:
         return slot_ibm.group()
     slot_openpower = re.match(r"(\w+)[\s]*(\w+)(\d*)", slot)
