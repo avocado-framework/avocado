@@ -37,7 +37,7 @@ class ZypperBackend(RpmBackend):
 
         :param name: Package Name.
         """
-        i_cmd = self.base_command + " install -l " + name
+        i_cmd = self.base_command + " install -y --force-resolution -l " + name
         return self._run_cmd(i_cmd)
 
     def add_repo(self, url):
