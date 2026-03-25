@@ -12,10 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-"""
-This module provides the client facilities to detect the Linux Distribution
-it's running under.
-"""
+"""Detect the Linux distribution running on a local or remote machine."""
 
 import logging
 import os
@@ -38,13 +35,10 @@ __all__ = [
 
 # pylint: disable=R0903
 class LinuxDistro:
-    """
-    Simple collection of information for a Linux Distribution
-    """
+    """Simple collection of information for a Linux Distribution."""
 
     def __init__(self, name, version, release, arch):
-        """
-        Initializes a new Linux Distro
+        """Initialize a new Linux Distro.
 
         :param name: a short name that precisely distinguishes this Linux
                      Distribution among all others.
@@ -74,6 +68,11 @@ class LinuxDistro:
         self.arch = arch
 
     def __repr__(self):
+        """Return a string representation of the Linux distro.
+
+        :return: formatted string with name, version, release and arch.
+        :rtype: str
+        """
         return (
             f"<LinuxDistro: name={self.name}, version={self.version}, "
             f"release={self.release}, arch={self.arch}>"
@@ -96,10 +95,10 @@ UNKNOWN_DISTRO = LinuxDistro(
 
 
 class Probe:
-    """
-    Probes the machine and does it best to confirm it's the right distro.
-    If given an avocado.utils.ssh.Session object representing another machine, Probe
-    will attempt to detect another machine's distro via an ssh connection.
+    """Probe a machine to confirm which Linux distribution it runs.
+
+    If given an avocado.utils.ssh.Session object representing another machine,
+    Probe will attempt to detect that machine's distro via an ssh connection.
     """
 
     #: Points to a file that can determine if this machine is running a given
@@ -121,16 +120,20 @@ class Probe:
     CHECK_VERSION_REGEX = None
 
     def __init__(self, session=None):
+        """Initialize a Probe instance.
+
+        :param session: optional ssh session to probe a remote machine.
+        :type session: avocado.utils.ssh.Session or None
+        """
         self.score = 0
         self.session = session
 
     def check_for_remote_file(self, file_name):
-        """
-        Checks if provided file exists in remote machine
+        """Check if a file exists on a remote machine.
 
-        :param file_name: name of file
+        :param file_name: path to the file on the remote machine.
         :type file_name: str
-        :returns: whether the file exists in remote machine or not
+        :return: whether the file exists on the remote machine.
         :rtype: bool
         """
         if self.session and not self.session.cmd(f"test -f {file_name}").exit_status:
@@ -138,12 +141,14 @@ class Probe:
         return False
 
     def check_name_for_file(self):
-        """
-        Checks if this class will look for a file and return a distro
+        """Check if this class can look for a file and return a distro name.
 
         The conditions that must be true include the file that identifies the
         distro file being set (:attr:`CHECK_FILE`) and the name of the
-        distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`)
+        distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`).
+
+        :return: whether both CHECK_FILE and CHECK_FILE_DISTRO_NAME are set.
+        :rtype: bool
         """
         if self.CHECK_FILE is None:
             return False
@@ -154,8 +159,10 @@ class Probe:
         return True
 
     def name_for_file(self):
-        """
-        Get the distro name if the :attr:`CHECK_FILE` is set and exists
+        """Get the distro name if :attr:`CHECK_FILE` is set and exists.
+
+        :return: the distro name or None if the file does not exist.
+        :rtype: str or None
         """
         if self.check_name_for_file():
             if self.check_for_remote_file(self.CHECK_FILE):
@@ -165,13 +172,16 @@ class Probe:
         return None
 
     def check_name_for_file_contains(self):
-        """
-        Checks if this class will look for text on a file and return a distro
+        """Check if this class can search file content and return a distro.
 
         The conditions that must be true include the file that identifies the
         distro file being set (:attr:`CHECK_FILE`), the text to look for
         inside the distro file (:attr:`CHECK_FILE_CONTAINS`) and the name
-        of the distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`)
+        of the distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`).
+
+        :return: whether CHECK_FILE, CHECK_FILE_CONTAINS and
+                 CHECK_FILE_DISTRO_NAME are all set.
+        :rtype: bool
         """
         if self.CHECK_FILE is None:
             return False
@@ -185,8 +195,10 @@ class Probe:
         return True
 
     def name_for_file_contains(self):
-        """
-        Get the distro if the :attr:`CHECK_FILE` is set and has content
+        """Get the distro if :attr:`CHECK_FILE` contains expected text.
+
+        :return: the distro name or None if the text is not found.
+        :rtype: str or None
         """
         if self.check_name_for_file_contains():
             check_file = None
@@ -212,8 +224,10 @@ class Probe:
         return None
 
     def check_version(self):
-        """
-        Checks if this class will look for a regex in file and return a distro
+        """Check if this class can extract a version via regex.
+
+        :return: whether both CHECK_FILE and CHECK_VERSION_REGEX are set.
+        :rtype: bool
         """
         if self.CHECK_FILE is None:
             return False
@@ -224,8 +238,11 @@ class Probe:
         return True
 
     def _get_version_match(self):
-        """
-        Returns the match result for the version regex on the file content
+        """Return the regex match result for the version file content.
+
+        :return: the regex match object, or None if no match or file
+                 is unavailable.
+        :rtype: re.Match or None
         """
         if self.check_version():
             if self.session:
@@ -252,8 +269,10 @@ class Probe:
         return None
 
     def version(self):
-        """
-        Returns the version of the distro
+        """Return the version of the distro.
+
+        :return: the version string, or UNKNOWN_DISTRO_VERSION.
+        :rtype: str or int
         """
         version = UNKNOWN_DISTRO_VERSION
         match = self._get_version_match()
@@ -263,14 +282,18 @@ class Probe:
         return version
 
     def check_release(self):
-        """
-        Checks if this has the conditions met to look for the release number
+        """Check if the regex has enough groups to extract a release number.
+
+        :return: whether a release can be extracted from the version regex.
+        :rtype: bool
         """
         return self.check_version() and self.CHECK_VERSION_REGEX.groups > 1
 
     def release(self):
-        """
-        Returns the release of the distro
+        """Return the release of the distro.
+
+        :return: the release string, or UNKNOWN_DISTRO_RELEASE.
+        :rtype: str or int
         """
         release = UNKNOWN_DISTRO_RELEASE
         match = self._get_version_match()
@@ -281,10 +304,10 @@ class Probe:
         return release
 
     def get_distro(self):
-        """
-        :param session: ssh connection between another machine
+        """Run all configured checks and return the detected distro.
 
-        Returns the :class:`LinuxDistro` this probe detected
+        :return: the detected :class:`LinuxDistro` or :data:`UNKNOWN_DISTRO`.
+        :rtype: :class:`LinuxDistro`
         """
         name = None
         version = UNKNOWN_DISTRO_VERSION
@@ -324,9 +347,7 @@ class Probe:
 
 
 class RedHatProbe(Probe):
-    """
-    Probe with version checks for Red Hat Enterprise Linux systems
-    """
+    """Probe with version checks for Red Hat Enterprise Linux systems."""
 
     CHECK_FILE = "/etc/redhat-release"
     CHECK_FILE_CONTAINS = "Red Hat Enterprise Linux"
@@ -337,9 +358,7 @@ class RedHatProbe(Probe):
 
 
 class CentosProbe(RedHatProbe):
-    """
-    Probe with version checks for CentOS systems
-    """
+    """Probe with version checks for CentOS systems."""
 
     CHECK_FILE = "/etc/redhat-release"
     CHECK_FILE_CONTAINS = "CentOS Linux"
@@ -348,9 +367,7 @@ class CentosProbe(RedHatProbe):
 
 
 class CentosStreamProbe(RedHatProbe):
-    """
-    Probe with version checks for CentOS Stream systems
-    """
+    """Probe with version checks for CentOS Stream systems."""
 
     CHECK_FILE = "/etc/redhat-release"
     CHECK_FILE_CONTAINS = "CentOS Stream"
@@ -359,9 +376,7 @@ class CentosStreamProbe(RedHatProbe):
 
 
 class FedoraProbe(RedHatProbe):
-    """
-    Probe with version checks for Fedora systems
-    """
+    """Probe with version checks for Fedora systems."""
 
     CHECK_FILE = "/etc/fedora-release"
     CHECK_FILE_CONTAINS = "Fedora"
@@ -370,9 +385,7 @@ class FedoraProbe(RedHatProbe):
 
 
 class AmazonLinuxProbe(Probe):
-    """
-    Probe for Amazon Linux systems
-    """
+    """Probe for Amazon Linux systems."""
 
     CHECK_FILE = "/etc/os-release"
     CHECK_FILE_CONTAINS = "Amazon Linux"
@@ -383,9 +396,7 @@ class AmazonLinuxProbe(Probe):
 
 
 class DebianProbe(Probe):
-    """
-    Simple probe with file checks for Debian systems
-    """
+    """Probe with file checks for Debian systems."""
 
     CHECK_FILE = "/etc/debian_version"
     CHECK_FILE_DISTRO_NAME = "debian"
@@ -393,9 +404,7 @@ class DebianProbe(Probe):
 
 
 class UbuntuProbe(Probe):
-    """
-    Simple probe for Ubuntu systems in general
-    """
+    """Probe for Ubuntu systems."""
 
     CHECK_FILE = "/etc/os-release"
     CHECK_FILE_CONTAINS = "ubuntu"
@@ -406,9 +415,7 @@ class UbuntuProbe(Probe):
 
 
 class SUSEProbe(Probe):
-    """
-    Simple probe for SUSE systems in general
-    """
+    """Probe for SUSE systems with custom VERSION_ID parsing."""
 
     CHECK_FILE = "/etc/os-release"
     CHECK_FILE_CONTAINS = "SUSE"
@@ -417,6 +424,11 @@ class SUSEProbe(Probe):
     CHECK_FILE_DISTRO_NAME = "SuSE"
 
     def get_distro(self):
+        """Detect SUSE distro and parse VERSION_ID for version and release.
+
+        :return: the detected :class:`LinuxDistro` with parsed version.
+        :rtype: :class:`LinuxDistro`
+        """
         distro = super().get_distro()
 
         # if the default methods find SUSE, detect version
@@ -448,9 +460,7 @@ class SUSEProbe(Probe):
 
 
 class OpenEulerProbe(Probe):
-    """
-    Simple probe for openEuler systems in general
-    """
+    """Probe for openEuler systems."""
 
     CHECK_FILE = "/etc/openEuler-release"
     CHECK_FILE_CONTAINS = "openEuler release"
@@ -459,9 +469,7 @@ class OpenEulerProbe(Probe):
 
 
 class UnionTechProbe(Probe):
-    """
-    Simple probe for UnionTech systems in general
-    """
+    """Probe for UnionTech OS systems."""
 
     CHECK_FILE = "/etc/os-version"
     CHECK_FILE_CONTAINS = "UnionTech OS"
@@ -474,8 +482,10 @@ REGISTERED_PROBES = []
 
 
 def register_probe(probe_class):
-    """
-    Register a probe to be run during autodetection
+    """Register a probe to be run during autodetection.
+
+    :param probe_class: the probe class to register.
+    :type probe_class: type
     """
     if probe_class not in REGISTERED_PROBES:
         REGISTERED_PROBES.append(probe_class)
@@ -494,15 +504,14 @@ register_probe(UnionTechProbe)
 
 
 def detect(session=None):
-    """
-    Attempts to detect the Linux Distribution running on this machine.
+    """Attempt to detect the Linux distribution running on this machine.
 
-    If given an avocado.utils.ssh.Session object, it will attempt to detect the
-    distro of another machine via an ssh connection.
+    If given an avocado.utils.ssh.Session object, it will attempt to detect
+    the distro of another machine via an ssh connection.
 
-    :param session: ssh connection between another machine
-    :type session: avocado.utils.ssh.Session
-    :returns: the detected :class:`LinuxDistro` or :data:`UNKNOWN_DISTRO`
+    :param session: ssh connection to another machine.
+    :type session: avocado.utils.ssh.Session or None
+    :return: the detected :class:`LinuxDistro` or :data:`UNKNOWN_DISTRO`.
     :rtype: :class:`LinuxDistro`
     """
     results = []
@@ -523,12 +532,27 @@ def detect(session=None):
 
 
 class Spec:
-    """
-    Describes a distro, usually for setting minimum distro requirements
-    """
+    """Describe a distro, usually for setting minimum distro requirements."""
 
     def __init__(self, name, min_version=None, min_release=None, arch=None):
+        """Initialize a distro specification.
+
+        :param name: the distribution name to match.
+        :type name: str
+        :param min_version: minimum acceptable version.
+        :type min_version: int or None
+        :param min_release: minimum acceptable release.
+        :type min_release: int or None
+        :param arch: required architecture.
+        :type arch: str or None
+        """
         self.name = name
         self.min_version = min_version
         self.min_release = min_release
         self.arch = arch
+
+
+# pylint: disable=wrong-import-position
+from avocado.utils.deprecation import log_deprecation
+
+log_deprecation.warning("distro")
