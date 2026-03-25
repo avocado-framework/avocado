@@ -1,10 +1,12 @@
 import os
+import platform
 
 from avocado import Test
 from avocado.core.exit_codes import AVOCADO_ALL_OK
 from avocado.core.job import Job
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.suite import TestSuite
+from avocado.utils import distro
 
 
 class Distro(Test):
@@ -64,3 +66,28 @@ class Distro(Test):
             + os.uname().machine.encode()
             + b") version 12 release 7\n",
         )
+
+
+class DistroDetectLocal(Test):
+    """Tests distro detection on the local system without containers."""
+
+    def test_detect_current_system(self):
+        """Verify detect() returns a valid result for the running system."""
+        result = distro.detect()
+        self.assertIsInstance(result, distro.LinuxDistro)
+        has_release_file = any(
+            os.path.exists(p)
+            for p in [
+                "/etc/os-release",
+                "/etc/redhat-release",
+                "/etc/fedora-release",
+                "/etc/debian_version",
+            ]
+        )
+        if has_release_file:
+            self.assertNotEqual(
+                result.name,
+                distro.UNKNOWN_DISTRO_NAME,
+                "detect() should identify a known distro on this system",
+            )
+            self.assertEqual(result.arch, platform.machine())
