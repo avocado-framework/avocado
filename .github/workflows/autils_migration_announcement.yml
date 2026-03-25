@@ -9,6 +9,7 @@ on:
       - '**/astring.py'
       - '**/crypto.py'
       - '**/data_structures.py'
+      - '**/distro.py'
       - '**/external/gdbmi_parser.py'
       - '**/external/spark.py'
       - '**/gdb.py'
