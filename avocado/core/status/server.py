@@ -1,7 +1,41 @@
 import asyncio
 import os
 
+from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
+from avocado.utils.network import ports as network_ports
+
+
+def resolve_listen_uri(uri):
+    """
+    Normalize a status server URI that may contain a port range into
+    a concrete "host:port" endpoint.
+    """
+    if ":" not in uri:
+        return uri
+    host, port_spec = uri.rsplit(":", 1)
+    if "-" not in port_spec:
+        return uri
+
+    start_s, end_s = port_spec.split("-", 1)
+    start = int(start_s)
+    end = int(end_s)
+    if start > end:
+        raise ValueError(
+            f"Invalid port range (start > end) in status server URI: {uri}"
+        )
+
+    port = network_ports.find_free_port(
+        start_port=start,
+        end_port=end,
+        address=host,
+        sequent=True,
+    )
+    if port is None:
+        raise OSError(
+            f"Could not bind status server to any port in range {start}-{end} on {host}"
+        )
+    return f"{host}:{port}"
 
 
 class StatusServer:
@@ -16,7 +50,7 @@ class StatusServer:
                      messages
         :type repo: :class:`avocado.core.status.repo.StatusRepo`
         """
-        self._uri = uri
+        self._uri = resolve_listen_uri(uri)
         self._repo = repo
         self._server_task = None
 
@@ -27,7 +61,7 @@ class StatusServer:
     async def create_server(self):
         limit = settings.as_dict().get("run.status_server_buffer_size")
         if ":" in self._uri:
-            host, port = self._uri.split(":")
+            host, port = self._uri.rsplit(":", 1)
             port = int(port)
             self._server_task = await asyncio.start_server(
                 self.cb, host=host, port=port, limit=limit
@@ -36,6 +70,7 @@ class StatusServer:
             self._server_task = await asyncio.start_unix_server(
                 self.cb, path=self._uri, limit=limit
             )
+        LOG_JOB.info("Status server listening on %s", self._uri)
 
     async def serve_forever(self):
         if self._server_task is None:
