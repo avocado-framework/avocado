@@ -22,7 +22,8 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     :type distro_pkg_map: dict
     :param distro_pkg_map: mapping of distro name, as returned by
         utils.get_os_vendor(), to a list of package names
-    :return: True if any packages were actually installed, False otherwise
+    :return: True if all required packages are available (either just
+        installed or already present), False otherwise
     """
     if not interactive:
         os.environ["DEBIAN_FRONTEND"] = "noninteractive"
@@ -72,6 +73,9 @@ def install_distro_packages(distro_pkg_map, interactive=False):
             text = " ".join(needed_pkgs)
             log.info('Installing packages "%s"', text)
             result = software_manager.install(text)
+        else:
+            log.info("All required packages already installed")
+            result = True
     return result
 
 
