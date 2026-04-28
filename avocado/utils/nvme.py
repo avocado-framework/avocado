@@ -310,16 +310,15 @@ def attach_ns(ns_id, controller_name, cont_id):
 def get_supported_lba_formats(controller_name):
     """
     Query and return supported LBA formats for the NVMe controller.
-    
+
     This function attempts to retrieve the LBA Format (LBAF) array from an
     existing namespace on the controller. The LBAF array is controller-wide,
     meaning all namespaces on the same controller share the same set of
     supported formats, though each namespace can select a different format.
-    
+
     :param controller_name: Name of the controller (e.g., 'nvme0')
-    :return: List of dicts containing format details:
-             [{'index': 0, 'block_size': 512, 'metadata_size': 0,
-               'relative_performance': 0, 'valid': True}, ...]
+    :return: List of dicts containing format details, each with keys:
+        'index', 'block_size', 'metadata_size', 'relative_performance', 'valid'
     :rtype: list
     :raises: NvmeException if unable to query formats
     """
