@@ -36,6 +36,153 @@ from shutil import which
 LOG = logging.getLogger(__name__)
 
 
+def setup_user_and_group(username, password, spyre_group, log=None):
+    """
+    Setup user and manage group membership for non-root container execution.
+
+    :param username: Username to setup (None or "root" for root user)
+    :param password: Password for user (not used for root)
+    :param spyre_group: Group name to add user to (e.g., "spyre_group")
+    :param log: Logger instance (optional)
+    :return: None
+    """
+    if log is None:
+        log = LOG
+
+    if username is None or username == "root":
+        if spyre_group:
+            log.info("Add root user to %s group", spyre_group)
+            subprocess.run(f"usermod -aG {spyre_group} root",
+                           shell=True, check=False)
+    else:
+        # Check if user exists
+        user_check = subprocess.run(
+            f"id -u {username} 2>/dev/null",
+            shell=True, capture_output=True, check=False
+        )
+
+        if user_check.returncode != 0:
+            log.info("Create user: %s", username)
+            subprocess.run(f"useradd -m {username}", shell=True, check=False)
+            subprocess.run(f"echo '{username}:{password}' | chpasswd",
+                           shell=True, check=False)
+
+        if spyre_group:
+            log.info("Add %s to %s group", username, spyre_group)
+            subprocess.run(f"usermod -aG {spyre_group} {username}",
+                           shell=True, check=False)
+
+def get_container_port(container_id, port=8000, user=None, log=None):
+    """
+    Get the actual host port mapped to a container port.
+
+    :param container_id: Container ID
+    :param port: Container port to check (default: 8000)
+    :param user: Username if container was created by specific user
+    :param log: Logger instance (optional)
+    :return: Host port number or None
+    """
+    if log is None:
+        log = LOG
+
+    try:
+        if user and user != "root":
+            # Escape single quotes for su -c
+            port_cmd = f"XDG_RUNTIME_DIR=/run/user/$(id -u) podman port {container_id} {port}"
+            escaped_cmd = port_cmd.replace("'", "'\"'\"'")
+            cmd = f"su - {user} -c '{escaped_cmd}'"
+        else:
+            cmd = f"podman port {container_id} {port}"
+
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, check=False
+        )
+
+        if result.returncode == 0:
+            port_output = result.stdout.strip()
+            log.info("Port mapping output: %s", port_output)
+
+            if port_output and ":" in port_output:
+                host_port = port_output.strip().split(":")[-1]
+                log.info(
+                    "Container port %d is mapped to host port: %s", port, host_port)
+                return int(host_port)
+            else:
+                log.warning(
+                    "Could not parse port from output: %s", port_output)
+                return None
+        else:
+            log.error("Failed to get container port: %s", result.stderr)
+            return None
+    except Exception as ex:
+        log.error("Failed to get container port: %s", ex)
+        return None
+
+
+def save_container_logs(container_id, log_dir, test_name="test", user=None, log=None):
+    """
+    Save complete container logs to a file.
+
+    :param container_id: Container ID
+    :param log_dir: Directory to save logs
+    :param test_name: Test name for log file naming (default: "test")
+    :param user: Username if container was created by specific user
+    :param log: Logger instance (optional)
+    :return: Path to saved log file or None
+    """
+    if log is None:
+        log = LOG
+
+    try:
+        # Create logs directory
+        logs_dir = os.path.join(log_dir, "container_logs")
+        os.makedirs(logs_dir, exist_ok=True)
+
+        # Generate log filename
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        log_filename = f"{test_name}_{container_id[:12]}_{timestamp}.log"
+        log_filepath = os.path.join(logs_dir, log_filename)
+
+        log.info("Saving complete container logs to: %s", log_filepath)
+
+        # Get complete logs based on user context
+        if user and user != "root":
+            log_cmd = f"XDG_RUNTIME_DIR=/run/user/$(id -u) podman logs {container_id}"
+            escaped_cmd = log_cmd.replace("'", "'\"'\"'")
+            cmd = f"su - {user} -c '{escaped_cmd}'"
+        else:
+            cmd = f"podman logs {container_id}"
+
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, check=False, timeout=60
+        )
+
+        if result.returncode == 0:
+            log_content = result.stdout
+        else:
+            log_content = f"Error retrieving logs:\n{result.stderr}\n\nPartial stdout:\n{result.stdout}"
+
+        # Save logs to file
+        with open(log_filepath, 'w', encoding='utf-8') as f:
+            f.write(f"Container ID: {container_id}\n")
+            f.write(f"Test Name: {test_name}\n")
+            f.write(f"User: {user if user else 'root'}\n")
+            f.write(f"Timestamp: {timestamp}\n")
+            f.write("=" * 80 + "\n\n")
+            f.write(log_content)
+
+        log.info("Container logs saved successfully (%d bytes)", len(log_content))
+        return log_filepath
+
+    except subprocess.TimeoutExpired:
+        log.warning("Timeout while retrieving container logs")
+        return None
+    except Exception as ex:
+        log.warning("Failed to save container logs: %s", ex)
+        return None
+
+
+
 def install_huggingface_cli():
     """
     Install Hugging Face CLI if not already installed.
@@ -43,43 +190,76 @@ def install_huggingface_cli():
     :return: True if installed successfully, False otherwise
     """
     try:
-        result = subprocess.run(
-            ["huggingface-cli", "--version"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode == 0:
-            LOG.info("Hugging Face CLI already installed: %s", result.stdout.strip())
-            return True
+        # Check if huggingface-cli is already available
+        hf_cli_path = which("hf")
+        if hf_cli_path:
+            LOG.info("Hugging Face CLI already installed at: %s", hf_cli_path)
+            try:
+                result = subprocess.run(
+                    [hf_cli_path, "--version"],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=10
+                )
+                if result.returncode == 0:
+                    LOG.info("Hugging Face CLI version: %s",
+                             result.stdout.strip())
+                    return True
+            except Exception as e:
+                LOG.warning("Could not verify HF CLI version: %s", e)
+                return True  # CLI exists, assume it works
 
-        LOG.info("Installing Hugging Face CLI...")
+        LOG.info("Hugging Face CLI not found, installing...")
+
+        # Try to install using pip
+        pip_path = which("pip") or which("pip3")
+        if not pip_path:
+            LOG.error("pip not found, cannot install Hugging Face CLI")
+            return False
+
+        LOG.info("Installing huggingface_hub[cli] using: %s", pip_path)
         result = subprocess.run(
-            ["pip", "install", "-U", "huggingface_hub[cli]"],
+            [pip_path, "install", "-U", "huggingface_hub[cli]"],
             capture_output=True,
             text=True,
             check=False,
+            timeout=300
         )
 
         if result.returncode == 0:
             LOG.info("Hugging Face CLI installed successfully")
-            verify_result = subprocess.run(
-                ["huggingface-cli", "--version"],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            if verify_result.returncode == 0:
-                LOG.info("Verified installation: %s", verify_result.stdout.strip())
+            LOG.debug("Installation output: %s", result.stdout)
+
+            # Verify installation
+            hf_cli_path = which("hf")
+            if hf_cli_path:
+                LOG.info("Verified: huggingface-cli found at %s", hf_cli_path)
                 return True
+            else:
+                LOG.warning("huggingface-cli installed but not found in PATH")
+                # Try common installation paths
+                common_paths = [
+                    os.path.expanduser("~/.local/bin/hf"),
+                    "/usr/local/bin/hf",
+                    "/usr/bin/hf"
+                ]
+                for path in common_paths:
+                    if os.path.exists(path):
+                        LOG.info("Found huggingface-cli at: %s", path)
+                        return True
+                return False
+        else:
+            LOG.error("Failed to install Hugging Face CLI")
+            LOG.error("Error output: %s", result.stderr)
+            return False
 
-        LOG.error("Failed to install Hugging Face CLI")
+    except subprocess.TimeoutExpired:
+        LOG.error("Timeout while installing Hugging Face CLI")
         return False
-
     except Exception as ex:
         LOG.error("Error installing Hugging Face CLI: %s", ex)
         return False
-
 
 def download_model_from_hf(hf_model_id, local_dir, model_name):
     """
@@ -108,7 +288,7 @@ def download_model_from_hf(hf_model_id, local_dir, model_name):
         LOG.info("  Destination: %s", model_path)
 
         result = subprocess.run(
-            ["huggingface-cli", "download", "--local-dir", model_path, hf_model_id],
+            ["hf", "download", "--local-dir", model_path, hf_model_id],
             capture_output=True,
             text=True,
             timeout=3600,
@@ -137,6 +317,92 @@ def download_model_from_hf(hf_model_id, local_dir, model_name):
     except Exception as ex:
         LOG.error("Error downloading model: %s", ex)
         return False
+
+def validate_model_with_sha(model_path):
+    """
+    Validate model files by checking SHA256 checksums if available.
+
+    :param model_path: Path to the model directory
+    :return: Tuple of (is_valid, validation_messages)
+    """
+    import hashlib
+    import glob
+    validation_messages = []
+    is_valid = True
+    required_files = [
+        "config.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+    ]
+    for req_file in required_files:
+        file_path = os.path.join(model_path, req_file)
+        if not os.path.exists(file_path):
+            validation_messages.append(f"MISSING: {req_file}")
+            is_valid = False
+        elif os.path.getsize(file_path) == 0:
+            validation_messages.append(f"EMPTY: {req_file}")
+            is_valid = False
+        else:
+            validation_messages.append(
+                f"OK: {req_file} ({os.path.getsize(file_path)} bytes)")
+    weight_patterns = ["*.safetensors", "*.bin", "pytorch_model*.bin"]
+    weight_files = []
+    for pattern in weight_patterns:
+        weight_files.extend(glob.glob(os.path.join(model_path, pattern)))
+    if not weight_files:
+        validation_messages.append("MISSING: No model weight files found")
+        is_valid = False
+    else:
+        validation_messages.append(f"Found {len(weight_files)} weight file(s)")
+        for weight_file in weight_files:
+            file_size = os.path.getsize(weight_file)
+            if file_size == 0:
+                validation_messages.append(
+                    f"EMPTY: {os.path.basename(weight_file)}")
+                is_valid = False
+            else:
+                validation_messages.append(
+                    f"OK: {os.path.basename(weight_file)} ({file_size} bytes)")
+    sha_file = os.path.join(model_path, ".gitattributes")
+    if not os.path.exists(sha_file):
+        sha_file = os.path.join(model_path, "SHA256SUMS")
+
+    if os.path.exists(sha_file):
+        validation_messages.append(
+            f"Found checksum file: {os.path.basename(sha_file)}")
+        try:
+            with open(sha_file, 'r') as f:
+                sha_content = f.read()
+            for weight_file in weight_files:
+                filename = os.path.basename(weight_file)
+                if filename in sha_content:
+                    validation_messages.append(
+                        f"Validating SHA256 for: {filename}")
+                    sha256_hash = hashlib.sha256()
+                    try:
+                        with open(weight_file, "rb") as f:
+                            for byte_block in iter(lambda: f.read(4096), b""):
+                                sha256_hash.update(byte_block)
+                        actual_sha = sha256_hash.hexdigest()
+                        if actual_sha[:16] in sha_content:
+                            validation_messages.append(
+                                f"SHA256 VALID: {filename}")
+                        else:
+                            validation_messages.append(
+                                f"SHA256 MISMATCH: {filename}")
+                            validation_messages.append(
+                                f"  Calculated: {actual_sha[:16]}...")
+                            is_valid = False
+                    except Exception as sha_ex:
+                        validation_messages.append(
+                            f"SHA256 calculation failed for {filename}: {sha_ex}")
+        except Exception as ex:
+            validation_messages.append(f"Failed to read checksum file: {ex}")
+    else:
+        validation_messages.append(
+            "No checksum file found - skipping SHA validation")
+
+    return is_valid, validation_messages
 
 
 class PodmanException(Exception):
@@ -949,6 +1215,30 @@ class Podman(_Podman):
                 f"Failed to get stats for container {container_id}."
             ) from ex
 
+    def get_container_port(self, container_id, port=8000, user=None):
+        """
+        Get the actual host port mapped to a container port.
+
+        :param container_id: Container ID
+        :param port: Container port to check (default: 8000)
+        :param user: Username if container was created by specific user
+        :return: Host port number or None
+        """
+        return get_container_port(container_id, port, user, LOG)
+
+    def save_container_logs(self, container_id, log_dir, test_name="test", user=None):
+        """
+        Save complete container logs to a file.
+
+        :param container_id: Container ID
+        :param log_dir: Directory to save logs
+        :param test_name: Test name for log file naming (default: "test")
+        :param user: Username if container was created by specific user
+        :return: Path to saved log file or None
+        """
+        return save_container_logs(container_id, log_dir, test_name, user, LOG)
+
+
 
 class AsyncPodman(_Podman):
     async def execute(self, *args):
@@ -1709,6 +1999,30 @@ class AsyncPodman(_Podman):
                 f"Failed to get stats for container {container_id}."
             ) from ex
 
+    async def get_container_port(self, container_id, port=8000, user=None):
+        """
+        Get the actual host port mapped to a container port.
+
+        :param container_id: Container ID
+        :param port: Container port to check (default: 8000)
+        :param user: Username if container was created by specific user
+        :return: Host port number or None
+        """
+        return get_container_port(container_id, port, user, LOG)
+
+    async def save_container_logs(self, container_id, log_dir, test_name="test", user=None):
+        """
+        Save complete container logs to a file.
+
+        :param container_id: Container ID
+        :param log_dir: Directory to save logs
+        :param test_name: Test name for log file naming (default: "test")
+        :param user: Username if container was created by specific user
+        :return: Path to saved log file or None
+        """
+        return save_container_logs(container_id, log_dir, test_name, user, LOG)
+
+
     async def run_multiple_vllm_containers(
         self,
         num_containers,
@@ -1944,3 +2258,4 @@ class AsyncPodman(_Podman):
                 output.append((container_id, None, None, "Unexpected result type"))
 
         return output
+
