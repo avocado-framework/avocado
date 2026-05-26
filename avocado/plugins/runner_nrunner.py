@@ -309,7 +309,9 @@ class Runner(SuiteRunner):
 
         # Start the status server
         asyncio.set_event_loop(asyncio.new_event_loop())
-        asyncio.ensure_future(self.status_server.serve_forever())
+        # Store task reference for proper cleanup
+        loop = asyncio.get_event_loop()
+        self.status_server_task = loop.create_task(self.status_server.serve_forever())
 
         if test_suite.config.get("run.shuffle"):
             random.shuffle(self.runtime_tasks)
@@ -334,7 +336,8 @@ class Runner(SuiteRunner):
             ).run()
             for _ in range(max_running)
         ]
-        asyncio.ensure_future(self._update_status(job))
+        # Store task reference for proper cleanup
+        self.status_updater_task = loop.create_task(self._update_status(job))
         loop = asyncio.get_event_loop()
         try:
             try:
@@ -383,6 +386,16 @@ class Runner(SuiteRunner):
         loop.run_until_complete(asyncio.sleep(0.05))
 
         job.result.end_tests()
+        # Cancel pending asyncio tasks before closing
+        for task_attr in ('status_updater_task', 'status_server_task'):
+            task = getattr(self, task_attr, None)
+            if task:
+                if not task.done():
+                    task.cancel()
+                    try:
+                        loop.run_until_complete(task)
+                    except asyncio.CancelledError:
+                        pass
         self.status_server.close()
         if self.status_server_dir is not None:
             self.status_server_dir.cleanup()
