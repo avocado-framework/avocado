@@ -121,7 +121,7 @@ def read_all_lines(filename):
         with open(filename, "r", encoding="utf-8") as file_obj:
             contents = [line.rstrip("\n") for line in file_obj.readlines()]
     except Exception:  # pylint: disable=W0703
-        pass
+        LOG.warning("Failed to read file '%s'", filename)
     return contents
 
 

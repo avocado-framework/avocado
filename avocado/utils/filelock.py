@@ -17,10 +17,13 @@ Utility for individual file access control implemented
 via PID lock files.
 """
 
+import logging
 import os
 import time
 
 from avocado.utils.process import pid_exists
+
+LOG = logging.getLogger(__name__)
 
 
 class AlreadyLocked(Exception):
@@ -74,7 +77,8 @@ class FileLock:
                     # If we cannot read the lock file, let's just
                     # go on. Maybe in next iteration (if we have time)
                     # we have a better luck.
-                    pass
+                    LOG.debug("Failed to read lock file '%s'",
+                              self.filename)
 
                 # If we get to this point, the lock file is there, it belongs
                 # to a running process and we are just waiting for the lock

@@ -15,12 +15,15 @@
 Tests temporary directory plugin
 """
 
+import logging
 import os
 import shutil
 import tempfile
 
 from avocado.core import test
 from avocado.core.plugin_interfaces import JobPost, JobPre
+
+LOG = logging.getLogger(__name__)
 
 
 class TestsTmpDir(JobPre, JobPost):
@@ -43,4 +46,5 @@ class TestsTmpDir(JobPre, JobPost):
                 shutil.rmtree(self._dirname)
                 del os.environ[self._varname]
             except Exception:  # pylint: disable=W0703
-                pass
+                LOG.warning("Failed to remove temporary directory '%s'",
+                            self._dirname)
