@@ -217,6 +217,27 @@ class NetworkInterface:
                 f"Slave interface not found for " f"the bond {self.name}"
             ) from exc
 
+    def _get_bondingmaster(self):
+        """Get the bonding master interface name from a slave interface.
+        
+        This method returns the bond interface name for the current slave interface.
+        
+        :return: Bond master interface name as string
+        :raises NWException: If bonding master not found or interface is not a slave
+        """
+        master_path = f"/sys/class/net/{self.name}/master"
+        cmd = f"readlink {master_path}"
+        try:
+            output = run_command(cmd, self.host)
+            # Extract the bond interface name from the relative path
+            # Output will be like: ../../bond0 or ../bond0
+            bond_name = os.path.basename(output.strip())
+            return bond_name
+        except Exception as exc:
+            raise NWException(
+                f"Bonding master not found for interface {self.name}"
+            ) from exc
+
     def _move_file_to_backup(self, filename, ignore_missing=True):
         """Moves a file to a backup location.
 
@@ -780,12 +801,15 @@ class NetworkInterface:
             raise NWException(msg) from ex
 
     def restore_from_backup(self):
-        """Revert interface file from backup.
+        """Revert interface file from backup and bring the interface up.
 
-        This method checks if a backup version  is available for given
+        This method checks if a backup version is available for given
         interface then it copies backup file to interface file in /sysfs path.
+        After restoration, it automatically brings the interface up using either
+        NetworkManager (nmcli) for RHEL9+/SuSE16+ or ip link command for older systems.
 
-        :raises avocado.utils.network.exceptions.NWException: If the backup file is not available.
+        :raises avocado.utils.network.exceptions.NWException: If the backup file is not available
+                                                              or if bringing the interface up fails.
         """
 
         backup_file = f"{self.config_filename}.backup"
@@ -793,6 +817,32 @@ class NetworkInterface:
             shutil.move(backup_file, self.config_filename)
         else:
             raise NWException("Backup file not available, could not restore file.")
+
+        # Bring the interface up based on network service
+        try:
+            if self.distro_is_rhel9_or_later or self.distro_is_suse16_or_later:
+                # Use NetworkManager for modern distributions
+                LOG.info(f"Bringing up interface {self.name} using NetworkManager")
+
+                # Reload all connections to pick up restored configuration
+                reload_cmd = "nmcli connection reload"
+                run_command(reload_cmd, self.host, sudo=True)
+
+                # Bring up the specific connection
+                up_cmd = f"nmcli connection up {self.name}"
+                run_command(up_cmd, self.host, sudo=True)
+            else:
+                # Use ip link for older distributions
+                LOG.info(f"Bringing up interface {self.name} using ip link")
+                up_cmd = f"ip link set dev {self.name} up"
+                run_command(up_cmd, self.host, sudo=True)
+
+            LOG.info(f"Interface {self.name} restored and brought up successfully")
+
+        except Exception as ex:
+            msg = f"Failed to bring up interface {self.name} after restore. {ex}"
+            LOG.error(msg)
+            raise NWException(msg) from ex
 
     def is_available(self):
         """Check if interface is available.
