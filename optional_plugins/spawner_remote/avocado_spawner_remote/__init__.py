@@ -150,7 +150,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         session = runtime_task.spawner_handle
         for _ in range(10):
             status, output = RemoteSpawner.run_remote_cmd(
-                session, f"pgrep -r R,S -f {runtime_task.task.identifier}", 10
+                session, f"pgrep -r R,S -f 'task-run -i {runtime_task.task.identifier}'", 10
             )
             LOG.debug(output)
             if status == 0:
