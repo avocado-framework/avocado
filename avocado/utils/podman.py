@@ -656,6 +656,63 @@ class Podman(_Podman):
             LOG.error(error)
             raise PodmanException(error) from ex
 
+    def collect_system_info(self, container_id, user=None):
+        """
+        Collect and log system and container information.
+
+        :param container_id: Container ID
+        :param user: Username for running podman commands
+        """
+        LOG.info("\n=== SYSTEM INFO ===")
+
+        # 1. pip list from container
+        LOG.info("1. Container pip list:")
+        try:
+            returncode, stdout, stderr = self.exec_command(container_id, ["pip", "list"], user=user)
+            if returncode == 0:
+                LOG.info(stdout if stdout else "Failed to get pip list")
+            else:
+                LOG.warning("pip list failed: %s", stderr)
+        except Exception as ex:
+            LOG.warning("pip list error: %s", ex)
+
+        # 2. OS version from container
+        LOG.info("\n2. Container OS:")
+        try:
+            returncode, stdout, stderr = self.exec_command(
+                container_id, ["cat", "/etc/os-release"], user=user)
+            if returncode == 0:
+                LOG.info(stdout if stdout else "Failed to get OS version")
+            else:
+                LOG.warning("OS version failed: %s", stderr)
+        except Exception as ex:
+            LOG.warning("OS version error: %s", ex)
+
+        # 3. System commands
+        for num, (desc, command) in enumerate([
+            ("podman ps", ["podman", "ps"]),
+            ("podman images", ["podman", "images"]),
+            ("lspci -nn", ["lspci", "-nn"]),
+            ("lsmcode", ["lsmcode"])
+        ], start=3):
+            LOG.info(f"\n{num}. {desc}:")
+            try:
+                # Run podman commands as the specified user, others as root
+                if command[0] == "podman":
+                    returncode, stdout, stderr = self.execute(*command, user=user)
+                else:
+                    result = subprocess.run(command, capture_output=True, text=True, check=False)
+                    returncode, stdout, stderr = result.returncode, result.stdout, result.stderr
+
+                if returncode == 0:
+                    LOG.info(stdout if stdout else f"No output from {desc}")
+                else:
+                    LOG.warning(f"{desc} failed: %s", stderr)
+            except Exception as ex:
+                LOG.warning(f"{desc} error: %s", ex)
+
+        LOG.info("\n=== END SYSTEM INFO ===\n")
+
     def get_python_version(self, image):
         """Return the current Python version installed in an image.
 
