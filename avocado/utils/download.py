@@ -22,14 +22,19 @@ import os
 import shutil
 import socket
 import sys
+import time
+import typing
 import urllib.parse
-from multiprocessing import Process
+from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
 from urllib.request import urlopen
+from pathlib import Path
 
 from avocado.utils import crypto, output
 
 log = logging.getLogger(__name__)
+
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
 def url_open(url, data=None, timeout=5):
@@ -83,24 +88,103 @@ def _url_download(url, filename, data):
         src_file.close()
 
 
-def url_download(url, filename, data=None, timeout=300):
+def _download_range(
+    url: str,
+    start: int,
+    end: int,
+    part_file: str,
+    retries: int = 3,
+    delay: int = 1,
+    timeout: int = 300,
+):
     """
-    Retrieve a file from given url.
+    Downloads file within start and end byte range into part_files
+    :param url: URL to download.
+    :param start: Start byte range.
+    :param end: End byte range.
+    :param part_file: Part file name.
+    :param retries: Number of retries.
+    :param delay: Delay in seconds.
+    :param timeout: Timeout in seconds.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": USER_AGENT, "Range": f"bytes={start}-{end}"}
+            )
+            with urlopen(req, timeout=timeout) as r, open(part_file, "wb") as f:
+                shutil.copyfileobj(r, f, length=1024 * 1024)  # 1MB chunks
+            return
+        except (socket.timeout, TimeoutError, HTTPError) as e:
+            if attempt == retries:
+                raise e
+            time.sleep(delay)
 
-    :param url: source URL.
-    :param filename: destination path.
-    :param data: (optional) data to post.
-    :param timeout: (optional) default timeout in seconds.
-    :return: `None`.
+
+def url_download(
+    url: str,
+    filename: str,
+    data: typing.Optional[bytes] = None,
+    timeout: int = 300,
+    segments: int = 1,
+):
     """
-    process = Process(target=_url_download, args=(url, filename, data))
-    log.info("Fetching %s -> %s", url, filename)
-    process.start()
-    process.join(timeout)
-    if process.is_alive():
-        process.terminate()
-        process.join()
-        raise OSError("Aborting downloading. Timeout was reached.")
+    Multipart downloader using thread pool executor by content-length splitting
+    :param url: URL to download.
+    :param filename: Target file name or full file path
+    :param data: (optional) data to POST Request
+    :param timeout: (optional) default timeout in seconds.
+    :param segments: How much should we split the download into
+    """
+    headers = urllib.request.urlopen(
+        urllib.request.Request(url, method="HEAD"), timeout=10
+    ).headers  # Using HEAD method to get the content length
+    size = int(headers.get("Content-Length", -1))
+    supports_range = "bytes" in headers.get("Accept-Ranges", "").lower()
+
+    if segments == 1 or size <= 0 or data or not supports_range:
+        # Use single download when size/range is unavailable, request is POST, or segment size is 1
+        _url_download(url=url, filename=filename, data=data)
+        return
+
+    part_size = size // segments
+    path = Path(filename)  # takes absolute path
+    part_files = [str(path.parent / f"temp{i}_{path.name}") for i in range(segments)]
+    if part_size == 0:
+        # File too small for segmentation, fall back to single download
+        _url_download(url=url, filename=filename, data=data)
+        return
+
+    def task(i: int):
+        start = i * part_size
+        end = size - 1 if i == segments - 1 else (start + part_size - 1)
+        part_file = part_files[i]
+        _download_range(
+            url=url, start=start, end=end, part_file=part_file, timeout=timeout
+        )
+
+    try:
+        with ThreadPoolExecutor(max_workers=segments) as executor:
+            # This will raise an exception if any task fails
+            list(executor.map(task, range(segments)))
+        # Merge the split files
+        with open(filename, "wb") as f:
+            for part in part_files:
+                with open(part, "rb") as pf:
+                    shutil.copyfileobj(pf, f)
+    except Exception as e:
+        # If anything fails, remove the incomplete destination file and switch to single-part download
+        if os.path.exists(filename):
+            os.remove(filename)
+        log.warning(
+            "Multipart download failed (%s). Falling back to single-part download.", e
+        )
+        _url_download(url=url, filename=filename, data=data)
+    finally:
+        # Always clean up part files
+        for part in part_files:
+            if os.path.exists(part):
+                os.remove(part)
 
 
 def url_download_interactive(url, output_file, title="", chunk_size=102400):
