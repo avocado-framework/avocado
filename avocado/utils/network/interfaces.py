@@ -217,6 +217,27 @@ class NetworkInterface:
                 f"Slave interface not found for " f"the bond {self.name}"
             ) from exc
 
+    def _get_bondingmaster(self):
+        """Get the bonding master interface name from a slave interface.
+        
+        This method returns the bond interface name for the current slave interface.
+        
+        :return: Bond master interface name as string
+        :raises NWException: If bonding master not found or interface is not a slave
+        """
+        master_path = f"/sys/class/net/{self.name}/master"
+        cmd = f"readlink {master_path}"
+        try:
+            output = run_command(cmd, self.host)
+            # Extract the bond interface name from the relative path
+            # Output will be like: ../../bond0 or ../bond0
+            bond_name = os.path.basename(output.strip())
+            return bond_name
+        except Exception as exc:
+            raise NWException(
+                f"Bonding master not found for interface {self.name}"
+            ) from exc
+
     def _move_file_to_backup(self, filename, ignore_missing=True):
         """Moves a file to a backup location.
 
