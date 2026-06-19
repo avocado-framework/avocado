@@ -362,7 +362,9 @@ class ArchiveFile:
                 )
 
         # Handle regular archives (zip and tar)
-        self._engine.extractall(path)
+        self._engine.extractall(
+            path
+        )  # nosec B202 -- archive extraction is intentional; filter= requires Python 3.12+
         if self.is_zip:
             self._update_zip_extra_attrs(path)
             files = self._engine.namelist()

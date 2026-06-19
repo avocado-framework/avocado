@@ -73,7 +73,10 @@ def generate_variant_id(variant):
     return (
         get_variant_name(variant)
         + "-"
-        + hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4]
+        + hashlib.sha1(  # nosec B324 -- not used for security, generates variant IDs
+            fingerprint.encode(astring.ENCODING),
+            usedforsecurity=False,
+        ).hexdigest()[:4]
     )
 
 
