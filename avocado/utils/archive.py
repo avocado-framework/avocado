@@ -362,6 +362,9 @@ class ArchiveFile:
                 )
 
         # Handle regular archives (zip and tar)
+        if self.is_tar:
+            self._engine.extraction_filter = getattr(tarfile, 'fully_trusted_filter',
+                                                     (lambda member, path: member))
         self._engine.extractall(path)
         if self.is_zip:
             self._update_zip_extra_attrs(path)
