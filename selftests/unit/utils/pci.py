@@ -106,6 +106,35 @@ class UtilsPciTest(unittest.TestCase):
         mock_run.return_value.stdout_text = "Capabilities: [90] MSI: Enable+ Count=16"
         self.assertFalse(pci.device_supports_irqs("0000:03:00.0", 8))
 
+    @unittest.mock.patch("avocado.utils.pci.process.run")
+    def test_reset_check_device_removed(self, mock_run):
+        mock_run.return_value.stdout_text = ""
+        self.assertTrue(pci.reset_check("0000:03:00.0"))
+
+    @unittest.mock.patch("avocado.utils.pci.process.run")
+    def test_reset_check_device_still_present(self, mock_run):
+        mock_run.return_value.stdout_text = "0000:03:00.0 Device info"
+        self.assertFalse(pci.reset_check("0000:03:00.0"))
+
+    @unittest.mock.patch("avocado.utils.pci.wait.wait_for", return_value=True)
+    @unittest.mock.patch("avocado.utils.pci.genio.write_file_or_fail")
+    def test_reset_success(self, mock_write, mock_wait):
+        pci.reset("0000:03:00.0")
+        mock_write.assert_called_once_with(
+            "/sys/bus/pci/devices/0000:03:00.0/remove", "1"
+        )
+        mock_wait.assert_called_once()
+
+    @unittest.mock.patch("avocado.utils.pci.wait.wait_for", return_value=None)
+    @unittest.mock.patch("avocado.utils.pci.genio.write_file_or_fail")
+    def test_reset_failure(self, mock_write, mock_wait):
+        self.assertRaisesRegex(
+            ValueError,
+            "Unsuccessful to remove 0000:03:00.0",
+            pci.reset,
+            "0000:03:00.0",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

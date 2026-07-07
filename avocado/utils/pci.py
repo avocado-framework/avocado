@@ -479,9 +479,7 @@ def reset_check(full_pci_address):
     """
     cmd = f"lspci -vvs {full_pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
-    if not output:
-        return False
-    return True
+    return not output
 
 
 def rescan_check(full_pci_address):
