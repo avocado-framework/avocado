@@ -8,7 +8,7 @@ import subprocess
 import sys
 import warnings
 
-import pkg_resources
+from importlib.resources import files as resource_files
 
 try:
     import jsonschema
@@ -21,6 +21,7 @@ from avocado.core.dependencies.dependency import Dependency
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.settings import settings
 from avocado.core.utils.eggenv import get_python_path_env_if_egg
+from avocado.core.utils.entry_points import get_entry_points_for
 
 LOG = logging.getLogger(__name__)
 
@@ -268,9 +269,7 @@ class Runnable:
         if not JSONSCHEMA_AVAILABLE:
             return False
         schema_filename = "runnable-recipe.schema.json"
-        schema_path = pkg_resources.resource_filename(
-            "avocado", os.path.join("schemas", schema_filename)
-        )
+        schema_path = str(resource_files("avocado").joinpath("schemas", schema_filename))
         if not os.path.exists(schema_path):
             schema_path = os.path.join(SYSTEM_WIDE_SCHEMA_PATH, schema_filename)
             if not os.path.exists(schema_path):
@@ -639,8 +638,9 @@ class Runnable:
         :returns: a module that can be run with "python -m" or None"""
         namespace = "console_scripts"
         section = f"avocado-runner-{kind}"
-        for ep in pkg_resources.iter_entry_points(namespace, section):
-            return ep.module_name
+        for ep in get_entry_points_for(namespace):
+            if ep.name == section:
+                return ep.value.split(":")[0]
 
     @staticmethod
     def pick_runner_class_from_entry_point_kind(kind):
@@ -653,12 +653,13 @@ class Runnable:
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
         namespace = "avocado.plugins.runnable.runner"
-        for ep in pkg_resources.iter_entry_points(namespace, kind):
-            try:
-                obj = ep.load()
-                return obj
-            except ImportError:
-                return
+        for ep in get_entry_points_for(namespace):
+            if ep.name == kind:
+                try:
+                    obj = ep.load()
+                    return obj
+                except ImportError:
+                    return
 
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.

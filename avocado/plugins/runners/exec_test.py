@@ -5,7 +5,8 @@ import subprocess
 import sys
 import tempfile
 
-import pkg_resources
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import BaseRunner
@@ -83,12 +84,12 @@ class ExecTestRunner(BaseRunner):
     @staticmethod
     def _get_avocado_version():
         """Return the Avocado package version, if installed"""
-        version = "unknown.unknown"
+        ver = "unknown.unknown"
         try:
-            version = pkg_resources.get_distribution("avocado-framework").version
-        except pkg_resources.DistributionNotFound:
+            ver = pkg_version("avocado-framework")
+        except PackageNotFoundError:
             pass
-        return version
+        return ver
 
     def _get_env_variables(self, runnable):
         """Get the default AVOCADO_* environment variables

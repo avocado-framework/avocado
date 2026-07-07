@@ -4,7 +4,7 @@ import sys
 import tempfile
 import unittest
 
-import pkg_resources
+from importlib.metadata import PackageNotFoundError, distribution
 
 from avocado.utils import path as avocado_path
 
@@ -26,9 +26,9 @@ def python_module_available(module_name):
     :rtype: bool
     """
     try:
-        pkg_resources.require(module_name)
+        distribution(module_name)
         return True
-    except pkg_resources.DistributionNotFound:
+    except PackageNotFoundError:
         return False
 
 

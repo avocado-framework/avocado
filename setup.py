@@ -509,6 +509,5 @@ if __name__ == "__main__":
             "plugin": Plugin,
             "test": Test,
         },
-        # Pin setuptools<82: 82.0.0+ removed pkg_resources, which avocado.core still uses
-        install_requires=["setuptools>=45.0.0,<82"],
+        install_requires=[],
     )

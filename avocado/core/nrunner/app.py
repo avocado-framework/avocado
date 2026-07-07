@@ -5,9 +5,8 @@ import os
 import re
 import sys
 
-import pkg_resources
-
 from avocado.core.nrunner.runnable import Runnable
+from avocado.core.utils.entry_points import get_entry_points_for
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
 
 
@@ -227,14 +226,13 @@ class BaseRunnerApp:
         """
         config_used = []
         for kind in self.RUNNABLE_KINDS_CAPABLE:
-            for ep in pkg_resources.iter_entry_points(
-                "avocado.plugins.runnable.runner", kind
-            ):
-                try:
-                    runner = ep.load()
-                    config_used += runner.CONFIGURATION_USED
-                except ImportError:
-                    continue
+            for ep in get_entry_points_for("avocado.plugins.runnable.runner"):
+                if ep.name == kind:
+                    try:
+                        runner = ep.load()
+                        config_used += runner.CONFIGURATION_USED
+                    except ImportError:
+                        continue
         return list(set(config_used))
 
     def command_capabilities(self, _):

@@ -14,11 +14,11 @@
 
 __all__ = ["MAJOR", "MINOR", "VERSION"]
 
-import pkg_resources
+from importlib.metadata import PackageNotFoundError, version
 
 try:
-    VERSION = pkg_resources.get_distribution("avocado-framework").version
-except pkg_resources.DistributionNotFound:
+    VERSION = version("avocado-framework")
+except PackageNotFoundError:
     VERSION = "unknown.unknown"
 
 MAJOR, MINOR = VERSION.split(".")

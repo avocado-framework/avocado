@@ -15,11 +15,10 @@
 
 import os
 
-import pkg_resources
-
 from avocado.core.dispatcher import InitDispatcher
 from avocado.core.settings import settings as stgs
 from avocado.core.streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS_DESCRIPTION
+from avocado.core.utils.entry_points import get_entry_point_groups
 from avocado.core.utils.path import prepend_base_path
 
 
@@ -229,8 +228,9 @@ def initialize_plugin_infrastructure():
         section="plugins", key="disable", key_type=list, default=[], help_msg=help_msg
     )
 
-    kinds = list(pkg_resources.get_entry_map("avocado-framework").keys())
-    plugin_types = [kind[8:] for kind in kinds if kind.startswith("avocado.plugins.")]
+    plugin_types = [
+        g[8:] for g in get_entry_point_groups() if g.startswith("avocado.plugins.")
+    ]
     for plugin_type in plugin_types:
         help_msg = f'Execution order for "{plugin_type}" plugins'
         stgs.register_option(
