@@ -21,7 +21,7 @@ class PythonModuleSelf(unittest.TestCase):
 
     def test_add_imported_symbols_from_module(self):
         import_stm = ast.ImportFrom(
-            module="foo", names=[ast.Name(name="bar", asname=None)]
+            module="foo", names=[ast.alias(name="bar", asname=None)]
         )
         self.module.add_imported_symbol(import_stm)
         self.assertEqual(self.module.imported_symbols["bar"].module_path, "foo")
@@ -29,14 +29,14 @@ class PythonModuleSelf(unittest.TestCase):
 
     def test_add_imported_object_from_module_asname(self):
         import_stm = ast.ImportFrom(
-            module="foo", names=[ast.Name(name="bar", asname="baz")]
+            module="foo", names=[ast.alias(name="bar", asname="baz")]
         )
         self.module.add_imported_symbol(import_stm)
         self.assertEqual(self.module.imported_symbols["baz"].module_path, "foo")
         self.assertEqual(self.module.imported_symbols["baz"].symbol, "bar")
 
     def test_is_not_avocado_test(self):
-        self.assertFalse(self.module.is_matching_klass(ast.ClassDef()))
+        self.assertFalse(self.module.is_matching_klass(ast.ClassDef(name="")))
 
     def test_is_not_avocado_tests(self):
         for klass in self.module.iter_classes():

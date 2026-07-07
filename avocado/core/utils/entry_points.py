@@ -27,6 +27,11 @@ These helpers provide a single version-agnostic API for the whole codebase.
 from importlib.metadata import entry_points as _entry_points
 
 
+def _eps_raw():
+    """Call entry_points() with no arguments and return the raw result."""
+    return _entry_points()
+
+
 def get_entry_points_for(group):
     """Return entry points belonging to *group*, compatible with Python 3.8+.
 
@@ -34,12 +39,12 @@ def get_entry_points_for(group):
     :type group: str
     :returns: sequence of entry points in the requested group
     """
-    try:
-        # Python 3.10+: group= kwarg is supported
-        return _entry_points(group=group)
-    except TypeError:
-        # Python 3.8/3.9: entry_points() returns a plain dict, no group= kwarg
-        return _entry_points().get(group, [])
+    eps = _eps_raw()
+    # Python 3.8/3.9 (el9): entry_points() returns a plain dict keyed by group
+    if isinstance(eps, dict):
+        return eps.get(group, [])
+    # Python 3.10+: EntryPoints / SelectableGroups — use group= kwarg directly
+    return _entry_points(group=group)
 
 
 def get_entry_point_groups():
@@ -48,12 +53,12 @@ def get_entry_point_groups():
     :returns: list of group name strings
     :rtype: list
     """
-    eps = _entry_points()
+    eps = _eps_raw()
     # Python 3.8/3.9: plain dict
     if isinstance(eps, dict):
         return list(eps.keys())
     # Python 3.10/3.11: SelectableGroups has .groups
     if hasattr(eps, "groups"):
         return list(eps.groups)
-    # Python 3.12+: EntryPoints — collect unique group names from entries
+    # Python 3.12+: EntryPoints — collect unique group names by iterating entries
     return list({ep.group for ep in eps})
