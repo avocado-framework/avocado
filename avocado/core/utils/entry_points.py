@@ -35,14 +35,32 @@ def _eps_raw():
 def get_entry_points_for(group):
     """Return entry points belonging to *group*, compatible with Python 3.8+.
 
+    On Python 3.9 (el9), ``importlib.metadata.entry_points()`` is called with
+    no arguments and returns a plain dict.  In RPM build environments the same
+    package version can appear in more than one ``dist-info`` directory on
+    ``sys.path`` (e.g. both the system install and the BUILDROOT install), which
+    causes the same entry point to be listed multiple times in that dict.  The
+    deduplication below guards against loading a plugin class more than once,
+    which would otherwise cause every plugin method to be invoked twice per
+    event (leading to errors like ``FileExistsError`` in the bystatus plugin).
+
     :param group: entry point group name (e.g. ``"avocado.plugins.cli"``)
     :type group: str
-    :returns: sequence of entry points in the requested group
+    :returns: sequence of entry points in the requested group, deduplicated
     """
     eps = _eps_raw()
     # Python 3.8/3.9 (el9): entry_points() returns a plain dict keyed by group
     if isinstance(eps, dict):
-        return eps.get(group, [])
+        seen = set()
+        result = []
+        for ep in eps.get(group, []):
+            # (name, value) uniquely identifies a plugin regardless of which
+            # dist-info directory it was discovered from.
+            key = (ep.name, ep.value)
+            if key not in seen:
+                seen.add(key)
+                result.append(ep)
+        return result
     # Python 3.10+: EntryPoints / SelectableGroups — use group= kwarg directly
     return _entry_points(group=group)
 
