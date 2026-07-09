@@ -16,7 +16,7 @@ Libexec PATHs modifier
 
 import os
 
-from pkg_resources import resource_filename
+from importlib.resources import files as resource_files
 
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -40,4 +40,4 @@ class ExecPath(CLICmd):
         if os.path.isdir(system_wide):
             LOG_UI.debug(system_wide)
         else:
-            LOG_UI.debug(resource_filename("avocado", "libexec"))
+            LOG_UI.debug(str(resource_files("avocado").joinpath("libexec")))

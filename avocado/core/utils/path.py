@@ -1,14 +1,15 @@
 import os
 import platform
 
-from pkg_resources import get_distribution
+from importlib.metadata import distribution
 
 
 def prepend_base_path(value):
     expanded = os.path.expanduser(value)
     if not expanded.startswith(("/", "~", ".")):
-        dist = get_distribution("avocado-framework")
-        return os.path.join(dist.location, "avocado", expanded)
+        dist = distribution("avocado-framework")
+        location = str(dist.locate_file(""))
+        return os.path.join(location, "avocado", expanded)
     return expanded
 
 
