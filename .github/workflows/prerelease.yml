@@ -60,6 +60,7 @@ jobs:
   check-rpm-available-copr:
     name: Check the right RPM packages are available in COPR
     runs-on: ubuntu-latest
+    timeout-minutes: 130
     steps:
       - uses: actions/checkout@v4
         with:
