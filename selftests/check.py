@@ -764,7 +764,7 @@ def create_suites(args):  # pylint: disable=W0621
             "yaml_to_mux.files": [
                 os.path.join(test_dir, "variants", "vmimage.py.data", "variants.yml")
             ],
-            "run.max_parallel_tasks": 1,
+            "run.max_parallel_tasks": 8,
         }
         suites.append(
             TestSuite.from_config(vmimage_variants_config, "vmimage-variants")

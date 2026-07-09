@@ -47,6 +47,12 @@ jobs:
         run: |
           pip install -r requirements-dev.txt
           python3 setup.py develop --user
+      - name: Build avocado egg for podman spawner tests
+        run: |
+          python3 setup.py bdist_egg
+          EGG=$(ls dist/avocado_framework-*.egg)
+          mkdir -p ~/.config/avocado
+          echo -e "[spawner.podman]\navocado_spawner_egg = file://${PWD}/${EGG}" >> ~/.config/avocado/avocado.conf
       - name: Avocado pre-release job
         run: python3 setup.py test --select=pre-release,vmimage
       - name: Save artifacts
