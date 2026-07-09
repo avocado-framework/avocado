@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import shlex
+import time
 
 from aexpect import exceptions, remote
 
@@ -85,16 +86,15 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         return True
 
     @staticmethod
-    async def run_remote_cmd_async(session, command, timeout):
-        loop = asyncio.get_event_loop()
+    def run_remote_cmd(session, command, timeout):
         try:
-            status, output = await loop.run_in_executor(
-                None, session.cmd_status_output, command, timeout
-            )
+            status, output = session.cmd_status_output(command, timeout, safe=True)
         except exceptions.ShellTimeoutError:
             status, output = 2, f"Remote command timeout of {timeout} reached"
         except exceptions.ShellProcessTerminatedError:
             status, output = 2, "Remote command terminated prematurely"
+        except exceptions.ShellStatusError:
+            status, output = 3, f"Remote command could not retrieve status"
         return status, output
 
     @contextlib.contextmanager
@@ -145,12 +145,17 @@ class RemoteSpawner(Spawner, SpawnerMixin):
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:
             return False
-        # NOTE: since this is called at the end of each test, it is reasonable
+        # since each test is a session detached process, it is reasonable
         # to reuse the same session with a new command
         session = runtime_task.spawner_handle
-        status, _ = session.cmd_status_output(
-            f"pgrep -r R,S -f {runtime_task.task.identifier}"
-        )
+        for _ in range(10):
+            status, output = RemoteSpawner.run_remote_cmd(
+                session, f"pgrep -r R,S -f 'task-run -i {runtime_task.task.identifier}'", 10
+            )
+            LOG.debug(output)
+            if status == 0:
+                break
+            time.sleep(1)
         return status == 0
 
     @with_slot_reservation
@@ -176,7 +181,7 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         # Customize and deploy test data to the container
         if setup_hook:
             setup_timeout = self.config.get("spawner.remote.setup_timeout")
-            status, output = await RemoteSpawner.run_remote_cmd_async(
+            status, output = RemoteSpawner.run_remote_cmd(
                 session, setup_hook, setup_timeout
             )
             LOG.debug(f"Customization command exited with code {status}")
@@ -187,9 +192,9 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 )
                 return False
 
-        cmd = shlex.join(entry_point_args) + " > /dev/null"
+        cmd = shlex.join(entry_point_args) + " > /dev/null &"
         timeout = self.config.get("spawner.remote.test_timeout")
-        status, output = await RemoteSpawner.run_remote_cmd_async(session, cmd, timeout)
+        status, output = RemoteSpawner.run_remote_cmd(session, cmd, timeout)
         LOG.debug(f"Command exited with code {status}")
         if status != 0:
             LOG.error(
