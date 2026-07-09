@@ -1031,10 +1031,10 @@ class NetworkInterface:
                   returns False on ping flood failure.
         :rtype: bool
         """
-        cmd = f"ping -I {int_name} {peer_ip} -c {ping_count} -f "
+        cmd = ["ping", "-I", int_name, peer_ip, "-c", str(ping_count), "-f"]
         with subprocess.Popen(
             cmd,
-            shell=True,
+            shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,

@@ -185,7 +185,14 @@ class VarianterPict(Varianter):
         for variant in self.variants:
             base_id = "-".join([variant.get(key) for key in self.headers])
             variant_ids.append(
-                base_id + "-" + hashlib.sha1(base_id.encode()).hexdigest()[:4]
+                base_id
+                + "-"
+                + hashlib.sha1(  # nosec B324 -- not used for security, generates variant IDs
+                    base_id.encode(),
+                    usedforsecurity=False,
+                ).hexdigest()[
+                    :4
+                ]
             )
 
         for vid, variant in zip(variant_ids, self.variants):

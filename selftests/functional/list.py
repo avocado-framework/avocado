@@ -124,11 +124,11 @@ class ListTestFunctional(TestCaseTmpDir):
         deadline = current_time + timeout
         # pylint: disable=W1509
         test_process = subprocess.Popen(
-            cmd_line,
+            process.cmd_split(cmd_line),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=os.setsid,
-            shell=True,
+            shell=False,
         )
         while not test_process.poll():
             if time.monotonic() > deadline:
