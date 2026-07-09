@@ -23,4 +23,29 @@ RPM_NVR="${1:-$DEFAULT_RPM_NVR}"
 PODMAN=$(which podman 2>/dev/null || which docker)
 PODMAN_IMAGE=quay.io/avocado-framework/check-copr-rpm-version
 
-$PODMAN run --rm -ti $PODMAN_IMAGE /bin/bash -c "dnf -y install ${RPM_NVR}"
+if [ -z "$PODMAN" ]; then
+    echo "ERROR: Neither podman nor docker was found in PATH."
+    exit 1
+fi
+
+# Retry loop: COPR builds may not be available immediately after a push.
+# Wait up to 120 minutes (retrying every 5 minutes) for the package to appear.
+MAX_WAIT_MINUTES=120
+RETRY_INTERVAL_SECONDS=300
+MAX_WAIT_SECONDS=$((MAX_WAIT_MINUTES * 60))
+ELAPSED=0
+
+echo "Waiting for COPR to publish: ${RPM_NVR}"
+while true; do
+    if $PODMAN run --rm $PODMAN_IMAGE /bin/bash -c "dnf -y install ${RPM_NVR}"; then
+        echo "Package ${RPM_NVR} successfully installed from COPR."
+        exit 0
+    fi
+    ELAPSED=$((ELAPSED + RETRY_INTERVAL_SECONDS))
+    if [ "$ELAPSED" -ge "$MAX_WAIT_SECONDS" ]; then
+        echo "ERROR: Package ${RPM_NVR} not available in COPR after ${MAX_WAIT_MINUTES} minutes."
+        exit 1
+    fi
+    echo "Package not yet available, retrying in $((RETRY_INTERVAL_SECONDS / 60)) minutes... ($((ELAPSED / 60))/${MAX_WAIT_MINUTES} min elapsed)"
+    sleep $RETRY_INTERVAL_SECONDS
+done
