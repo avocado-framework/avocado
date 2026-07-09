@@ -270,7 +270,7 @@ class ArchiveFile:
         # First try to detect by extension
         for ext, value in ArchiveFile._extension_table.items():
             if filename.endswith(ext):
-                (self.is_zip, self.is_tar, engine, extra_mode) = value
+                self.is_zip, self.is_tar, engine, extra_mode = value
 
                 # Handle standalone compressed files
                 if not self.is_zip and not self.is_tar and engine is None:
@@ -289,7 +289,7 @@ class ArchiveFile:
         if mode == "r":  # Only attempt content detection in read mode
             detected = self._detect_archive_type(filename)
             if detected:
-                (self.is_zip, self.is_tar, engine, extra_mode) = detected
+                self.is_zip, self.is_tar, engine, extra_mode = detected
                 self.mode += extra_mode
                 self._engine = engine(self.filename, self.mode)
                 return

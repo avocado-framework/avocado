@@ -20,7 +20,6 @@ ISO9660 internal structure. Instead, it uses commonly available support
 either in userspace tools or on the Linux kernel itself (via mount).
 """
 
-
 __all__ = [
     "iso9660",
     "Iso9660IsoInfo",

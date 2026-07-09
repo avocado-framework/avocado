@@ -23,6 +23,7 @@ including architecture, vendor, version, online/offline status, NUMA topology,
 and frequency governor settings. It supports x86_64, i386, powerpc, s390,
 aarch64, and other architectures.
 """
+
 import glob
 import logging
 import os

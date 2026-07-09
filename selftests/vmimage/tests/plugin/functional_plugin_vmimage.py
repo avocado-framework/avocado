@@ -17,7 +17,7 @@ def create_metadata_file(image_file, metadata):
 
 class VMImagePlugin(unittest.TestCase):
     def setUp(self):
-        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(self)
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(self)
 
     @unittest.skipIf(
         missing_binary("qemu-img"),

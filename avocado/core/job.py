@@ -17,7 +17,6 @@
 Job module - describes a sequence of automated test operations.
 """
 
-
 import datetime
 import logging
 import os

@@ -429,14 +429,11 @@ class OpenSUSEImageProvider(unittest.TestCase):
     @staticmethod
     def get_html_with_image_link(image_link):
         # pylint: disable=C0209
-        return (
-            """
+        return """
             <a href="openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.packages"></a>
             <a href="%s"></a>
             <a href="openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.qcow2.sha256"></a>
-        """
-            % image_link
-        )
+        """ % image_link
 
     def test_get_best_version_default(self):
         suse_latest_version = 15.3

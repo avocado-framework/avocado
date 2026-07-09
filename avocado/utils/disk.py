@@ -23,7 +23,6 @@
 Disk utilities
 """
 
-
 import json
 import logging
 import os

@@ -14,6 +14,7 @@
 """
 System information plugin
 """
+
 from avocado.core import sysinfo
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import (

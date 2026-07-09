@@ -174,8 +174,7 @@ if not os.path.exists(API_OPTIONAL_PLUGINS_PATH):
 with open(
     os.path.join(API_OPTIONAL_PLUGINS_PATH, "index.rst"), "w", encoding="utf-8"
 ) as optional_plugins_toc:
-    optional_plugins_toc.write(
-        """.. index file for optional plugins API
+    optional_plugins_toc.write(""".. index file for optional plugins API
 
 ====================
 Optional Plugins API
@@ -186,8 +185,7 @@ The following pages document the private APIs of optional Avocado plugins.
 .. toctree::
    :maxdepth: 1
 
-    """
-    )
+    """)
     for path in next(os.walk(OPTIONAL_PLUGINS_PATH))[1]:
         name = f"avocado_{os.path.basename(path)}"
         try:

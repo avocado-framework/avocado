@@ -17,7 +17,6 @@
 This module provides APIs to work with software raid.
 """
 
-
 import logging
 import time
 

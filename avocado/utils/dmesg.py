@@ -15,7 +15,6 @@
 
 """Module for manipulate dmesg while running test."""
 
-
 import logging
 import os
 import tempfile

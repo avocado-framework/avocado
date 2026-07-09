@@ -25,6 +25,7 @@ The general reasoning to find paths is:
 * The next best location is the default system wide one.
 * The next best location is the default user specific one.
 """
+
 import atexit
 import glob
 import os

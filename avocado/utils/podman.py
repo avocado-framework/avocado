@@ -55,36 +55,32 @@ def setup_user_and_group(username, password, spyre_group, add_to_group=True, log
         if spyre_group:
             if add_to_group:
                 log.info("Add root user to %s group", spyre_group)
-                subprocess.run(["usermod", "-aG", spyre_group, "root"],
-                               check=False)
+                subprocess.run(["usermod", "-aG", spyre_group, "root"], check=False)
             else:
                 log.info("Remove root user from %s group", spyre_group)
-                subprocess.run(["gpasswd", "-d", "root", spyre_group],
-                               check=False)
+                subprocess.run(["gpasswd", "-d", "root", spyre_group], check=False)
     else:
         # Check if user exists
         user_check = subprocess.run(
-            ["id", "-u", username],
-            capture_output=True, check=False
+            ["id", "-u", username], capture_output=True, check=False
         )
 
         if user_check.returncode != 0:
             log.info("Create user: %s", username)
             subprocess.run(["useradd", "-m", username], check=False)
             # Use input parameter to pass password securely to chpasswd
-            subprocess.run(["chpasswd"],
-                           input=f"{username}:{password}\n".encode(),
-                           check=False)
+            subprocess.run(
+                ["chpasswd"], input=f"{username}:{password}\n".encode(), check=False
+            )
 
         if spyre_group:
             if add_to_group:
                 log.info("Add %s to %s group", username, spyre_group)
-                subprocess.run(["usermod", "-aG", spyre_group, username],
-                               check=False)
+                subprocess.run(["usermod", "-aG", spyre_group, username], check=False)
             else:
                 log.info("Remove %s from %s group", username, spyre_group)
-                subprocess.run(["gpasswd", "-d", username, spyre_group],
-                               check=False)
+                subprocess.run(["gpasswd", "-d", username, spyre_group], check=False)
+
 
 def get_container_port(container_id, port=8000, user=None, log=None):
     """
@@ -103,10 +99,7 @@ def get_container_port(container_id, port=8000, user=None, log=None):
         if user and user != "root":
             # Get user ID first
             id_result = subprocess.run(
-                ["id", "-u", user],
-                capture_output=True,
-                text=True,
-                check=False
+                ["id", "-u", user], capture_output=True, text=True, check=False
             )
             if id_result.returncode != 0:
                 log.error("Failed to get user ID for %s", user)
@@ -115,17 +108,23 @@ def get_container_port(container_id, port=8000, user=None, log=None):
             xdg_runtime_dir = f"/run/user/{user_id}"
             # Run podman port command as user with proper environment
             result = subprocess.run(
-                ["su", "-", user, "-c", f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman port {container_id} {port}"],
+                [
+                    "su",
+                    "-",
+                    user,
+                    "-c",
+                    f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman port {container_id} {port}",
+                ],
                 capture_output=True,
                 text=True,
-                check=False
+                check=False,
             )
         else:
             result = subprocess.run(
                 ["podman", "port", container_id, str(port)],
                 capture_output=True,
                 text=True,
-                check=False
+                check=False,
             )
 
         if result.returncode == 0:
@@ -135,11 +134,11 @@ def get_container_port(container_id, port=8000, user=None, log=None):
             if port_output and ":" in port_output:
                 host_port = port_output.strip().split(":")[-1]
                 log.info(
-                    "Container port %d is mapped to host port: %s", port, host_port)
+                    "Container port %d is mapped to host port: %s", port, host_port
+                )
                 return int(host_port)
             else:
-                log.warning(
-                    "Could not parse port from output: %s", port_output)
+                log.warning("Could not parse port from output: %s", port_output)
                 return None
         else:
             log.error("Failed to get container port: %s", result.stderr)
@@ -179,10 +178,7 @@ def save_container_logs(container_id, log_dir, test_name="test", user=None, log=
         if user and user != "root":
             # Get user ID first
             id_result = subprocess.run(
-                ["id", "-u", user],
-                capture_output=True,
-                text=True,
-                check=False
+                ["id", "-u", user], capture_output=True, text=True, check=False
             )
             if id_result.returncode != 0:
                 log.error("Failed to get user ID for %s", user)
@@ -191,11 +187,17 @@ def save_container_logs(container_id, log_dir, test_name="test", user=None, log=
             xdg_runtime_dir = f"/run/user/{user_id}"
             # Run podman logs command as user with proper environment
             result = subprocess.run(
-                ["su", "-", user, "-c", f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman logs {container_id}"],
+                [
+                    "su",
+                    "-",
+                    user,
+                    "-c",
+                    f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman logs {container_id}",
+                ],
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=60
+                timeout=60,
             )
         else:
             result = subprocess.run(
@@ -203,7 +205,7 @@ def save_container_logs(container_id, log_dir, test_name="test", user=None, log=
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=60
+                timeout=60,
             )
 
         if result.returncode == 0:
@@ -212,7 +214,7 @@ def save_container_logs(container_id, log_dir, test_name="test", user=None, log=
             log_content = f"Error retrieving logs:\n{result.stderr}\n\nPartial stdout:\n{result.stdout}"
 
         # Save logs to file
-        with open(log_filepath, 'w', encoding='utf-8') as f:
+        with open(log_filepath, "w", encoding="utf-8") as f:
             f.write(f"Container ID: {container_id}\n")
             f.write(f"Test Name: {test_name}\n")
             f.write(f"User: {user if user else 'root'}\n")
@@ -229,6 +231,7 @@ def save_container_logs(container_id, log_dir, test_name="test", user=None, log=
     except Exception as ex:
         log.warning("Failed to save container logs: %s", ex)
 
+
 def wait_for_vllm_startup(
     container_id,
     success_pattern="Application startup complete.",
@@ -239,7 +242,7 @@ def wait_for_vllm_startup(
     user=None,
     log=None,
     show_live_logs=True,
-    live_log_lines=20
+    live_log_lines=20,
 ):
     """
     Wait for container to start by checking logs for a success pattern.
@@ -273,10 +276,7 @@ def wait_for_vllm_startup(
             if user and user != "root":
                 # Get user ID first
                 id_result = subprocess.run(
-                    ["id", "-u", user],
-                    capture_output=True,
-                    text=True,
-                    check=False
+                    ["id", "-u", user], capture_output=True, text=True, check=False
                 )
                 if id_result.returncode != 0:
                     log.warning("Failed to get user ID for %s", user)
@@ -287,11 +287,17 @@ def wait_for_vllm_startup(
                 xdg_runtime_dir = f"/run/user/{user_id}"
                 # Run podman logs command as user with proper environment
                 result = subprocess.run(
-                    ["su", "-", user, "-c", f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman logs {container_id}"],
+                    [
+                        "su",
+                        "-",
+                        user,
+                        "-c",
+                        f"XDG_RUNTIME_DIR={xdg_runtime_dir} podman logs {container_id}",
+                    ],
                     capture_output=True,
                     text=True,
                     check=False,
-                    timeout=30
+                    timeout=30,
                 )
             else:
                 # For root user, run directly
@@ -300,16 +306,20 @@ def wait_for_vllm_startup(
                     capture_output=True,
                     text=True,
                     check=False,
-                    timeout=30
+                    timeout=30,
                 )
             # Combine stdout and stderr
             log_content = result.stdout + result.stderr
             if show_live_logs and log_content:
-                log_lines = log_content.split('\n')
+                log_lines = log_content.split("\n")
                 current_log_length = len(log_lines)
                 if current_log_length > last_log_position:
                     new_lines = log_lines[last_log_position:]
-                    display_lines = new_lines[-live_log_lines:] if len(new_lines) > live_log_lines else new_lines
+                    display_lines = (
+                        new_lines[-live_log_lines:]
+                        if len(new_lines) > live_log_lines
+                        else new_lines
+                    )
                     if display_lines:
                         log.info("=== Recent Container Logs ===")
                         for line in display_lines:
@@ -318,12 +328,16 @@ def wait_for_vllm_startup(
                         log.info("=== End Logs ===")
                     last_log_position = current_log_length
             if failure_pattern and failure_pattern in log_content:
-                log.error("%s detected in container logs - startup failed", failure_pattern)
+                log.error(
+                    "%s detected in container logs - startup failed", failure_pattern
+                )
                 log.error("Container logs:\n%s", log_content)
                 return False
             if additional_failure_checks:
                 for pattern, case_sensitive in additional_failure_checks:
-                    check_content = log_content if case_sensitive else log_content.lower()
+                    check_content = (
+                        log_content if case_sensitive else log_content.lower()
+                    )
                     check_pattern = pattern if case_sensitive else pattern.lower()
                     if check_pattern in check_content:
                         log.error("Failure pattern '%s' detected in logs", pattern)
@@ -332,7 +346,9 @@ def wait_for_vllm_startup(
             if success_pattern in log_content:
                 log.info("✓ Container started successfully: %s", container_id)
                 return True
-            log.info("Waiting for container startup... (%d/%d seconds)", elapsed, timeout)
+            log.info(
+                "Waiting for container startup... (%d/%d seconds)", elapsed, timeout
+            )
             time.sleep(check_interval)
             elapsed += check_interval
 
@@ -347,6 +363,7 @@ def wait_for_vllm_startup(
 
     log.error("Timeout waiting for container startup")
     return False
+
 
 def install_huggingface_cli():
     """
@@ -365,11 +382,10 @@ def install_huggingface_cli():
                     capture_output=True,
                     text=True,
                     check=False,
-                    timeout=10
+                    timeout=10,
                 )
                 if result.returncode == 0:
-                    LOG.info("Hugging Face CLI version: %s",
-                             result.stdout.strip())
+                    LOG.info("Hugging Face CLI version: %s", result.stdout.strip())
                     return True
             except Exception as e:
                 LOG.warning("Could not verify HF CLI version: %s", e)
@@ -389,7 +405,7 @@ def install_huggingface_cli():
             capture_output=True,
             text=True,
             check=False,
-            timeout=300
+            timeout=300,
         )
 
         if result.returncode == 0:
@@ -407,7 +423,7 @@ def install_huggingface_cli():
                 common_paths = [
                     os.path.expanduser("~/.local/bin/hf"),
                     "/usr/local/bin/hf",
-                    "/usr/bin/hf"
+                    "/usr/bin/hf",
                 ]
                 for path in common_paths:
                     if os.path.exists(path):
@@ -425,6 +441,7 @@ def install_huggingface_cli():
     except Exception as ex:
         LOG.error("Error installing Hugging Face CLI: %s", ex)
         return False
+
 
 def download_model_from_hf(hf_model_id, local_dir, model_name):
     """
@@ -483,6 +500,7 @@ def download_model_from_hf(hf_model_id, local_dir, model_name):
         LOG.error("Error downloading model: %s", ex)
         return False
 
+
 def validate_model_with_sha(model_path):
     """
     Validate model files by checking SHA256 checksums if available.
@@ -490,15 +508,12 @@ def validate_model_with_sha(model_path):
     :param model_path: Path to the model directory
     :return: Tuple of (is_valid, validation_messages)
     """
-    import hashlib
     import glob
+    import hashlib
+
     validation_messages = []
     is_valid = True
-    required_files = [
-        "config.json",
-        "tokenizer.json",
-        "tokenizer_config.json"
-    ]
+    required_files = ["config.json", "tokenizer.json", "tokenizer_config.json"]
     for req_file in required_files:
         file_path = os.path.join(model_path, req_file)
         if not os.path.exists(file_path):
@@ -509,7 +524,8 @@ def validate_model_with_sha(model_path):
             is_valid = False
         else:
             validation_messages.append(
-                f"OK: {req_file} ({os.path.getsize(file_path)} bytes)")
+                f"OK: {req_file} ({os.path.getsize(file_path)} bytes)"
+            )
     weight_patterns = ["*.safetensors", "*.bin", "pytorch_model*.bin"]
     weight_files = []
     for pattern in weight_patterns:
@@ -522,25 +538,23 @@ def validate_model_with_sha(model_path):
         for weight_file in weight_files:
             file_size = os.path.getsize(weight_file)
             if file_size == 0:
-                validation_messages.append(
-                    f"EMPTY: {os.path.basename(weight_file)}")
+                validation_messages.append(f"EMPTY: {os.path.basename(weight_file)}")
                 is_valid = False
             else:
                 validation_messages.append(
-                    f"OK: {os.path.basename(weight_file)} ({file_size} bytes)")
+                    f"OK: {os.path.basename(weight_file)} ({file_size} bytes)"
+                )
     sha_file = os.path.join(model_path, "SHA256SUMS")
 
     if os.path.exists(sha_file):
-        validation_messages.append(
-            f"Found checksum file: {os.path.basename(sha_file)}")
+        validation_messages.append(f"Found checksum file: {os.path.basename(sha_file)}")
         try:
-            with open(sha_file, 'r') as f:
+            with open(sha_file, "r") as f:
                 sha_content = f.read()
             for weight_file in weight_files:
                 filename = os.path.basename(weight_file)
                 if filename in sha_content:
-                    validation_messages.append(
-                        f"Validating SHA256 for: {filename}")
+                    validation_messages.append(f"Validating SHA256 for: {filename}")
                     sha256_hash = hashlib.sha256()
                     try:
                         with open(weight_file, "rb") as f:
@@ -548,22 +562,21 @@ def validate_model_with_sha(model_path):
                                 sha256_hash.update(byte_block)
                         actual_sha = sha256_hash.hexdigest()
                         if actual_sha[:16] in sha_content:
-                            validation_messages.append(
-                                f"SHA256 VALID: {filename}")
+                            validation_messages.append(f"SHA256 VALID: {filename}")
                         else:
+                            validation_messages.append(f"SHA256 MISMATCH: {filename}")
                             validation_messages.append(
-                                f"SHA256 MISMATCH: {filename}")
-                            validation_messages.append(
-                                f"  Calculated: {actual_sha[:16]}...")
+                                f"  Calculated: {actual_sha[:16]}..."
+                            )
                             is_valid = False
                     except Exception as sha_ex:
                         validation_messages.append(
-                            f"SHA256 calculation failed for {filename}: {sha_ex}")
+                            f"SHA256 calculation failed for {filename}: {sha_ex}"
+                        )
         except Exception as ex:
             validation_messages.append(f"Failed to read checksum file: {ex}")
     else:
-        validation_messages.append(
-            "No checksum file found - skipping SHA validation")
+        validation_messages.append("No checksum file found - skipping SHA validation")
 
     return is_valid, validation_messages
 
@@ -609,6 +622,7 @@ class Podman(_Podman):
 
             if user:
                 import shlex
+
                 podman_cmd = [self.podman_bin] + list(args)
                 podman_cmd_str = " ".join(shlex.quote(str(arg)) for arg in podman_cmd)
                 cmd = ["su", "-", user, "-c", podman_cmd_str]
@@ -685,8 +699,12 @@ class Podman(_Podman):
         """
         try:
             _, stdout, _ = self.execute(
-                "ps", "--all", "--format=json", "--filter", f"id={container_id}",
-                user=user
+                "ps",
+                "--all",
+                "--format=json",
+                "--filter",
+                f"id={container_id}",
+                user=user,
             )
         except PodmanException as ex:
             raise PodmanException(
@@ -836,7 +854,9 @@ class Podman(_Podman):
             if user:
                 full_command = f"nohup su - {user} -c {shlex.quote(base_command)} > /dev/null 2>&1 &"
             else:
-                full_command = f"nohup bash -c {shlex.quote(base_command)} > /dev/null 2>&1 &"
+                full_command = (
+                    f"nohup bash -c {shlex.quote(base_command)} > /dev/null 2>&1 &"
+                )
             LOG.info("Starting background stats collection: %s", full_command)
 
             process = subprocess.Popen(
@@ -936,7 +956,12 @@ class Podman(_Podman):
             while time.time() < end_time:
                 try:
                     _, stdout, stderr = self.execute(
-                        "stats", "--no-stream", "--format", "json", container_id, user=user
+                        "stats",
+                        "--no-stream",
+                        "--format",
+                        "json",
+                        container_id,
+                        user=user,
                     )
 
                     if stderr:
@@ -1081,7 +1106,7 @@ class Podman(_Podman):
     def run(self, podman_options=None, user=None):
         """
         Run a container with command-line arguments as a list.
- 
+
         This is a simplified generic container runner that accepts a list
         of command-line arguments to pass to 'podman run'.
 
@@ -1273,7 +1298,6 @@ class Podman(_Podman):
         return save_container_logs(container_id, log_dir, test_name, user, LOG)
 
 
-
 class AsyncPodman(_Podman):
 
     async def execute(self, *args, user=None):
@@ -1289,6 +1313,7 @@ class AsyncPodman(_Podman):
 
             if user and user != "root":
                 import shlex
+
                 # Build the full podman command
                 podman_cmd = [self.podman_bin] + list(args)
                 podman_cmd_str = " ".join(shlex.quote(str(arg)) for arg in podman_cmd)
@@ -1396,14 +1421,19 @@ class AsyncPodman(_Podman):
         """
         try:
             _, stdout, _ = await self.execute(
-                "ps", "--all", "--format=json", "--filter", f"id={container_id}", user=user
+                "ps",
+                "--all",
+                "--format=json",
+                "--filter",
+                f"id={container_id}",
+                user=user,
             )
         except PodmanException as ex:
             raise PodmanException(
                 f"Failed getting information about container:" f" {container_id}."
             ) from ex
         containers = json.loads(stdout.decode())
-         # Return first container if found (filter by id should return only one)
+        # Return first container if found (filter by id should return only one)
         if containers and len(containers) > 0:
             return containers[0]
         return {}
@@ -1441,7 +1471,9 @@ class AsyncPodman(_Podman):
         :rtype: tuple with returncode, stdout and stderr.
         """
         try:
-            return await self.execute("restart", f"-t={timeout}", container_id, user=user)
+            return await self.execute(
+                "restart", f"-t={timeout}", container_id, user=user
+            )
         except PodmanException as ex:
             raise PodmanException("Failed to restart the container.") from ex
 
@@ -1557,7 +1589,9 @@ class AsyncPodman(_Podman):
             if user and user != "root":
                 full_command = f"su - {user} -c {shlex.quote(f'nohup bash -c {shlex.quote(base_command)} > /dev/null 2>&1 &')}"
             else:
-                full_command = f"nohup bash -c {shlex.quote(base_command)} > /dev/null 2>&1 &"
+                full_command = (
+                    f"nohup bash -c {shlex.quote(base_command)} > /dev/null 2>&1 &"
+                )
             LOG.info("Starting background stats collection: %s", full_command)
             # Execute the command in the background
             process = subprocess.Popen(
@@ -1822,7 +1856,6 @@ class AsyncPodman(_Podman):
             LOG.error("%s: %s", error_msg, ex)
             raise PodmanException(error_msg) from ex
 
-
     async def list_containers(self, all_containers=True, user=None):
         """List containers.
 
@@ -1979,7 +2012,9 @@ class AsyncPodman(_Podman):
         """
         return get_container_port(container_id, port, user, LOG)
 
-    async def save_container_logs(self, container_id, log_dir, test_name="test", user=None):
+    async def save_container_logs(
+        self, container_id, log_dir, test_name="test", user=None
+    ):
         """
         Save complete container logs to a file.
 
@@ -1991,7 +2026,6 @@ class AsyncPodman(_Podman):
         """
         return save_container_logs(container_id, log_dir, test_name, user, LOG)
 
-
     async def wait_for_vllm_startup(
         self,
         container_id,
@@ -2002,7 +2036,7 @@ class AsyncPodman(_Podman):
         check_interval=10,
         user=None,
         show_live_logs=True,
-        live_log_lines=10
+        live_log_lines=10,
     ):
         """
         Async method: Wait for container to start by checking logs for a success pattern.
@@ -2023,4 +2057,14 @@ class AsyncPodman(_Podman):
         :param live_log_lines: Number of recent log lines to display (default: 10)
         :return: True if startup successful, False otherwise
         """
-        return wait_for_vllm_startup(container_id, success_pattern, failure_pattern, additional_failure_checks, timeout, check_interval, user, show_live_logs, live_log_lines)
+        return wait_for_vllm_startup(
+            container_id,
+            success_pattern,
+            failure_pattern,
+            additional_failure_checks,
+            timeout,
+            check_interval,
+            user,
+            show_live_logs,
+            live_log_lines,
+        )

@@ -15,7 +15,6 @@ Libexec PATHs modifier
 """
 
 import os
-
 from importlib.resources import files as resource_files
 
 from avocado.core.output import LOG_UI

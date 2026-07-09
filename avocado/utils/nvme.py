@@ -21,7 +21,6 @@
 Nvme utilities
 """
 
-
 import json
 import logging
 import os
@@ -111,8 +110,8 @@ def get_current_ns_ids(controller_name):
     for line in output.splitlines():
         if line.startswith("["):
             # Format is: [   0]:0x1 where 0x1 is the namespace ID in hex
-            if ':' in line:
-                ns_id_hex = line.split(':')[-1].strip()
+            if ":" in line:
+                ns_id_hex = line.split(":")[-1].strip()
                 # Convert hex string (e.g., '0x1') to integer
                 try:
                     namespaces.append(int(ns_id_hex, 16))
@@ -324,7 +323,7 @@ def get_supported_lba_formats(controller_name):
     """
     # Try to get formats from an existing namespace
     namespaces = get_current_ns_list(controller_name)
-    
+
     if namespaces:
         # Query first available namespace for LBAF array
         namespace = get_namespace_absolute_path(namespaces[0])
@@ -332,28 +331,32 @@ def get_supported_lba_formats(controller_name):
         try:
             result = process.run(cmd, shell=True, ignore_status=False, sudo=True)
             ns_data = json.loads(result.stdout_text)
-            
+
             # Extract and parse LBAF array
             lba_formats = []
-            for idx, lbaf in enumerate(ns_data.get('lbafs', [])):
+            for idx, lbaf in enumerate(ns_data.get("lbafs", [])):
                 # Check if format is valid (ds > 0 means valid data size)
-                ds = lbaf.get('ds', 0)
+                ds = lbaf.get("ds", 0)
                 if ds > 0:
-                    lba_formats.append({
-                        'index': idx,
-                        'block_size': 2 ** ds,  # Convert power-of-2 to actual size
-                        'metadata_size': lbaf.get('ms', 0),
-                        'relative_performance': lbaf.get('rp', 0),
-                        'valid': True
-                    })
-            
+                    lba_formats.append(
+                        {
+                            "index": idx,
+                            "block_size": 2**ds,  # Convert power-of-2 to actual size
+                            "metadata_size": lbaf.get("ms", 0),
+                            "relative_performance": lbaf.get("rp", 0),
+                            "valid": True,
+                        }
+                    )
+
             if lba_formats:
-                LOGGER.debug(f"Found {len(lba_formats)} valid LBA formats for {controller_name}")
+                LOGGER.debug(
+                    f"Found {len(lba_formats)} valid LBA formats for {controller_name}"
+                )
                 return lba_formats
-                
+
         except (process.CmdError, json.JSONDecodeError, KeyError) as e:
             LOGGER.warning(f"Failed to query LBA formats from namespace: {e}")
-    
+
     # Fallback: If no namespace exists or query failed, return common formats
     # Most NVMe devices support at least 512B and 4KB formats at indices 0 and 1
     # This is a safe assumption based on NVMe specification common implementations
@@ -362,25 +365,35 @@ def get_supported_lba_formats(controller_name):
         f"This fallback assumes FLBAS indices 0 and 1 are valid with 512B and 4KB blocks respectively."
     )
     return [
-        {'index': 0, 'block_size': 512, 'metadata_size': 0,
-         'relative_performance': 0, 'valid': True},
-        {'index': 1, 'block_size': 4096, 'metadata_size': 0,
-         'relative_performance': 0, 'valid': True}
+        {
+            "index": 0,
+            "block_size": 512,
+            "metadata_size": 0,
+            "relative_performance": 0,
+            "valid": True,
+        },
+        {
+            "index": 1,
+            "block_size": 4096,
+            "metadata_size": 0,
+            "relative_performance": 0,
+            "valid": True,
+        },
     ]
 
 
 def get_optimal_flbas(controller_name):
     """
     Determine the optimal FLBAS (Formatted LBA Size) index for namespace creation.
-    
+
     FLBAS is a namespace-specific field (bits 3:0) that selects which LBA format
     from the controller's LBAF array should be used. This function implements
     an intelligent selection strategy:
-    
+
     1. Prefer FLBAS index 0 if it's valid (most common default)
     2. If index 0 is invalid, select first format with metadata_size=0
     3. Among formats with no metadata, prefer common block sizes (512B, 4KB)
-    
+
     :param controller_name: Name of the controller (e.g., 'nvme0')
     :return: FLBAS index (0-15) to use for namespace creation
     :rtype: int
@@ -388,43 +401,53 @@ def get_optimal_flbas(controller_name):
     """
     try:
         formats = get_supported_lba_formats(controller_name)
-        
+
         if not formats:
             raise NvmeException(f"No valid LBA formats found for {controller_name}")
-        
+
         # Strategy 1: Try index 0 first (most common default)
         for fmt in formats:
-            if fmt['index'] == 0 and fmt['valid']:
-                LOGGER.info(f"Using FLBAS index 0 (block_size={fmt['block_size']}B) "
-                           f"for {controller_name}")
+            if fmt["index"] == 0 and fmt["valid"]:
+                LOGGER.info(
+                    f"Using FLBAS index 0 (block_size={fmt['block_size']}B) "
+                    f"for {controller_name}"
+                )
                 return 0
-        
+
         # Strategy 2: Find first format with no metadata
-        formats_no_metadata = [f for f in formats if f['metadata_size'] == 0]
-        
+        formats_no_metadata = [f for f in formats if f["metadata_size"] == 0]
+
         if formats_no_metadata:
             # Prefer common block sizes: 512B or 4KB
             for preferred_size in [512, 4096]:
                 for fmt in formats_no_metadata:
-                    if fmt['block_size'] == preferred_size:
-                        LOGGER.info(f"Using FLBAS index {fmt['index']} "
-                                   f"(block_size={fmt['block_size']}B) for {controller_name}")
-                        return fmt['index']
-            
+                    if fmt["block_size"] == preferred_size:
+                        LOGGER.info(
+                            f"Using FLBAS index {fmt['index']} "
+                            f"(block_size={fmt['block_size']}B) for {controller_name}"
+                        )
+                        return fmt["index"]
+
             # If no preferred size found, use first format without metadata
             selected = formats_no_metadata[0]
-            LOGGER.info(f"Using FLBAS index {selected['index']} "
-                       f"(block_size={selected['block_size']}B) for {controller_name}")
-            return selected['index']
-        
+            LOGGER.info(
+                f"Using FLBAS index {selected['index']} "
+                f"(block_size={selected['block_size']}B) for {controller_name}"
+            )
+            return selected["index"]
+
         # Strategy 3: Last resort - use first valid format even with metadata
         selected = formats[0]
-        LOGGER.warning(f"All formats have metadata. Using FLBAS index {selected['index']} "
-                      f"(block_size={selected['block_size']}B, metadata={selected['metadata_size']}B)")
-        return selected['index']
-        
+        LOGGER.warning(
+            f"All formats have metadata. Using FLBAS index {selected['index']} "
+            f"(block_size={selected['block_size']}B, metadata={selected['metadata_size']}B)"
+        )
+        return selected["index"]
+
     except Exception as e:
-        raise NvmeException(f"Failed to determine optimal FLBAS for {controller_name}: {e}")
+        raise NvmeException(
+            f"Failed to determine optimal FLBAS for {controller_name}: {e}"
+        )
 
 
 def create_full_capacity_ns(controller_name, shared_ns=False):
@@ -442,22 +465,22 @@ def create_full_capacity_ns(controller_name, shared_ns=False):
 def create_one_ns(ns_id, controller_name, ns_size, shared_ns=False, flbas=0):
     """
     Creates a single namespace with given size and controller_id.
-    
+
     This function supports dynamic FLBAS (Formatted LBA Size) selection with
     intelligent fallback behavior:
-    
+
     **FLBAS Selection Modes:**
-    
+
     1. **Default Mode (flbas=0)**: Backward compatible behavior
        - First attempts namespace creation with FLBAS=0
        - If FLBAS=0 fails, automatically detects optimal FLBAS and retries
        - Recommended for most use cases
-    
+
     2. **Auto-Detect Mode (flbas=-1)**: Skip FLBAS=0 attempt
        - Immediately detects and uses optimal FLBAS value
        - Useful for devices known to have non-standard FLBAS configurations
        - Saves one failed attempt on such devices
-    
+
     3. **Explicit Mode (flbas=1-15)**: Use specific FLBAS index
        - Uses the specified FLBAS value without auto-detection
        - No retry on failure
@@ -472,58 +495,64 @@ def create_one_ns(ns_id, controller_name, ns_size, shared_ns=False, flbas=0):
                   - -1: Skip FLBAS=0, immediately use auto-detected optimal value
                   - 1-15: Use explicit FLBAS index, no auto-detection
     :raises: NvmeException if namespace creation fails with all attempted FLBAS values
-    
+
     :example:
         # Standard usage (backward compatible)
         create_one_ns("1", "nvme0", 2097152)
-        
+
         # Force auto-detection for non-standard devices
         create_one_ns("1", "nvme0", 2097152, flbas=-1)
-        
+
         # Use explicit FLBAS value
         create_one_ns("1", "nvme0", 2097152, flbas=2)
     """
     # Determine retry strategy based on flbas parameter
     # Only enable auto-detection fallback for default flbas=0
-    should_retry_with_auto_detect = (flbas == 0)
-    
+    should_retry_with_auto_detect = flbas == 0
+
     # Handle explicit auto-detection request (flbas=-1)
     # This skips the FLBAS=0 attempt and goes straight to optimal detection
     if flbas == -1:
         try:
             flbas = get_optimal_flbas(controller_name)
-            LOGGER.info(f"Auto-detected FLBAS={flbas} for namespace creation on {controller_name}")
+            LOGGER.info(
+                f"Auto-detected FLBAS={flbas} for namespace creation on {controller_name}"
+            )
         except NvmeException as e:
             LOGGER.error(f"Failed to auto-detect FLBAS: {e}")
-            raise NvmeException(f"Cannot create namespace: FLBAS auto-detection failed: {e}")
-    
+            raise NvmeException(
+                f"Cannot create namespace: FLBAS auto-detection failed: {e}"
+            )
+
     # Build and execute namespace creation command
     cmd = f"nvme create-ns /dev/{controller_name} --nsze={ns_size} --ncap={ns_size} --flbas={flbas} --dps=0"
     if shared_ns:
         cmd = f"{cmd} -m 1"
-    
+
     result = process.system(cmd, shell=True, ignore_status=True)
-    
+
     # Intelligent retry: If creation failed with default FLBAS=0, try auto-detection
     # This provides automatic fallback for devices with non-standard FLBAS configurations
     if result != 0 and should_retry_with_auto_detect:
         LOGGER.warning(f"Namespace creation failed with FLBAS=0 on {controller_name}")
         LOGGER.info("Attempting auto-detection of optimal FLBAS value...")
-        
+
         try:
             optimal_flbas = get_optimal_flbas(controller_name)
-            
+
             # Only retry if optimal FLBAS is different from what we tried
             if optimal_flbas != 0:
                 LOGGER.info(f"Retrying with auto-detected FLBAS={optimal_flbas}")
                 cmd = f"nvme create-ns /dev/{controller_name} --nsze={ns_size} --ncap={ns_size} --flbas={optimal_flbas} --dps=0"
                 if shared_ns:
                     cmd = f"{cmd} -m 1"
-                
+
                 result = process.system(cmd, shell=True, ignore_status=True)
-                
+
                 if result == 0:
-                    LOGGER.info(f"Namespace creation succeeded with FLBAS={optimal_flbas}")
+                    LOGGER.info(
+                        f"Namespace creation succeeded with FLBAS={optimal_flbas}"
+                    )
                     flbas = optimal_flbas  # Update for logging
                 else:
                     raise NvmeException(
@@ -543,7 +572,7 @@ def create_one_ns(ns_id, controller_name, ns_size, shared_ns=False, flbas=0):
             f"Namespace create command failed with FLBAS={flbas}. "
             f"Command: {cmd}. Exit code: {result}"
         )
-    
+
     # Attach namespace to controller(s)
     cont_id = get_controller_id(controller_name)
     if shared_ns:
