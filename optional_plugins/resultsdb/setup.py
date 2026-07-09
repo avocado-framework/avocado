@@ -51,6 +51,7 @@ setup(
         f"avocado-framework=={VERSION}",
         "resultsdb-api>=2.1.5,<2.2",
         "urllib3<2.3.0; python_version < '3.10'",
+        "requests<2.32.0; python_version < '3.10'",
     ],
     entry_points={
         "avocado.plugins.cli": [
