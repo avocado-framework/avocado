@@ -366,6 +366,13 @@ class TestSuite:
         if suite.test_parameters or suite.variants:
             suite.tests = suite._get_test_variants()
 
+        completed = config.get("job.replay.resume.completed_tests")
+        if completed:
+            suite.tests = [
+                r for r in suite.tests
+                if cls._runnable_name(r) not in completed
+            ]
+
         if not config.get("run.ignore_missing_references"):
             if not suite.tests:
                 msg = (
