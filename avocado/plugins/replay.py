@@ -15,6 +15,7 @@
 """Replay Job Plugin"""
 
 import json
+import os
 import sys
 
 from avocado.core import exit_codes, job, output
@@ -46,6 +47,20 @@ class Replay(CLICmd):
             positional_arg=True,
             parser=parser,
         )
+        help_msg = (
+            "Resume the job, skipping tests (and their variants) that "
+            "already passed or were skipped in the source job."
+        )
+        settings.register_option(
+            section="job.replay",
+            key="resume",
+            help_msg=help_msg,
+            default=False,
+            key_type=bool,
+            action="store_true",
+            parser=parser,
+            long_arg="--resume",
+        )
 
     @staticmethod
     def _exit_fail(message):
@@ -67,9 +82,44 @@ class Replay(CLICmd):
             msg = f"Could not read a valid configuration " f'of Job "{source_job_id}"'
             Replay._exit_fail(msg)
 
+    @staticmethod
+    def _load_completed_test_names(results_dir):
+        """Return the set of test name strings that already passed or were
+        skipped in the source job.
+
+        Each entry is ``"{identifier};{variant_id}"`` (or just
+        ``"{identifier}"`` when no variant was used), matching the ``name``
+        field written by :class:`avocado.plugins.jsonresult.JSONResult`.
+
+        :param results_dir: path to the source job results directory
+        :type results_dir: str
+        :returns: set of completed test name strings
+        :rtype: set
+        """
+        results_path = os.path.join(results_dir, "results.json")
+        if not os.path.exists(results_path):
+            return set()
+        try:
+            with open(results_path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (OSError, json.decoder.JSONDecodeError):
+            return set()
+        return {
+            t["name"]
+            for t in data.get("tests", [])
+            if t.get("status", "").upper() in ("PASS", "SKIP")
+        }
+
     def run(self, config):
         namespace = "job.replay.source_job_id"
         source_job_id = config.get(namespace)
+        results_dir = get_job_results_dir(source_job_id)
+        if not results_dir:
+            msg = (
+                f"Could not find the results directory "
+                f'for Job "{source_job_id}"'
+            )
+            self._exit_fail(msg)
         source_job_config = self._retrieve_source_job_config(source_job_id)
         if hasattr(source_job_config, namespace):
             del source_job_config[namespace]
@@ -77,6 +127,14 @@ class Replay(CLICmd):
         # tell solely based on the job.replay.source_job_id given that it
         # has a default value of 'latest' for convenience reasons
         source_job_config["job.replay.enabled"] = True
+        if config.get("job.replay.resume"):
+            completed = self._load_completed_test_names(results_dir)
+            if completed:
+                output.LOG_UI.info(
+                    "Resume mode: skipping %d previously completed test(s).",
+                    len(completed),
+                )
+            source_job_config["job.replay.resume.completed_tests"] = completed
         with job.Job.from_config(source_job_config) as job_instance:
             job_run = job_instance.run()
         return job_run
