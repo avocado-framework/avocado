@@ -374,7 +374,9 @@ class LogMessageHandler(BaseRunningMessageHandler):
         if log_name is not None and log_name != "avocado.app":
             logger = logging.getLogger(log_name)
             level = logging.getLevelName(message.get("log_levelname"))
-            log_message = f"{task.identifier}: {message.get('log').decode(message.get('encoding'))}"
+            log_message = message.get("log").decode(message.get("encoding"))
+            if job.config.get("job.run.log_task_identifier", True):
+                log_message = f"{task.identifier}: {log_message}"
             logger_level = logger.level
             try:
                 logger.setLevel(level)

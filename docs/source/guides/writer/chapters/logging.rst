@@ -198,6 +198,17 @@ Again you could watch the progress with::
     2023-04-13 17:54:18,916 avocado.job INFO |  'core.show': {'app'},
     ...
 
+The file log prefix can be customized with the ``job.run.logging_format``
+setting. It accepts the standard Python logging format fields. For example,
+to keep only the timestamp, logger name, level, and message, set::
+
+    [job.run]
+    logging_format = "%(asctime)s %(name)s %(levelname)s| %(message)s"
+
+Test messages include their task identifier by default. Set
+``job.run.log_task_identifier`` to ``False`` when the identifier is already
+present in another part of the output or when a shorter log is preferred.
+
 External logs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
