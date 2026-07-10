@@ -274,6 +274,26 @@ class TestSuite:
             self._variants = variants
         return self._variants
 
+    @staticmethod
+    def _runnable_name(runnable):
+        """Return the stable name for a variant-expanded runnable.
+
+        This produces the same string that
+        :class:`avocado.plugins.jsonresult.JSONResult` stores as the
+        ``"name"`` field in ``results.json``:
+        ``"{identifier}"`` when no variant is set, or
+        ``"{identifier};{variant_id}"`` when a variant is set.
+
+        :param runnable: a variant-expanded runnable
+        :type runnable: :class:`avocado.core.nrunner.runnable.Runnable`
+        :returns: stable test+variant name string
+        :rtype: str
+        """
+        variant_id = (runnable.variant or {}).get("variant_id")
+        if variant_id:
+            return f"{runnable.identifier};{variant_id}"
+        return runnable.identifier
+
     def _get_test_variants(self):
         def add_variant(runnable, variant):
             runnable = deepcopy(runnable)
