@@ -65,6 +65,27 @@ def get_entry_points_for(group):
     return _entry_points(group=group)
 
 
+def get_entry_point_module_name(entry_point):
+    """Return the module name declared by an entry point."""
+    if entry_point is None:
+        return ""
+    if isinstance(entry_point, str):
+        return entry_point
+
+    module_name = getattr(entry_point, "module_name", None)
+    if module_name is not None:
+        return module_name
+
+    module = getattr(entry_point, "module", None)
+    if module is not None:
+        return module
+
+    value = getattr(entry_point, "value", "")
+    if not isinstance(value, str):
+        return ""
+    return value.split(":", 1)[0].split("[", 1)[0].strip()
+
+
 def get_entry_point_groups():
     """Return all registered entry point group names, compatible with Python 3.8+.
 
