@@ -36,7 +36,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: |
+          python3 -m pip install --user --upgrade "setuptools<80"
+          python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
