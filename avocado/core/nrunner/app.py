@@ -6,8 +6,8 @@ import re
 import sys
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.utils.entry_points import get_entry_points_for
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
+from avocado.core.utils.entry_points import get_entry_points_for
 
 
 def _get_kind_options_from_executable_name():

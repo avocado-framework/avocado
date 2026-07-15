@@ -4,7 +4,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 

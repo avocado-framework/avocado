@@ -7,7 +7,6 @@ import os
 import subprocess
 import sys
 import warnings
-
 from importlib.resources import files as resource_files
 
 try:
@@ -269,7 +268,9 @@ class Runnable:
         if not JSONSCHEMA_AVAILABLE:
             return False
         schema_filename = "runnable-recipe.schema.json"
-        schema_path = str(resource_files("avocado").joinpath("schemas", schema_filename))
+        schema_path = str(
+            resource_files("avocado").joinpath("schemas", schema_filename)
+        )
         if not os.path.exists(schema_path):
             schema_path = os.path.join(SYSTEM_WIDE_SCHEMA_PATH, schema_filename)
             if not os.path.exists(schema_path):
