@@ -386,6 +386,8 @@ class Runner(SuiteRunner):
         loop.run_until_complete(asyncio.sleep(0.05))
 
         job.result.end_tests()
+        # Wake the status server before waiting for its serve_forever task.
+        self.status_server.close()
         # Cancel pending asyncio tasks before closing
         for task_attr in ('status_updater_task', 'status_server_task'):
             task = getattr(self, task_attr, None)
@@ -396,7 +398,6 @@ class Runner(SuiteRunner):
                         loop.run_until_complete(task)
                     except asyncio.CancelledError:
                         pass
-        self.status_server.close()
         if self.status_server_dir is not None:
             self.status_server_dir.cleanup()
 
