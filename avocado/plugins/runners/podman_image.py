@@ -35,8 +35,7 @@ class PodmanImageRunner(BaseRunner):
         logging.getLogger("avocado.utils.podman").addHandler(logging.NullHandler())
         try:
             podman = AsyncPodman()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(podman.execute("pull", uri))
+            asyncio.run(podman.execute("pull", uri))
             queue.put({"result": "pass"})
         except PodmanException as ex:
             queue.put(
