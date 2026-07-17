@@ -96,7 +96,7 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the wheels
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: wheel
         path: dist/
