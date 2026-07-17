@@ -1,6 +1,6 @@
 import sys
 import time
-from multiprocessing import Process, SimpleQueue, set_start_method
+from multiprocessing import get_context, set_start_method
 
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
@@ -131,8 +131,9 @@ class PackageRunner(BaseRunner):
             # let's spawn it to another process to be able to update the
             # status messages and avoid the software-manager to lock this
             # process
-            queue = SimpleQueue()
-            process = Process(
+            context = get_context("fork") if sys.platform != "win32" else get_context()
+            queue = context.SimpleQueue()
+            process = context.Process(
                 target=self._run_software_manager, args=(cmd, package, queue)
             )
             process.start()
