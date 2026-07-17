@@ -49,7 +49,7 @@ jobs:
           private_key: ${{ secrets.MR_AVOCADO_PRIVATE_KEY }}
       - name: install required packages
         run:  dnf -y install rpmdevtools git python3-pip make
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -71,7 +71,7 @@ jobs:
       - name: Build wheel
         run: make -f Makefile.gh build-wheel check-wheel
       - name: Save wheel as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheel
           path: ${{github.workspace}}/PYPI_UPLOAD/
@@ -96,7 +96,7 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the wheels
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: wheel
         path: dist/
@@ -126,7 +126,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.version }}
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build eggs

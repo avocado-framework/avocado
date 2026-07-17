@@ -127,7 +127,7 @@ class UtilsPciTest(unittest.TestCase):
 
     @unittest.mock.patch("avocado.utils.pci.wait.wait_for", return_value=None)
     @unittest.mock.patch("avocado.utils.pci.genio.write_file_or_fail")
-    def test_reset_failure(self, mock_write, mock_wait):
+    def test_reset_failure(self, _mock_write, _mock_wait):
         self.assertRaisesRegex(
             ValueError,
             "Unsuccessful to remove 0000:03:00.0",

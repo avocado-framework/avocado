@@ -220,6 +220,13 @@ and includes checks for:
 - File formatting (trailing whitespace, end of file, etc.)
 - Commit message validation (commitlint)
 
+However, do note that this path a symlink to organization-wide standards in
+a git submodule that you should initialize as
+
+  $ git submodule sync --recursive
+  $ git submodule update --init --recursive
+  $ make requirements-static-checks
+
 You can also run all checks manually on all files::
 
   $ pre-commit run --all-files

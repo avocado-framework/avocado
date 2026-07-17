@@ -3,7 +3,6 @@ import os
 import sys
 import tempfile
 import unittest
-
 from importlib.metadata import PackageNotFoundError, distribution
 
 from avocado.utils import path as avocado_path
