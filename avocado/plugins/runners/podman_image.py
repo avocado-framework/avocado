@@ -35,12 +35,19 @@ class PodmanImageRunner(BaseRunner):
         logging.getLogger("avocado.utils.podman").addHandler(logging.NullHandler())
         try:
             podman = AsyncPodman()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(podman.execute("pull", uri))
+            asyncio.run(podman.execute("pull", uri))
             queue.put({"result": "pass"})
         except PodmanException as ex:
             queue.put(
                 {"result": "fail", "fail_reason": f"Could not pull podman image: {ex}"}
+            )
+        except Exception as ex:  # pylint: disable=broad-except
+            queue.put(
+                {
+                    "result": "error",
+                    "fail_reason": f"Could not run podman image process: {ex}",
+                    "fail_class": ex.__class__.__name__,
+                }
             )
 
     def run(self, runnable):
@@ -52,12 +59,33 @@ class PodmanImageRunner(BaseRunner):
         else:
             queue = SimpleQueue()
             process = Process(target=self._run_podman_pull, args=(runnable.uri, queue))
-            process.start()
+            try:
+                process.start()
+            except Exception as ex:  # pylint: disable=broad-except
+                yield messages.FinishedMessage.get(
+                    "error",
+                    fail_reason=f"Could not start podman image process: {ex}",
+                    fail_class=ex.__class__.__name__,
+                )
+                return
             while queue.empty():
+                if not process.is_alive():
+                    process.join()
+                    if queue.empty():
+                        yield messages.FinishedMessage.get(
+                            "error",
+                            fail_reason=(
+                                "Podman image process exited with status "
+                                f"{process.exitcode} without reporting a result"
+                            ),
+                        )
+                        return
+                    break
                 time.sleep(RUNNER_RUN_STATUS_INTERVAL)
                 yield messages.RunningMessage.get()
 
             output = queue.get()
+            process.join()
             result = output.pop("result")
             yield messages.FinishedMessage.get(result, **output)
 
