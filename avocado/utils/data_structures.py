@@ -392,7 +392,7 @@ class CallbackRegister:
             try:
                 func, args, kwargs = item
                 func(*args, **kwargs)
-            except:  # Ignore all exceptions pylint: disable=W0702
+            except Exception:  # pylint: disable=broad-exception-caught
                 self._log.error(
                     "%s failed to destroy %s:\n%s", self._name, item, sys.exc_info()[1]
                 )
