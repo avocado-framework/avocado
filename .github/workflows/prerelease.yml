@@ -58,6 +58,8 @@ jobs:
           retention-days: 1
 
   check-rpm-available-copr:
+    # temporarily disabled: current maintainers don't have COPR access
+    if: ${{ false }}
     name: Check the right RPM packages are available in COPR
     runs-on: ubuntu-latest
     timeout-minutes: 130
@@ -112,6 +114,7 @@ jobs:
 
   publish-to-test-pypi:
     name: Publish Avocado to TestPyPI
+    if: github.repository == 'avocado-framework/avocado'
     needs:
     - package-build
     runs-on: ubuntu-latest
