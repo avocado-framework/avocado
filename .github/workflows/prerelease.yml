@@ -19,13 +19,15 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: 3.14
       - name: Install dependencies
         run: |
           pip install -r requirements-dev.txt
           pip install -r static-checks/requirements.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: |
+          python3 -m pip install --user --upgrade "setuptools<80"
+          python3 setup.py develop --user
       - name: Run make check
         run: make check
       - name: Save artifacts
