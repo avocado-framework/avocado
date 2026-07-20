@@ -30,7 +30,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Installing Avocado
-        run: python3 setup.py install --user
+        run: |
+          python3 -m pip install --user "setuptools<80"
+          python3 setup.py install --user
       - name: Installing plugins
         run: |
          python3 setup.py plugin --install=golang --user
@@ -70,7 +72,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Installing Avocado
-        run: python3 setup.py install
+        run: |
+          python3 -m pip install "setuptools<80"
+          python3 setup.py install
       - name: Installing plugins
         run: |
          python3 setup.py plugin --install=golang
@@ -112,7 +116,9 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop --user
+        run: |
+          python3 -m pip install --user --upgrade "setuptools<80"
+          python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
@@ -148,7 +154,9 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
-        run: python3 setup.py develop
+        run: |
+          python3 -m pip install --user --upgrade "setuptools<80"
+          python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
@@ -180,6 +188,7 @@ jobs:
         run: |
          python3 -m venv env
          source env/bin/activate
+         python3 -m pip install "setuptools<80"
          python3 setup.py install
          python3 setup.py plugin --install=golang
          python3 setup.py plugin --install=html
