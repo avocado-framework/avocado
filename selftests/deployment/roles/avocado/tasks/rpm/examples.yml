@@ -2,7 +2,7 @@
 - name: Install Avocado examples using RPM
   dnf:
     name:
-      - python3-avocado-examples
+      - python-avocado-examples
     state: latest
   when:
     - method == 'copr'

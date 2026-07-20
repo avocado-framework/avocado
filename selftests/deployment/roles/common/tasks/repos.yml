@@ -21,15 +21,27 @@
 
 # Official repos (avocado)
 - name: enable avocado module
-  shell:
+  command:
     cmd: dnf module -y enable avocado:latest
+  register: avocado_module
+  changed_when: avocado_module.rc == 0
+  failed_when:
+    - avocado_module.rc != 0
+    - "'missing groups or modules' not in avocado_module.stderr"
+    - "'No match for argument' not in avocado_module.stderr"
   when:
     - method == 'official'
 
 # Official repos (avocado-vt)
 - name: enable avocado-vt module
-  shell:
+  command:
     cmd: dnf module -y enable avocado-vt:latest
+  register: avocado_vt_module
+  changed_when: avocado_vt_module.rc == 0
+  failed_when:
+    - avocado_vt_module.rc != 0
+    - "'missing groups or modules' not in avocado_vt_module.stderr"
+    - "'No match for argument' not in avocado_vt_module.stderr"
   when:
     - method == 'official'
     - avocado_vt|default(false)|bool == true
