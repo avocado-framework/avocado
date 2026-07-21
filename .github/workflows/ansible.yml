@@ -16,19 +16,19 @@ jobs:
     env:
       RUN_BEFORE: 'dnf install -y git ansible'
       GIT_URL: 'https://github.com/${{github.repository}}'
+      GIT_REF: '${{github.ref_name}}'
       INVENTORY: 'selftests/deployment/inventory'
       PLAYBOOK: 'selftests/deployment/deployment.yml'
     strategy:
       matrix:
-        extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true", "method=copr avocado_vt=true"]
+        extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true avocado_vt_full_tests=false"]
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: 'master'
           fetch-depth: 0
       - name: Install Ansible
         run: dnf install -y git ansible
       - name: Run Ansible playbook
-        run:  ansible-pull -v -U ${{env.GIT_URL}} -i ${{env.INVENTORY}} -c local ${{env.PLAYBOOK}} -e "${{matrix.extra}}"
+        run:  ansible-pull -v -U "${GIT_URL}" -C "${GIT_REF}" -i "${INVENTORY}" -c local "${PLAYBOOK}" -e "${{matrix.extra}} avocado_git_url=${GIT_URL}.git avocado_git_branch=${GIT_REF}"

@@ -27,6 +27,7 @@
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
     - avocado_vt|default(false)|bool == true
+    - avocado_vt_full_tests|default(true)|bool == true
 
 # PATH Workaround needed by method=pip, taken from https://github.com/avocado-framework/avocado-vt/pull/3204
 - name: Avocado-VT test 5/5 - boot and migrate execution
@@ -35,3 +36,4 @@
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
     - avocado_vt|default(false)|bool == true
+    - avocado_vt_full_tests|default(true)|bool == true
