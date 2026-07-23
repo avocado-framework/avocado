@@ -102,6 +102,27 @@ def register_job_options():
         key_type=int,
     )
 
+    settings.register_option(
+        section="job.run",
+        key="logging_format",
+        help_msg=(
+            "Format string used for file-based log records. It follows the "
+            "Python logging format syntax."
+        ),
+        default=(
+            "%(asctime)s %(name)s %(module)-16.16s L%(lineno)-.4d "
+            "%(levelname)-5.5s| %(message)s"
+        ),
+    )
+
+    settings.register_option(
+        section="job.run",
+        key="log_task_identifier",
+        help_msg="Whether to prefix test log messages with the task identifier.",
+        default=True,
+        key_type=bool,
+    )
+
 
 register_job_options()
 
@@ -222,7 +243,7 @@ class Job:
     def __start_job_logging(self):
         # Enable test logger
         full_log = os.path.join(self.logdir, "full.log")
-        fmt = "%(asctime)s %(name)s %(module)-16.16s L%(lineno)-.4d %(levelname)-5.5s| %(message)s"
+        fmt = self.config.get("job.run.logging_format")
         buffer_size = self.config.get("job.run.logging_buffer_size")
         output.add_log_handler(
             LOG_JOB,
