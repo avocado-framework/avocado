@@ -1,0 +1,14 @@
+name: Wheel
+description: Test running avocado from a universal wheel
+runs:
+  using: composite
+  steps:
+    - name: Test running avocado from a wheel
+      shell: sh
+      run: |
+       python3 -m pip install --user pip setuptools wheel
+       python3 -m pip wheel --no-deps -w /tmp .
+       WHL=$(ls /tmp/avocado_framework-*-py3-none-any.whl)
+       DEST=/tmp/avocado-wheel
+       python3 -c "import zipfile, sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$WHL" "$DEST"
+       python3 -c "import sys; sys.path.insert(0, sys.argv[1]); from avocado.core.main import main; sys.exit(main())" "$DEST" run /bin/true

@@ -257,7 +257,15 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 msg = "Cannot get Python version: self.podman not defined."
                 LOG.debug(msg)
                 return None, None, None
-            result = await self.podman.get_python_version(image)
+            try:
+                result = await self.podman.get_python_version(image)
+            except PodmanException as ex:
+                raise PodmanSpawnerException(
+                    f"Image {image!r} has no usable python3. nrunner starts "
+                    "with 'python3 -m avocado.plugins.runners...' inside the "
+                    "container. Fedora 41+ default images dropped python3; "
+                    "use fedora:40, fedora-toolbox, or python:*-slim."
+                ) from ex
             self._PYTHON_VERSIONS_CACHE[image] = result
         return self._PYTHON_VERSIONS_CACHE[image]
 
@@ -315,7 +323,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if bootstrap is not None:
             bootstrap_opts = (
                 "-v",
-                f"{bootstrap.host_path}:{bootstrap.container_path}:ro",
+                f"{bootstrap.host_path}:{bootstrap.container_path}:ro,z",
             )
 
         task = runtime_task.task

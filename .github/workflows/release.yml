@@ -103,15 +103,10 @@ jobs:
     - name: Publish avocado to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
-  build-and-publish-eggs:
-    name: Build eggs and publish them
-    runs-on: ubuntu-22.04
+  publish-wheels-to-github:
+    name: Publish wheels to GitHub release
+    runs-on: ubuntu-latest
     needs: release
-    strategy:
-      matrix:
-        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
-      fail-fast: false
-
     steps:
       - name: Generate token
         id: generate_token
@@ -120,26 +115,16 @@ jobs:
           app_id: ${{ secrets.MR_AVOCADO_ID }}
           installation_id: ${{ secrets.MR_AVOCADO_INSTALLATION_ID }}
           private_key: ${{ secrets.MR_AVOCADO_PRIVATE_KEY }}
-      - uses: actions/checkout@v7
+      - name: Download wheels
+        uses: actions/download-artifact@v8
         with:
-          persist-credentials: false
-          fetch-depth: 0
-          ref: ${{ github.event.inputs.version }}
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build eggs
-        run: |
-          if python -c 'import sys; exit(0) if sys.version_info.minor > 11 else exit(1)' ; then
-            pip install "setuptools<80"
-          fi
-          make -f Makefile.gh build-egg
-      - name: Upload binaries to release
+          name: wheel
+          path: dist/
+      - name: Upload wheels to the GitHub release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ steps.generate_token.outputs.token }}
-          file: ${{ github.workspace }}/EGG_UPLOAD/avocado_framework*egg
+          file: dist/*.whl
           tag: ${{ github.event.inputs.version }}
           overwrite: true
           file_glob: true
