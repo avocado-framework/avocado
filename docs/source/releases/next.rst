@@ -19,7 +19,10 @@ Users/Test Writers
   <https://github.com/avocado-framework/avocado/issues/6108>`_ and
   `#6115 <https://github.com/avocado-framework/avocado/issues/6115>`_).
   Use ``--spawner-podman-avocado-wheel``; ``--spawner-podman-avocado-egg``
-  remains as a deprecated alias.
+  remains as a deprecated alias.  The container image must provide
+  ``python3``; Fedora 41+ default container images no longer do, so
+  selftests use ``fedora:40``.  ``fedora-toolbox`` images still include
+  a current interpreter.
 
 Utility Modules
 ===============

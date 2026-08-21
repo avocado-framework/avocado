@@ -428,7 +428,7 @@ jobs:
          python3 -m pip wheel --no-deps -w /tmp .
          WHL=$(ls /tmp/avocado_framework-*-py3-none-any.whl)
          python3 -m pip install --user --no-deps "$WHL"
-         python3 -m avocado run --spawner=podman --spawner-podman-image=fedora:latest --spawner-podman-avocado-wheel="file://${WHL}" -- /bin/true
+         python3 -m avocado run --spawner=podman --spawner-podman-image=fedora:40 --spawner-podman-avocado-wheel="file://${WHL}" -- /bin/true
 
   podman_external_runner_task:
 

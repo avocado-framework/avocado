@@ -30,7 +30,7 @@ class PassTest(Test):
 class PodmanSpawnerTest(Test):
     """
     :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
-    :avocado: dependency={"type": "podman-image", "uri": "registry.fedoraproject.org/fedora:latest"}
+    :avocado: dependency={"type": "podman-image", "uri": "registry.fedoraproject.org/fedora:40"}
     """
 
     def test_avocado_instrumented(self):
@@ -42,7 +42,7 @@ class PodmanSpawnerTest(Test):
                 f"{AVOCADO} run "
                 f"--job-results-dir {self.workdir} "
                 f"--disable-sysinfo --spawner=podman "
-                f"--spawner-podman-image=fedora:latest -- "
+                f"--spawner-podman-image=fedora:40 -- "
                 f"{test}",
                 ignore_status=True,
             )
@@ -55,7 +55,7 @@ class PodmanSpawnerTest(Test):
             f"{AVOCADO} run "
             f"--job-results-dir {self.workdir} "
             f"--disable-sysinfo --spawner=podman "
-            f"--spawner-podman-image=fedora:latest -- "
+            f"--spawner-podman-image=fedora:40 -- "
             f"/bin/true",
             ignore_status=True,
         )
@@ -73,7 +73,7 @@ class PodmanSpawnerTest(Test):
                 "run.results_dir": self.workdir,
                 "task.timeout.running": 2,
                 "run.spawner": "podman",
-                "spawner.podman.image": "fedora:latest",
+                "spawner.podman.image": "fedora:40",
             }
 
             with Job.from_config(job_config=config) as job:
@@ -93,7 +93,7 @@ class PodmanSpawnerTest(Test):
             ],
             "run.results_dir": self.workdir,
             "run.spawner": "podman",
-            "spawner.podman.image": "fedora:latest",
+            "spawner.podman.image": "fedora:40",
         }
 
         with Job.from_config(job_config=config) as job:
@@ -110,7 +110,7 @@ class PodmanSpawnerTest(Test):
             f"{AVOCADO} run "
             f"--job-results-dir {self.workdir} "
             f"--disable-sysinfo --spawner=podman "
-            f"--spawner-podman-image=fedora:latest -- "
+            f"--spawner-podman-image=fedora:40 -- "
             f"{test}",
             ignore_status=True,
         )
