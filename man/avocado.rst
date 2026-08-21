@@ -211,13 +211,18 @@ Options for subcommand `run` (`avocado run --help`)::
                             first default choice is a container image matching the
                             current OS. If unable to detect, default becomes the
                             latest Fedora release.
-      --spawner-podman-avocado-egg AVOCADO_EGG
-                            Avocado egg path to be used during initial bootstrap
-                            of avocado inside the isolated environment. By
-                            default, Avocado will try to download (or get from
-                            cache) an egg from its repository. Please use a valid
-                            URL, including the protocol (for local files, use the
+      --spawner-podman-avocado-wheel AVOCADO_WHEEL
+                            Avocado wheel (or unpacked wheel directory) used to
+                            bootstrap Avocado inside the isolated environment.
+                            By default Avocado builds a universal py3-none-any
+                            wheel from the running source tree, or fetches the
+                            matching GitHub release asset. Use a valid URL,
+                            including the protocol (for local files, use the
                             "file:///" prefix).
+      --spawner-podman-avocado-egg AVOCADO_EGG
+                            Deprecated alias of --spawner-podman-avocado-wheel.
+                            Eggs are a discontinued format and fail on Fedora
+                            39+/Python 3.12+. Prefer a universal wheel.
 
 
 Options for subcommand `assets` (`avocado assets --help`)::

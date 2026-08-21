@@ -177,7 +177,12 @@ following steps:
 2. Creates the chosen :class:`Spawner
    <avocado.core.spawners.common.BaseSpawner>`, with
    :class:`ProcessSpawner
-   <avocado.core.spawners.process.ProcessSpawner>` being the default
+   <avocado.core.spawners.process.ProcessSpawner>` being the default.
+   The Podman spawner does **not** copy Python eggs into the container.
+   It unpacks one universal ``py3-none-any`` wheel on the host and
+   bind-mounts it at ``/opt/avocado-wheel`` (``PYTHONPATH``).  nrunner
+   still starts with ``python -m avocado.plugins.runners... task-run``.
+   Override the wheel with ``--spawner-podman-avocado-wheel``.
 3. For each :class:`avocado.core.nrunner.runnable.Runnable` found by
    the resolver, turns it into a :class:`avocado.core.nrunner.Task`,
    which means giving it the following extra information:

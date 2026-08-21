@@ -11,7 +11,15 @@ Release documentation: `Avocado 113.0
 Users/Test Writers
 ==================
 
-*
+* The Podman spawner now bootstraps Avocado from a single universal
+  wheel (``avocado_framework-{version}-py3-none-any.whl``) instead of
+  per-CPython eggs plus setuptools 59.2.  The wheel is unpacked on the
+  host and bind-mounted read-only at ``/opt/avocado-wheel``.  This
+  unblocks Fedora 39+ / Python 3.12+ images (GitHub issues `#6108
+  <https://github.com/avocado-framework/avocado/issues/6108>`_ and
+  `#6115 <https://github.com/avocado-framework/avocado/issues/6115>`_).
+  Use ``--spawner-podman-avocado-wheel``; ``--spawner-podman-avocado-egg``
+  remains as a deprecated alias.
 
 Utility Modules
 ===============
