@@ -5,6 +5,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 from avocado.core.spawners import wheel_bootstrap
 from avocado.core.spawners.wheel_bootstrap import (
@@ -92,3 +93,18 @@ class WheelBootstrap(unittest.TestCase):
                 env=env,
             )
         self.assertIn("task-run", result.stdout + result.stderr)
+
+    def test_github_miss_falls_back_to_pypi(self):
+        with tempfile.TemporaryDirectory(prefix="avocado_wheel_pypi_") as cache:
+            with mock.patch.object(wheel_bootstrap, "source_root", return_value=None):
+                with mock.patch.object(
+                    wheel_bootstrap, "_fetch_remote_wheel", side_effect=OSError("404")
+                ):
+                    with mock.patch.object(
+                        wheel_bootstrap,
+                        "download_pypi_wheel",
+                        return_value=self.wheel,
+                    ) as pypi:
+                        path = wheel_bootstrap.resolve_wheel_file(cache_dirs=[cache])
+        pypi.assert_called_once()
+        self.assertEqual(path, self.wheel)
