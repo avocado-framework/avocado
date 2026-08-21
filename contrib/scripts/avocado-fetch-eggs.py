@@ -54,6 +54,11 @@ def get_avocado_egg_url(avocado_version=None, python_version=None):
 
 def main():
     configure_logging_settings()
+    LOG.warning(
+        "avocado-fetch-eggs.py is deprecated. Isolated spawners now use "
+        "a universal wheel; prefer contrib/scripts/avocado-fetch-wheels.py. "
+        "Eggs fail on Fedora 39+ / Python 3.12+."
+    )
     for version in ["3.9", "3.10", "3.11", "3.12", "3.13"]:
         url = get_avocado_egg_url(python_version=version)
         try:
