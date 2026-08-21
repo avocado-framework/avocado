@@ -24,6 +24,13 @@ Users/Test Writers
   selftests use ``fedora:40``.  ``fedora-toolbox`` images still include
   a current interpreter.
 
+* Avocado no longer builds or publishes Python eggs.  Releases upload
+  ``py3-none-any`` wheels to GitHub (and PyPI, as before).  Isolated
+  spawners fetch that wheel from GitHub, then fall back to PyPI if the
+  GitHub asset is missing (Avocado 113.0 and earlier only attached
+  eggs).  The ``setuptools<82`` install workaround is no longer
+  required for Avocado itself.
+
 Utility Modules
 ===============
 
@@ -37,7 +44,8 @@ Bug Fixes
 Internal changes
 ================
 
-*
+* CI dropped the per-interpreter ``egg-build`` matrix.  The release
+  pipeline publishes wheels to GitHub instead of eggs.
 
 Additional information
 ======================
