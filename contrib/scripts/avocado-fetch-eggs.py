@@ -13,16 +13,15 @@
 # Copyright: 2021 Red Hat, Inc.
 # Author: Beraldo Leal <bleal@redhat.com>
 
+"""Deprecated: prefetch the universal Avocado wheel (eggs are no longer used)."""
+
 import logging
 import sys
 
 from avocado.core.settings import settings
-from avocado.core.version import VERSION
-from avocado.utils.asset import Asset
+from avocado.core.spawners.wheel_bootstrap import resolve_wheel_file
 
 CACHE_DIRS = settings.as_dict().get("datadir.paths.cache_dirs")
-
-# Avocado asset lib already has its logger. Let's use it.
 LOG = logging.getLogger("avocado.utils.asset")
 
 
@@ -34,46 +33,18 @@ def configure_logging_settings():
     logger_handler.setFormatter(formatter)
 
 
-def get_setuptools_egg_url(python_version=None):
-    if python_version is None:
-        version = sys.version_info
-        python_version = f"{version.major}.{version.minor}"
-    return f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{python_version}.egg"
-
-
-def get_avocado_egg_url(avocado_version=None, python_version=None):
-    if avocado_version is None:
-        avocado_version = VERSION
-    if python_version is None:
-        version = sys.version_info
-        python_version = f"{version.major}.{version.minor}"
-
-    asset = f"avocado_framework-{avocado_version}-py{python_version}.egg"
-    return f"https://github.com/avocado-framework/avocado/releases/download/{avocado_version}/{asset}"
-
-
 def main():
     configure_logging_settings()
     LOG.warning(
-        "avocado-fetch-eggs.py is deprecated. Isolated spawners now use "
-        "a universal wheel; prefer contrib/scripts/avocado-fetch-wheels.py. "
-        "Eggs fail on Fedora 39+ / Python 3.12+."
+        "avocado-fetch-eggs.py is deprecated and now fetches the universal "
+        "wheel. Use contrib/scripts/avocado-fetch-wheels.py."
     )
-    for version in ["3.9", "3.10", "3.11", "3.12", "3.13"]:
-        url = get_avocado_egg_url(python_version=version)
-        try:
-            asset = Asset(url, cache_dirs=CACHE_DIRS)
-            asset.fetch()
-        except OSError:
-            LOG.error("Failed to fetch Avocado egg for Python version %s", version)
-            return 1
-        url = get_setuptools_egg_url(python_version=version)
-        try:
-            asset = Asset(url, cache_dirs=CACHE_DIRS)
-            asset.fetch()
-        except OSError:
-            LOG.error("Failed to fetch setuptools egg for Python version %s", version)
-            return 1
+    try:
+        path = resolve_wheel_file(cache_dirs=CACHE_DIRS)
+    except (OSError, RuntimeError) as exc:
+        LOG.error("Failed to fetch Avocado wheel: %s", exc)
+        return 1
+    LOG.info("Cached Avocado wheel at %s", path)
     return 0
 
 

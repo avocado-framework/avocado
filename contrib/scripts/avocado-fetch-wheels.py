@@ -18,9 +18,7 @@ import logging
 import sys
 
 from avocado.core.settings import settings
-from avocado.core.spawners.wheel_bootstrap import default_wheel_url
-from avocado.core.version import VERSION
-from avocado.utils.asset import Asset
+from avocado.core.spawners.wheel_bootstrap import resolve_wheel_file
 
 CACHE_DIRS = settings.as_dict().get("datadir.paths.cache_dirs")
 
@@ -37,12 +35,10 @@ def configure_logging_settings():
 
 def main():
     configure_logging_settings()
-    url = default_wheel_url(VERSION)
     try:
-        asset = Asset(url, cache_dirs=CACHE_DIRS)
-        path = asset.fetch()
-    except OSError:
-        LOG.error("Failed to fetch Avocado wheel from %s", url)
+        path = resolve_wheel_file(cache_dirs=CACHE_DIRS)
+    except (OSError, RuntimeError) as exc:
+        LOG.error("Failed to fetch Avocado wheel: %s", exc)
         return 1
     LOG.info("Cached Avocado wheel at %s", path)
     return 0
