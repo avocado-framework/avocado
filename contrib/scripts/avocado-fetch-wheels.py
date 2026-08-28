@@ -10,10 +10,9 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: 2021 Red Hat, Inc.
-# Author: Beraldo Leal <bleal@redhat.com>
+# Copyright: 2026 Red Hat, Inc.
 
-"""Deprecated: prefetch the universal Avocado wheel (eggs are no longer used)."""
+"""Prefetch the universal Avocado wheel used by isolated spawners."""
 
 import logging
 import sys
@@ -22,6 +21,7 @@ from avocado.core.settings import settings
 from avocado.core.spawners.wheel_bootstrap import resolve_wheel_file
 
 CACHE_DIRS = settings.as_dict().get("datadir.paths.cache_dirs")
+
 LOG = logging.getLogger("avocado.utils.asset")
 
 
@@ -35,10 +35,6 @@ def configure_logging_settings():
 
 def main():
     configure_logging_settings()
-    LOG.warning(
-        "avocado-fetch-eggs.py is deprecated and now fetches the universal "
-        "wheel. Use contrib/scripts/avocado-fetch-wheels.py."
-    )
     try:
         path = resolve_wheel_file(cache_dirs=CACHE_DIRS)
     except (OSError, RuntimeError) as exc:

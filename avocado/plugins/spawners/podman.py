@@ -12,10 +12,9 @@ from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.resolver import ReferenceResolutionAssetType
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
+from avocado.core.spawners.wheel_bootstrap import prepare_bootstrap
 from avocado.core.teststatus import STATUSES_NOT_OK
-from avocado.core.version import VERSION
 from avocado.utils import distro
-from avocado.utils.asset import Asset
 from avocado.utils.podman import AsyncPodman, PodmanException
 
 LOG = logging.getLogger(__name__)
@@ -54,13 +53,24 @@ class PodmanSpawnerInit(Init):
         )
 
         help_msg = (
-            "Avocado egg path to be used during initial bootstrap "
-            "of avocado inside the isolated environment. By default, "
-            "Avocado will try to download (or get from cache) an "
-            "egg from its repository. Please use a valid URL, including "
-            'the protocol (for local files, use the "file:///" prefix).'
+            "Avocado wheel (or unpacked wheel directory) used to bootstrap "
+            "Avocado inside the isolated environment. By default Avocado "
+            "builds a universal py3-none-any wheel from the running source "
+            "tree, or fetches the matching GitHub release asset. Use a "
+            'valid URL, including the protocol (for local files, "file:///").'
+        )
+        settings.register_option(
+            section=section,
+            key="avocado_spawner_wheel",
+            help_msg=help_msg,
+            default=None,
         )
 
+        help_msg = (
+            "Deprecated alias of spawner.podman.avocado_spawner_wheel. "
+            "Eggs are a discontinued format and fail on Fedora 39+/Python "
+            "3.12+. Prefer a universal wheel."
+        )
         settings.register_option(
             section=section, key="avocado_spawner_egg", help_msg=help_msg, default=None
         )
@@ -104,10 +114,17 @@ class PodmanCLI(CLI):
             metavar="CONTAINER_IMAGE",
         )
 
-        namespace = "spawner.podman.avocado_spawner_egg"
-        long_arg = "--spawner-podman-avocado-egg"
         settings.add_argparser_to_option(
-            namespace=namespace, parser=parser, long_arg=long_arg, metavar="AVOCADO_EGG"
+            namespace="spawner.podman.avocado_spawner_wheel",
+            parser=parser,
+            long_arg="--spawner-podman-avocado-wheel",
+            metavar="AVOCADO_WHEEL",
+        )
+        settings.add_argparser_to_option(
+            namespace="spawner.podman.avocado_spawner_egg",
+            parser=parser,
+            long_arg="--spawner-podman-avocado-egg",
+            metavar="AVOCADO_EGG",
         )
 
     def run(self, config):
@@ -220,36 +237,17 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return out == b"running\n"
         return False
 
-    def _fetch_asset(self, url):
-        cachedirs = self.config.get("datadir.paths.cache_dirs")
-        asset = Asset(url, cache_dirs=cachedirs)
-        return asset.fetch()
+    def _bootstrap_url(self):
+        return self.config.get(
+            "spawner.podman.avocado_spawner_wheel"
+        ) or self.config.get("spawner.podman.avocado_spawner_egg")
 
-    def get_eggs_paths(self, py_major, py_minor):
-        """Return the basic eggs needed to bootstrap Avocado.
-
-        This will return a tuple with the current location and where this
-        should be deployed.
-        """
-        result = []
-        # Setuptools
-        # For now let's pin to setuptools 59.2.
-        # TODO: Automatically get latest setuptools version.
-        eggs = [
-            f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"
-        ]
-        local_egg = self.config.get("spawner.podman.avocado_spawner_egg")
-        if local_egg:
-            eggs.append(local_egg)
-        else:
-            remote_egg = f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework-{VERSION}-py{py_major}.{py_minor}.egg"
-            eggs.append(remote_egg)
-
-        for url in eggs:
-            path = self._fetch_asset(url)
-            to = os.path.join("/tmp/", os.path.basename(path))
-            result.append((path, to))
-        return result
+    def get_bootstrap_mount(self):
+        """Return the wheel (or legacy egg) bind-mount for container spawn."""
+        return prepare_bootstrap(
+            url=self._bootstrap_url(),
+            cache_dirs=self.config.get("datadir.paths.cache_dirs"),
+        )
 
     @property
     async def python_version(self):
@@ -259,23 +257,28 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 msg = "Cannot get Python version: self.podman not defined."
                 LOG.debug(msg)
                 return None, None, None
-            result = await self.podman.get_python_version(image)
+            try:
+                result = await self.podman.get_python_version(image)
+            except PodmanException as ex:
+                raise PodmanSpawnerException(
+                    f"Image {image!r} has no usable python3. nrunner starts "
+                    "with 'python3 -m avocado.plugins.runners...' inside the "
+                    "container. Fedora 41+ default images dropped python3; "
+                    "use fedora:40, fedora-toolbox, or python:*-slim."
+                ) from ex
             self._PYTHON_VERSIONS_CACHE[image] = result
         return self._PYTHON_VERSIONS_CACHE[image]
 
     async def deploy_artifacts(self):
         pass
 
-    async def deploy_avocado(self, where):
-        # Deploy all the eggs to container inside /tmp/
-        major, minor, _ = await self.python_version
-        eggs = self.get_eggs_paths(major, minor)
-
-        for egg, to in eggs:
-            await self.podman.copy_to_container(where, egg, to)
+    async def deploy_avocado(self, where):  # pylint: disable=W0613
+        # Avocado is bind-mounted from a host-unpacked universal wheel at
+        # container create time. Nothing to copy into the container.
+        pass
 
     async def _create_container_for_task(
-        self, runtime_task, env_args, test_output=None
+        self, runtime_task, env_args, test_output=None, bootstrap=None
     ):
         mount_status_server_socket = False
         mounted_status_server_socket = "/tmp/.status_server.sock"
@@ -316,6 +319,13 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                             "/tmp", runtime_task.task.runnable.uri
                         )
 
+        bootstrap_opts = ()
+        if bootstrap is not None:
+            bootstrap_opts = (
+                "-v",
+                f"{bootstrap.host_path}:{bootstrap.container_path}:ro,z",
+            )
+
         task = runtime_task.task
         entry_point_args.extend(task.get_command_args())
         entry_point = json.dumps(entry_point_args)
@@ -348,6 +358,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             *status_server_opts,
             *output_opts,
             *test_opts,
+            *bootstrap_opts,
             entry_point_arg,
             *envs,
             image,
@@ -357,15 +368,12 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
 
-        major, minor, _ = await self.python_version
-        # Return only the "to" location
-        eggs = self.get_eggs_paths(major, minor)
-        destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
-        env_args = {"PYTHONPATH": destination_eggs}
+        bootstrap = self.get_bootstrap_mount()
+        env_args = {"PYTHONPATH": bootstrap.pythonpath}
         output_dir_path = self.task_output_dir(runtime_task)
         try:
             container_id = await self._create_container_for_task(
-                runtime_task, env_args, output_dir_path
+                runtime_task, env_args, output_dir_path, bootstrap
             )
         except PodmanException as ex:
             LOG.error("Could not create podman container: %s", ex)
