@@ -28,7 +28,7 @@ import os
 import re
 import time
 
-from avocado.utils import pci, process
+from avocado.utils import genio, pci, process
 
 LOGGER = logging.getLogger(__name__)
 
@@ -787,3 +787,40 @@ def get_subsystem_using_ctrl_name(ctrl):
         if ctrl in ctrls:
             return get_subsys_name_with_nqn(device_nqn)
     return ""
+
+
+def get_nvme_subsystem_io_policy(subsystem):
+    """
+    Read io policy parameter from sysfs folder and returns a string
+
+    :param subsystem: Name of the subsystem
+    :rtype: str
+    :raises: NvmeException when the iopolicy sysfs file is not found
+    """
+    subsys_iopolicy_path = f"/sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    try:
+        return genio.read_one_line(subsys_iopolicy_path)
+    except FileNotFoundError as exc:
+        raise NvmeException("iopolicy sysfs file not found") from exc
+
+
+def change_nvme_subsystem_io_policy(subsystem, io_policy):
+    """
+    Changes io policy of nvme device to specified io policy.
+    Change in io policy is not persistent across reboot.
+
+    :param subsystem: Name of the subsystem
+    :param io_policy: Name of the io_policy to set
+    :raises: NvmeException when the iopolicy sysfs file is not found
+    :rtype: bool
+    """
+    subsys_iopolicy_path = f"/sys/class/nvme-subsystem/{subsystem}/iopolicy"
+    current_policy = get_nvme_subsystem_io_policy(subsystem)
+    if current_policy == io_policy:
+        LOGGER.info("Returning True as iopolicy is same as current")
+        return True
+    try:
+        genio.write_one_line(subsys_iopolicy_path, io_policy)
+    except FileNotFoundError as exc:
+        raise NvmeException("iopolicy sysfs file not found") from exc
+    return True
