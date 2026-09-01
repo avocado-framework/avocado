@@ -11,6 +11,7 @@
 # This code was inspired in the autotest project,
 # client/shared/settings.py
 # Author: John Admanski <jadmanski@google.com>
+import configparser
 import filecmp
 import logging
 import os
@@ -67,6 +68,47 @@ class SysInfo:
                          tries to look in the config files.
         """
         self.config = settings.as_dict()
+
+        # Retrieve the configured paths for sudo commands and distros from the settings dictionary
+        sudo_commands_conf = self.config.get("sysinfo.sudo_commands", "")
+        sudo_distros_conf = self.config.get("sysinfo.sudo_distros", "")
+
+        if sudo_commands_conf:
+            log.info("sudo_commands loaded from config: %s", sudo_commands_conf)
+        else:
+            log.debug("sudo_commands config is empty or missing")
+
+        if sudo_distros_conf:
+            log.info("sudo_distros loaded from config: %s", sudo_distros_conf)
+        else:
+            log.debug("sudo_distros config is empty or missing")
+
+        def _load_sudo_list(raw_value, key):
+            # pylint: disable=wrong-spelling-in-docstring
+            """
+            If `raw_value` is a path to an INI file, read `[sysinfo] / key`
+            from it; otherwise, treat `raw_value` itself as a CSV list.
+            """
+            if not raw_value:
+                return ""
+            if os.path.isfile(raw_value):
+                parser = configparser.ConfigParser()
+                parser.read(raw_value)
+                return parser.get("sysinfo", key, fallback="")
+            return raw_value
+
+        # Retrieve the actual sudo commands and distros values from the config files,
+        # falling back to empty string if the keys are missing
+        sudo_commands_value = _load_sudo_list(sudo_commands_conf, "sudo_commands")
+        sudo_distros_value = _load_sudo_list(sudo_distros_conf, "sudo_distros")
+
+        self.sudo_commands = {
+            cmd.strip().lower() for cmd in sudo_commands_value.split(",") if cmd.strip()
+        }
+
+        self.sudo_distros = {
+            dst.strip().lower() for dst in sudo_distros_value.split(",") if dst.strip()
+        }
 
         if basedir is None:
             basedir = utils_path.init_dir("sysinfo")
@@ -136,15 +178,33 @@ class SysInfo:
 
         for cmd in self.sysinfo_files["commands"]:
             self.start_collectibles.add(
-                sysinfo.Command(cmd, timeout=timeout, locale=locale)
+                sysinfo.Command(
+                    cmd,
+                    timeout=timeout,
+                    locale=locale,
+                    sudo_commands=self.sudo_commands,
+                    sudo_distros=self.sudo_distros,
+                )
             )
             self.end_collectibles.add(
-                sysinfo.Command(cmd, timeout=timeout, locale=locale)
+                sysinfo.Command(
+                    cmd,
+                    timeout=timeout,
+                    locale=locale,
+                    sudo_commands=self.sudo_commands,
+                    sudo_distros=self.sudo_distros,
+                )
             )
 
         for fail_cmd in self.sysinfo_files["fail_commands"]:
             self.end_fail_collectibles.add(
-                sysinfo.Command(fail_cmd, timeout=timeout, locale=locale)
+                sysinfo.Command(
+                    fail_cmd,
+                    timeout=timeout,
+                    locale=locale,
+                    sudo_commands=self.sudo_commands,
+                    sudo_distros=self.sudo_distros,
+                )
             )
 
         for filename in self.sysinfo_files["files"]:

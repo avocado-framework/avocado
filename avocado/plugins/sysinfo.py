@@ -169,6 +169,28 @@ class SysinfoInit(Init):
             help_msg=help_msg,
         )
 
+        help_msg = "File with list of commands that require sudo"
+        default = system_wide_or_base_path("etc/avocado/sysinfo.conf")
+        settings.register_option(
+            section="sysinfo",
+            key="sudo_commands",
+            key_type=prepend_base_path,
+            default=default,
+            help_msg=help_msg,
+        )
+
+        help_msg = (
+            "File with list of distributions (values matching ID= in /etc/os-release) "
+            "that require sudo"
+        )
+        settings.register_option(
+            section="sysinfo",
+            key="sudo_distros",
+            key_type=prepend_base_path,
+            default=default,
+            help_msg=help_msg,
+        )
+
 
 class SysInfoJob(JobPreTests, JobPostTests):
 
