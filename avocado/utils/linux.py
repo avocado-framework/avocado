@@ -94,7 +94,9 @@ def is_os_secureboot_enabled():
             if "00000002" in line:
                 return True
     except FileNotFoundError as exc:
-        raise UnsupportedMachineError("lsprop not a supported command") from exc
+        raise UnsupportedMachineError(
+            "lsprop not a supported command"
+        ) from exc
     return False
 
 
@@ -117,3 +119,67 @@ def enable_sched_schedstats():
     if is_sched_schedstats_enabled():
         return True
     return False
+
+
+def is_kernel_lockdown_enabled():
+    """
+    Returns tuple of (mode, is_enabled) for kernel lockdown state.
+    """
+    lockdown_path = "/sys/kernel/security/lockdown"
+    try:
+        lockdown_status = genio.read_one_line(lockdown_path).strip()
+        for mode in ["none", "integrity", "confidentiality"]:
+            if f"[{mode}]" in lockdown_status:
+                is_enabled = mode != "none"
+                return (mode, is_enabled)
+        return ("none", False)
+    except FileNotFoundError:
+        return (None, False)
+    except PermissionError:
+        return (None, False)
+
+
+def enable_kernel_lockdown_integrity():
+    """
+    Enable kernel lockdown in integrity mode
+
+    :return: True if integrity mode enabled, False if not enabled
+    """
+    lockdown_path = "/sys/kernel/security/lockdown"
+    current_mode, _ = is_kernel_lockdown_enabled()
+
+    if current_mode is None:
+        return False
+
+    if current_mode in ["integrity", "confidentiality"]:
+        return True
+
+    try:
+        genio.write_one_line(lockdown_path, "integrity")
+        new_mode, _ = is_kernel_lockdown_enabled()
+        return new_mode in ["integrity", "confidentiality"]
+    except (PermissionError, IOError):
+        return False
+
+
+def enable_kernel_lockdown_confidentiality():
+    """
+    Enable kernel lockdown in confidentiality mode
+
+    :return: True if confidentiality mode enabled, False if not enabled
+    """
+    lockdown_path = "/sys/kernel/security/lockdown"
+    current_mode, _ = is_kernel_lockdown_enabled()
+
+    if current_mode is None:
+        return False
+
+    if current_mode == "confidentiality":
+        return True
+
+    try:
+        genio.write_one_line(lockdown_path, "confidentiality")
+        new_mode, _ = is_kernel_lockdown_enabled()
+        return new_mode == "confidentiality"
+    except (PermissionError, IOError):
+        return False
