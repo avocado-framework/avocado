@@ -21,7 +21,6 @@
 Nvme utilities
 """
 
-
 import json
 import logging
 import os
@@ -650,26 +649,83 @@ def create_namespaces(controller_name, ns_count, shared_ns=False):
         create_one_ns(ns_id, controller_name, ns_size, shared_ns=shared_ns)
 
 
+def _iter_topology_paths(json_data, ns_id):
+    """
+    Yields (name, state, ana_state) for each path matching the namespace ID.
+
+    Handles both targeted query format (where Name and State reside directly
+    on Path) and whole-system query format (where Name and State are nested
+    under Controller).
+
+    :param json_data: Parsed JSON topology data (list)
+    :param ns_id: Target namespace ID (int)
+    """
+    if not isinstance(json_data, list):
+        return
+
+    for entry in json_data:
+        for subsystem in entry.get("Subsystems", []):
+            for namespace in subsystem.get("Namespaces", []):
+                if namespace.get("NSID") != ns_id:
+                    continue
+                for path in namespace.get("Paths", []):
+                    ana_state = path.get("ANAState")
+                    controllers = path.get("Controller", [])
+                    if controllers:
+                        for ctrl in controllers:
+                            yield ctrl.get("Name"), ctrl.get("State"), ana_state
+                    else:
+                        yield path.get("Name"), path.get("State"), ana_state
+
+
 def get_ns_status(controller_name, ns_id):
     """
-    Returns the status of namespaces on the specified controller
+    Returns the status of namespaces on the specified controller.
 
-    :param controller_name: name of the controller like nvme0
-    :param ns_id: ID of namespace for which we need the status
+    Tries ``nvme show-topology /dev/<controller_name>`` first; on error
+    or no match falls back to ``nvme show-topology -o json``
+    (whole-system), locating via ``NSID`` and ``Controller.Name``
+    (multi-path safe, e.g. ``nvme0``/``nvme3`` serving ``nvme3n1``).
 
-    :rtype: list
+    :param controller_name: name of the controller, e.g. ``nvme0``
+    :param ns_id: NSID of the namespace whose status is required (int)
+
+    :rtype: list  -- ``[State, ANAState]`` for the matching path, or ``[]``
     """
     stat = []
+
     cmd = f"nvme show-topology /dev/{controller_name} -o json"
     data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
-    json_data = json.loads(data)
-    for data in json_data:
-        for subsystem in data["Subsystems"]:
-            for namespace in subsystem["Namespaces"]:
-                nsid = namespace["NSID"]
-                for paths in namespace["Paths"]:
-                    if nsid == ns_id and paths["Name"] == controller_name:
-                        stat.extend([paths["State"], paths["ANAState"]])
+    try:
+        json_data = json.loads(data)
+    except json.JSONDecodeError:
+        json_data = None
+
+    for name, state, ana_state in _iter_topology_paths(json_data, ns_id):
+        if name == controller_name:
+            stat.extend([state, ana_state])
+    if stat:
+        return stat
+
+    LOGGER.debug(
+        "get_ns_status: primary show-topology for %s failed or returned no "
+        "match; retrying with whole-system show-topology",
+        controller_name,
+    )
+    cmd = "nvme show-topology -o json"
+    data = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
+    try:
+        json_data = json.loads(data)
+    except json.JSONDecodeError:
+        LOGGER.warning(
+            "get_ns_status: could not parse whole-system show-topology output"
+        )
+        return stat
+
+    for name, state, ana_state in _iter_topology_paths(json_data, ns_id):
+        if name == controller_name:
+            stat.extend([state, ana_state])
+
     return stat
 
 
