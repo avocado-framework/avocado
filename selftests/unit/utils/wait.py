@@ -217,13 +217,22 @@ class WaitForTest(unittest.TestCase):
         self.assertTrue(result)
 
     def test_timing_precision(self):
-        """Test wait_for timeout is reasonably accurate."""
+        """Test wait_for timeout is accurate with a controlled clock."""
         func = mock.Mock(return_value=False)
         timeout_val = 1.0
-        start = time.time()
-        wait.wait_for(func, timeout=timeout_val, step=0.1)
-        elapsed = time.time() - start
-        # Should be close to timeout (within 20% tolerance for system variance)
+        with mock.patch("avocado.utils.wait.time") as clock:
+            clock.monotonic.return_value = 0.0
+
+            def sleep(seconds):
+                clock.monotonic.return_value += seconds
+
+            clock.sleep.side_effect = sleep
+            start = clock.monotonic()
+            result = wait.wait_for(func, timeout=timeout_val, step=0.1)
+            elapsed = clock.monotonic() - start
+
+        self.assertIsNone(result)
+        # Allow polling overshoot and floating-point rounding
         self.assertGreaterEqual(elapsed, timeout_val)
         self.assertLess(elapsed, timeout_val * 1.2)
 
