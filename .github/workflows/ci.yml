@@ -375,15 +375,15 @@ jobs:
         uses: actions/checkout@v7
       - uses: ./.github/actions/version
 
-  version_task_debian_11:
+  version_task_debian_13:
 
-    name: Version task debian:11.0
+    name: Version task debian:13.0
     runs-on: ubuntu-22.04
     container:
-      image: debian:11.0
+      image: debian:13.0
     steps:
       - name: Install Python dependencies
-        run: apt update && apt -y install python3 python3-setuptools
+        run: apt update && apt -y install python3 python3-setuptools python3-markupsafe
       - name: Check out repository code
         uses: actions/checkout@v7
       - uses: ./.github/actions/version
