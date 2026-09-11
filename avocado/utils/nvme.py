@@ -843,3 +843,87 @@ def get_subsystem_using_ctrl_name(ctrl):
         if ctrl in ctrls:
             return get_subsys_name_with_nqn(device_nqn)
     return ""
+
+
+def get_atomic_write_units(device):
+    devname = os.path.basename(device)
+    base = f"/sys/block/{devname}/queue"
+    min_path = f"{base}/atomic_write_unit_min_bytes"
+    max_path = f"{base}/atomic_write_unit_max_bytes"
+    aw_min = int(open(min_path, encoding="utf-8").read().strip()) if os.path.exists(min_path) else 0
+    aw_max = int(open(max_path, encoding="utf-8").read().strip()) if os.path.exists(max_path) else 0
+    return aw_min, aw_max
+
+
+def find_device_with_atomic_write(devices=None):
+    if devices is None:
+        devs = process.system_output('ls /dev/nvme*n1 2>/dev/null',
+                                     shell=True, ignore_status=True).decode().split()
+    else:
+        devs = list(devices)
+    for dev in devs:
+        aw_min, aw_max = get_atomic_write_units(dev)
+        if aw_min and aw_max:
+            return dev, aw_min, aw_max
+    return None, 0, 0
+
+
+def get_free_space_blocks(device):
+    out = process.system_output(
+        f"parted -s {device} unit MiB print free 2>/dev/null",
+        shell=True, ignore_status=True).decode()
+    blocks = []
+    for line in out.splitlines():
+        if 'Free Space' not in line:
+            continue
+        cols = line.split()
+        if len(cols) < 3:
+            continue
+        try:
+            start = float(cols[0].rstrip('MiB'))
+            end = float(cols[1].rstrip('MiB'))
+            blocks.append((start, end, end - start))
+        except ValueError:
+            pass
+    return blocks
+
+
+def create_partitions_in_free_space(device, count=2):
+    blocks = get_free_space_blocks(device)
+    if not blocks:
+        raise NvmeException(f"No free space found on {device}")
+    start, end, size = max(blocks, key=lambda x: x[2])
+    chunk = size / count
+
+    before = set(process.system_output(
+        f"lsblk -lnpo NAME {device} 2>/dev/null",
+        shell=True, ignore_status=True).decode().split())
+
+    cursor = start
+    for i in range(count):
+        p_start = cursor
+        p_end = end if i == count - 1 else cursor + chunk
+        process.run(f"parted -s {device} mkpart primary {p_start}MiB {p_end}MiB",
+                    sudo=True)
+        cursor = p_end
+    process.run(f"partprobe {device}", sudo=True, ignore_status=True)
+
+    # Wait until all `count` new partitions are visible
+    for _ in range(10):
+        after = set(process.system_output(
+            f"lsblk -lnpo NAME {device} 2>/dev/null",
+            shell=True, ignore_status=True).decode().split())
+        new_parts = sorted(after - before)
+        if len(new_parts) >= count:
+            return new_parts[:count]
+        time.sleep(1)
+    raise NvmeException(f"New partitions did not appear on {device} after partprobe")
+
+
+def remove_partitions(device, partitions):
+    for part in partitions:
+        m = re.search(r"(\d+)$", part)
+        if m:
+            process.run(f"parted -s {device} rm {m.group(1)}",
+                        sudo=True, ignore_status=True)
+    process.run(f"partprobe {device}", sudo=True, ignore_status=True)
