@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import logging
 import os
+import signal
 import tempfile
 
 try:
@@ -17,6 +18,9 @@ from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnCapabilities, SpawnerMixin, SpawnMethod
 
 LOG = logging.getLogger(__name__)
+TERMINATE_GRACE_PERIOD = 30
+TERMINATE_FORCE_PERIOD = 10
+TERMINATE_POLL_INTERVAL = 0.1
 
 
 class LXCSpawnerException(Exception):
@@ -40,7 +44,14 @@ class LXCStreamsFile:
         return self
 
     def __exit__(self, *args):
-        os.remove(self.path)
+        fd, self.fd = self.fd, None
+        path, self.path = self.path, None
+        try:
+            if fd is not None:
+                os.close(fd)
+        finally:
+            if path is not None:
+                os.remove(path)
 
 
 class LXCSpawnerInit(Init):
@@ -94,7 +105,10 @@ def with_slot_reservation(fn):
     async def wrapper(self, runtime_task):
         with LXCSpawner.reserve_slot(self, runtime_task) as slot:
             runtime_task.spawner_handle = slot
-            return await fn(self, runtime_task)
+            spawned = await fn(self, runtime_task)
+            if not spawned:
+                LXCSpawner.release_slot(slot)
+            return spawned
 
     return wrapper
 
@@ -121,19 +135,24 @@ class LXCSpawner(Spawner, SpawnerMixin):
             exitcode = container.attach_wait(
                 lxc.attach_run_command, command, stdout=tmp_out, stderr=tmp_err
             )
+            LOG.debug(
+                f"Container sync command '{command}' returned exit code {exitcode}"
+            )
             return exitcode, tmp_out.read(), tmp_err.read()
 
     @staticmethod
     async def run_container_cmd_async(container, command):
-        with LXCStreamsFile() as tmp_out, LXCStreamsFile() as tmp_err:
+        with open(os.devnull, "wb") as devnull:
             pid = container.attach(
-                lxc.attach_run_command, command, stdout=tmp_out, stderr=tmp_err
+                lxc.attach_run_command, command, stdout=devnull, stderr=devnull
             )
-            loop = asyncio.get_event_loop()
-            _, exitcode = await loop.run_in_executor(
-                None, os.waitpid, pid, os.WUNTRACED
-            )
-            return exitcode, tmp_out.read(), tmp_err.read()
+            LOG.debug(f"Container async command '{command}' returned PID {pid}")
+            return pid, "", ""
+
+    @staticmethod
+    def release_slot(slot):
+        """Release an LXC slot after spawning failed or its task exited."""
+        LXCSpawner.slots_cache[slot] = False
 
     @contextlib.contextmanager
     def reserve_slot(self, runtime_task):
@@ -157,10 +176,13 @@ class LXCSpawner(Spawner, SpawnerMixin):
             # TODO: spawner can look for free containers directly and populate these slots
             # for c in lxcontainer.list_containers(as_object=True): ...
 
+        slots = LXCSpawner.slots_cache
         if runtime_task.spawner_handle is not None:
             slot = runtime_task.spawner_handle
+            if slots.get(slot, False):
+                raise RuntimeError(f"LXC slot {slot} is already reserved")
+            slots[slot] = True
         else:
-            slots = LXCSpawner.slots_cache
             for key, value in slots.items():
                 if not value:
                     slot = key
@@ -174,29 +196,33 @@ class LXCSpawner(Spawner, SpawnerMixin):
 
         try:
             yield slot
-        finally:
-            LXCSpawner.slots_cache[slot] = False
+        except BaseException:
+            LXCSpawner.release_slot(slot)
+            raise
 
     @staticmethod
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:
             return False
 
-        container = lxc.Container(runtime_task.spawner_handle)
-        if not container.defined:
-            LOG.debug(f"Container {runtime_task.spawner_handle} is not defined")
-            return False
-        if not container.running:
-            LOG.debug(
-                f"Container {runtime_task.spawner_handle} state is "
-                f"{container.state} instead of RUNNING"
-            )
+        pid = getattr(runtime_task, "lxc_task_pid", None)
+        if pid is None:
             return False
 
-        status, _, _ = LXCSpawner.run_container_cmd(
-            container, ["pgrep", "-r", "R,S", "-f", runtime_task.task.identifier]
-        )
-        return status == 0
+        try:
+            finished_pid, _ = os.waitpid(pid, os.WNOHANG)
+        except ChildProcessError:
+            finished_pid = pid
+        except OSError as error:
+            LOG.error(
+                "Could not check whether LXC task PID %s is alive: %s", pid, error
+            )
+            return True
+
+        if finished_pid == 0:
+            return True
+        LXCSpawner.release_slot(runtime_task.spawner_handle)
+        return False
 
     @with_slot_reservation
     async def spawn_task(self, runtime_task):
@@ -234,7 +260,7 @@ class LXCSpawner(Spawner, SpawnerMixin):
             # Customize and deploy test data to the container
             if create_hook:
                 customization_args = create_hook.split()
-                exitcode, output, err = await LXCSpawner.run_container_cmd_async(
+                exitcode, output, err = LXCSpawner.run_container_cmd(
                     container, customization_args
                 )
                 LOG.debug(f"Customization command exited with code {exitcode}")
@@ -258,13 +284,32 @@ class LXCSpawner(Spawner, SpawnerMixin):
         LOG.info(f"Container state: {container.state}")
         LOG.info(f"Container ID: {container_id} PID: {container.init_pid}")
 
-        exitcode, output, err = await LXCSpawner.run_container_cmd_async(
+        exitcode, _, _ = LXCSpawner.run_container_cmd(
+            container, ["pgrep", "-f", "task-run"]
+        )
+        if exitcode == 0:
+            raise RuntimeError(
+                f"A previous task is still alive but only one task "
+                f"can run in an LXC container {container.name} at a time"
+            )
+        elif exitcode != 1:
+            logging.warning(
+                f"Could not check for previous LXC task in {container.name}"
+            )
+
+        pid, output, err = await LXCSpawner.run_container_cmd_async(
             container, entry_point_args
         )
-        LOG.debug(f"Command exited with code {exitcode}")
-        if exitcode != 0:
-            LOG.error(f"Error '{err}' on {container_id} with output:\n{output}")
+        if pid <= 0:
+            LOG.error(
+                f"Error spawning task (PID {pid}): '{err}' error "
+                f"on {container_id} with output:\n{output}"
+            )
             return False
+        else:
+            LOG.debug(f"Task spawned in container with PID {pid}")
+
+        runtime_task.lxc_task_pid = pid
 
         return True
 
@@ -281,10 +326,52 @@ class LXCSpawner(Spawner, SpawnerMixin):
                 return
             await asyncio.sleep(0.1)
 
+    @staticmethod
+    async def _wait_task_exit(runtime_task, timeout):
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        while LXCSpawner.is_task_alive(runtime_task):
+            remaining = deadline - loop.time()
+            if remaining <= 0:
+                return False
+            await asyncio.sleep(min(TERMINATE_POLL_INTERVAL, remaining))
+        return True
+
     async def terminate_task(self, runtime_task):
+        pid = getattr(runtime_task, "lxc_task_pid", None)
+        if pid is not None:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            except OSError as error:
+                LOG.warning("Could not send SIGTERM to LXC task PID %s: %s", pid, error)
+            else:
+                if await LXCSpawner._wait_task_exit(
+                    runtime_task, TERMINATE_GRACE_PERIOD
+                ):
+                    return True
+
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                except OSError as error:
+                    LOG.error(
+                        "Could not send SIGKILL to LXC task PID %s: %s", pid, error
+                    )
+                else:
+                    if await LXCSpawner._wait_task_exit(
+                        runtime_task, TERMINATE_FORCE_PERIOD
+                    ):
+                        return True
+
+            if await LXCSpawner._wait_task_exit(runtime_task, 0):
+                return True
+
+        LOG.warning("Falling back to shutting down the LXC container")
         container = lxc.Container(runtime_task.spawner_handle)
 
-        # Stop the container
         if not container.shutdown(30):
             LOG.warning("Failed to cleanly shutdown the container, forcing.")
             if not container.stop():
@@ -296,6 +383,7 @@ class LXCSpawner(Spawner, SpawnerMixin):
         # if not container.destroy():
         #     LOG.error("Failed to destroy the container.")
         #     return False
+        LXCSpawner.release_slot(runtime_task.spawner_handle)
         return True
 
     @staticmethod

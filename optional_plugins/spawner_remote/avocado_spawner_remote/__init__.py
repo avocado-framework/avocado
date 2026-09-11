@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import shlex
-import time
 
 from aexpect import exceptions, remote
 
@@ -13,6 +12,10 @@ from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 
 LOG = logging.getLogger("avocado.job." + __name__)
+REMOTE_PID_MARKER = "__AVOCADO_REMOTE_PID__="
+TERMINATE_GRACE_PERIOD = 30
+TERMINATE_FORCE_PERIOD = 10
+TERMINATE_POLL_INTERVAL = 0.1
 
 
 class RemoteSpawnerException(Exception):
@@ -71,7 +74,10 @@ def with_slot_reservation(fn):
     async def wrapper(self, runtime_task):
         with RemoteSpawner.reserve_slot(self, runtime_task) as slot:
             runtime_task.spawner_handle = slot
-            return await fn(self, runtime_task)
+            spawned = await fn(self, runtime_task)
+            if not spawned:
+                RemoteSpawner.release_slot(slot)
+            return spawned
 
     return wrapper
 
@@ -97,6 +103,11 @@ class RemoteSpawner(Spawner, SpawnerMixin):
             status, output = 3, "Remote command could not retrieve status"
         return status, output
 
+    @staticmethod
+    def release_slot(slot):
+        """Release an remote slot after spawning failed or its task exited."""
+        RemoteSpawner.slots_cache[slot] = False
+
     @contextlib.contextmanager
     def reserve_slot(self, runtime_task):
         """
@@ -121,10 +132,13 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 session = remote.remote_login(**session_data)
                 RemoteSpawner.slots_cache[session] = False
 
+        slots = RemoteSpawner.slots_cache
         if runtime_task.spawner_handle is not None:
             slot = runtime_task.spawner_handle
+            if slots.get(slot, False):
+                raise RuntimeError(f"Remote slot {slot} is already reserved")
+            slots[slot] = True
         else:
-            slots = RemoteSpawner.slots_cache
             for key, value in slots.items():
                 if not value:
                     slot = key
@@ -138,27 +152,42 @@ class RemoteSpawner(Spawner, SpawnerMixin):
 
         try:
             yield slot
-        finally:
-            RemoteSpawner.slots_cache[slot] = False
+        except BaseException:
+            RemoteSpawner.release_slot(slot)
+            raise
 
     @staticmethod
     def is_task_alive(runtime_task):
         if runtime_task.spawner_handle is None:
             return False
-        # since each test is a session detached process, it is reasonable
-        # to reuse the same session with a new command
+
         session = runtime_task.spawner_handle
-        for _ in range(10):
-            status, output = RemoteSpawner.run_remote_cmd(
-                session,
-                f"pgrep -r R,S -f 'task-run -i {runtime_task.task.identifier}'",
-                10,
+        pid = getattr(runtime_task, "remote_task_pid", None)
+        if pid is None:
+            return False
+
+        status, output = RemoteSpawner.run_remote_cmd(
+            session, f"ps -o stat= -p {pid}", 10
+        )
+        if status == 1:
+            RemoteSpawner.release_slot(session)
+            return False
+        if status != 0:
+            LOG.error(
+                "Could not check whether remote task PID %s is alive: %s",
+                pid,
+                output,
             )
-            LOG.debug(output)
-            if status == 0:
-                break
-            time.sleep(1)
-        return status == 0
+            return True
+        process_state = output.strip()
+        if not process_state:
+            LOG.error("Remote task PID %s returned an empty process state", pid)
+            return True
+
+        if process_state.startswith("Z"):
+            RemoteSpawner.release_slot(session)
+            return False
+        return True
 
     @with_slot_reservation
     async def spawn_task(self, runtime_task):
@@ -179,6 +208,21 @@ class RemoteSpawner(Spawner, SpawnerMixin):
         session = runtime_task.spawner_handle
         LOG.info(f"Hostname: {session.host} Port: {session.port}")
 
+        status, output = RemoteSpawner.run_remote_cmd(
+            session,
+            "pgrep -f 'task-run'",
+            10,
+        )
+        if status == 0:
+            raise RuntimeError(
+                f"A previous task is still alive but only one task "
+                f"can run in a remote host ({session.host}) at a time"
+            )
+        elif status != 1:
+            logging.warning(
+                f"Could not check for previous remote task in {session.host}"
+            )
+
         setup_hook = self.config.get("spawner.remote.setup_hook")
         # Customize and deploy test data to the container
         if setup_hook:
@@ -194,16 +238,28 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 )
                 return False
 
-        cmd = shlex.join(entry_point_args) + " > /dev/null &"
-        timeout = self.config.get("spawner.remote.test_timeout")
-        status, output = RemoteSpawner.run_remote_cmd(session, cmd, timeout)
-        LOG.debug(f"Command exited with code {status}")
-        if status != 0:
+        cmd = (
+            shlex.join(entry_point_args)
+            + f" > /dev/null 2>&1 & printf '{REMOTE_PID_MARKER}%s\\n' \"$!\""
+        )
+        status, output = RemoteSpawner.run_remote_cmd(session, cmd, 10)
+        pid = None
+        for line in output.splitlines():
+            line = line.strip()
+            if line.startswith(REMOTE_PID_MARKER):
+                value = line.removeprefix(REMOTE_PID_MARKER)
+                if value.isdecimal():
+                    pid = int(value)
+        if status != 0 or not pid:
             LOG.error(
-                f"Error exit code {status} on {session.host}:{session.port} "
-                f"with output:\n{output}"
+                f"Error spawning task (PID {pid}): {status} status "
+                f"on {session.host}:{session.port} with output:\n{output}"
             )
             return False
+        else:
+            LOG.debug(f"Task spawned remotely with PID {pid}")
+
+        runtime_task.remote_task_pid = pid
 
         return True
 
@@ -220,15 +276,41 @@ class RemoteSpawner(Spawner, SpawnerMixin):
                 return
             await asyncio.sleep(0.1)
 
+    @staticmethod
+    async def _wait_task_exit(runtime_task, timeout):
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        while RemoteSpawner.is_task_alive(runtime_task):
+            remaining = deadline - loop.time()
+            if remaining <= 0:
+                return False
+            await asyncio.sleep(min(TERMINATE_POLL_INTERVAL, remaining))
+        return True
+
     async def terminate_task(self, runtime_task):
         session = runtime_task.spawner_handle
-        session.sendcontrol("c")
-        try:
-            session.read_up_to_prompt()
-            return True
-        except exceptions.ExpectTimeoutError:
-            LOG.error("Failed to terminate task on {session.host}")
+        pid = getattr(runtime_task, "remote_task_pid", None)
+        if session is None or pid is None:
+            LOG.error("Remote task has no session or tracked PID to terminate")
             return False
+
+        status, output = RemoteSpawner.run_remote_cmd(session, f"kill -TERM {pid}", 10)
+        if status not in (0, 1):
+            LOG.warning("Could not send SIGTERM to remote task PID %s: %s", pid, output)
+        if await RemoteSpawner._wait_task_exit(runtime_task, TERMINATE_GRACE_PERIOD):
+            return True
+
+        status, output = RemoteSpawner.run_remote_cmd(session, f"kill -KILL {pid}", 10)
+        if status not in (0, 1):
+            LOG.error("Could not send SIGKILL to remote task PID %s: %s", pid, output)
+        if not await RemoteSpawner._wait_task_exit(
+            runtime_task, TERMINATE_FORCE_PERIOD
+        ):
+            LOG.error("Remote task PID %s did not terminate", pid)
+            return False
+
+        RemoteSpawner.release_slot(session)
+        return True
 
     @staticmethod
     async def check_task_requirements(runtime_task):
