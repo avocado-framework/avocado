@@ -377,5 +377,108 @@ class GetNsStatusTest(unittest.TestCase):
         self.assertIn("show-topology", fallback_cmd)
 
 
+class UtilsNvmeTest(unittest.TestCase):
+    @unittest.mock.patch("os.path.exists", return_value=True)
+    def test_get_atomic_write_units(self, _):
+        mock_data = {
+            "/sys/block/nvme0n1/queue/atomic_write_unit_min_bytes": "4096\n",
+            "/sys/block/nvme0n1/queue/atomic_write_unit_max_bytes": "65536\n",
+        }
+
+        def mock_open(path, *_args, **_kwargs):
+            return unittest.mock.mock_open(read_data=mock_data[path])()
+
+        with unittest.mock.patch("builtins.open", side_effect=mock_open):
+            min_val, max_val = nvme.get_atomic_write_units("/dev/nvme0n1")
+            self.assertEqual(min_val, 4096)
+            self.assertEqual(max_val, 65536)
+
+    @unittest.mock.patch("os.path.exists", return_value=False)
+    def test_get_atomic_write_units_not_supported(self, _):
+        min_val, max_val = nvme.get_atomic_write_units("/dev/nvme0n1")
+        self.assertEqual(min_val, 0)
+        self.assertEqual(max_val, 0)
+
+    @unittest.mock.patch("avocado.utils.nvme.get_atomic_write_units")
+    def test_find_device_with_atomic_write_explicit_devices(self, mock_get_units):
+        mock_get_units.side_effect = [(0, 0), (4096, 65536)]
+        dev, min_val, max_val = nvme.find_device_with_atomic_write(
+            ["/dev/nvme0n1", "/dev/nvme1n1"]
+        )
+        self.assertEqual(dev, "/dev/nvme1n1")
+        self.assertEqual(min_val, 4096)
+        self.assertEqual(max_val, 65536)
+
+    @unittest.mock.patch(
+        "avocado.utils.nvme.get_atomic_write_units", return_value=(0, 0)
+    )
+    @unittest.mock.patch(
+        "avocado.utils.process.system_output", return_value=b"/dev/nvme0n1\n"
+    )
+    def test_find_device_with_atomic_write_none_found(
+        self, _mock_sys_out, _mock_get_units
+    ):
+        dev, min_val, max_val = nvme.find_device_with_atomic_write()
+        self.assertIsNone(dev)
+        self.assertEqual(min_val, 0)
+        self.assertEqual(max_val, 0)
+
+    @unittest.mock.patch("avocado.utils.process.system_output")
+    def test_get_free_space_blocks(self, mock_sys_out):
+        mock_sys_out.return_value = (
+            b"Number  Start    End      Size     Type     File system  Flags\n"
+            b"        0.00MiB  1.00MiB  1.00MiB           Free Space\n"
+            b" 1      1.00MiB  100MiB   99.0MiB  primary  ext4\n"
+            b"        100MiB   200MiB   100MiB            Free Space\n"
+        )
+        blocks = nvme.get_free_space_blocks("/dev/nvme0n1")
+        self.assertEqual(blocks, [(0.0, 1.0, 1.0), (100.0, 200.0, 100.0)])
+
+    @unittest.mock.patch("avocado.utils.process.run")
+    @unittest.mock.patch("avocado.utils.process.system_output")
+    @unittest.mock.patch(
+        "avocado.utils.nvme.get_free_space_blocks",
+        return_value=[(100.0, 300.0, 200.0)],
+    )
+    def test_create_partitions_in_free_space(self, _mock_free, mock_sys_out, mock_run):
+        mock_sys_out.side_effect = [
+            b"/dev/nvme0n1\n",
+            b"/dev/nvme0n1\n/dev/nvme0n1p1\n/dev/nvme0n1p2\n",
+        ]
+        parts = nvme.create_partitions_in_free_space("/dev/nvme0n1", count=2)
+        self.assertEqual(parts, ["/dev/nvme0n1p1", "/dev/nvme0n1p2"])
+        expected_calls = [
+            unittest.mock.call(
+                "parted -s /dev/nvme0n1 mkpart primary 100.0MiB 200.0MiB",
+                sudo=True,
+            ),
+            unittest.mock.call(
+                "parted -s /dev/nvme0n1 mkpart primary 200.0MiB 300.0MiB",
+                sudo=True,
+            ),
+            unittest.mock.call("partprobe /dev/nvme0n1", sudo=True, ignore_status=True),
+        ]
+        mock_run.assert_has_calls(expected_calls)
+
+    @unittest.mock.patch("avocado.utils.nvme.get_free_space_blocks", return_value=[])
+    def test_create_partitions_in_free_space_no_space(self, _mock_free):
+        with self.assertRaises(nvme.NvmeException):
+            nvme.create_partitions_in_free_space("/dev/nvme0n1")
+
+    @unittest.mock.patch("avocado.utils.process.run")
+    def test_remove_partitions(self, mock_run):
+        nvme.remove_partitions("/dev/nvme0n1", ["/dev/nvme0n1p1", "/dev/nvme0n1p2"])
+        expected_calls = [
+            unittest.mock.call(
+                "parted -s /dev/nvme0n1 rm 1", sudo=True, ignore_status=True
+            ),
+            unittest.mock.call(
+                "parted -s /dev/nvme0n1 rm 2", sudo=True, ignore_status=True
+            ),
+            unittest.mock.call("partprobe /dev/nvme0n1", sudo=True, ignore_status=True),
+        ]
+        mock_run.assert_has_calls(expected_calls)
+
+
 if __name__ == "__main__":
     unittest.main()
