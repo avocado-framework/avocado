@@ -212,6 +212,18 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertIn("   data    " + mapping["data_dir"], result.stdout_text)
         self.assertIn("   logs    " + mapping["logs_dir"], result.stdout_text)
 
+    def test_missing_config_file(self):
+        config_file = os.path.join(self.tmpdir.name, "missing.conf")
+        cmd = f"{AVOCADO} --config {config_file} config --datadir"
+        result = process.run(cmd, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_FAIL
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            (f"Avocado did not return rc {expected_rc}:" f"\n{result}"),
+        )
+        self.assertIn(config_file, result.stderr_text)
+
     def test_runner_phases(self):
         cmd_line = (
             f"{AVOCADO} run --disable-sysinfo "
