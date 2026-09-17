@@ -19,6 +19,7 @@ Avocado application command line parsing.
 import argparse
 from configparser import ConfigParser, NoOptionError
 from glob import glob
+from pathlib import Path
 
 from avocado.core import exit_codes
 from avocado.core.nrunner.runnable import Runnable
@@ -135,6 +136,10 @@ class Parser:
 
         # Load settings from file, if user provides one
         if self.args.config is not None:
+            if not Path(self.args.config).is_file():
+                self.application.error(
+                    f"Could not find the avocado config file: " f"{self.args.config}"
+                )
             settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
