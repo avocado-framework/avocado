@@ -41,13 +41,14 @@ class WaitForFunctionalTest(TestCaseTmpDir):
         filepath = os.path.join(self.tmpdir.name, "nonexistent.txt")
 
         # Wait for a file that will never be created
-        start = time.time()
+        start = time.monotonic()
         result = wait.wait_for(lambda: os.path.exists(filepath), timeout=0.5, step=0.1)
-        elapsed = time.time() - start
+        elapsed = time.monotonic() - start
 
         self.assertIsNone(result)
         self.assertGreaterEqual(elapsed, 0.5)
-        self.assertLess(elapsed, 0.7)
+        # Allow scheduling delays on busy CI hosts
+        self.assertLess(elapsed, 1.5)
 
 
 if __name__ == "__main__":

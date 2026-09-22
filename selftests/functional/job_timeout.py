@@ -139,9 +139,10 @@ class JobTimeOutTest(TestCaseTmpDir):
             )
 
     def test_sleep_short_timeout(self):
+        # Keep passtest queued so the short job timeout cannot interrupt its setup.
         cmd_line = (
             f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
-            f"--disable-sysinfo "
+            f"--disable-sysinfo --max-parallel-tasks=1 "
             f"--job-timeout=1 {self.script_long.path} "
             f"examples/tests/passtest.py"
         )
