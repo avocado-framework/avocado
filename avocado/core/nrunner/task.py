@@ -67,16 +67,20 @@ class TaskStatusService:
         else:
             self._connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self._connection.connect(self.uri)
+        self._connection.settimeout(5)
 
     def post(self, status):
         data = json_dumps(status)
         try:
-            self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
+            self.connection.sendall(data.encode("ascii") + "\n".encode("ascii"))
+        except socket.timeout:
+            LOG.warning(f"Connection with {self.uri} has timed out.")
+            return False
         except BrokenPipeError:
             try:
                 self._create_connection()
-                self.connection.send(data.encode("ascii") + "\n".encode("ascii"))
-            except ConnectionRefusedError:
+                self.connection.sendall(data.encode("ascii") + "\n".encode("ascii"))
+            except (ConnectionRefusedError, socket.timeout):
                 LOG.warning(f"Connection with {self.uri} has been lost.")
                 return False
         return True
