@@ -35,6 +35,11 @@ class StatusRepo:
         self._status_journal_summary = []
         #: Contains the task IDs keyed by the result received
         self._by_result = {}
+        #: Contains the most recently received finished message for each task.
+        #: This is deliberately separate from ``_all_data``. A running or log
+        #: message can arrive after a finished message and in that case the
+        #: latest arbitrary message is not the task's terminal result.
+        self._finished_data = {}
 
     def _handle_task_finished(self, message):
         task_id = message["id"]
@@ -56,6 +61,7 @@ class StatusRepo:
 
         self._set_by_result(message)
         self._set_task_data(message)
+        self._finished_data[task_id] = message.copy()
         LOG.debug('Task "%s" finished message: "%s"', task_id, message)
 
     def _handle_task_started(self, message):
@@ -97,6 +103,15 @@ class StatusRepo:
         if task_data is None:
             return None
         return task_data[-1]
+
+    def get_finished_task_data(self, task_id):
+        """Return the finished message for a task regardless of later data.
+
+        Status messages other than ``finished`` may arrive late. Consumers
+        interested in a task result must use this method instead of assuming
+        that :meth:`get_latest_task_data` is a terminal message.
+        """
+        return self._finished_data.get(task_id)
 
     def status_journal_summary_pop(self):
         return heapq.heappop(self._status_journal_summary)

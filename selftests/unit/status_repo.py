@@ -168,6 +168,32 @@ class StatusRepo(TestCase):
         with self.assertRaises(IndexError):
             self.status_repo.status_journal_summary_pop()
 
+    def test_finished_data_is_not_obscured_by_late_running_data(self):
+        finished = {
+            "id": "1-foo",
+            "status": "finished",
+            "result": "pass",
+            "time": 1597894378.0,
+            "job_id": "0000000000000000000000000000000000000000",
+        }
+        running = {
+            "id": "1-foo",
+            "status": "running",
+            "time": 1597894379.0,
+            "job_id": "0000000000000000000000000000000000000000",
+        }
+
+        self.status_repo.process_message(finished)
+        self.status_repo.process_message(running)
+
+        self.assertEqual(
+            self.status_repo.get_latest_task_data("1-foo")["status"], "running"
+        )
+        self.assertEqual(
+            self.status_repo.get_finished_task_data("1-foo")["result"], "pass"
+        )
+        self.assertEqual(self.status_repo.get_task_status("1-foo"), "finished")
+
     def test_task_status_time(self):
         msg = {
             "id": "1-foo",
