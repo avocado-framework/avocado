@@ -212,11 +212,15 @@ class Worker:
             finish_message = messages.FinishedMessage.get(
                 "interrupted", f"Test interrupted: {reason}", id=task_id, job_id=job_id
             )
-            try:
-                current_status, _ = self._state_machine._status_repo._status[task_id]
-            except KeyError:
-                return
+            current_status = self._state_machine._status_repo.get_task_status(task_id)
             if current_status != "finished":
+                if current_status is None:
+                    start_message = messages.StartedMessage.get(
+                        output_dir=terminated_task.task.runnable.output_dir,
+                        id=task_id,
+                        job_id=job_id,
+                    )
+                    self._state_machine._status_repo.process_message(start_message)
                 self._state_machine._status_repo.process_message(log_message)
                 self._state_machine._status_repo.process_message(finish_message)
 
