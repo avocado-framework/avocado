@@ -420,8 +420,14 @@ def del_last_configuration():
     if len(CONFIG) == 1:
         return
     configuration = CONFIG.pop()
-    for logger_name in configuration:
+    for logger_name, handlers in configuration.items():
         disable_log_handler(logger_name)
+        for handler in handlers:
+            # MemoryHandler.close() flushes and clears its target.
+            target = getattr(handler, "target", None)
+            handler.close()
+            if target is not None:
+                target.flush()
     configuration = CONFIG[-1]
     for logger_name, handlers in configuration.items():
         logger = logging.getLogger(logger_name)

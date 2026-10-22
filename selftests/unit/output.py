@@ -1,4 +1,7 @@
+import logging
+import os
 import sys
+import tempfile
 import types
 import unittest.mock
 from importlib.metadata import EntryPoint
@@ -124,6 +127,54 @@ class TestLogPluginFailures(unittest.TestCase):
         )
 
         log_error.assert_not_called()
+
+
+class TestLogConfigurationCleanup(unittest.TestCase):
+    def setUp(self):
+        self.original_config = output.CONFIG
+        output.CONFIG = [{}]
+        self.logger = logging.getLogger(f"avocado.test.buffered.{id(self)}")
+        self.original_handlers = list(self.logger.handlers)
+        self.original_level = self.logger.level
+        self.original_propagate = self.logger.propagate
+        self.logger.handlers = []
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.propagate = False
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmpdir.cleanup)
+
+    def tearDown(self):
+        for handler in self.logger.handlers:
+            handler.close()
+        self.logger.handlers = self.original_handlers
+        self.logger.setLevel(self.original_level)
+        self.logger.propagate = self.original_propagate
+        output.CONFIG = self.original_config
+
+    def test_removing_configuration_flushes_buffered_file_handler(self):
+        output.CONFIG.append({})
+        log_path = os.path.join(self.tmpdir.name, "buffered.log")
+        handler = output.add_log_handler(
+            self.logger,
+            logging.FileHandler,
+            log_path,
+            buffer_size=1000,
+        )
+        target = handler.target
+        self.addCleanup(target.close)
+        self.addCleanup(handler.close)
+        self.logger.info("record waiting in memory")
+
+        self.assertEqual(os.path.getsize(log_path), 0)
+
+        output.del_last_configuration()
+
+        with open(log_path, encoding="utf-8") as log_file:
+            self.assertIn("record waiting in memory", log_file.read())
+        self.assertNotIn(handler, self.logger.handlers)
+        self.assertEqual(handler.buffer, [])
+        self.assertIsNone(handler.target)
+        self.assertFalse(target.stream.closed)
 
 
 if __name__ == "__main__":
