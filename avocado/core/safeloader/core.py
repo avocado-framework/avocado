@@ -225,7 +225,7 @@ def _examine_class(
                          unittests, the target_class will most probably be
                          "TestCase".  When attempting to find Avocado tests,
                          the target_class  will most probably be "Test".
-    :type target_class: str
+    :type target_class: str or tuple
     :param determine_match: a callable that will determine if a match has
                             occurred or not
     :type determine_match: function
@@ -357,7 +357,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
                          unittests, the target_class will most probably be
                          "TestCase".  When attempting to find Avocado tests,
                          the target_class  will most probably be "Test".
-    :type target_class: str
+    :type target_class: str or tuple
     :type determine_match: a callable that will determine if a given module
                            and class is contains valid Python tests
     :type determine_match: function
@@ -484,5 +484,6 @@ def find_avocado_tests(path):
 
 
 def find_python_unittests(path):
-    found, _ = find_python_tests("unittest", "TestCase", _determine_match_python, path)
+    classes = ("TestCase", "IsolatedAsyncioTestCase")
+    found, _ = find_python_tests("unittest", classes, _determine_match_python, path)
     return found
