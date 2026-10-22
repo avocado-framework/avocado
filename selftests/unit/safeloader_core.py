@@ -105,6 +105,23 @@ class Child(BaseClass):
         pass
 """
 
+ISOLATED_ASYNCIO_UNITTEST = """
+import unittest
+from unittest import IsolatedAsyncioTestCase
+
+class AsyncTest(unittest.IsolatedAsyncioTestCase):
+    async def test_async(self):
+        pass
+
+class RegularTest(unittest.TestCase):
+    def test_regular(self):
+        pass
+
+class ImportedAsyncTest(IsolatedAsyncioTestCase):
+    async def test_imported_async(self):
+        pass
+"""
+
 # The following definitions will be used while creating a directory
 # structure that contains a pre-defined set of modules that will be
 # used on tests below
@@ -184,6 +201,7 @@ class FindClassAndMethods(UnlimitedDiff):
                     ("test_import_not_on_parent", {}, []),
                     ("test_recursive_discovery", {}, []),
                     ("test_recursive_discovery_python_unittest", {}, []),
+                    ("test_isolated_asyncio_unittest", {}, []),
                 ],
                 "MultiLevel": [
                     ("test_base_level0", {}, []),
@@ -292,6 +310,20 @@ class FindClassAndMethods(UnlimitedDiff):
             ],
         }
         self.assertEqual(expected, tests)
+
+    def test_isolated_asyncio_unittest(self):
+        temp_test = script.TemporaryScript(
+            "isolated_asyncio_unittest.py", ISOLATED_ASYNCIO_UNITTEST
+        )
+        temp_test.save()
+        tests = find_python_unittests(temp_test.path)
+        expected = {
+            "AsyncTest": [("test_async", {}, [])],
+            "RegularTest": [("test_regular", {}, [])],
+            "ImportedAsyncTest": [("test_imported_async", {}, [])],
+        }
+        self.assertEqual(list(expected.items()), list(tests.items()))
+        temp_test.remove()
 
 
 class MultiLevel(TestCaseTmpDir):
