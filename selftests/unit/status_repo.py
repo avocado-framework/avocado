@@ -194,6 +194,32 @@ class StatusRepo(TestCase):
         )
         self.assertEqual(self.status_repo.get_task_status("1-foo"), "finished")
 
+    def test_first_finished_message_is_authoritative(self):
+        first = {
+            "id": "1-foo",
+            "status": "finished",
+            "result": "pass",
+            "time": 1597894378.0,
+            "job_id": "0000000000000000000000000000000000000000",
+        }
+        duplicate = {
+            "id": "1-foo",
+            "status": "finished",
+            "result": "fail",
+            "time": 1597894379.0,
+            "job_id": "0000000000000000000000000000000000000000",
+        }
+
+        self.status_repo.process_message(first)
+        with self.assertLogs(repo.LOG, level="WARNING"):
+            self.status_repo.process_message(duplicate)
+
+        self.assertEqual(
+            self.status_repo.get_finished_task_data("1-foo")["result"], "pass"
+        )
+        self.assertEqual(self.status_repo.result_stats, {"pass": 1})
+        self.assertEqual(len(self.status_repo.get_all_task_data("1-foo")), 1)
+
     def test_task_status_time(self):
         msg = {
             "id": "1-foo",

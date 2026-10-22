@@ -160,6 +160,18 @@ class StatusRepo:
             return
         if message.get("status") == "started" and "output_dir" not in message:
             raise StatusMsgMissingDataError("output_dir")
+
+        task_id = message.get("id")
+        if message.get("status") == "finished" and task_id in self._finished_data:
+            terminal = self._finished_data[task_id]
+            LOG.warning(
+                'Ignoring duplicate finished message for task "%s" '
+                "(kept result=%r, duplicate result=%r)",
+                task_id,
+                terminal.get("result"),
+                message.get("result"),
+            )
+            return
         message.pop("job_id")
 
         self._update_status(message)
