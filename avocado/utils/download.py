@@ -101,6 +101,8 @@ def url_download(url, filename, data=None, timeout=300):
         process.terminate()
         process.join()
         raise OSError("Aborting downloading. Timeout was reached.")
+    if process.exitcode != 0:
+        raise OSError(f"Failed downloading {url} (exit code {process.exitcode}).")
 
 
 def url_download_interactive(url, output_file, title="", chunk_size=102400):
@@ -203,7 +205,17 @@ def get_file(
     hash_file = _verify_hash(dst)
 
     while not hash_file == hash_expected:
-        hash_file = _verify_hash(_get_file(src, dst, permissions))
+        try:
+            filename = _get_file(src, dst, permissions)
+        except OSError:
+            if urllib.parse.urlparse(src)[0] not in ["http", "https"]:
+                raise
+            download_failures += 1
+            if download_failures > download_retries:
+                raise
+            log.error("Retrying download of src %s", src)
+            continue
+        hash_file = _verify_hash(filename)
         if hash_file != hash_expected:
             log.error("It seems that dst %s is corrupted", dst)
             download_failures += 1
