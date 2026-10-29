@@ -11,6 +11,9 @@ LOG = logging.getLogger(__name__)
 class StatusServer:
     """Server that listens for status messages and updates a StatusRepo."""
 
+    # Buffered records can be read without suspending the event loop.
+    _RECORDS_PER_EVENT_LOOP_TURN = 64
+
     def __init__(self, uri, repo):
         """Initializes a new StatusServer.
 
@@ -53,6 +56,7 @@ class StatusServer:
             os.unlink(self._uri)
 
     async def cb(self, reader, _):
+        records_this_turn = 0
         while True:
             try:
                 raw_message = await reader.readline()
@@ -68,3 +72,8 @@ class StatusServer:
                 self._repo.process_raw_message(raw_message)
             except StatusMsgInvalidJSONError as e:
                 LOG.warning("Invalid JSON in internal status message: %s", e)
+
+            records_this_turn += 1
+            if records_this_turn >= self._RECORDS_PER_EVENT_LOOP_TURN:
+                records_this_turn = 0
+                await asyncio.sleep(0)
