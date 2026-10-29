@@ -32,7 +32,7 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
-        self.assertIn(b"'log': b'File fetched at", res.stdout)
+        self.assertIn(b"'log': b'File fetched at", res.stdout, res.stderr_text)
         self.assertEqual(res.exit_status, 0)
 
     @unittest.skipUnless(os.getenv("CI"), skip_message)
@@ -44,7 +44,7 @@ class RunnableRun(unittest.TestCase):
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
-        self.assertIn(b"'log': b'File fetched at", res.stdout)
+        self.assertIn(b"'log': b'File fetched at", res.stdout, res.stderr_text)
         self.assertEqual(res.exit_status, 0)
 
 
