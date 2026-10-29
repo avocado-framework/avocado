@@ -206,9 +206,13 @@ class RunnerLogHandler(logging.Handler):
             kwargs.update(**self.kwargs)
         else:
             kwargs = self.kwargs
+        gc_was_enabled = gc.isenabled()
         gc.disable()
-        self.queue.put(self.message.get(msg, **kwargs))
-        gc.enable()
+        try:
+            self.queue.put(self.message.get(msg, **kwargs))
+        finally:
+            if gc_was_enabled:
+                gc.enable()
 
 
 class StreamToQueue:
@@ -225,9 +229,13 @@ class StreamToQueue:
         self.message = _supported_types[message_type]
 
     def write(self, buf):
+        gc_was_enabled = gc.isenabled()
         gc.disable()
-        self.queue.put(self.message.get(buf))
-        gc.enable()
+        try:
+            self.queue.put(self.message.get(buf))
+        finally:
+            if gc_was_enabled:
+                gc.enable()
 
     def flush(self):
         pass
