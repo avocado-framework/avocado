@@ -126,6 +126,38 @@ class StatusRepo(TestCase):
             self.status_repo.get_latest_task_data("1-foo"),
             {"status": "running", "time": 1597894378.6103745},
         )
+        self.assertEqual(
+            self.status_repo._status["1-foo"], ("running", 1597894378.6103745)
+        )
+        with self.assertRaises(IndexError):
+            self.status_repo.status_journal_summary_pop()
+
+    def test_heartbeat_after_finished(self):
+        self.status_repo.process_message(
+            {
+                "id": "1-foo",
+                "status": "finished",
+                "result": "pass",
+                "time": 1000000001.0,
+                "job_id": self.status_repo.job_id,
+            }
+        )
+        self.status_repo.status_journal_summary_pop()
+        self.status_repo.process_message(
+            {
+                "id": "1-foo",
+                "status": "running",
+                "time": 1000000002.0,
+                "job_id": self.status_repo.job_id,
+            }
+        )
+        self.assertEqual(self.status_repo.get_task_status("1-foo"), "finished")
+        self.assertEqual(
+            self.status_repo.get_latest_task_data("1-foo"),
+            {"status": "running", "time": 1000000002.0},
+        )
+        with self.assertRaises(IndexError):
+            self.status_repo.status_journal_summary_pop()
 
     def test_task_status_time(self):
         msg = {
@@ -176,6 +208,7 @@ class StatusRepo(TestCase):
         msg = {
             "id": "1-foo",
             "status": "running",
+            "type": "log",
             "time": 1000000003.0,
             "job_id": "0000000000000000000000000000000000000000",
         }
@@ -183,6 +216,7 @@ class StatusRepo(TestCase):
         msg = {
             "id": "1-foo",
             "status": "running",
+            "type": "log",
             "time": 1000000002.0,
             "job_id": "0000000000000000000000000000000000000000",
         }

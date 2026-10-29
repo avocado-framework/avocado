@@ -110,8 +110,12 @@ class StatusRepo:
         time = message.get("time")
         if not all((task_id, status, time)):
             return
+        # heartbeats update liveness but have no presentation content
+        is_heartbeat = status == "running" and message.get("type") is None
         if task_id not in self._status:
             self._status[task_id] = (status, time)
+            if is_heartbeat:
+                return
             heapq.heappush(self._status_journal_summary, (time, task_id, status, 0))
         else:
             current_status, _ = self._status[task_id]
@@ -127,6 +131,8 @@ class StatusRepo:
                 )
             else:
                 self._status[task_id] = (status, time)
+            if is_heartbeat:
+                return
             index = len(self.get_all_task_data(task_id))
             heapq.heappush(self._status_journal_summary, (time, task_id, status, index))
 
