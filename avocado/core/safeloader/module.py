@@ -36,7 +36,7 @@ class PythonModule:
                        imported from
         :type module: str
         :param klass: the possibly interesting class original name
-        :type klass: str
+        :type klass: str or tuple
         """
         self.klass_imports = set()
         self.mod_imports = set()
@@ -44,7 +44,7 @@ class PythonModule:
             path = os.path.join(path, "__init__.py")
         self.path = path
         self.module = module
-        self.klass = klass
+        self.klass = (klass,) if isinstance(klass, str) else klass
         self.imported_symbols = {}
         with open(self.path, encoding="utf-8") as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
@@ -80,7 +80,7 @@ class PythonModule:
                     continue
                 cls_module = base.value.id
                 cls_name = base.attr
-                if cls_module in self.mod_imports and cls_name == self.klass:
+                if cls_module in self.mod_imports and cls_name in self.klass:
                     return True
         return False
 
@@ -128,9 +128,11 @@ class PythonModule:
             self.interesting_klass_found = True
         if statement.module != self.module:
             return
-        name = get_statement_import_as(statement).get(self.klass, None)
-        if name is not None:
-            self.klass_imports.add(name)
+        imported_as = get_statement_import_as(statement)
+        for klass in self.klass:
+            name = imported_as.get(klass)
+            if name is not None:
+                self.klass_imports.add(name)
 
     @staticmethod
     def _all_module_level_names(full_module_name):
