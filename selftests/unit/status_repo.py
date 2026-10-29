@@ -46,13 +46,24 @@ class StatusRepo(TestCase):
         with self.assertRaises(repo.StatusMsgMissingDataError):
             self.status_repo._handle_task_started(msg)
 
-    def test_handle_task_finished_no_result(self):
-        msg = {"id": "1-foo", "status": "finished"}
-        self.status_repo._handle_task_finished(msg)
-        self.assertEqual(
-            self.status_repo.get_all_task_data("1-foo"), [{"status": "finished"}]
-        )
-        self.assertEqual(self.status_repo._by_result.get(None), ["1-foo"])
+    def test_handle_task_finished_invalid_result(self):
+        for fields in (
+            {},
+            {"result": None},
+            {"result": 1},
+            {"result": False},
+            {"result": []},
+            {"result": {}},
+            {"result": "unsupported"},
+        ):
+            with self.subTest(fields=fields):
+                msg = {"id": "1-foo", "status": "finished", **fields}
+                with self.assertLogs(repo.LOG, level="ERROR"):
+                    self.status_repo._handle_task_finished(msg)
+                data = self.status_repo.get_latest_task_data("1-foo")
+                self.assertEqual(data["result"], "error")
+                self.assertIn("unsupported status", data["fail_reason"])
+                self.assertEqual(self.status_repo._by_result.get("error"), ["1-foo"])
 
     def test_handle_task_finished_result(self):
         msg = {"id": "1-foo", "status": "finished", "result": "pass"}

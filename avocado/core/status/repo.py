@@ -40,7 +40,7 @@ class StatusRepo:
         task_id = message["id"]
 
         result = message.get("result")
-        if result is not None and result.upper() not in STATUSES:
+        if not isinstance(result, str) or result.upper() not in STATUSES:
             overridden = "error"
             message["result"] = overridden
             message["fail_reason"] = (
