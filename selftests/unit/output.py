@@ -129,7 +129,7 @@ class TestLogPluginFailures(unittest.TestCase):
         log_error.assert_not_called()
 
 
-class TestLogConfigurationCleanup(unittest.TestCase):
+class TestLogConfiguration(unittest.TestCase):
     def setUp(self):
         self.original_config = output.CONFIG
         output.CONFIG = [{}]
@@ -150,6 +150,24 @@ class TestLogConfigurationCleanup(unittest.TestCase):
         self.logger.setLevel(self.original_level)
         self.logger.propagate = self.original_propagate
         output.CONFIG = self.original_config
+
+    def test_configured_level_filters_records_before_buffering(self):
+        handler = output.add_log_handler(
+            self.logger,
+            logging.FileHandler,
+            os.path.join(self.tmpdir.name, "level.log"),
+            level=logging.INFO,
+            buffer_size=1000,
+        )
+        self.addCleanup(handler.target.close)
+        self.addCleanup(handler.close)
+        self.logger.debug("record below configured level")
+        self.assertEqual(handler.buffer, [])
+        self.logger.info("record at configured level")
+        self.assertEqual(
+            [record.getMessage() for record in handler.buffer],
+            ["record at configured level"],
+        )
 
     def test_removing_configuration_flushes_buffered_file_handler(self):
         output.CONFIG.append({})

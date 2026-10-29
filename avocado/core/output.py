@@ -714,6 +714,7 @@ def add_log_handler(
 
     if klass == logging.FileHandler and buffer_size > 0:
         buffered_wrapper = logging.handlers.MemoryHandler(buffer_size)
+        buffered_wrapper.setLevel(level)
         buffered_wrapper.setTarget(handler)
         handler = buffered_wrapper
 
