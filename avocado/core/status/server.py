@@ -3,6 +3,7 @@ import logging
 import os
 
 from avocado.core.settings import settings
+from avocado.core.status.repo import StatusMsgMissingDataError
 from avocado.core.status.utils import StatusMsgInvalidJSONError
 
 LOG = logging.getLogger(__name__)
@@ -72,6 +73,8 @@ class StatusServer:
                 self._repo.process_raw_message(raw_message)
             except StatusMsgInvalidJSONError as e:
                 LOG.warning("Invalid JSON in internal status message: %s", e)
+            except StatusMsgMissingDataError:
+                LOG.exception("Missing data in internal status message")
 
             records_this_turn += 1
             if records_this_turn >= self._RECORDS_PER_EVENT_LOOP_TURN:

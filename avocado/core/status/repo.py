@@ -59,8 +59,6 @@ class StatusRepo:
         LOG.debug('Task "%s" finished message: "%s"', task_id, message)
 
     def _handle_task_started(self, message):
-        if "output_dir" not in message:
-            raise StatusMsgMissingDataError("output_dir")
         task_id = message["id"]
         LOG.debug('Task "%s" started message: "%s"', task_id, message)
         self._set_task_data(message)
@@ -145,6 +143,8 @@ class StatusRepo:
         if job_id != self.job_id:
             LOG.warning("Received a message destined for a different job: %s", message)
             return
+        if message.get("status") == "started" and "output_dir" not in message:
+            raise StatusMsgMissingDataError("output_dir")
         message.pop("job_id")
 
         self._update_status(message)
