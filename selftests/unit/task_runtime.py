@@ -1,10 +1,14 @@
+import asyncio
 import os
-from unittest import TestCase
+from unittest import IsolatedAsyncioTestCase, TestCase
+from unittest.mock import Mock
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import Task
+from avocado.core.status.repo import StatusRepo
 from avocado.core.suite import TestSuite
 from avocado.core.task.runtime import RuntimeTask, RuntimeTaskGraph
+from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.utils import script
 from selftests.utils import TestCaseTmpDir
 
@@ -55,6 +59,49 @@ class Runtime(TestCase):
         self.assertEqual(self.runtime_task.task.runnable.kind, "noop")
         self.assertEqual(self.runtime_task.task.runnable.uri, "noop")
         self.assertEqual(self.runtime_task.status, "LOST CONTACT")
+
+
+class WorkerMonitor(IsolatedAsyncioTestCase):
+    async def test_first_finished_result_survives_late_messages(self):
+        for delayed in (False, True):
+            with self.subTest(delayed=delayed):
+                task = Task(Runnable("noop", "noop"), "1-noop", job_id="job")
+                runtime_task = RuntimeTask(task)
+                status_repo = StatusRepo(task.job_id)
+                state_machine = TaskStateMachine([runtime_task], status_repo)
+                state_machine.started.append(state_machine.requested.popleft())
+                spawner = Mock()
+                spawner.is_task_alive.return_value = False
+                worker = Worker(state_machine, spawner)
+                monitor = asyncio.create_task(worker.monitor())
+                if delayed:
+                    # Let monitoring reach its polling loop before messages arrive.
+                    await asyncio.sleep(0)
+
+                for timestamp, fields in enumerate(
+                    (
+                        {"status": "finished", "result": "pass"},
+                        {"status": "running"},
+                        {"status": "finished", "result": "fail"},
+                    ),
+                    1,
+                ):
+                    status_repo.process_message(
+                        {
+                            "id": str(task.identifier),
+                            "job_id": task.job_id,
+                            "time": timestamp,
+                            **fields,
+                        }
+                    )
+
+                await asyncio.wait_for(monitor, 1)
+
+                self.assertEqual(runtime_task.result, "pass")
+                self.assertEqual(state_machine.finished, [runtime_task])
+                self.assertEqual(
+                    status_repo.get_finished_task_data("1-noop")["result"], "pass"
+                )
 
 
 class DependencyGraph(TestCaseTmpDir):
