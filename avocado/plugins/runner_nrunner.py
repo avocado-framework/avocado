@@ -390,6 +390,7 @@ class Runner(SuiteRunner):
         job.result.end_tests()
         # Wake the status server before waiting for its serve_forever task.
         self.status_server.close()
+        loop.run_until_complete(self.status_server.wait_closed())
         # Cancel pending asyncio tasks before closing
         for task_attr in ("status_updater_task", "status_server_task"):
             task = getattr(self, task_attr, None)

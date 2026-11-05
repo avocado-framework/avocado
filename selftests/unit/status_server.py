@@ -1,12 +1,84 @@
 import asyncio
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
 
 
 class StatusServerTest(IsolatedAsyncioTestCase):
+    async def test_callback_closes_client_on_eof_or_read_error(self):
+        for error in (None, OSError("read failure")):
+            with self.subTest(error=error):
+                server = StatusServer("127.0.0.1:8888", StatusRepo("job"))
+                reader = asyncio.StreamReader()
+                if error is None:
+                    reader.feed_eof()
+                else:
+                    reader.set_exception(error)
+                writer = Mock(wait_closed=AsyncMock())
+
+                await server.cb(reader, writer)
+
+                writer.close.assert_called_once_with()
+                writer.wait_closed.assert_awaited_once_with()
+                self.assertNotIn(writer, server._connections)
+
+    async def test_callback_closes_client_on_processing_error(self):
+        repo = Mock()
+        repo.process_raw_message.side_effect = RuntimeError("unexpected failure")
+        server = StatusServer("127.0.0.1:8888", repo)
+        reader = asyncio.StreamReader()
+        reader.feed_data(b"{}\n")
+        reader.feed_eof()
+        writer = Mock(wait_closed=AsyncMock())
+
+        with self.assertRaises(RuntimeError):
+            await server.cb(reader, writer)
+
+        writer.close.assert_called_once_with()
+        writer.wait_closed.assert_awaited_once_with()
+        self.assertNotIn(writer, server._connections)
+
+    async def test_close_closes_connected_clients_and_waits(self):
+        for error in (None, ConnectionResetError("disconnected")):
+            with self.subTest(error=error):
+                server = StatusServer("127.0.0.1:8888", StatusRepo("job"))
+                server._server_task = Mock(wait_closed=AsyncMock())
+                reader = asyncio.StreamReader()
+                writer = Mock(wait_closed=AsyncMock(side_effect=error))
+                writer.close.side_effect = reader.feed_eof
+                callback = asyncio.create_task(server.cb(reader, writer))
+                await asyncio.sleep(0)
+
+                server.close()
+                await server.wait_closed()
+                await callback
+
+                server._server_task.close.assert_called_once_with()
+                server._server_task.wait_closed.assert_awaited_once_with()
+                writer.close.assert_called()
+                writer.wait_closed.assert_awaited()
+                self.assertNotIn(writer, server._connections)
+
+    async def test_callback_after_listener_closed_closes_client(self):
+        server = StatusServer("127.0.0.1:8888", StatusRepo("job"))
+        # simulate listener shutdown before an accepted client's callback starts
+        server._server_task = Mock()
+        server._server_task.is_serving.return_value = False
+        # an idle client would block readline() until closing it delivers EOF
+        reader = asyncio.StreamReader()
+        writer = Mock(wait_closed=AsyncMock())
+        writer.close.side_effect = reader.feed_eof
+
+        # start the delayed callback which must finish without waiting for input
+        await asyncio.wait_for(server.cb(reader, writer), 0.5)
+
+        # verify that the client was closed, awaited, and removed from tracking
+        writer.close.assert_called_once_with()
+        writer.wait_closed.assert_awaited_once_with()
+        self.assertNotIn(writer, server._connections)
+
     def test_close_before_server_creation(self):
         StatusServer("127.0.0.1:8888", StatusRepo("job")).close()
 
