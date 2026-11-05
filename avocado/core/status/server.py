@@ -55,8 +55,11 @@ class StatusServer:
         if self._server_task is None:
             return
         self._server_task.close()
-        if ":" not in self._uri and os.path.exists(self._uri):
-            os.unlink(self._uri)
+        if ":" not in self._uri:
+            try:
+                os.unlink(self._uri)
+            except FileNotFoundError:
+                pass
 
     async def cb(self, reader, _):
         records_this_turn = 0

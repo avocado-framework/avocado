@@ -20,6 +20,18 @@ class StatusServerTest(IsolatedAsyncioTestCase):
         server._server_task.close.assert_called_once_with()
         unlink.assert_not_called()
 
+    def test_close_tolerates_disappearing_unix_socket(self):
+        server = StatusServer("/fake/status.sock", StatusRepo("job"))
+        server._server_task = Mock()
+        with patch(
+            "avocado.core.status.server.os.path.exists", return_value=True
+        ), patch(
+            "avocado.core.status.server.os.unlink", side_effect=FileNotFoundError
+        ) as unlink:
+            server.close()
+        server._server_task.close.assert_called_once_with()
+        unlink.assert_called_once_with(server.uri)
+
     async def test_invalid_status_does_not_discard_following_message(self):
         for invalid_status in (
             b'{"status": "running"}\n',
