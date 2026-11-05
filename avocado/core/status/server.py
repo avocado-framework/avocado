@@ -52,6 +52,8 @@ class StatusServer:
         await self._server_task.serve_forever()
 
     def close(self):
+        if self._server_task is None:
+            return
         self._server_task.close()
         if os.path.exists(self._uri):
             os.unlink(self._uri)

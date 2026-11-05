@@ -6,6 +6,9 @@ from avocado.core.status.server import StatusServer
 
 
 class StatusServerTest(IsolatedAsyncioTestCase):
+    def test_close_before_server_creation(self):
+        StatusServer("127.0.0.1:8888", StatusRepo("job")).close()
+
     async def test_invalid_status_does_not_discard_following_message(self):
         for invalid_status in (
             b'{"status": "running"}\n',
