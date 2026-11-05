@@ -3,6 +3,7 @@ import logging
 import os
 
 from avocado.core.settings import settings
+from avocado.core.status.repo import StatusMsgMissingDataError
 from avocado.core.status.utils import StatusMsgInvalidJSONError
 
 LOG = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class StatusServer:
         self._uri = uri
         self._repo = repo
         self._server_task = None
+        self._connections = set()
 
     @property
     def uri(self):
@@ -51,29 +53,71 @@ class StatusServer:
         await self._server_task.serve_forever()
 
     def close(self):
+        if self._server_task is None:
+            return
         self._server_task.close()
-        if os.path.exists(self._uri):
-            os.unlink(self._uri)
-
-    async def cb(self, reader, _):
-        records_this_turn = 0
-        while True:
+        for writer in tuple(self._connections):
             try:
-                raw_message = await reader.readline()
-            except ConnectionResetError as e:
-                LOG.warning("Connection was reset: %s", e)
-                return
-            except BrokenPipeError as e:
-                LOG.warning("Broken pipe: %s", e)
-                return
-            if not raw_message:
-                return
+                writer.close()
+            except OSError as error:
+                LOG.debug("Error closing status client connection: %s", error)
+        if ":" not in self._uri:
             try:
-                self._repo.process_raw_message(raw_message)
-            except StatusMsgInvalidJSONError as e:
-                LOG.warning("Invalid JSON in internal status message: %s", e)
+                os.unlink(self._uri)
+            except FileNotFoundError:
+                pass
 
-            records_this_turn += 1
-            if records_this_turn >= self._RECORDS_PER_EVENT_LOOP_TURN:
-                records_this_turn = 0
-                await asyncio.sleep(0)
+    async def wait_closed(self):
+        """Wait for the listener and tracked client connections to close."""
+        if self._server_task is not None:
+            await self._server_task.wait_closed()
+        for writer in tuple(self._connections):
+            try:
+                await writer.wait_closed()
+            except OSError as error:
+                LOG.debug("Error closing status client connection: %s", error)
+
+    async def cb(self, reader, writer):
+        if writer is not None:
+            self._connections.add(writer)
+        try:
+            if self._server_task is not None and not self._server_task.is_serving():
+                return
+            records_this_turn = 0
+            while True:
+                try:
+                    raw_message = await reader.readline()
+                except ValueError as e:
+                    LOG.error("Status message exceeded the stream buffer limit: %s", e)
+                except ConnectionResetError as e:
+                    LOG.warning("Connection was reset: %s", e)
+                    return
+                except BrokenPipeError as e:
+                    LOG.warning("Broken pipe: %s", e)
+                    return
+                except OSError as e:
+                    LOG.warning("I/O error reading status message: %s", e)
+                    return
+                else:
+                    if not raw_message:
+                        return
+                    try:
+                        self._repo.process_raw_message(raw_message)
+                    except StatusMsgInvalidJSONError as e:
+                        LOG.warning("Invalid JSON in internal status message: %s", e)
+                    except StatusMsgMissingDataError:
+                        LOG.exception("Missing data in internal status message")
+
+                records_this_turn += 1
+                if records_this_turn >= self._RECORDS_PER_EVENT_LOOP_TURN:
+                    records_this_turn = 0
+                    await asyncio.sleep(0)
+        finally:
+            if writer is not None:
+                try:
+                    writer.close()
+                    await writer.wait_closed()
+                except OSError as error:
+                    LOG.debug("Error closing status client connection: %s", error)
+                finally:
+                    self._connections.discard(writer)

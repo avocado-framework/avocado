@@ -41,10 +41,19 @@ class StatusRepo(TestCase):
             [{"status": "started", "output_dir": "/fake/path"}],
         )
 
-    def test_handle_task_started_no_output_dir(self):
-        msg = {"id": "1-foo", "status": "started"}
+    def test_process_message_started_no_output_dir(self):
+        msg = {
+            "id": "1-foo",
+            "status": "started",
+            "time": 1,
+            "job_id": self.status_repo.job_id,
+        }
         with self.assertRaises(repo.StatusMsgMissingDataError):
-            self.status_repo._handle_task_started(msg)
+            self.status_repo.process_message(msg)
+        self.assertIsNone(self.status_repo.get_task_status("1-foo"))
+        self.assertIsNone(self.status_repo.get_all_task_data("1-foo"))
+        with self.assertRaises(IndexError):
+            self.status_repo.status_journal_summary_pop()
 
     def test_handle_task_finished_invalid_result(self):
         for fields in (
