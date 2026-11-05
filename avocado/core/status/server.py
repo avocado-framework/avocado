@@ -66,20 +66,26 @@ class StatusServer:
         while True:
             try:
                 raw_message = await reader.readline()
+            except ValueError as e:
+                LOG.error("Status message exceeded the stream buffer limit: %s", e)
             except ConnectionResetError as e:
                 LOG.warning("Connection was reset: %s", e)
                 return
             except BrokenPipeError as e:
                 LOG.warning("Broken pipe: %s", e)
                 return
-            if not raw_message:
+            except OSError as e:
+                LOG.warning("I/O error reading status message: %s", e)
                 return
-            try:
-                self._repo.process_raw_message(raw_message)
-            except StatusMsgInvalidJSONError as e:
-                LOG.warning("Invalid JSON in internal status message: %s", e)
-            except StatusMsgMissingDataError:
-                LOG.exception("Missing data in internal status message")
+            else:
+                if not raw_message:
+                    return
+                try:
+                    self._repo.process_raw_message(raw_message)
+                except StatusMsgInvalidJSONError as e:
+                    LOG.warning("Invalid JSON in internal status message: %s", e)
+                except StatusMsgMissingDataError:
+                    LOG.exception("Missing data in internal status message")
 
             records_this_turn += 1
             if records_this_turn >= self._RECORDS_PER_EVENT_LOOP_TURN:
