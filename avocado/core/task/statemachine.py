@@ -426,10 +426,9 @@ class Worker:
                 runtime_task.task.identifier,
             )
 
-        # from here, this `task` ran, so, let's check
-        # its latest data in the status repo
+        # latest running messages must not obscure the task's finished result if any
         latest_task_data = (
-            self._state_machine._status_repo.get_latest_task_data(
+            self._state_machine._status_repo.get_finished_task_data(
                 str(runtime_task.task.identifier)
             )
             or {}
@@ -438,7 +437,7 @@ class Worker:
         while latest_task_data.get("result") is None:
             await asyncio.sleep(0.1)
             latest_task_data = (
-                self._state_machine._status_repo.get_latest_task_data(
+                self._state_machine._status_repo.get_finished_task_data(
                     str(runtime_task.task.identifier)
                 )
                 or {}
