@@ -72,11 +72,11 @@ with::
         def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
                      arch=os.uname()[4]):
             """
-            :params version: The regular expression that represents
+            :param version: The regular expression that represents
                              your distro version numbering.
-            :params build: The regular expression that represents
+            :param build: The regular expression that represents
                            your build version numbering.
-            :params arch: The default architecture to look images for.
+            :param arch: The default architecture to look images for.
             """
             super(MyProvider, self).__init__(version, build, arch)
 
