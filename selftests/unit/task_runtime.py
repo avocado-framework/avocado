@@ -1,14 +1,17 @@
 import asyncio
 import os
+import tempfile
 from unittest import IsolatedAsyncioTestCase, TestCase
 from unittest.mock import Mock
 
+from avocado.core.messages import MessageHandler
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import Task
 from avocado.core.status.repo import StatusRepo
 from avocado.core.suite import TestSuite
 from avocado.core.task.runtime import RuntimeTask, RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
+from avocado.core.utils import messages
 from avocado.utils import script
 from selftests.utils import TestCaseTmpDir
 
@@ -62,6 +65,59 @@ class Runtime(TestCase):
 
 
 class WorkerMonitor(IsolatedAsyncioTestCase):
+    async def test_late_start_after_interruption_does_not_repeat_reporting(self):
+        def report_messages(status_repo, handler, task, job):
+            while True:
+                try:
+                    entry = status_repo.status_journal_summary_pop()
+                except IndexError:
+                    return
+                _, task_id, _, index = entry
+                message = status_repo.get_task_data(task_id, index)
+                handler.process_message(message.copy(), task, job)
+
+        for delivery in ("before_reporting", "after_reporting", "never"):
+            with self.subTest(delivery=delivery), tempfile.TemporaryDirectory() as root:
+                runnable = Runnable(
+                    "noop", "noop", output_dir=os.path.join(root, "task")
+                )
+                task = Task(runnable, "1-noop", job_id="job")
+                task.metadata["symlink"] = os.path.join(root, "link")
+                runtime_task = RuntimeTask(task)
+                status_repo = StatusRepo(task.job_id)
+                state_machine = TaskStateMachine([runtime_task], status_repo)
+                worker = Worker(state_machine, Mock())
+                job = Mock(logdir=root, unique_id="job", test_results_path=root)
+                handler = MessageHandler()
+
+                late_start = messages.StartedMessage.get(
+                    output_dir=runnable.output_dir,
+                    id=task.identifier,
+                    job_id=task.job_id,
+                )
+                await worker._send_finished_tasks_message([runtime_task], "timeout")
+                start_time = status_repo.get_all_task_data(task.identifier)[0]["time"]
+                if delivery == "before_reporting":
+                    status_repo.process_message(late_start)
+                report_messages(status_repo, handler, task, job)
+                if delivery == "after_reporting":
+                    status_repo.process_message(late_start)
+                status_repo.process_message(
+                    messages.LogMessage.get(
+                        "later message", id=task.identifier, job_id=task.job_id
+                    )
+                )
+                report_messages(status_repo, handler, task, job)
+
+                job.result.start_test.assert_called_once()
+                job.result.check_test.assert_called_once()
+                self.assertEqual(task.metadata["time_start"], start_time)
+                self.assertEqual(
+                    os.readlink(task.metadata["symlink"]), runnable.output_dir
+                )
+                with open(task.metadata["logfile"], encoding="utf-8") as logfile:
+                    self.assertIn("later message", logfile.read())
+
     async def test_first_finished_result_survives_late_messages(self):
         for delayed in (False, True):
             with self.subTest(delayed=delayed):

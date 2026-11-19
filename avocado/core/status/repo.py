@@ -162,6 +162,11 @@ class StatusRepo:
             raise StatusMsgMissingDataError("output_dir")
 
         task_id = message.get("id")
+        if message.get("status") == "started" and any(
+            data.get("status") == "started" for data in self._all_data.get(task_id, ())
+        ):
+            LOG.warning('Ignoring duplicate started message for task "%s"', task_id)
+            return
         if message.get("status") == "finished" and task_id in self._finished_data:
             terminal = self._finished_data[task_id]
             LOG.warning(
