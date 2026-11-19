@@ -204,19 +204,26 @@ class Worker:
         for terminated_task in terminate_tasks:
             task_id = str(terminated_task.task.identifier)
             job_id = terminated_task.task.job_id
-            log_message = messages.LogMessage.get(
-                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Test interrupted: {reason}",
-                id=task_id,
-                job_id=job_id,
-            )
-            finish_message = messages.FinishedMessage.get(
-                "interrupted", f"Test interrupted: {reason}", id=task_id, job_id=job_id
-            )
-            try:
-                current_status, _ = self._state_machine._status_repo._status[task_id]
-            except KeyError:
-                return
+            current_status = self._state_machine._status_repo.get_task_status(task_id)
             if current_status != "finished":
+                if current_status is None:
+                    start_message = messages.StartedMessage.get(
+                        output_dir=terminated_task.task.runnable.output_dir,
+                        id=task_id,
+                        job_id=job_id,
+                    )
+                    self._state_machine._status_repo.process_message(start_message)
+                log_message = messages.LogMessage.get(
+                    f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} | Test interrupted: {reason}",
+                    id=task_id,
+                    job_id=job_id,
+                )
+                finish_message = messages.FinishedMessage.get(
+                    "interrupted",
+                    f"Test interrupted: {reason}",
+                    id=task_id,
+                    job_id=job_id,
+                )
                 self._state_machine._status_repo.process_message(log_message)
                 self._state_machine._status_repo.process_message(finish_message)
 
@@ -467,17 +474,26 @@ class Worker:
         await self._state_machine.abort(task_status)
         terminated = []
         while True:
+            runtime_task = None
             async with self._state_machine.lock:
                 try:
                     runtime_task = self._state_machine.monitored.pop(0)
-                    await self._terminate_task(runtime_task, task_status)
-                    terminated.append(runtime_task)
                 except IndexError:
                     if (
                         len(self._state_machine.finished) + len(terminated)
-                        == self._state_machine.task_size
+                        >= self._state_machine.task_size
                     ):
                         break
+            if runtime_task is None:
+                # other workers may still be moving started tasks to the
+                # monitored queue of the state machine so do not hold the global
+                # state lock while waiting for them
+                await asyncio.sleep(0.01)
+                continue
+            # spawner shutdown can be slow so it also must not hold the global
+            # state lock which is needed by the workers being terminated
+            await self._terminate_task(runtime_task, task_status)
+            terminated.append(runtime_task)
         return terminated
 
     async def terminate_tasks_timeout(self):
