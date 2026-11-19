@@ -179,23 +179,24 @@ Options for subcommand `run` (`avocado run --help`)::
     nrunner specific options:
       --shuffle             Shuffle the tasks to be executed
       --status-server-disable-auto
-                            If the status server should automatically choose a
-                            "status_server_listen" and "status_server_uri"
-                            configuration. Default is to auto configure a status
-                            server.
+                            Disable automatic status server port selection. By
+                            default, a port range (127.0.0.1:8888-9000) is used
+                            so multiple avocado runs can run without port
+                            conflicts. When disabled, use
+                            --status-server-listen/--status-server-uri.
       --status-server-listen HOST_PORT
-                            URI where status server will listen on. Usually a
-                            "HOST:PORT" string. This is only effective if
-                            "status_server_auto" is disabled. If
-                            "status_server_uri" is not set, the value from
-                            "status_server_listen " will be used.
+                            URI where status server will listen: "HOST:PORT" or
+                            "HOST:START-END" (default 127.0.0.1:8888-9000). An
+                            available port in the range is chosen. Only used
+                            when --status-server-disable-auto is set. If
+                            "status_server_uri" is not set,
+                            "status_server_listen" is used.
       --status-server-uri HOST_PORT
-                            URI for connecting to the status server, usually a
-                            "HOST:PORT" string. Use this if your status server is
-                            in another host, or different port. This is only
-                            effective if "status_server_auto" is disabled.  If
-                            "status_server_listen" is not set, the value from
-                            "status_server_uri" will be used.
+                            URI for connecting to the status server: "HOST:PORT"
+                            or "HOST:START-END". Only used when
+                            --status-server-disable-auto is set. If
+                            "status_server_listen" is not set,
+                            "status_server_uri" is used.
       --max-parallel-tasks NUMBER_OF_TASKS
                             Number of maximum number tasks running in parallel.
                             You can disable parallel execution by setting this to
