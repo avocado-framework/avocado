@@ -44,9 +44,28 @@ class TaskStatusService:
 
     @property
     def connection(self):
-        if not self._connection:
+        if self._connection is None:
             self._create_connection()
         return self._connection
+
+    def _close_connection(self):
+        """
+        Close and forget the current connection if any.
+
+        Make sure to also handle possible errors as well.
+        """
+        connection = self._connection
+        self._connection = None
+        if connection is None:
+            return
+        try:
+            connection.close()
+        except OSError as error:
+            LOG.debug(
+                "Error while closing status connection with %s: %s",
+                self.uri,
+                error,
+            )
 
     def _create_connection(self):
         """
@@ -86,8 +105,9 @@ class TaskStatusService:
         return True
 
     def close(self):
-        if self.connection is not None:
-            self.connection.close()
+        # do not use the lazy ``connection`` property here as closing a
+        # service that was never used must not establish a new connection
+        self._close_connection()
 
     def __repr__(self):
         return f'<TaskStatusService uri="{self.uri}">'
@@ -226,21 +246,25 @@ class Task:
         runner = runner_klass()
         running_status_services = self.status_services
         damaged_status_services = []
-        for status in runner.run(self.runnable):
-            if status["status"] == "started":
-                status.update({"output_dir": self.runnable.output_dir})
-            status.update({"id": self.identifier})
-            if self.job_id is not None:
-                status.update({"job_id": self.job_id})
-            for status_service in running_status_services:
-                if not status_service.post(status):
-                    damaged_status_services.append(status_service)
-            if damaged_status_services:
-                running_status_services = list(
-                    filter(
-                        lambda s: s not in damaged_status_services,
-                        running_status_services,
+        try:
+            for status in runner.run(self.runnable):
+                if status["status"] == "started":
+                    status.update({"output_dir": self.runnable.output_dir})
+                status.update({"id": self.identifier})
+                if self.job_id is not None:
+                    status.update({"job_id": self.job_id})
+                for status_service in running_status_services:
+                    if not status_service.post(status):
+                        damaged_status_services.append(status_service)
+                if damaged_status_services:
+                    running_status_services = list(
+                        filter(
+                            lambda s: s not in damaged_status_services,
+                            running_status_services,
+                        )
                     )
-                )
-                damaged_status_services.clear()
-            yield status
+                    damaged_status_services.clear()
+                yield status
+        finally:
+            for status_service in self.status_services:
+                status_service.close()
