@@ -41,6 +41,8 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
         "job.run.store_logging_stream",
     ]
 
+    PROCESS_JOIN_TIMEOUT = 1.0
+
     @staticmethod
     def signal_handler(signum, frame):  # pylint: disable=W0613
         if signum == signal.SIGTERM.value:
@@ -61,6 +63,63 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             tree_nodes = variant_tree_nodes
             paths = runnable.variant["paths"]
             return tree_nodes, paths
+
+    @classmethod
+    def _cleanup_process(cls, process):
+        """
+        Reap a child eventually terminating it if it outlives the runner.
+
+        Startup failures can leave various partial states and joining
+        a partial process is invalid.
+        """
+        if process is None:
+            return
+        try:
+            if process.pid is None:
+                return
+            process.join(cls.PROCESS_JOIN_TIMEOUT)
+            if process.is_alive():
+                process.terminate()
+                process.join(cls.PROCESS_JOIN_TIMEOUT)
+            if process.is_alive() and hasattr(process, "kill"):
+                process.kill()
+                process.join(cls.PROCESS_JOIN_TIMEOUT)
+            if not process.is_alive():
+                process.close()
+        except (AssertionError, OSError, ValueError):
+            # cleanup failure must not replace the status already
+            # produced by the runner so far
+            return
+
+    @staticmethod
+    def _close_parent_queue_writer(queue):
+        """
+        Close the parent's unused writer so a dead producer causes EOF.
+
+        Keeping this writer open would prevent the reader from observing
+        end-of-stream after the child's writer closes.
+        """
+        writer = getattr(queue, "_writer", None)
+        if writer is not None:
+            try:
+                writer.close()
+            except (OSError, ValueError):
+                pass
+
+    @staticmethod
+    def _close_queue(queue):
+        """
+        Close the parent side of a multiprocessing queue.
+
+        The same cleanup path must work after both successful execution
+        and incomplete startup.
+        """
+        close = getattr(queue, "close", None)
+        if close is not None:
+            try:
+                close()
+            except (OSError, ValueError):
+                pass
 
     @staticmethod
     def _run_avocado(runnable, queue):
@@ -155,6 +214,8 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
         signal.signal(signal.SIGTERM, AvocadoInstrumentedTestRunner.signal_handler)
         self.runnable = runnable
         yield messages.StartedMessage.get()
+        queue = None
+        process = None
         try:
             queue = multiprocessing.SimpleQueue()
             process = multiprocessing.Process(
@@ -162,12 +223,23 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             )
 
             process.start()
+            # starting first ensures the child receives its own open
+            # writer before the parent closes its copy
+            self._close_parent_queue_writer(queue)
 
             yield from self._monitor(queue)
 
         except TestInterrupt:
-            process.terminate()
-            yield from self._monitor(queue)
+            if process is not None and process.pid is not None:
+                if process.is_alive():
+                    process.terminate()
+                yield from self._monitor(queue)
+            else:
+                yield messages.FinishedMessage.get(
+                    "error",
+                    fail_reason="Runner interrupted before the test process started",
+                    fail_class="InstrumentedTestProcessError",
+                )
         except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
             yield messages.FinishedMessage.get(
@@ -176,6 +248,9 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 fail_class=e.__class__.__name__,
                 traceback=traceback.format_exc(),
             )
+        finally:
+            self._cleanup_process(process)
+            self._close_queue(queue)
 
 
 class RunnerApp(BaseRunnerApp):
