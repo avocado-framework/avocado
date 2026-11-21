@@ -107,7 +107,6 @@ class Session:
         else:
             options += (
                 ("PasswordAuthentication", "yes"),
-                ("NumberOfPasswordPrompts", "1"),
             )
         return self._ssh_cmd(options, ("-T", "-n"))
 
