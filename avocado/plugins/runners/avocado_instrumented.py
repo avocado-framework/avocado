@@ -65,6 +65,28 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             return tree_nodes, paths
 
     @classmethod
+    def _start_process(cls, process):
+        """Defer parent interruption until start() publishes the child handle."""
+        interrupted = False
+        parent_pid = os.getpid()
+
+        def defer_interrupt(signum, frame):
+            nonlocal interrupted
+            if os.getpid() == parent_pid:
+                interrupted = True
+            else:
+                # a forked child must retain its normal signal handling
+                cls.signal_handler(signum, frame)
+
+        previous_handler = signal.signal(signal.SIGTERM, defer_interrupt)
+        try:
+            process.start()
+        finally:
+            signal.signal(signal.SIGTERM, previous_handler)
+        if interrupted:
+            cls.signal_handler(signal.SIGTERM, None)
+
+    @classmethod
     def _cleanup_process(cls, process):
         """
         Reap a child eventually terminating it if it outlives the runner.
@@ -235,7 +257,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
                 target=self._run_avocado, args=(self.runnable, queue)
             )
 
-            process.start()
+            self._start_process(process)
             # starting first ensures the child receives its own open
             # writer before the parent closes its copy
             self._close_parent_queue_writer(queue)
